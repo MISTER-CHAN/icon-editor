@@ -479,9 +479,11 @@ public class MainActivity extends AppCompatActivity {
                 etCellGridSizeX.setText(String.valueOf(cellGrid.sizeX));
                 etCellGridSizeY.setText(String.valueOf(cellGrid.sizeY));
                 break;
+
             case R.id.i_open:
                 imageActivityResultLauncher.launch("image/*");
                 break;
+
             case R.id.i_redo:
                 if (history.canRedo()) {
                     clearCanvas(canvas);
@@ -490,9 +492,11 @@ public class MainActivity extends AppCompatActivity {
                     imageView.setImageBitmap(viewBitmap);
                 }
                 break;
+
             case R.id.i_save:
                 save();
                 break;
+
             case R.id.i_undo:
                 if (history.canUndo()) {
                     clearCanvas(canvas);
