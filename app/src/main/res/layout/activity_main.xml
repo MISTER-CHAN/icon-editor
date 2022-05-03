@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".MainActivity">
+
+    <FrameLayout
+        android:id="@+id/fl_background"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <FrameLayout
+            android:id="@+id/fl_iv"
+            android:layout_width="960px"
+            android:layout_height="960px">
+
+            <ImageView
+                android:id="@+id/iv_chessboard"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="center"
+                android:src="@mipmap/chessboard" />
+
+            <ImageView
+                android:id="@+id/iv"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="fitCenter" />
+
+            <ImageView
+                android:id="@+id/iv_grid"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop" />
+        </FrameLayout>
+    </FrameLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <RadioGroup
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/rb_scaler"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Scale" />
+
+            <RadioButton
+                android:id="@+id/rb_pencil"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:text="Pencil" />
+
+            <RadioButton
+                android:id="@+id/rb_eraser"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Eraser" />
+        </RadioGroup>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <RadioGroup
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <RadioButton
+                    android:id="@+id/rb_foreground_color"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:text="████"
+                    android:textColor="@color/black" />
+
+                <RadioButton
+                    android:id="@+id/rb_background_color"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="████"
+                    android:textColor="@color/white" />
+            </RadioGroup>
+
+            <GridLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:columnCount="3"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:rowCount="4">
+
+                <TextView
+                    android:layout_gravity="center"
+                    android:labelFor="@+id/et_alpha"
+                    android:text="A" />
+
+                <EditText
+                    android:id="@+id/et_alpha"
+                    android:layout_width="32dp"
+                    android:autofillHints="0"
+                    android:inputType="text"
+                    android:text="FF"
+                    android:textAlignment="center" />
+
+                <SeekBar
+                    android:id="@+id/sb_alpha"
+                    android:layout_width="256dp"
+                    android:layout_gravity="center"
+                    android:max="255"
+                    android:progress="255" />
+
+                <TextView
+                    android:layout_gravity="center"
+                    android:labelFor="@+id/et_red"
+                    android:text="R" />
+
+                <EditText
+                    android:id="@+id/et_red"
+                    android:layout_width="32dp"
+                    android:autofillHints="0"
+                    android:inputType="text"
+                    android:maxLength="2"
+                    android:text="00"
+                    android:textAlignment="center" />
+
+                <SeekBar
+                    android:id="@+id/sb_red"
+                    android:layout_width="256dp"
+                    android:layout_gravity="center"
+                    android:max="256" />
+
+                <TextView
+                    android:layout_gravity="center"
+                    android:labelFor="@+id/et_green"
+                    android:text="G" />
+
+                <EditText
+                    android:id="@+id/et_green"
+                    android:layout_width="32dp"
+                    android:autofillHints="0"
+                    android:inputType="text"
+                    android:maxLength="2"
+                    android:text="00"
+                    android:textAlignment="center" />
+
+                <SeekBar
+                    android:id="@+id/sb_green"
+                    android:layout_width="256dp"
+                    android:layout_gravity="center"
+                    android:max="256" />
+
+                <TextView
+                    android:layout_gravity="center"
+                    android:labelFor="@+id/et_blue"
+                    android:text="B" />
+
+
+                <EditText
+                    android:id="@+id/et_blue"
+                    android:layout_width="32dp"
+                    android:autofillHints="0"
+                    android:inputType="text"
+                    android:maxLength="2"
+                    android:text="00"
+                    android:textAlignment="center" />
+
+                <SeekBar
+                    android:id="@+id/sb_blue"
+                    android:layout_width="256dp"
+                    android:layout_gravity="center"
+                    android:max="256" />
+
+            </GridLayout>
+
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>
