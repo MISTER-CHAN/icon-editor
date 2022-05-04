@@ -8,7 +8,9 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
-import android.net.ParseException;
+import android.graphics.PorterDuffXfermode;
+import android.graphics.Rect;
+import android.graphics.RectF;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.Menu;
@@ -17,14 +19,12 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.CheckBox;
-import android.widget.Checkable;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.SeekBar;
-import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
@@ -41,27 +41,33 @@ import java.io.InputStream;
 public class MainActivity extends AppCompatActivity {
 
     private Bitmap bitmap;
+    private Bitmap chessboard;
+    private Bitmap chessboardBitmap;
     private Bitmap gridBitmap;
     private Bitmap viewBitmap;
-    private final BitmapHistory history = new BitmapHistory();
+    private BitmapHistory history;
     private boolean hasNotLoaded = true;
     private Canvas canvas;
+    private Canvas chessboardCanvas;
     private Canvas gridCanvas;
     private Canvas viewCanvas;
     private final CellGrid cellGrid = new CellGrid();
     private CheckBox cbCellGridEnabled;
     private Bitmap.CompressFormat compressFormat = null;
-    private double prevDiagonal = 0.0;
+    private double prevDiagonal;
     private EditText etCellGridSizeX, etCellGridSizeY;
+    private EditText etNewImageSizeX, etNewImageSizeY;
     private EditText etRed, etGreen, etBlue, etAlpha;
-    private float pivotX = 0.0f, pivotY = 0.0f;
-    private float prevX = 0.0f, prevY = 0.0f;
-    private float scale = 20.0f;
-    private FrameLayout flBackground;
+    private float pivotX, pivotY;
+    private float prevX, prevY;
+    private float scale;
+    private float translationX, translationY;
     private FrameLayout flImageView;
     private ImageView imageView;
     private ImageView ivChessboard;
     private ImageView ivGrid;
+    private int imageWidth, imageHeight;
+    private int viewWidth, viewHeight;
     private RadioButton rbBackgroundColor;
     private RadioButton rbForegroundColor;
     private RadioButton rbColor;
@@ -84,6 +90,13 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    private final Paint eraser = new Paint() {
+
+        {
+            setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
+        }
+    };
+
     private final Paint foregroundPaint = new Paint() {
 
         {
@@ -100,6 +113,17 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    private final Paint opaquePaint = new Paint();
+
+    private final Paint pointPaint = new Paint() {
+
+        {
+            setColor(Color.RED);
+            setStrokeWidth(4.0f);
+            setTextSize(32.0f);
+        }
+    };
+
     private Paint paint = foregroundPaint;
 
     private final ActivityResultCallback<Uri> imageActivityResultCallback = result -> {
@@ -108,24 +132,8 @@ public class MainActivity extends AppCompatActivity {
         }
         try (InputStream inputStream = getContentResolver().openInputStream(result)) {
             Bitmap bm = Bitmap.createBitmap(BitmapFactory.decodeStream(inputStream));
-            bitmap = Bitmap.createBitmap(bm.getWidth(), bm.getHeight(), Bitmap.Config.ARGB_8888);
-            canvas = new Canvas(bitmap);
-            canvas.drawBitmap(bm, 0.0f, 0.0f, paint);
-
-            scale = (float) ((double) imageView.getWidth() / (double) bm.getWidth());
-
+            openImage(bm);
             bm.recycle();
-
-            int width = imageView.getWidth(), height = (int) ((double) bitmap.getHeight() / (double) bitmap.getWidth() * imageView.getWidth());
-            viewBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-            viewCanvas = new Canvas(viewBitmap);
-            drawBitmapOnView();
-            imageView.setImageBitmap(viewBitmap);
-
-            gridBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_4444);
-            gridCanvas = new Canvas(gridBitmap);
-            drawGridOnView();
-            ivGrid.setImageBitmap(gridBitmap);
 
             path = UriToPathUtil.getRealFilePath(this, result);
 
@@ -167,13 +175,94 @@ public class MainActivity extends AppCompatActivity {
             cellGrid.enabled = cbCellGridEnabled.isChecked();
             cellGrid.sizeX = Integer.parseInt(etCellGridSizeX.getText().toString());
             cellGrid.sizeY = Integer.parseInt(etCellGridSizeY.getText().toString());
-        } catch (NumberFormatException e) {}
+        } catch (NumberFormatException e) {
+        }
         drawGridOnView();
-        ivGrid.setImageBitmap(gridBitmap);
+    };
+
+    private final DialogInterface.OnClickListener onNewImageDialogPosButtonClickListener = (dialog, which) -> {
+        try {
+            int width = Integer.parseInt(etNewImageSizeX.getText().toString());
+            int height = Integer.parseInt(etNewImageSizeY.getText().toString());
+            newImage(width, height);
+        } catch (NumberFormatException e) {
+        }
     };
 
     @SuppressLint("ClickableViewAccessibility")
-    private final View.OnTouchListener onBackgroundTouchWithScalerListener = (v, event) -> {
+    private final View.OnTouchListener onImageViewTouchWithEraserListener = (v, event) -> {
+        float x = event.getX(), y = event.getY();
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                canvas.drawPoint(toOriginal(x - translationX), toOriginal(y - translationY), eraser);
+                drawBitmapOnView();
+                prevX = x;
+                prevY = y;
+                break;
+            case MotionEvent.ACTION_MOVE:
+                canvas.drawLine(
+                        toOriginal(prevX - translationX),
+                        toOriginal(prevY - translationY),
+                        toOriginal(x - translationX),
+                        toOriginal(y - translationY),
+                        eraser);
+                drawBitmapOnView();
+                prevX = x;
+                prevY = y;
+                break;
+            case MotionEvent.ACTION_CANCEL:
+            case MotionEvent.ACTION_UP:
+                history.offer(bitmap);
+                break;
+        }
+        return true;
+    };
+
+    @SuppressLint("ClickableViewAccessibility")
+    private final View.OnTouchListener onImageViewTouchWithEyedropperListener = (v, event) -> {
+        float x = event.getX(), y = event.getY();
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+            case MotionEvent.ACTION_MOVE:
+                int originalX = toOriginal(x - translationX), originalY = toOriginal(y - translationY);
+                paint.setColor(bitmap.getPixel(originalX, originalY));
+                showPaintColorOnSeekBars();
+                break;
+        }
+        return true;
+    };
+
+    @SuppressLint("ClickableViewAccessibility")
+    private final View.OnTouchListener onImageViewTouchWithPencilListener = (v, event) -> {
+        float x = event.getX(), y = event.getY();
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                canvas.drawPoint(toOriginal(x - translationX), toOriginal(y - translationY), paint);
+                drawBitmapOnView();
+                prevX = x;
+                prevY = y;
+                break;
+            case MotionEvent.ACTION_MOVE:
+                canvas.drawLine(
+                        toOriginal(prevX - translationX),
+                        toOriginal(prevY - translationY),
+                        toOriginal(x - translationX),
+                        toOriginal(y - translationY),
+                        paint);
+                drawBitmapOnView();
+                prevX = x;
+                prevY = y;
+                break;
+            case MotionEvent.ACTION_CANCEL:
+            case MotionEvent.ACTION_UP:
+                history.offer(bitmap);
+                break;
+        }
+        return true;
+    };
+
+    @SuppressLint("ClickableViewAccessibility")
+    private final View.OnTouchListener onImageViewTouchWithScalerListener = (v, event) -> {
         switch (event.getPointerCount()) {
 
             case 1:
@@ -182,10 +271,13 @@ public class MainActivity extends AppCompatActivity {
                     case MotionEvent.ACTION_DOWN:
                         prevX = x;
                         prevY = y;
-                        drawBitmapOnView();
                         break;
                     case MotionEvent.ACTION_MOVE:
-                        setTranslation(flImageView, flImageView.getTranslationX() + x - prevX, flImageView.getTranslationY() + y - prevY);
+                        translationX += x - prevX;
+                        translationY += y - prevY;
+                        drawChessboardOnView();
+                        drawBitmapOnView();
+                        drawGridOnView();
                         prevX = x;
                         prevY = y;
                         break;
@@ -201,27 +293,25 @@ public class MainActivity extends AppCompatActivity {
                         double diagonalRatio = diagonal / prevDiagonal;
                         float scale = (float) (this.scale * diagonalRatio);
                         int scaledWidth = (int) (bitmap.getWidth() * scale), scaledHeight = (int) (bitmap.getHeight() * scale);
-                        if (scaledWidth > 4096 || scaledHeight > 4096) {
-                            break;
-                        }
                         this.scale = scale;
-                        setSize(flImageView, scaledWidth, scaledHeight);
+                        imageWidth = scaledWidth;
+                        imageHeight = scaledHeight;
                         float pivotX = (float) (this.pivotX * diagonalRatio), pivotY = (float) (this.pivotY * diagonalRatio);
-                        setTranslation(flImageView, (int) (flImageView.getTranslationX() - pivotX + this.pivotX), flImageView.getTranslationY() - pivotY + this.pivotY);
-                        setPivot(pivotX, pivotY);
+                        translationX = translationX - pivotX + this.pivotX;
+                        translationY = translationY - pivotY + this.pivotY;
+                        drawChessboardOnView();
+                        drawBitmapOnView();
+                        drawGridOnView();
+                        this.pivotX = pivotX;
+                        this.pivotY = pivotY;
                         prevDiagonal = diagonal;
                         break;
                     case MotionEvent.ACTION_POINTER_DOWN:
-                        setPivot((x0 + x1) / 2.0f - flImageView.getTranslationX(), (y0 + y1) / 2.0f - flImageView.getTranslationY());
+                        this.pivotX = (x0 + x1) / 2.0f - translationX;
+                        this.pivotY = (y0 + y1) / 2.0f - translationY;
                         prevDiagonal = Math.sqrt(Math.pow(x0 - x1, 2.0) + Math.pow(y0 - y1, 2.0));
                         break;
                     case MotionEvent.ACTION_POINTER_UP:
-                        int width = flImageView.getWidth(), height = flImageView.getHeight();
-                        viewBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-                        viewCanvas = new Canvas(viewBitmap);
-                        gridBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_4444);
-                        gridCanvas = new Canvas(gridBitmap);
-                        drawGridOnView();
                         prevX = event.getX(1 - event.getActionIndex());
                         prevY = event.getY(1 - event.getActionIndex());
                         break;
@@ -231,150 +321,139 @@ public class MainActivity extends AppCompatActivity {
         return true;
     };
 
-    @SuppressLint("ClickableViewAccessibility")
-    private final View.OnTouchListener onImageViewTouchWithPencilListener = (v, event) -> {
-        float x = event.getX(), y = event.getY();
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                prevX = x;
-                prevY = y;
-                canvas.drawPoint(toOriginal(x), toOriginal(y), paint);
-                break;
-            case MotionEvent.ACTION_MOVE:
-                canvas.drawLine(toOriginal(prevX), toOriginal(prevY), toOriginal(x), toOriginal(y), paint);
-                prevX = x;
-                prevY = y;
-                break;
-            case MotionEvent.ACTION_CANCEL:
-            case MotionEvent.ACTION_UP:
-                history.offer(bitmap);
-                break;
-        }
-        drawVisiblePartOfBitmapOnView();
-        imageView.setImageBitmap(viewBitmap);
-        return true;
-    };
-
-    @SuppressLint("ClickableViewAccessibility")
-    private final View.OnTouchListener onImageViewTouchWithScalerListener = (v, event) -> {
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                float x = event.getX(), y = event.getY();
-                break;
-        }
-        return false;
-    };
-
-    @SuppressLint("ClickableViewAccessibility")
-    private final CompoundButton.OnCheckedChangeListener onPenRadioButtonCheckedChangeListener = (buttonView, isChecked) -> {
-        if (isChecked) {
-            flBackground.setOnTouchListener(null);
-            flImageView.setOnTouchListener(onImageViewTouchWithPencilListener);
-        }
-    };
-
-    @SuppressLint("ClickableViewAccessibility")
-    private final CompoundButton.OnCheckedChangeListener onScalerRadioButtonCheckedChangeListener = (buttonView, isChecked) -> {
-        if (isChecked) {
-            flImageView.setOnTouchListener(null);
-            flBackground.setOnTouchListener(onBackgroundTouchWithScalerListener);
-        }
-    };
-
     private void clearCanvas(Canvas canvas) {
         canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
     }
 
+    private void drawPoint(Canvas canvas, float x, float y, String text) {
+        canvas.drawLine(x - 100.0f, y, x + 100.0f, y, pointPaint);
+        canvas.drawLine(x, y - 100.0f, x, y + 100.0f, pointPaint);
+        canvas.drawText(text, x, y, pointPaint);
+    }
+
     private void drawBitmapOnView() {
-        int width = bitmap.getWidth(), height = bitmap.getHeight();
-        Paint paint = new Paint();
         clearCanvas(viewCanvas);
-        float top = 0.0f, bottom = scale;
-        for (int y = 0; y < height; ++y, top += scale, bottom += scale) {
-            float left = 0.0f;
-            for (int x = 0; x < width; ++x) {
-                paint.setColor(bitmap.getPixel(x, y));
-                viewCanvas.drawRect(left, top, left += scale, bottom, paint);
+        int startX = translationX >= 0.0f ? 0 : toOriginal(-translationX);
+        int startY = translationY >= 0.0f ? 0 : toOriginal(-translationY);
+        int endX = Math.min(toOriginal(translationX + imageWidth <= viewWidth ? imageWidth : viewWidth - translationX) + 1, bitmap.getWidth());
+        int endY = Math.min(toOriginal(translationY + imageHeight <= viewHeight ? imageHeight : viewHeight - translationY) + 1, bitmap.getHeight());
+        float left = translationX >= 0.0f ? translationX : translationX % scale;
+        float top = translationY >= 0.0f ? translationY : translationY % scale;
+        if (isScaledMuch()) {
+            float t = top, b = t + scale;
+            Paint paint = new Paint();
+            for (int y = startY; y < endY; ++y, t += scale, b += scale) {
+                float l = left;
+                for (int x = startX; x < endX; ++x) {
+                    paint.setColor(bitmap.getPixel(x, y));
+                    viewCanvas.drawRect(l, t, l += scale, b, paint);
+                }
             }
+        } else {
+            float right = Math.min(translationX + imageWidth, viewWidth);
+            float bottom = Math.min(translationY + imageHeight, viewHeight);
+            viewCanvas.drawBitmap(bitmap,
+                    new Rect(startX, startY, endX, endY),
+                    new RectF(left, top, right, bottom),
+                    opaquePaint);
         }
         imageView.setImageBitmap(viewBitmap);
     }
 
-    private void drawVisiblePartOfBitmapOnView() {
-        Paint paint = new Paint();
-        clearCanvas(viewCanvas);
-        int bitmapWidth = bitmap.getWidth(), bitmapHeight = bitmap.getHeight();
-        float translationX = flImageView.getTranslationX(), translationY = flImageView.getTranslationY();
-        float screenWidth = flBackground.getWidth(), screenHeight = flBackground.getHeight();
-        int viewWidth = flImageView.getWidth(), viewHeight = flImageView.getHeight();
-        int startX = (int) (Math.max(0.0f, -translationX) / viewWidth * bitmapWidth),
-                startY = (int) (Math.max(0.0f, -translationY) / viewHeight * bitmapHeight);
-        int endX = (int) (Math.min(viewWidth, screenWidth - translationX) / viewWidth * bitmapWidth),
-                endY = (int) (Math.min(viewHeight, screenHeight - translationY) / viewHeight * bitmapHeight);
-        float top = toScaled(startY), bottom = top + scale;
-        for (int y = startY; y < endY; ++y, top += scale, bottom += scale) {
-            float left = toScaled(startX);
-            for (int x = startX; x < endX; ++x) {
-                paint.setColor(bitmap.getPixel(x, y));
-                viewCanvas.drawRect(left, top, left += scale, bottom, paint);
-            }
-        }
+    private void drawChessboardOnView() {
+        clearCanvas(chessboardCanvas);
+        float left = Math.max(0.0f, translationX);
+        float top = Math.max(0.0f, translationY);
+        float right = Math.min(translationX + imageWidth, viewWidth);
+        float bottom = Math.min(translationY + imageHeight, viewHeight);
+        chessboardCanvas.drawBitmap(chessboard,
+                new Rect((int) left, (int) top, (int) right, (int) bottom),
+                new RectF(left, top, right, bottom),
+                opaquePaint);
+        ivChessboard.setImageBitmap(chessboardBitmap);
     }
 
     private void drawGridOnView() {
         clearCanvas(gridCanvas);
-        int viewWidth = ivGrid.getWidth(), viewHeight = ivGrid.getHeight();
-        for (float x = 0.0f; x < viewWidth; x += scale) {
-            gridCanvas.drawLine(x, 0.0f, x, viewHeight, gridPaint);
-        }
-        for (float y = 0.0f; y < viewHeight; y += scale) {
-            gridCanvas.drawLine(0.0f, y, viewWidth, y, gridPaint);
+        float startX = translationX >= 0.0f ? translationX : translationX % scale;
+        float startY = translationY >= 0.0f ? translationY : translationY % scale;
+        float endX = Math.min(translationX + imageWidth, viewWidth);
+        float endY = Math.min(translationY + imageHeight, viewHeight);
+        if (isScaledMuch()) {
+            for (float x = startX; x < endX; x += scale) {
+                gridCanvas.drawLine(x, startY, x, endY, gridPaint);
+            }
+            for (float y = startY; y < endY; y += scale) {
+                gridCanvas.drawLine(startX, y, endX, y, gridPaint);
+            }
         }
         if (cellGrid.enabled) {
             if (cellGrid.sizeX > 0) {
                 float scaledSizeX = toScaled(cellGrid.sizeX);
-                for (float x = toScaled(cellGrid.offsetX); x < viewWidth; x += scaledSizeX) {
-                    gridCanvas.drawLine(x, 0.0f, x, viewHeight, cellGridPaint);
+                startX = translationX >= 0.0f ? translationX : translationX % scaledSizeX + toScaled(cellGrid.offsetX);
+                for (float x = startX; x < endX; x += scaledSizeX) {
+                    gridCanvas.drawLine(x, startY, x, endY, cellGridPaint);
                 }
             }
             if (cellGrid.sizeY > 0) {
                 float scaledSizeY = toScaled(cellGrid.sizeY);
-                for (float y = toScaled(cellGrid.offsetY); y < viewWidth; y += scaledSizeY) {
-                    gridCanvas.drawLine(0.0f, y, viewWidth, y, cellGridPaint);
+                startY = translationY >= 0.0f ? translationY : translationY % scaledSizeY + toScaled(cellGrid.offsetY);
+                for (float y = startY; y < endY; y += scaledSizeY) {
+                    gridCanvas.drawLine(startX, y, endX, y, cellGridPaint);
                 }
             }
         }
+        ivGrid.setImageBitmap(gridBitmap);
     }
 
-    private void drawVisiblePartOfGridOnView() {
-
-//        int bitmapWidth = bitmap.getWidth(), bitmapHeight = bitmap.getHeight();
-//        float startX = (float) (Math.floor(Math.min(0.0f, -flImageView.getTranslationX()) / bitmapWidth) * bitmapWidth),
-//                startY = (float) (Math.floor(Math.min(0.0f, -flImageView.getTranslationY()) / bitmapHeight) * bitmapHeight);
-//        float endX = (float) ()
-//        for (float y = ) {
-//            for (float x = )
-//        }
+    private boolean isScaledMuch() {
+        return bitmap.getWidth() / scale < 256 && bitmap.getHeight() / scale < 256;
     }
 
     private void load() {
+        viewWidth = imageView.getWidth();
+        viewHeight = imageView.getHeight();
+
         bitmap = Bitmap.createBitmap(48, 48, Bitmap.Config.ARGB_8888);
         canvas = new Canvas(bitmap);
+        history = new BitmapHistory();
         history.offer(bitmap);
 
-        int width = imageView.getWidth();
-        viewBitmap = Bitmap.createBitmap(width, width, Bitmap.Config.ARGB_8888);
+        scale = 20.0f;
+        imageWidth = 960;
+        imageHeight = 960;
+        translationX = 0.0f;
+        translationY = 0.0f;
+
+
+        viewBitmap = Bitmap.createBitmap(viewWidth, viewHeight, Bitmap.Config.ARGB_8888);
         viewCanvas = new Canvas(viewBitmap);
-        setPivot(imageView, 0.0f, 0.0f);
         imageView.setImageBitmap(viewBitmap);
 
-        gridBitmap = Bitmap.createBitmap(width, width, Bitmap.Config.ARGB_4444);
+        gridBitmap = Bitmap.createBitmap(viewWidth, viewHeight, Bitmap.Config.ARGB_4444);
         gridCanvas = new Canvas(gridBitmap);
         drawGridOnView();
-        setPivot(ivGrid, 0.0f, 0.0f);
-        ivGrid.setImageBitmap(gridBitmap);
 
-        setPivot(ivChessboard, 0.0f, 0.0f);
+        chessboardBitmap = Bitmap.createBitmap(viewWidth, viewHeight, Bitmap.Config.ARGB_4444);
+        chessboardCanvas = new Canvas(chessboardBitmap);
+        drawChessboardOnView();
+    }
+
+    private void newImage(int width, int height) {
+        bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        canvas = new Canvas(bitmap);
+        history = new BitmapHistory();
+        history.offer(bitmap);
+
+        scale = (float) ((double) imageView.getWidth() / (double) width);
+        imageWidth = (int) toScaled(width);
+        imageHeight = (int) toScaled(height);
+        translationX = 0.0f;
+        translationY = 0.0f;
+
+        drawChessboardOnView();
+        imageView.setImageBitmap(bitmap);
+        drawGridOnView();
     }
 
     private void onChannelChanged(String hex, SeekBar seekBar) {
@@ -402,7 +481,6 @@ public class MainActivity extends AppCompatActivity {
         etBlue = findViewById(R.id.et_blue);
         etGreen = findViewById(R.id.et_green);
         etRed = findViewById(R.id.et_red);
-        flBackground = findViewById(R.id.fl_background);
         flImageView = findViewById(R.id.fl_iv);
         imageView = findViewById(R.id.iv);
         ivChessboard = findViewById(R.id.iv_chessboard);
@@ -422,13 +500,16 @@ public class MainActivity extends AppCompatActivity {
         flImageView.setOnTouchListener(onImageViewTouchWithPencilListener);
         rbBackgroundColor.setOnCheckedChangeListener(onBackgroundColorRadioButtonCheckedChangeListener);
         rbForegroundColor.setOnCheckedChangeListener(onForegroundColorRadioButtonCheckedChangeListener);
-        ((RadioButton) findViewById(R.id.rb_pencil)).setOnCheckedChangeListener(onPenRadioButtonCheckedChangeListener);
-        ((RadioButton) findViewById(R.id.rb_scaler)).setOnCheckedChangeListener(onScalerRadioButtonCheckedChangeListener);
+        ((RadioButton) findViewById(R.id.rb_eraser)).setOnCheckedChangeListener((OnCheckListener) () -> flImageView.setOnTouchListener(onImageViewTouchWithEraserListener));
+        ((RadioButton) findViewById(R.id.rb_eyedropper)).setOnCheckedChangeListener((OnCheckListener) () -> flImageView.setOnTouchListener(onImageViewTouchWithEyedropperListener));
+        ((RadioButton) findViewById(R.id.rb_pencil)).setOnCheckedChangeListener((OnCheckListener) () -> flImageView.setOnTouchListener(onImageViewTouchWithPencilListener));
+        ((RadioButton) findViewById(R.id.rb_scaler)).setOnCheckedChangeListener((OnCheckListener) () -> flImageView.setOnTouchListener(onImageViewTouchWithScalerListener));
         sbAlpha.setOnSeekBarChangeListener((OnProgressChangeListener) progress -> etAlpha.setText(String.format("%02X", progress)));
         sbBlue.setOnSeekBarChangeListener((OnProgressChangeListener) progress -> etBlue.setText(String.format("%02X", progress)));
         sbGreen.setOnSeekBarChangeListener((OnProgressChangeListener) progress -> etGreen.setText(String.format("%02X", progress)));
         sbRed.setOnSeekBarChangeListener((OnProgressChangeListener) progress -> etRed.setText(String.format("%02X", progress)));
 
+        chessboard = BitmapFactory.decodeResource(getResources(), R.mipmap.chessboard);
     }
 
     @Override
@@ -472,12 +553,31 @@ public class MainActivity extends AppCompatActivity {
                         .setTitle("Cell Grid")
                         .setView(R.layout.cell_grid)
                         .show();
+
                 cbCellGridEnabled = cellGridDialog.findViewById(R.id.cb_cg_enabled);
                 etCellGridSizeX = cellGridDialog.findViewById(R.id.et_cg_size_x);
                 etCellGridSizeY = cellGridDialog.findViewById(R.id.et_cg_size_y);
+
                 cbCellGridEnabled.setChecked(cellGrid.enabled);
                 etCellGridSizeX.setText(String.valueOf(cellGrid.sizeX));
                 etCellGridSizeY.setText(String.valueOf(cellGrid.sizeY));
+                break;
+
+            case R.id.i_new:
+                AlertDialog newImageDialog = new AlertDialog.Builder(this)
+                        .setNegativeButton("Cancel", null)
+                        .setPositiveButton("OK", onNewImageDialogPosButtonClickListener)
+                        .setTitle("New")
+                        .setView(R.layout.new_image)
+                        .show();
+
+                etNewImageSizeX = newImageDialog.findViewById(R.id.et_new_size_x);
+                etNewImageSizeY = newImageDialog.findViewById(R.id.et_new_size_y);
+
+                bitmap = Bitmap.createBitmap(48, 48, Bitmap.Config.ARGB_8888);
+                canvas = new Canvas(bitmap);
+                history = new BitmapHistory();
+                history.offer(bitmap);
                 break;
 
             case R.id.i_open:
@@ -487,9 +587,8 @@ public class MainActivity extends AppCompatActivity {
             case R.id.i_redo:
                 if (history.canRedo()) {
                     clearCanvas(canvas);
-                    canvas.drawBitmap(history.redo(), 0.0f, 0.0f, paint);
-                    drawVisiblePartOfBitmapOnView();
-                    imageView.setImageBitmap(viewBitmap);
+                    canvas.drawBitmap(history.redo(), 0.0f, 0.0f, opaquePaint);
+                    drawBitmapOnView();
                 }
                 break;
 
@@ -500,9 +599,8 @@ public class MainActivity extends AppCompatActivity {
             case R.id.i_undo:
                 if (history.canUndo()) {
                     clearCanvas(canvas);
-                    canvas.drawBitmap(history.undo(), 0.0f, 0.0f, paint);
-                    drawVisiblePartOfBitmapOnView();
-                    imageView.setImageBitmap(viewBitmap);
+                    canvas.drawBitmap(history.undo(), 0.0f, 0.0f, opaquePaint);
+                    drawBitmapOnView();
                 }
                 break;
         }
@@ -517,6 +615,25 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void openImage(Bitmap bitmap) {
+        int width = bitmap.getWidth(), height = bitmap.getHeight();
+        this.bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        canvas = new Canvas(this.bitmap);
+        canvas.drawBitmap(bitmap, 0.0f, 0.0f, paint);
+        history = new BitmapHistory();
+        history.offer(this.bitmap);
+
+        scale = (float) ((double) viewWidth / (double) width);
+        imageWidth = (int) toScaled(width);
+        imageHeight = (int) toScaled(height);
+        translationX = 0.0f;
+        translationY = 0.0f;
+
+        drawChessboardOnView();
+        drawBitmapOnView();
+        drawGridOnView();
+    }
+
     private void save() {
         if (path == null) {
 
@@ -529,28 +646,6 @@ public class MainActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
         }
-    }
-
-    private void setPivot(float x, float y) {
-        pivotX = x;
-        pivotY = y;
-    }
-
-    private void setPivot(View view, float x, float y) {
-        view.setPivotX(x);
-        view.setPivotY(y);
-    }
-
-    private void setSize(View view, int width, int height) {
-        FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) view.getLayoutParams();
-        layoutParams.width = width;
-        layoutParams.height = height;
-        view.setLayoutParams(layoutParams);
-    }
-
-    private void setTranslation(View view, float x, float y) {
-        view.setTranslationX(x);
-        view.setTranslationY(y);
     }
 
     private void showPaintColorOnSeekBars() {
@@ -573,11 +668,11 @@ public class MainActivity extends AppCompatActivity {
         etAlpha.setText(String.format("%02X", alpha));
     }
 
-    private float toOriginal(float scaled) {
-        return scaled / scale;
+    private int toOriginal(float scaled) {
+        return (int) (scaled / scale);
     }
 
-    private float toScaled(float original) {
+    private float toScaled(int original) {
         return original * scale;
     }
 }

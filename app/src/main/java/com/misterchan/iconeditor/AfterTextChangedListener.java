@@ -3,7 +3,7 @@ package com.misterchan.iconeditor;
 import android.text.Editable;
 import android.text.TextWatcher;
 
-public interface AfterTextChangedListener extends TextWatcher {
+interface AfterTextChangedListener extends TextWatcher {
 
     void afterTextChanged(String s);
 

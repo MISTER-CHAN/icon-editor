@@ -8,35 +8,29 @@
     tools:context=".MainActivity">
 
     <FrameLayout
-        android:id="@+id/fl_background"
+        android:id="@+id/fl_iv"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1">
 
-        <FrameLayout
-            android:id="@+id/fl_iv"
-            android:layout_width="960px"
-            android:layout_height="960px">
 
-            <ImageView
-                android:id="@+id/iv_chessboard"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:scaleType="center"
-                android:src="@mipmap/chessboard" />
+        <ImageView
+            android:id="@+id/iv_chessboard"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="center" />
 
-            <ImageView
-                android:id="@+id/iv"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:scaleType="fitCenter" />
+        <ImageView
+            android:id="@+id/iv"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="fitCenter" />
 
-            <ImageView
-                android:id="@+id/iv_grid"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:scaleType="centerCrop" />
-        </FrameLayout>
+        <ImageView
+            android:id="@+id/iv_grid"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop" />
     </FrameLayout>
 
     <LinearLayout
@@ -67,6 +61,12 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Eraser" />
+
+            <RadioButton
+                android:id="@+id/rb_eyedropper"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Eyedropper" />
         </RadioGroup>
 
         <LinearLayout
@@ -142,7 +142,7 @@
                     android:id="@+id/sb_red"
                     android:layout_width="256dp"
                     android:layout_gravity="center"
-                    android:max="256" />
+                    android:max="255" />
 
                 <TextView
                     android:layout_gravity="center"
@@ -162,7 +162,7 @@
                     android:id="@+id/sb_green"
                     android:layout_width="256dp"
                     android:layout_gravity="center"
-                    android:max="256" />
+                    android:max="255" />
 
                 <TextView
                     android:layout_gravity="center"
@@ -183,7 +183,7 @@
                     android:id="@+id/sb_blue"
                     android:layout_width="256dp"
                     android:layout_gravity="center"
-                    android:max="256" />
+                    android:max="255" />
 
             </GridLayout>
 
