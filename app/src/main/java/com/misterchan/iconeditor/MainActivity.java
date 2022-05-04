@@ -131,7 +131,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
         try (InputStream inputStream = getContentResolver().openInputStream(result)) {
-            Bitmap bm = Bitmap.createBitmap(BitmapFactory.decodeStream(inputStream));
+            Bitmap bm = BitmapFactory.decodeStream(inputStream);
             openImage(bm);
             bm.recycle();
 
@@ -425,7 +425,6 @@ public class MainActivity extends AppCompatActivity {
         translationX = 0.0f;
         translationY = 0.0f;
 
-
         viewBitmap = Bitmap.createBitmap(viewWidth, viewHeight, Bitmap.Config.ARGB_8888);
         viewCanvas = new Canvas(viewBitmap);
         imageView.setImageBitmap(viewBitmap);
@@ -440,6 +439,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void newImage(int width, int height) {
+        if (bitmap != null) {
+            bitmap.recycle();
+        }
         bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         canvas = new Canvas(bitmap);
         history = new BitmapHistory();
@@ -573,11 +575,6 @@ public class MainActivity extends AppCompatActivity {
 
                 etNewImageSizeX = newImageDialog.findViewById(R.id.et_new_size_x);
                 etNewImageSizeY = newImageDialog.findViewById(R.id.et_new_size_y);
-
-                bitmap = Bitmap.createBitmap(48, 48, Bitmap.Config.ARGB_8888);
-                canvas = new Canvas(bitmap);
-                history = new BitmapHistory();
-                history.offer(bitmap);
                 break;
 
             case R.id.i_open:
@@ -616,6 +613,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void openImage(Bitmap bitmap) {
+        if (this.bitmap != null) {
+            this.bitmap.recycle();
+        }
         int width = bitmap.getWidth(), height = bitmap.getHeight();
         this.bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         canvas = new Canvas(this.bitmap);
