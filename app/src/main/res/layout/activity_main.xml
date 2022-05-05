@@ -38,36 +38,66 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <RadioGroup
+        <HorizontalScrollView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:scrollbars="none"
+            android:layout_height="wrap_content">
 
-            <RadioButton
-                android:id="@+id/rb_scaler"
-                android:layout_width="wrap_content"
+            <RadioGroup
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Scale" />
+                android:orientation="horizontal">
 
-            <RadioButton
-                android:id="@+id/rb_pencil"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:checked="true"
-                android:text="Pencil" />
+                <RadioButton
+                    android:id="@+id/rb_scaler"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Scale" />
 
-            <RadioButton
-                android:id="@+id/rb_eraser"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Eraser" />
+                <RadioButton
+                    android:id="@+id/rb_selector"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Select" />
 
-            <RadioButton
-                android:id="@+id/rb_eyedropper"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Eyedropper" />
-        </RadioGroup>
+                <RadioButton
+                    android:id="@+id/rb_transformer"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Transform" />
+
+                <RadioButton
+                    android:id="@+id/rb_cropper"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Crop" />
+
+                <RadioButton
+                    android:id="@+id/rb_pencil"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:text="Pencil" />
+
+                <RadioButton
+                    android:id="@+id/rb_eraser"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Eraser" />
+
+                <RadioButton
+                    android:id="@+id/rb_eyedropper"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Eyedropper" />
+
+                <RadioButton
+                    android:id="@+id/rb_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Text" />
+            </RadioGroup>
+        </HorizontalScrollView>
 
         <LinearLayout
             android:layout_width="match_parent"

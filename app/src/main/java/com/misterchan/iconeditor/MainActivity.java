@@ -2,6 +2,7 @@ package com.misterchan.iconeditor;
 
 import android.annotation.SuppressLint;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -13,6 +14,7 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -56,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
     private Bitmap.CompressFormat compressFormat = null;
     private double prevDiagonal;
     private EditText etCellGridSizeX, etCellGridSizeY;
-    private EditText etNewImageSizeX, etNewImageSizeY;
+    private EditText etNewGraphicSizeX, etNewGraphicSizeY;
     private EditText etRed, etGreen, etBlue, etAlpha;
     private float pivotX, pivotY;
     private float prevX, prevY;
@@ -132,7 +134,7 @@ public class MainActivity extends AppCompatActivity {
         }
         try (InputStream inputStream = getContentResolver().openInputStream(result)) {
             Bitmap bm = BitmapFactory.decodeStream(inputStream);
-            openImage(bm);
+            openFile(bm);
             bm.recycle();
 
             path = UriToPathUtil.getRealFilePath(this, result);
@@ -180,11 +182,11 @@ public class MainActivity extends AppCompatActivity {
         drawGridOnView();
     };
 
-    private final DialogInterface.OnClickListener onNewImageDialogPosButtonClickListener = (dialog, which) -> {
+    private final DialogInterface.OnClickListener onNewGraphicDialogPosButtonClickListener = (dialog, which) -> {
         try {
-            int width = Integer.parseInt(etNewImageSizeX.getText().toString());
-            int height = Integer.parseInt(etNewImageSizeY.getText().toString());
-            newImage(width, height);
+            int width = Integer.parseInt(etNewGraphicSizeX.getText().toString());
+            int height = Integer.parseInt(etNewGraphicSizeY.getText().toString());
+            newGraphic(width, height);
         } catch (NumberFormatException e) {
         }
     };
@@ -194,17 +196,17 @@ public class MainActivity extends AppCompatActivity {
         float x = event.getX(), y = event.getY();
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                canvas.drawPoint(toOriginal(x - translationX), toOriginal(y - translationY), eraser);
+                canvas.drawPoint(toOriginal(x - translationX) + 0.5f, toOriginal(y - translationY) + 0.5f, eraser);
                 drawBitmapOnView();
                 prevX = x;
                 prevY = y;
                 break;
             case MotionEvent.ACTION_MOVE:
                 canvas.drawLine(
-                        toOriginal(prevX - translationX),
-                        toOriginal(prevY - translationY),
-                        toOriginal(x - translationX),
-                        toOriginal(y - translationY),
+                        toOriginal(prevX - translationX) + 0.5f,
+                        toOriginal(prevY - translationY) + 0.5f,
+                        toOriginal(x - translationX) + 0.5f,
+                        toOriginal(y - translationY) + 0.5f,
                         eraser);
                 drawBitmapOnView();
                 prevX = x;
@@ -438,7 +440,7 @@ public class MainActivity extends AppCompatActivity {
         drawChessboardOnView();
     }
 
-    private void newImage(int width, int height) {
+    private void newGraphic(int width, int height) {
         if (bitmap != null) {
             bitmap.recycle();
         }
@@ -502,10 +504,14 @@ public class MainActivity extends AppCompatActivity {
         flImageView.setOnTouchListener(onImageViewTouchWithPencilListener);
         rbBackgroundColor.setOnCheckedChangeListener(onBackgroundColorRadioButtonCheckedChangeListener);
         rbForegroundColor.setOnCheckedChangeListener(onForegroundColorRadioButtonCheckedChangeListener);
+        ((RadioButton) findViewById(R.id.rb_cropper)).setOnCheckedChangeListener((OnCheckListener) () -> flImageView.setOnTouchListener(null));
         ((RadioButton) findViewById(R.id.rb_eraser)).setOnCheckedChangeListener((OnCheckListener) () -> flImageView.setOnTouchListener(onImageViewTouchWithEraserListener));
         ((RadioButton) findViewById(R.id.rb_eyedropper)).setOnCheckedChangeListener((OnCheckListener) () -> flImageView.setOnTouchListener(onImageViewTouchWithEyedropperListener));
         ((RadioButton) findViewById(R.id.rb_pencil)).setOnCheckedChangeListener((OnCheckListener) () -> flImageView.setOnTouchListener(onImageViewTouchWithPencilListener));
         ((RadioButton) findViewById(R.id.rb_scaler)).setOnCheckedChangeListener((OnCheckListener) () -> flImageView.setOnTouchListener(onImageViewTouchWithScalerListener));
+        ((RadioButton) findViewById(R.id.rb_selector)).setOnCheckedChangeListener((OnCheckListener) () -> flImageView.setOnTouchListener(null));
+        ((RadioButton) findViewById(R.id.rb_text)).setOnCheckedChangeListener((OnCheckListener) () -> flImageView.setOnTouchListener(null));
+        ((RadioButton) findViewById(R.id.rb_transformer)).setOnCheckedChangeListener((OnCheckListener) () -> flImageView.setOnTouchListener(null));
         sbAlpha.setOnSeekBarChangeListener((OnProgressChangeListener) progress -> etAlpha.setText(String.format("%02X", progress)));
         sbBlue.setOnSeekBarChangeListener((OnProgressChangeListener) progress -> etBlue.setText(String.format("%02X", progress)));
         sbGreen.setOnSeekBarChangeListener((OnProgressChangeListener) progress -> etGreen.setText(String.format("%02X", progress)));
@@ -566,15 +572,15 @@ public class MainActivity extends AppCompatActivity {
                 break;
 
             case R.id.i_new:
-                AlertDialog newImageDialog = new AlertDialog.Builder(this)
+                AlertDialog newGraphicDialog = new AlertDialog.Builder(this)
                         .setNegativeButton("Cancel", null)
-                        .setPositiveButton("OK", onNewImageDialogPosButtonClickListener)
+                        .setPositiveButton("OK", onNewGraphicDialogPosButtonClickListener)
                         .setTitle("New")
-                        .setView(R.layout.new_image)
+                        .setView(R.layout.new_graphic)
                         .show();
 
-                etNewImageSizeX = newImageDialog.findViewById(R.id.et_new_size_x);
-                etNewImageSizeY = newImageDialog.findViewById(R.id.et_new_size_y);
+                etNewGraphicSizeX = newGraphicDialog.findViewById(R.id.et_new_size_x);
+                etNewGraphicSizeY = newGraphicDialog.findViewById(R.id.et_new_size_y);
                 break;
 
             case R.id.i_open:
@@ -612,7 +618,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void openImage(Bitmap bitmap) {
+    private void openFile(Bitmap bitmap) {
         if (this.bitmap != null) {
             this.bitmap.recycle();
         }
@@ -636,16 +642,24 @@ public class MainActivity extends AppCompatActivity {
 
     private void save() {
         if (path == null) {
-
-        } else {
-            File file = new File(path);
-            try (FileOutputStream fos = new FileOutputStream(file)) {
-                bitmap.compress(compressFormat, 100, fos);
-                fos.flush();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            return;
         }
+
+        File file = new File(path);
+        try (FileOutputStream fos = new FileOutputStream(file)) {
+            bitmap.compress(compressFormat, 100, fos);
+            fos.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        Intent intent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+        intent.setData(Uri.fromFile(file));
+        sendBroadcast(intent);
+    }
+
+    private void saveAs() {
+        save();
     }
 
     private void showPaintColorOnSeekBars() {
