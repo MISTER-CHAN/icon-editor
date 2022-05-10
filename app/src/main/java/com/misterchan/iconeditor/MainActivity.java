@@ -57,8 +57,11 @@ public class MainActivity extends AppCompatActivity {
     private CheckBox cbCellGridEnabled;
     private Bitmap.CompressFormat compressFormat = null;
     private double prevDiagonal;
+    private EditText etCellGridOffsetX, etCellGridOffsetY;
     private EditText etCellGridSizeX, etCellGridSizeY;
+    private EditText etCellGridSpacingX, etCellGridSpacingY;
     private EditText etNewGraphicSizeX, etNewGraphicSizeY;
+    private EditText etPropSizeX, etPropSizeY;
     private EditText etRed, etGreen, etBlue, etAlpha;
     private float pivotX, pivotY;
     private float prevX, prevY;
@@ -70,9 +73,10 @@ public class MainActivity extends AppCompatActivity {
     private ImageView ivGrid;
     private int imageWidth, imageHeight;
     private int viewWidth, viewHeight;
+    private RadioButton rbColor;
     private RadioButton rbBackgroundColor;
     private RadioButton rbForegroundColor;
-    private RadioButton rbColor;
+    private RadioButton rbPropStretch, rbPropCrop;
     private SeekBar sbRed, sbGreen, sbBlue, sbAlpha;
     private String path = null;
 
@@ -177,8 +181,7 @@ public class MainActivity extends AppCompatActivity {
             cellGrid.enabled = cbCellGridEnabled.isChecked();
             cellGrid.sizeX = Integer.parseInt(etCellGridSizeX.getText().toString());
             cellGrid.sizeY = Integer.parseInt(etCellGridSizeY.getText().toString());
-        } catch (NumberFormatException e) {
-        }
+        } catch (NumberFormatException e) {}
         drawGridOnView();
     };
 
@@ -187,8 +190,16 @@ public class MainActivity extends AppCompatActivity {
             int width = Integer.parseInt(etNewGraphicSizeX.getText().toString());
             int height = Integer.parseInt(etNewGraphicSizeY.getText().toString());
             newGraphic(width, height);
-        } catch (NumberFormatException e) {
-        }
+        } catch (NumberFormatException e) {}
+    };
+
+    private final DialogInterface.OnClickListener onPropDialogPosButtonClickListener = (dialog, which) -> {
+        try {
+            int width = Integer.parseInt(etPropSizeX.getText().toString());
+            int height = Integer.parseInt(etPropSizeY.getText().toString());
+            boolean stretch = rbPropStretch.isChecked();
+            resizeBitmap(width, height, stretch);
+        } catch (NumberFormatException e) {}
     };
 
     @SuppressLint("ClickableViewAccessibility")
@@ -565,10 +576,18 @@ public class MainActivity extends AppCompatActivity {
                 cbCellGridEnabled = cellGridDialog.findViewById(R.id.cb_cg_enabled);
                 etCellGridSizeX = cellGridDialog.findViewById(R.id.et_cg_size_x);
                 etCellGridSizeY = cellGridDialog.findViewById(R.id.et_cg_size_y);
+                etCellGridSpacingX = cellGridDialog.findViewById(R.id.et_cg_spacing_x);
+                etCellGridSpacingY = cellGridDialog.findViewById(R.id.et_cg_spacing_y);
+                etCellGridOffsetX = cellGridDialog.findViewById(R.id.et_cg_offset_x);
+                etCellGridOffsetY = cellGridDialog.findViewById(R.id.et_cg_offset_y);
 
                 cbCellGridEnabled.setChecked(cellGrid.enabled);
                 etCellGridSizeX.setText(String.valueOf(cellGrid.sizeX));
                 etCellGridSizeY.setText(String.valueOf(cellGrid.sizeY));
+                etCellGridSpacingX.setText(String.valueOf(cellGrid.spacingX));
+                etCellGridSpacingY.setText(String.valueOf(cellGrid.spacingY));
+                etCellGridOffsetX.setText(String.valueOf(cellGrid.offsetX));
+                etCellGridOffsetY.setText(String.valueOf(cellGrid.offsetY));
                 break;
 
             case R.id.i_new:
@@ -585,6 +604,24 @@ public class MainActivity extends AppCompatActivity {
 
             case R.id.i_open:
                 imageActivityResultLauncher.launch("image/*");
+                break;
+
+            case R.id.i_properties:
+                AlertDialog propertiesDialog = new AlertDialog.Builder(this)
+                        .setNegativeButton("Cancel", null)
+                        .setPositiveButton("OK", onPropDialogPosButtonClickListener)
+                        .setTitle("Properties")
+                        .setView(R.layout.properties)
+                        .show();
+
+                etPropSizeX = propertiesDialog.findViewById(R.id.et_prop_size_x);
+                etPropSizeY = propertiesDialog.findViewById(R.id.et_prop_size_y);
+                rbPropStretch = propertiesDialog.findViewById(R.id.rb_prop_stretch);
+                rbPropCrop = propertiesDialog.findViewById(R.id.rb_prop_crop);
+
+                etPropSizeX.setText(String.valueOf(bitmap.getWidth()));
+                etPropSizeY.setText(String.valueOf(bitmap.getHeight()));
+                rbPropStretch.setChecked(true);
                 break;
 
             case R.id.i_redo:
@@ -634,6 +671,30 @@ public class MainActivity extends AppCompatActivity {
         imageHeight = (int) toScaled(height);
         translationX = 0.0f;
         translationY = 0.0f;
+
+        drawChessboardOnView();
+        drawBitmapOnView();
+        drawGridOnView();
+    }
+
+    private void resizeBitmap(int width, int height, boolean stretch) {
+        Bitmap bm = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        Canvas cv = new Canvas(bm);
+        if (stretch) {
+            cv.drawBitmap(bitmap,
+                    new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight()),
+                    new RectF(0.0f, 0.0f, width, height),
+                    opaquePaint);
+        } else {
+            cv.drawBitmap(bitmap, 0.0f, 0.0f, opaquePaint);
+        }
+        bitmap.recycle();
+        bitmap = bm;
+        canvas = cv;
+        history = new BitmapHistory();
+        history.offer(bitmap);
+        imageWidth = (int) toScaled(width);
+        imageHeight = (int) toScaled(height);
 
         drawChessboardOnView();
         drawBitmapOnView();

@@ -10,7 +10,7 @@
         android:layout_height="match_parent"
         android:columnCount="2"
         android:orientation="horizontal"
-        android:rowCount="1">
+        android:rowCount="2">
 
         <TextView
             android:layout_gravity="center_vertical|start"
@@ -28,14 +28,13 @@
                 android:layout_weight="1">
 
                 <EditText
-                    android:id="@+id/et_new_size_x"
+                    android:id="@+id/et_prop_size_x"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:autofillHints="0"
                     android:background="@color/transparent"
                     android:hint="Width"
                     android:inputType="number"
-                    android:text="48"
                     android:textAlignment="textEnd" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -47,16 +46,43 @@
                 android:layout_weight="1">
 
                 <EditText
-                    android:id="@+id/et_new_size_y"
+                    android:id="@+id/et_prop_size_y"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:autofillHints="0"
                     android:background="@color/transparent"
                     android:hint="Height"
                     android:inputType="number"
-                    android:text="48"
                     android:textAlignment="textEnd" />
             </com.google.android.material.textfield.TextInputLayout>
         </LinearLayout>
+
+
+        <TextView
+            android:layout_gravity="center_vertical|start"
+            android:layout_margin="8dp"
+            android:text="When resizing" />
+
+        <RadioGroup
+            android:layout_gravity="fill"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/rb_prop_stretch"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_margin="8dp"
+                android:layout_weight="1"
+                android:text="Stretch" />
+
+            <RadioButton
+                android:id="@+id/rb_prop_crop"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_margin="8dp"
+                android:layout_weight="1"
+                android:text="Crop" />
+
+        </RadioGroup>
     </GridLayout>
 </LinearLayout>
