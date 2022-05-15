@@ -14,6 +14,8 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -31,6 +33,7 @@ import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContract;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -170,7 +173,7 @@ public class MainActivity extends AppCompatActivity {
 
     private Paint paint = foregroundPaint;
 
-    private final ActivityResultCallback<Uri> imageActivityResultCallback = result -> {
+    private final ActivityResultCallback<Uri> imageCallback = result -> {
         if (result == null) {
             return;
         }
@@ -184,8 +187,15 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    private final ActivityResultLauncher<String> imageActivityResultLauncher =
-            registerForActivityResult(new ActivityResultContracts.GetContent(), imageActivityResultCallback);
+    private final ActivityResultCallback<Uri> treeCallback = result -> {
+        Log.d("s", result.toString());
+    };
+
+    private final ActivityResultLauncher<String> getImage =
+            registerForActivityResult(new ActivityResultContracts.GetContent(), imageCallback);
+
+    private final ActivityResultLauncher<Uri> getTree =
+            registerForActivityResult(new ActivityResultContracts.OpenDocumentTree(), treeCallback);
 
     private final CompoundButton.OnCheckedChangeListener onBackgroundColorRadioButtonCheckedChangeListener = (buttonView, isChecked) -> {
         if (isChecked) {
@@ -246,13 +256,14 @@ public class MainActivity extends AppCompatActivity {
             imageHeight = (int) toScaled(height);
 
             recycleBitmapIfIsNotNull(transformeeBitmap);
+            transformeeBitmap = null;
             hasSelection = false;
 
             drawChessboardOnView();
             drawBitmapOnView();
             drawGridOnView();
             drawSelectionOnView();
-            clearCanvas(previewCanvas);
+            clearCanvas(previewCanvas, ivPreview);
         }
 
         @Override
@@ -385,7 +396,7 @@ public class MainActivity extends AppCompatActivity {
             case MotionEvent.ACTION_UP:
                 drawRectOnCanvas(rectX, rectY, originalX, originalY);
                 drawBitmapOnView();
-                clearCanvas(previewCanvas);
+                clearCanvas(previewCanvas, ivPreview);
                 history.offer(bitmap);
                 tvStatus.setText("");
                 break;
@@ -513,6 +524,7 @@ public class MainActivity extends AppCompatActivity {
                     transformeeBitmap = Bitmap.createBitmap(bitmap, selection.left, selection.top,
                             selection.right - selection.left + 1, selection.bottom - selection.top + 1);
                     canvas.drawRect(selection.left, selection.top, selection.right + 1, selection.bottom + 1, eraser);
+                    history.offer(bitmap);
                 }
                 drawBitmapOnView();
                 drawTransformeeOnView();
@@ -539,12 +551,17 @@ public class MainActivity extends AppCompatActivity {
             flImageView.setOnTouchListener(onImageViewTouchWithTransformerListener);
         } else {
             drawTransformeeOnCanvas();
-            clearCanvas(previewCanvas);
+            clearCanvas(previewCanvas, ivPreview);
         }
     };
 
     private void clearCanvas(Canvas canvas) {
         canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+    }
+
+    private void clearCanvas(Canvas canvas, ImageView imageView) {
+        clearCanvas(canvas);
+        imageView.invalidate();
     }
 
     private void createGraphic(int width, int height) {
@@ -718,6 +735,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void drawTransformeeOnCanvas() {
         if (transformeeBitmap != null) {
+            optimizeSelection();
             if (hasSelection) {
                 canvas.drawBitmap(transformeeBitmap, selection.left, selection.top, opaquePaint);
                 drawBitmapOnView();
@@ -742,7 +760,6 @@ public class MainActivity extends AppCompatActivity {
                 float tty = toScaled(selection.top) + window.translationY;
                 drawBitmapOnCanvas(transformeeBitmap, ttx, tty, previewCanvas);
             }
-            optimizeSelection();
         }
         ivPreview.invalidate();
         drawSelectionOnView();
@@ -820,6 +837,7 @@ public class MainActivity extends AppCompatActivity {
         window.translationY = 0.0f;
 
         recycleBitmapIfIsNotNull(transformeeBitmap);
+        transformeeBitmap = null;
         hasSelection = false;
 
         drawChessboardOnView();
@@ -962,6 +980,7 @@ public class MainActivity extends AppCompatActivity {
                     break;
                 }
                 recycleBitmapIfIsNotNull(transformeeBitmap);
+                transformeeBitmap = null;
                 windows.remove(currentBitmapIndex);
                 tabLayout.removeTabAt(currentBitmapIndex);
                 break;
@@ -980,6 +999,7 @@ public class MainActivity extends AppCompatActivity {
                     if (transformeeBitmap == null) {
                         canvas.drawRect(selection.left, selection.top, selection.right + 1, selection.bottom + 1, eraser);
                         drawBitmapOnView();
+                        history.offer(bitmap);
                     } else {
                         transformeeBitmap.recycle();
                         transformeeBitmap = null;
@@ -1004,7 +1024,7 @@ public class MainActivity extends AppCompatActivity {
 
             case R.id.i_open:
                 drawTransformeeOnCanvas();
-                imageActivityResultLauncher.launch("image/*");
+                getImage.launch("image/*");
                 break;
 
             case R.id.i_paste:
@@ -1046,7 +1066,6 @@ public class MainActivity extends AppCompatActivity {
 
             case R.id.i_redo: {
                 if (history.canRedo()) {
-                    recycleBitmapIfIsNotNull(transformeeBitmap);
                     undoOrRedo(history.redo());
                 }
                 break;
@@ -1056,9 +1075,11 @@ public class MainActivity extends AppCompatActivity {
                 save();
                 break;
 
+            case R.id.i_save_as:
+                break;
+
             case R.id.i_undo: {
                 if (history.canUndo()) {
-                    recycleBitmapIfIsNotNull(transformeeBitmap);
                     undoOrRedo(history.undo());
                 }
                 break;
@@ -1070,7 +1091,6 @@ public class MainActivity extends AppCompatActivity {
     private void recycleBitmapIfIsNotNull(Bitmap bm) {
         if (bm != null) {
             bm.recycle();
-            bm = null;
         }
     }
 
@@ -1132,13 +1152,14 @@ public class MainActivity extends AppCompatActivity {
         }
         bitmap.recycle();
         bitmap = bm;
-        windows.get(currentBitmapIndex).bitmap = bitmap;
+        window.bitmap = bitmap;
         canvas = cv;
         history.offer(bitmap);
         imageWidth = (int) toScaled(width);
         imageHeight = (int) toScaled(height);
 
         recycleBitmapIfIsNotNull(transformeeBitmap);
+        transformeeBitmap = null;
         hasSelection = false;
 
         drawChessboardOnView();
@@ -1148,11 +1169,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void save() {
-        save(windows.get(currentBitmapIndex).path);
+        save(window.path);
     }
 
     private void save(String path) {
         if (path == null) {
+            getTree.launch(null);
             return;
         }
 
@@ -1173,7 +1195,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void saveAs() {
         String path = null;
-        save(path);
+        getTree.launch(null);
     }
 
     private void showPaintColorOnSeekBars() {
@@ -1208,17 +1230,22 @@ public class MainActivity extends AppCompatActivity {
         optimizeSelection();
         bitmap.recycle();
         bitmap = Bitmap.createBitmap(bm.getWidth(), bm.getHeight(), Bitmap.Config.ARGB_8888);
-        windows.get(currentBitmapIndex).bitmap = bitmap;
+        window.bitmap = bitmap;
         canvas = new Canvas(bitmap);
         canvas.drawBitmap(bm, 0.0f, 0.0f, opaquePaint);
 
         imageWidth = (int) toScaled(bitmap.getWidth());
         imageHeight = (int) toScaled(bitmap.getHeight());
 
+        hasSelection = false;
+
+        recycleBitmapIfIsNotNull(transformeeBitmap);
+        transformeeBitmap = null;
+        clearCanvas(previewCanvas, ivPreview);
+
         drawChessboardOnView();
         drawBitmapOnView();
         drawGridOnView();
-        recycleBitmapIfIsNotNull(transformeeBitmap);
         drawSelectionOnView();
     }
 }
