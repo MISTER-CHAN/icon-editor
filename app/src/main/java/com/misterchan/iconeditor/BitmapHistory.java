@@ -13,11 +13,10 @@ class BitmapHistory {
 
     private static final Paint PAINT = new Paint();
 
-    private class Node {
+    private static class Node {
         private final Bitmap val;
         private Node next;
         private final Node prev;
-        private int index;
 
         private Node(Bitmap val, Node prev) {
             this.val = val;
@@ -25,11 +24,9 @@ class BitmapHistory {
             if (prev != null) {
                 prev.next = this;
             }
-            index = ++mIndex;
         }
     }
 
-    private int mIndex = 0;
     Deque<Node> history = new LinkedList<>();
     Node current = null;
 

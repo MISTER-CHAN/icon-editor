@@ -42,6 +42,12 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:scaleType="centerCrop" />
+
+        <ImageView
+            android:id="@+id/iv_selection"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop" />
     </FrameLayout>
 
     <LinearLayout
@@ -60,7 +66,7 @@
             android:scrollbars="none">
 
             <RadioGroup
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
@@ -94,6 +100,12 @@
                     android:layout_height="wrap_content"
                     android:checked="true"
                     android:text="@string/pencil" />
+
+                <RadioButton
+                    android:id="@+id/rb_rectangle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/rectangle" />
 
                 <RadioButton
                     android:id="@+id/rb_eraser"

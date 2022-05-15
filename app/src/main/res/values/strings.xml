@@ -18,12 +18,14 @@
     <string name="ff">FF</string>
     <string name="g">G</string>
     <string name="new_">New</string>
+    <string name="not_supported_file_type">Not supported file type</string>
     <string name="ok">OK</string>
     <string name="open">Open</string>
     <string name="paste">Paste</string>
     <string name="pencil">Pencil</string>
     <string name="properties">Properties</string>
     <string name="r">R</string>
+    <string name="rectangle">Rectangle</string>
     <string name="redo">↷</string>
     <string name="save">Save</string>
     <string name="save_as">Save As</string>
