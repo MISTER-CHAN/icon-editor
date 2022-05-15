@@ -4,75 +4,75 @@
 
     <item
         android:id="@+id/i_undo"
-        android:title="↶"
+        android:title="@string/undo"
         app:showAsAction="always" />
 
     <item
         android:id="@+id/i_redo"
-        android:title="↷"
+        android:title="@string/redo"
         app:showAsAction="always" />
 
     <item
         android:id="@+id/i_save"
-        android:title="Save"
+        android:title="@string/save"
         app:showAsAction="collapseActionView" />
 
     <item
-        android:title="File"
+        android:title="@string/file"
         app:showAsAction="collapseActionView">
 
         <menu>
 
             <item
                 android:id="@+id/i_new"
-                android:title="New" />
+                android:title="@string/new_" />
 
             <item
                 android:id="@+id/i_open"
-                android:title="Open" />
+                android:title="@string/open" />
 
             <item
                 android:id="@+id/i_save_as"
-                android:title="Save As" />
+                android:title="@string/save_as" />
 
             <item
                 android:id="@+id/i_close"
-                android:title="Close" />
+                android:title="@string/close" />
         </menu>
     </item>
 
     <item
-        android:title="✎"
+        android:title="@string/edit"
         app:showAsAction="always">
 
         <menu>
 
             <item
                 android:id="@+id/i_cut"
-                android:title="Cut" />
+                android:title="@string/cut" />
 
             <item
                 android:id="@+id/i_copy"
-                android:title="Copy" />
+                android:title="@string/copy" />
 
             <item
                 android:id="@+id/i_paste"
-                android:title="Paste" />
+                android:title="@string/paste" />
 
             <item
                 android:id="@+id/i_delete"
-                android:title="Delete" />
+                android:title="@string/delete" />
         </menu>
     </item>
 
 
     <item
         android:id="@+id/i_cell_grid"
-        android:title="Cell Grid"
+        android:title="@string/cell_grid"
         app:showAsAction="collapseActionView" />
 
     <item
         android:id="@+id/i_properties"
-        android:title="Properties"
+        android:title="@string/properties"
         app:showAsAction="collapseActionView" />
 </menu>

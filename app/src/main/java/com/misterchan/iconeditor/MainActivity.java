@@ -49,6 +49,8 @@ import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final String FORMAT_02X = "%02X";
+
     private Bitmap bitmap;
     private Bitmap chessboard;
     private Bitmap chessboardBitmap;
@@ -113,6 +115,7 @@ public class MainActivity extends AppCompatActivity {
 
         {
             setColor(Color.RED);
+            setStrokeWidth(2.0f);
         }
     };
 
@@ -411,11 +414,16 @@ public class MainActivity extends AppCompatActivity {
         float x = event.getX(), y = event.getY();
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                hasSelection = true;
-                selectionStartX = toOriginal(x - window.translationX);
-                selectionStartY = toOriginal(y - window.translationY);
-                selectionEndX = selectionStartX;
-                selectionEndY = selectionStartY;
+                if (hasSelection && selectionStartX == selectionEndX && selectionStartY == selectionEndY) {
+                    selectionEndX = toOriginal(x - window.translationX);
+                    selectionEndY = toOriginal(y - window.translationY);
+                } else {
+                    hasSelection = true;
+                    selectionStartX = toOriginal(x - window.translationX);
+                    selectionStartY = toOriginal(y - window.translationY);
+                    selectionEndX = selectionStartX;
+                    selectionEndY = selectionStartY;
+                }
                 drawSelectionOnViewByStartsAndEnds();
                 tvStatus.setText(String.format("Start: (%d, %d), End: (%d, %d), Area: 1 × 1", selectionStartX, selectionStartY, selectionStartX, selectionStartY));
                 break;
@@ -705,11 +713,11 @@ public class MainActivity extends AppCompatActivity {
         ivPreview.setImageBitmap(previewBitmap);
         drawSelectionOnView();
 
-        tabLayout.addTab(tabLayout.newTab().setText("Untitled").setTag(bitmap));
+        tabLayout.addTab(tabLayout.newTab().setText(R.string.untitled).setTag(bitmap));
     }
 
     private void addBitmap(Bitmap bitmap, int width, int height) {
-        addBitmap(bitmap, width, height, null, "Untitled");
+        addBitmap(bitmap, width, height, null, getString(R.string.untitled));
     }
 
     private void addBitmap(Bitmap bitmap, int width, int height, String path, String title) {
@@ -796,10 +804,10 @@ public class MainActivity extends AppCompatActivity {
         ((RadioButton) findViewById(R.id.rb_selector)).setOnCheckedChangeListener((OnCheckListener) () -> flImageView.setOnTouchListener(onImageViewTouchWithSelectorListener));
         ((RadioButton) findViewById(R.id.rb_text)).setOnCheckedChangeListener((OnCheckListener) () -> flImageView.setOnTouchListener(null));
         rbTransformer.setOnCheckedChangeListener(onTransformerRadioButtonCheckedChangeListener);
-        sbAlpha.setOnSeekBarChangeListener((OnProgressChangeListener) progress -> etAlpha.setText(String.format("%02X", progress)));
-        sbBlue.setOnSeekBarChangeListener((OnProgressChangeListener) progress -> etBlue.setText(String.format("%02X", progress)));
-        sbGreen.setOnSeekBarChangeListener((OnProgressChangeListener) progress -> etGreen.setText(String.format("%02X", progress)));
-        sbRed.setOnSeekBarChangeListener((OnProgressChangeListener) progress -> etRed.setText(String.format("%02X", progress)));
+        sbAlpha.setOnSeekBarChangeListener((OnProgressChangeListener) progress -> etAlpha.setText(String.format(FORMAT_02X, progress)));
+        sbBlue.setOnSeekBarChangeListener((OnProgressChangeListener) progress -> etBlue.setText(String.format(FORMAT_02X, progress)));
+        sbGreen.setOnSeekBarChangeListener((OnProgressChangeListener) progress -> etGreen.setText(String.format(FORMAT_02X, progress)));
+        sbRed.setOnSeekBarChangeListener((OnProgressChangeListener) progress -> etRed.setText(String.format(FORMAT_02X, progress)));
         tabLayout.addOnTabSelectedListener(onTabSelectedListener);
 
         chessboard = BitmapFactory.decodeResource(getResources(), R.mipmap.chessboard);
@@ -841,9 +849,9 @@ public class MainActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.i_cell_grid:
                 AlertDialog cellGridDialog = new AlertDialog.Builder(this)
-                        .setNegativeButton("Cancel", null)
-                        .setPositiveButton("OK", onCellGridDialogPosButtonClickListener)
-                        .setTitle("Cell Grid")
+                        .setNegativeButton(R.string.cancel, null)
+                        .setPositiveButton(R.string.ok, onCellGridDialogPosButtonClickListener)
+                        .setTitle(R.string.cell_grid)
                         .setView(R.layout.cell_grid)
                         .show();
 
@@ -886,6 +894,7 @@ public class MainActivity extends AppCompatActivity {
                 if (hasSelection) {
                     if (transformeeBitmap == null) {
                         canvas.drawRect(selection.left, selection.top, selection.right + 1, selection.bottom + 1, eraser);
+                        drawBitmapOnView();
                     } else {
                         transformeeBitmap.recycle();
                         transformeeBitmap = null;
@@ -898,9 +907,9 @@ public class MainActivity extends AppCompatActivity {
                 drawTransformeeOnCanvas();
 
                 AlertDialog newGraphicDialog = new AlertDialog.Builder(this)
-                        .setNegativeButton("Cancel", null)
-                        .setPositiveButton("OK", onNewGraphicDialogPosButtonClickListener)
-                        .setTitle("New")
+                        .setNegativeButton(R.string.cancel, null)
+                        .setPositiveButton(R.string.ok, onNewGraphicDialogPosButtonClickListener)
+                        .setTitle(R.string.new_)
                         .setView(R.layout.new_graphic)
                         .show();
 
@@ -934,9 +943,9 @@ public class MainActivity extends AppCompatActivity {
                 drawTransformeeOnCanvas();
 
                 AlertDialog propertiesDialog = new AlertDialog.Builder(this)
-                        .setNegativeButton("Cancel", null)
-                        .setPositiveButton("OK", onPropDialogPosButtonClickListener)
-                        .setTitle("Properties")
+                        .setNegativeButton(R.string.cancel, null)
+                        .setPositiveButton(R.string.ok, onPropDialogPosButtonClickListener)
+                        .setTitle(R.string.properties)
                         .setView(R.layout.properties)
                         .show();
 
@@ -1085,16 +1094,16 @@ public class MainActivity extends AppCompatActivity {
                 alpha = Color.alpha(color);
 
         sbRed.setProgress(red);
-        etRed.setText(String.format("%02X", red));
+        etRed.setText(String.format(FORMAT_02X, red));
 
         sbGreen.setProgress(green);
-        etGreen.setText(String.format("%02X", green));
+        etGreen.setText(String.format(FORMAT_02X, green));
 
         sbBlue.setProgress(blue);
-        etBlue.setText(String.format("%02X", blue));
+        etBlue.setText(String.format(FORMAT_02X, blue));
 
         sbAlpha.setProgress(alpha);
-        etAlpha.setText(String.format("%02X", alpha));
+        etAlpha.setText(String.format(FORMAT_02X, alpha));
     }
 
     private int toOriginal(float scaled) {

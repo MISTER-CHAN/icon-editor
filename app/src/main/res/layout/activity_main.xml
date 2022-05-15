@@ -68,50 +68,50 @@
                     android:id="@+id/rb_scaler"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Scale" />
+                    android:text="@string/scale" />
 
                 <RadioButton
                     android:id="@+id/rb_selector"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Select" />
+                    android:text="@string/select" />
 
                 <RadioButton
                     android:id="@+id/rb_transformer"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Transform" />
+                    android:text="@string/transform" />
 
                 <RadioButton
                     android:id="@+id/rb_cropper"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Crop" />
+                    android:text="@string/crop" />
 
                 <RadioButton
                     android:id="@+id/rb_pencil"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:checked="true"
-                    android:text="Pencil" />
+                    android:text="@string/pencil" />
 
                 <RadioButton
                     android:id="@+id/rb_eraser"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Eraser" />
+                    android:text="@string/eraser" />
 
                 <RadioButton
                     android:id="@+id/rb_eyedropper"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Eyedropper" />
+                    android:text="@string/eyedropper" />
 
                 <RadioButton
                     android:id="@+id/rb_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Text" />
+                    android:text="@string/text" />
             </RadioGroup>
         </HorizontalScrollView>
 
@@ -131,14 +131,14 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:checked="true"
-                    android:text="████"
+                    android:text="@string/block"
                     android:textColor="@color/black" />
 
                 <RadioButton
                     android:id="@+id/rb_background_color"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="████"
+                    android:text="@string/block"
                     android:textColor="@color/white" />
             </RadioGroup>
 
@@ -153,14 +153,14 @@
                 <TextView
                     android:layout_gravity="center"
                     android:labelFor="@+id/et_alpha"
-                    android:text="A" />
+                    android:text="@string/a" />
 
                 <EditText
                     android:id="@+id/et_alpha"
                     android:layout_width="32dp"
                     android:autofillHints="0"
                     android:inputType="text"
-                    android:text="FF"
+                    android:text="@string/ff"
                     android:textAlignment="center" />
 
                 <SeekBar
@@ -173,7 +173,7 @@
                 <TextView
                     android:layout_gravity="center"
                     android:labelFor="@+id/et_red"
-                    android:text="R" />
+                    android:text="@string/r" />
 
                 <EditText
                     android:id="@+id/et_red"
@@ -181,7 +181,7 @@
                     android:autofillHints="0"
                     android:inputType="text"
                     android:maxLength="2"
-                    android:text="00"
+                    android:text="@string/double_zero"
                     android:textAlignment="center" />
 
                 <SeekBar
@@ -193,7 +193,7 @@
                 <TextView
                     android:layout_gravity="center"
                     android:labelFor="@+id/et_green"
-                    android:text="G" />
+                    android:text="@string/g" />
 
                 <EditText
                     android:id="@+id/et_green"
@@ -201,7 +201,7 @@
                     android:autofillHints="0"
                     android:inputType="text"
                     android:maxLength="2"
-                    android:text="00"
+                    android:text="@string/double_zero"
                     android:textAlignment="center" />
 
                 <SeekBar
@@ -213,7 +213,7 @@
                 <TextView
                     android:layout_gravity="center"
                     android:labelFor="@+id/et_blue"
-                    android:text="B" />
+                    android:text="@string/b" />
 
 
                 <EditText
@@ -222,7 +222,7 @@
                     android:autofillHints="0"
                     android:inputType="text"
                     android:maxLength="2"
-                    android:text="00"
+                    android:text="@string/double_zero"
                     android:textAlignment="center" />
 
                 <SeekBar

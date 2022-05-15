@@ -1,3 +1,37 @@
 <resources>
+    <string name="a">A</string>
     <string name="app_name">Icon Editor</string>
+    <string name="b">B</string>
+    <string name="block">████</string>
+    <string name="cancel">Cancel</string>
+    <string name="cell_grid">Cell Grid</string>
+    <string name="close">Close</string>
+    <string name="copy">Copy</string>
+    <string name="crop">Crop</string>
+    <string name="cut">Cut</string>
+    <string name="delete">Delete</string>
+    <string name="double_zero">00</string>
+    <string name="edit">✎</string>
+    <string name="eraser">Eraser</string>
+    <string name="eyedropper">Eyedropper</string>
+    <string name="file">File</string>
+    <string name="ff">FF</string>
+    <string name="g">G</string>
+    <string name="new_">New</string>
+    <string name="ok">OK</string>
+    <string name="open">Open</string>
+    <string name="paste">Paste</string>
+    <string name="pencil">Pencil</string>
+    <string name="properties">Properties</string>
+    <string name="r">R</string>
+    <string name="redo">↷</string>
+    <string name="save">Save</string>
+    <string name="save_as">Save As</string>
+    <string name="scale">Scale</string>
+    <string name="select">Select</string>
+    <string name="text">Text</string>
+    <string name="transform">Transform</string>
+    <string name="format_02X">%02X</string>
+    <string name="undo">↶</string>
+    <string name="untitled">Untitled</string>
 </resources>
