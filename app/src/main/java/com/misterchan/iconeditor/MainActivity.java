@@ -384,12 +384,15 @@ public class MainActivity extends AppCompatActivity {
                 drawRectOnView(originalX, originalY, originalX, originalY);
                 rectX = originalX;
                 rectY = originalY;
-                tvStatus.setText(String.format("(%d, %d), (%d, %d)", originalX, originalY, originalX, originalY));
+                tvStatus.setText(String.format("Start: (%d, %d), Stop: (%d, %d), Area: 1 × 1",
+                        originalX, originalY, originalX, originalY));
                 break;
 
             case MotionEvent.ACTION_MOVE:
                 drawRectOnView(rectX, rectY, originalX, originalY);
-                tvStatus.setText(String.format("(%d, %d), (%d, %d)", rectX, rectY, originalX, originalY));
+                tvStatus.setText(String.format("Start: (%d, %d), Stop: (%d, %d), Area: %d × %d",
+                        rectX, rectY, originalX, originalY,
+                        Math.abs(originalX - rectX) + 1, Math.abs(originalY - rectY) + 1));
                 break;
 
             case MotionEvent.ACTION_CANCEL:
@@ -408,14 +411,18 @@ public class MainActivity extends AppCompatActivity {
     private final View.OnTouchListener onImageViewTouchWithScalerListener = (v, event) -> {
         switch (event.getPointerCount()) {
 
-            case 1:
-                float x = event.getX(), y = event.getY();
+            case 1: {
                 switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
+                    case MotionEvent.ACTION_DOWN: {
+                        float x = event.getX(), y = event.getY();
+                        tvStatus.setText(String.format("(%d, %d)",
+                                toOriginal(x - window.translationX), toOriginal(y - window.translationY)));
                         prevX = x;
                         prevY = y;
                         break;
-                    case MotionEvent.ACTION_MOVE:
+                    }
+                    case MotionEvent.ACTION_MOVE: {
+                        float x = event.getX(), y = event.getY();
                         window.translationX += x - prevX;
                         window.translationY += y - prevY;
                         drawChessboardOnView();
@@ -425,14 +432,19 @@ public class MainActivity extends AppCompatActivity {
                         prevX = x;
                         prevY = y;
                         break;
+                    }
+                    case MotionEvent.ACTION_UP:
+                        tvStatus.setText("");
+                        break;
                 }
                 break;
+            }
 
-            case 2:
-                float x0 = event.getX(0), y0 = event.getY(0),
-                        x1 = event.getX(1), y1 = event.getY(1);
+            case 2: {
                 switch (event.getActionMasked()) {
-                    case MotionEvent.ACTION_MOVE:
+                    case MotionEvent.ACTION_MOVE: {
+                        float x0 = event.getX(0), y0 = event.getY(0),
+                                x1 = event.getX(1), y1 = event.getY(1);
                         double diagonal = Math.sqrt(Math.pow(x0 - x1, 2.0) + Math.pow(y0 - y1, 2.0));
                         double diagonalRatio = diagonal / prevDiagonal;
                         float scale = (float) (window.scale * diagonalRatio);
@@ -451,17 +463,28 @@ public class MainActivity extends AppCompatActivity {
                         this.pivotY = pivotY;
                         prevDiagonal = diagonal;
                         break;
-                    case MotionEvent.ACTION_POINTER_DOWN:
+                    }
+                    case MotionEvent.ACTION_POINTER_DOWN: {
+                        float x0 = event.getX(0), y0 = event.getY(0),
+                                x1 = event.getX(1), y1 = event.getY(1);
                         this.pivotX = (x0 + x1) / 2.0f - window.translationX;
                         this.pivotY = (y0 + y1) / 2.0f - window.translationY;
                         prevDiagonal = Math.sqrt(Math.pow(x0 - x1, 2.0) + Math.pow(y0 - y1, 2.0));
+                        tvStatus.setText("");
                         break;
-                    case MotionEvent.ACTION_POINTER_UP:
+                    }
+                    case MotionEvent.ACTION_POINTER_UP: {
+                        float x = event.getX(1 - event.getActionIndex());
+                        float y = event.getY(1 - event.getActionIndex());
+                        tvStatus.setText(String.format("(%d, %d)",
+                                toOriginal(x - window.translationX), toOriginal(y - window.translationY)));
                         prevX = event.getX(1 - event.getActionIndex());
                         prevY = event.getY(1 - event.getActionIndex());
                         break;
+                    }
                 }
                 break;
+            }
         }
         return true;
     };
@@ -483,7 +506,8 @@ public class MainActivity extends AppCompatActivity {
                     selectionEndY = selectionStartY;
                 }
                 drawSelectionOnViewByStartsAndEnds();
-                tvStatus.setText(String.format("Start: (%d, %d), End: (%d, %d), Area: 1 × 1", selectionStartX, selectionStartY, selectionStartX, selectionStartY));
+                tvStatus.setText(String.format("Start: (%d, %d), End: (%d, %d), Area: 1 × 1",
+                        selectionStartX, selectionStartY, selectionStartX, selectionStartY));
                 break;
 
             case MotionEvent.ACTION_MOVE:
@@ -528,7 +552,8 @@ public class MainActivity extends AppCompatActivity {
                 }
                 drawBitmapOnView();
                 drawTransformeeOnView();
-                tvStatus.setText(String.format("(%d, %d), (%d, %d)", selection.left, selection.top, selection.right, selection.bottom));
+                tvStatus.setText(String.format("Top-left: (%d, %d), Bottom-right: (%d, %d)",
+                        selection.left, selection.top, selection.right, selection.bottom));
                 prevX = x;
                 prevY = y;
                 break;
@@ -537,7 +562,8 @@ public class MainActivity extends AppCompatActivity {
                 transformeeTranslationX += x - prevX;
                 transformeeTranslationY += y - prevY;
                 drawTransformeeOnView();
-                tvStatus.setText(String.format("(%d, %d), (%d, %d)", selection.left, selection.top, selection.right, selection.bottom));
+                tvStatus.setText(String.format("Top-left: (%d, %d), Bottom-right: (%d, %d)",
+                        selection.left, selection.top, selection.right, selection.bottom));
                 prevX = x;
                 prevY = y;
                 break;
