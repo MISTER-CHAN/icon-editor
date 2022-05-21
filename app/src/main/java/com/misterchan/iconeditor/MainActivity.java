@@ -14,13 +14,17 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
+import android.os.Environment;
+import android.text.Editable;
+import android.text.InputFilter;
+import android.text.Spanned;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
@@ -28,12 +32,12 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.SeekBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContract;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -48,8 +52,27 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class MainActivity extends AppCompatActivity {
+
+    private static final Bitmap.CompressFormat[] COMPRESS_FORMATS = {
+            Bitmap.CompressFormat.PNG,
+            Bitmap.CompressFormat.JPEG
+    };
+
+    private static final InputFilter[] FILE_NAME_FILTERS = new InputFilter[]{
+            (source, start, end, dest, dstart, dend) -> {
+                Matcher matcher = Pattern.compile("[\"*/:<>?\\\\|]").matcher(source.toString());
+                if (matcher.find()) {
+                    return "";
+                }
+                return null;
+            }
+    };
+
+    private static final Pattern TREE_PATTERN = Pattern.compile("^content://com\\.android\\.externalstorage\\.documents/tree/primary%3A(?<path>.*)$");
 
     private static final String FORMAT_02X = "%02X";
 
@@ -78,6 +101,7 @@ public class MainActivity extends AppCompatActivity {
     private EditText etCellGridOffsetX, etCellGridOffsetY;
     private EditText etCellGridSizeX, etCellGridSizeY;
     private EditText etCellGridSpacingX, etCellGridSpacingY;
+    private EditText etFileName;
     private EditText etNewGraphicSizeX, etNewGraphicSizeY;
     private EditText etPropSizeX, etPropSizeY;
     private EditText etRed, etGreen, etBlue, etAlpha;
@@ -104,6 +128,8 @@ public class MainActivity extends AppCompatActivity {
     private RadioButton rbTransformer;
     private SeekBar sbRed, sbGreen, sbBlue, sbAlpha;
     private SelectionBounds selection = new SelectionBounds();
+    private Spinner sFileType;
+    private String tree = "";
     private TabLayout tabLayout;
     private TextView tvStatus;
     private Window window;
@@ -173,30 +199,6 @@ public class MainActivity extends AppCompatActivity {
 
     private Paint paint = foregroundPaint;
 
-    private final ActivityResultCallback<Uri> imageCallback = result -> {
-        if (result == null) {
-            return;
-        }
-        try (InputStream inputStream = getContentResolver().openInputStream(result)) {
-            Bitmap bm = BitmapFactory.decodeStream(inputStream);
-            openFile(bm, result);
-            bm.recycle();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    };
-
-    private final ActivityResultCallback<Uri> treeCallback = result -> {
-        Log.d("s", result.toString());
-    };
-
-    private final ActivityResultLauncher<String> getImage =
-            registerForActivityResult(new ActivityResultContracts.GetContent(), imageCallback);
-
-    private final ActivityResultLauncher<Uri> getTree =
-            registerForActivityResult(new ActivityResultContracts.OpenDocumentTree(), treeCallback);
-
     private final CompoundButton.OnCheckedChangeListener onBackgroundColorRadioButtonCheckedChangeListener = (buttonView, isChecked) -> {
         if (isChecked) {
             paint = backgroundPaint;
@@ -223,6 +225,18 @@ public class MainActivity extends AppCompatActivity {
         drawGridOnView();
     };
 
+    private final DialogInterface.OnClickListener onFileNameDialogPosButtonClickListener = (dialog, which) -> {
+        String fileName = etFileName.getText().toString();
+        if ("".equals(fileName)) {
+            return;
+        }
+        fileName += sFileType.getSelectedItem().toString();
+        window.path = Environment.getExternalStorageDirectory().getPath() + File.separator + tree + File.separator + fileName;
+        compressFormat = COMPRESS_FORMATS[sFileType.getSelectedItemPosition()];
+        save(window.path);
+        tabLayout.getTabAt(tabLayout.getSelectedTabPosition()).setText(fileName);
+    };
+
     private final DialogInterface.OnClickListener onNewGraphicDialogPosButtonClickListener = (dialog, which) -> {
         try {
             int width = Integer.parseInt(etNewGraphicSizeX.getText().toString());
@@ -241,6 +255,49 @@ public class MainActivity extends AppCompatActivity {
         } catch (NumberFormatException e) {
         }
     };
+
+    private final ActivityResultCallback<Uri> imageCallback = result -> {
+        if (result == null) {
+            return;
+        }
+        try (InputStream inputStream = getContentResolver().openInputStream(result)) {
+            Bitmap bm = BitmapFactory.decodeStream(inputStream);
+            openFile(bm, result);
+            bm.recycle();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    };
+
+    private final ActivityResultCallback<Uri> treeCallback = result -> {
+        if (result == null) {
+            return;
+        }
+        Matcher matcher = TREE_PATTERN.matcher(result.toString());
+        if (!matcher.find()) {
+            return;
+        }
+        tree = matcher.group("path").replace("%2F", "/");
+        AlertDialog fileNameDialog = new AlertDialog.Builder(this)
+                .setNegativeButton(R.string.cancel, null)
+                .setPositiveButton(R.string.ok, onFileNameDialogPosButtonClickListener)
+                .setTitle(R.string.file_name)
+                .setView(R.layout.file_name)
+                .show();
+
+        etFileName = fileNameDialog.findViewById(R.id.et_file_name);
+        sFileType = fileNameDialog.findViewById(R.id.s_file_type);
+
+        etFileName.setFilters(FILE_NAME_FILTERS);
+        sFileType.setAdapter(new ArrayAdapter<>(this, androidx.appcompat.R.layout.support_simple_spinner_dropdown_item, getResources().getStringArray(R.array.file_types)));
+    };
+
+    private final ActivityResultLauncher<String> getImage =
+            registerForActivityResult(new ActivityResultContracts.GetContent(), imageCallback);
+
+    private final ActivityResultLauncher<Uri> getTree =
+            registerForActivityResult(new ActivityResultContracts.OpenDocumentTree(), treeCallback);
 
     private final TabLayout.OnTabSelectedListener onTabSelectedListener = new TabLayout.OnTabSelectedListener() {
         @Override
@@ -1012,25 +1069,53 @@ public class MainActivity extends AppCompatActivity {
                 break;
 
             case R.id.i_copy:
-                drawTransformeeOnCanvas();
-                if (clipboard != null) {
-                    clipboard.recycle();
+                if (!hasSelection) {
+                    break;
                 }
-                clipboard = Bitmap.createBitmap(bitmap, selection.left, selection.top,
-                        selection.right - selection.left + 1, selection.bottom - selection.top + 1);
+                if (transformeeBitmap == null) {
+                    if (clipboard != null) {
+                        clipboard.recycle();
+                    }
+                    clipboard = Bitmap.createBitmap(bitmap, selection.left, selection.top,
+                            selection.right - selection.left + 1, selection.bottom - selection.top + 1);
+                } else {
+                    clipboard = Bitmap.createBitmap(transformeeBitmap);
+                }
+                break;
+
+            case R.id.i_cut:
+                if (!hasSelection) {
+                    break;
+                }
+                if (transformeeBitmap == null) {
+                    if (clipboard != null) {
+                        clipboard.recycle();
+                    }
+                    clipboard = Bitmap.createBitmap(bitmap, selection.left, selection.top,
+                            selection.right - selection.left + 1, selection.bottom - selection.top + 1);
+                    canvas.drawRect(selection.left, selection.top, selection.right + 1, selection.bottom + 1, eraser);
+                    drawBitmapOnView();
+                    history.offer(bitmap);
+                } else {
+                    clipboard = Bitmap.createBitmap(transformeeBitmap);
+                    transformeeBitmap.recycle();
+                    transformeeBitmap = null;
+                    clearCanvas(previewCanvas, ivPreview);
+                }
                 break;
 
             case R.id.i_delete:
-                if (hasSelection) {
-                    if (transformeeBitmap == null) {
-                        canvas.drawRect(selection.left, selection.top, selection.right + 1, selection.bottom + 1, eraser);
-                        drawBitmapOnView();
-                        history.offer(bitmap);
-                    } else {
-                        transformeeBitmap.recycle();
-                        transformeeBitmap = null;
-                        drawSelectionOnView();
-                    }
+                if (!hasSelection) {
+                    break;
+                }
+                if (transformeeBitmap == null) {
+                    canvas.drawRect(selection.left, selection.top, selection.right + 1, selection.bottom + 1, eraser);
+                    drawBitmapOnView();
+                    history.offer(bitmap);
+                } else {
+                    transformeeBitmap.recycle();
+                    transformeeBitmap = null;
+                    clearCanvas(previewCanvas, ivPreview);
                 }
                 break;
 
@@ -1102,6 +1187,7 @@ public class MainActivity extends AppCompatActivity {
                 break;
 
             case R.id.i_save_as:
+                saveAs();
                 break;
 
             case R.id.i_undo: {
@@ -1211,6 +1297,7 @@ public class MainActivity extends AppCompatActivity {
             bitmap.compress(compressFormat, 100, fos);
             fos.flush();
         } catch (IOException e) {
+            Toast.makeText(this, "Failed\n" + e.getMessage(), Toast.LENGTH_LONG).show();
             e.printStackTrace();
         }
 

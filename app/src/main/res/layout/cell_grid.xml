@@ -9,7 +9,7 @@
         android:id="@+id/cb_cg_enabled"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Enabled" />
+        android:text="@string/enabled" />
 
     <GridLayout
         android:layout_width="match_parent"
@@ -21,7 +21,7 @@
         <TextView
             android:layout_gravity="center_vertical|start"
             android:layout_margin="8dp"
-            android:text="Size" />
+            android:text="@string/size" />
 
         <LinearLayout
             android:layout_gravity="fill"
@@ -39,7 +39,7 @@
                     android:layout_height="match_parent"
                     android:autofillHints="0"
                     android:background="@color/transparent"
-                    android:hint="X"
+                    android:hint="@string/x"
                     android:inputType="number"
                     android:textAlignment="textEnd" />
             </com.google.android.material.textfield.TextInputLayout>
@@ -56,7 +56,7 @@
                     android:layout_height="match_parent"
                     android:autofillHints="0"
                     android:background="@color/transparent"
-                    android:hint="Y"
+                    android:hint="@string/y"
                     android:inputType="number"
                     android:textAlignment="textEnd" />
             </com.google.android.material.textfield.TextInputLayout>
@@ -65,7 +65,7 @@
         <TextView
             android:layout_gravity="center_vertical|start"
             android:layout_margin="8dp"
-            android:text="Spacing" />
+            android:text="@string/spacing" />
 
         <LinearLayout
             android:layout_gravity="fill"
@@ -83,7 +83,7 @@
                     android:layout_height="match_parent"
                     android:autofillHints="0"
                     android:background="@color/transparent"
-                    android:hint="X"
+                    android:hint="@string/x"
                     android:inputType="number"
                     android:textAlignment="textEnd" />
             </com.google.android.material.textfield.TextInputLayout>
@@ -100,7 +100,7 @@
                     android:layout_height="match_parent"
                     android:autofillHints="0"
                     android:background="@color/transparent"
-                    android:hint="Y"
+                    android:hint="@string/y"
                     android:inputType="number"
                     android:textAlignment="textEnd" />
             </com.google.android.material.textfield.TextInputLayout>
@@ -110,10 +110,11 @@
         <TextView
             android:layout_gravity="center_vertical|start"
             android:layout_margin="8dp"
-            android:text="Offset" />
+            android:text="@string/offset" />
 
         <LinearLayout
             android:layout_gravity="fill"
+            android:baselineAligned="false"
             android:orientation="horizontal">
 
             <com.google.android.material.textfield.TextInputLayout
@@ -128,7 +129,7 @@
                     android:layout_height="match_parent"
                     android:autofillHints="0"
                     android:background="@color/transparent"
-                    android:hint="X"
+                    android:hint="@string/x"
                     android:inputType="number"
                     android:textAlignment="textEnd" />
             </com.google.android.material.textfield.TextInputLayout>
@@ -145,7 +146,7 @@
                     android:layout_height="match_parent"
                     android:autofillHints="0"
                     android:background="@color/transparent"
-                    android:hint="Y"
+                    android:hint="@string/y"
                     android:inputType="number"
                     android:textAlignment="textEnd" />
             </com.google.android.material.textfield.TextInputLayout>

@@ -12,13 +12,18 @@
     <string name="delete">Delete</string>
     <string name="double_zero">00</string>
     <string name="edit">✎</string>
+    <string name="enabled">Enabled</string>
     <string name="eraser">Eraser</string>
     <string name="eyedropper">Eyedropper</string>
     <string name="file">File</string>
+    <string name="file_name">File name</string>
     <string name="ff">FF</string>
+    <string name="forty_eight">48</string>
     <string name="g">G</string>
+    <string name="height">Height</string>
     <string name="new_">New</string>
     <string name="not_supported_file_type">Not supported file type</string>
+    <string name="offset">Offset</string>
     <string name="ok">OK</string>
     <string name="open">Open</string>
     <string name="paste">Paste</string>
@@ -31,9 +36,21 @@
     <string name="save_as">Save As</string>
     <string name="scale">Scale</string>
     <string name="select">Select</string>
+    <string name="size">Size</string>
+    <string name="spacing">Spacing</string>
+    <string name="stretch">Stretch</string>
     <string name="text">Text</string>
     <string name="transform">Transform</string>
     <string name="format_02X">%02X</string>
     <string name="undo">↶</string>
     <string name="untitled">Untitled</string>
+    <string name="when_resizing">When resizing</string>
+    <string name="width">Width</string>
+    <string name="x">X</string>
+    <string name="y">Y</string>
+
+    <string-array name="file_types">
+        <item>.png</item>
+        <item>.jpg</item>
+    </string-array>
 </resources>

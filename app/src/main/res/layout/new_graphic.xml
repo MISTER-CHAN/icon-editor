@@ -15,10 +15,11 @@
         <TextView
             android:layout_gravity="center_vertical|start"
             android:layout_margin="8dp"
-            android:text="Size" />
+            android:text="@string/size" />
 
         <LinearLayout
             android:layout_gravity="fill"
+            android:baselineAligned="false"
             android:orientation="horizontal">
 
             <com.google.android.material.textfield.TextInputLayout
@@ -33,9 +34,9 @@
                     android:layout_height="match_parent"
                     android:autofillHints="0"
                     android:background="@color/transparent"
-                    android:hint="Width"
+                    android:hint="@string/width"
                     android:inputType="number"
-                    android:text="48"
+                    android:text="@string/forty_eight"
                     android:textAlignment="textEnd" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -52,9 +53,9 @@
                     android:layout_height="match_parent"
                     android:autofillHints="0"
                     android:background="@color/transparent"
-                    android:hint="Height"
+                    android:hint="@string/height"
                     android:inputType="number"
-                    android:text="48"
+                    android:text="@string/forty_eight"
                     android:textAlignment="textEnd" />
             </com.google.android.material.textfield.TextInputLayout>
         </LinearLayout>
