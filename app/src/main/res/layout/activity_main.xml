@@ -89,12 +89,6 @@
                     android:text="@string/transform" />
 
                 <RadioButton
-                    android:id="@+id/rb_cropper"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/crop" />
-
-                <RadioButton
                     android:id="@+id/rb_pencil"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"

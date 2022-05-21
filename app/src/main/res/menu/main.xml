@@ -65,6 +65,10 @@
         </menu>
     </item>
 
+    <item
+        android:id="@+id/i_crop"
+        android:title="@string/crop"
+        app:showAsAction="collapseActionView" />
 
     <item
         android:id="@+id/i_cell_grid"
