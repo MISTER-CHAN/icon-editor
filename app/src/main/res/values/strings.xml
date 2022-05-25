@@ -49,6 +49,7 @@
     <string name="width">Width</string>
     <string name="x">X</string>
     <string name="y">Y</string>
+    <string name="bucket_fill">BucketFill</string>
 
     <string-array name="file_types">
         <item>.png</item>

@@ -333,11 +333,28 @@ public class MainActivity extends AppCompatActivity {
     };
 
     @SuppressLint("ClickableViewAccessibility")
-    private final View.OnTouchListener onImageViewTouchWithEraserListener = (v, event) -> {
-        float x = event.getX(), y = event.getY();
+    private final View.OnTouchListener onImageViewTouchWithBucketListener = (v, event) -> {
         switch (event.getAction()) {
 
             case MotionEvent.ACTION_DOWN: {
+                float x = event.getX(), y = event.getY();
+                int originalX = toOriginal(x - window.translationX), originalY = toOriginal(y - window.translationY);
+                bucketFill(originalX, originalY, paint.getColor());
+                drawBitmapOnView();
+                history.offer(bitmap);
+                tvStatus.setText("");
+                break;
+            }
+        }
+        return true;
+    };
+
+    @SuppressLint("ClickableViewAccessibility")
+    private final View.OnTouchListener onImageViewTouchWithEraserListener = (v, event) -> {
+        switch (event.getAction()) {
+
+            case MotionEvent.ACTION_DOWN: {
+                float x = event.getX(), y = event.getY();
                 int originalX = toOriginal(x - window.translationX), originalY = toOriginal(y - window.translationY);
                 canvas.drawPoint(originalX, originalY, eraser);
                 drawBitmapOnView();
@@ -348,6 +365,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             case MotionEvent.ACTION_MOVE: {
+                float x = event.getX(), y = event.getY();
                 int originalX = toOriginal(x - window.translationX), originalY = toOriginal(y - window.translationY);
                 drawLineOnCanvas(
                         toOriginal(prevX - window.translationX),
@@ -373,16 +391,17 @@ public class MainActivity extends AppCompatActivity {
 
     @SuppressLint("ClickableViewAccessibility")
     private final View.OnTouchListener onImageViewTouchWithEyedropperListener = (v, event) -> {
-        float x = event.getX(), y = event.getY();
         switch (event.getAction()) {
 
             case MotionEvent.ACTION_DOWN:
-            case MotionEvent.ACTION_MOVE:
+            case MotionEvent.ACTION_MOVE: {
+                float x = event.getX(), y = event.getY();
                 int originalX = toOriginal(x - window.translationX), originalY = toOriginal(y - window.translationY);
                 paint.setColor(bitmap.getPixel(originalX, originalY));
                 showPaintColorOnSeekBars();
                 tvStatus.setText(String.format("(%d, %d)", originalX, originalY));
                 break;
+            }
 
             case MotionEvent.ACTION_CANCEL:
             case MotionEvent.ACTION_UP:
@@ -394,10 +413,10 @@ public class MainActivity extends AppCompatActivity {
 
     @SuppressLint("ClickableViewAccessibility")
     private final View.OnTouchListener onImageViewTouchWithPencilListener = (v, event) -> {
-        float x = event.getX(), y = event.getY();
         switch (event.getAction()) {
 
             case MotionEvent.ACTION_DOWN: {
+                float x = event.getX(), y = event.getY();
                 int originalX = toOriginal(x - window.translationX), originalY = toOriginal(y - window.translationY);
                 canvas.drawPoint(originalX, originalY, paint);
                 drawBitmapOnView();
@@ -408,6 +427,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             case MotionEvent.ACTION_MOVE: {
+                float x = event.getX(), y = event.getY();
                 int originalX = toOriginal(x - window.translationX), originalY = toOriginal(y - window.translationY);
                 drawLineOnCanvas(
                         toOriginal(prevX - window.translationX),
@@ -437,20 +457,22 @@ public class MainActivity extends AppCompatActivity {
         int originalX = toOriginal(x - window.translationX), originalY = toOriginal(y - window.translationY);
         switch (event.getAction()) {
 
-            case MotionEvent.ACTION_DOWN:
+            case MotionEvent.ACTION_DOWN: {
                 drawRectOnView(originalX, originalY, originalX, originalY);
                 rectX = originalX;
                 rectY = originalY;
                 tvStatus.setText(String.format("Start: (%d, %d), Stop: (%d, %d), Area: 1 × 1",
                         originalX, originalY, originalX, originalY));
                 break;
+            }
 
-            case MotionEvent.ACTION_MOVE:
+            case MotionEvent.ACTION_MOVE: {
                 drawRectOnView(rectX, rectY, originalX, originalY);
                 tvStatus.setText(String.format("Start: (%d, %d), Stop: (%d, %d), Area: %d × %d",
                         rectX, rectY, originalX, originalY,
                         Math.abs(originalX - rectX) + 1, Math.abs(originalY - rectY) + 1));
                 break;
+            }
 
             case MotionEvent.ACTION_CANCEL:
             case MotionEvent.ACTION_UP:
@@ -548,10 +570,10 @@ public class MainActivity extends AppCompatActivity {
 
     @SuppressLint("ClickableViewAccessibility")
     private final View.OnTouchListener onImageViewTouchWithSelectorListener = (v, event) -> {
-        float x = event.getX(), y = event.getY();
         switch (event.getAction()) {
 
-            case MotionEvent.ACTION_DOWN:
+            case MotionEvent.ACTION_DOWN: {
+                float x = event.getX(), y = event.getY();
                 if (hasSelection && selectionStartX == selectionEndX && selectionStartY == selectionEndY) {
                     selectionEndX = toOriginal(x - window.translationX);
                     selectionEndY = toOriginal(y - window.translationY);
@@ -566,8 +588,10 @@ public class MainActivity extends AppCompatActivity {
                 tvStatus.setText(String.format("Start: (%d, %d), End: (%d, %d), Area: 1 × 1",
                         selectionStartX, selectionStartY, selectionStartX, selectionStartY));
                 break;
+            }
 
-            case MotionEvent.ACTION_MOVE:
+            case MotionEvent.ACTION_MOVE: {
+                float x = event.getX(), y = event.getY();
                 selectionEndX = toOriginal(x - window.translationX);
                 selectionEndY = toOriginal(y - window.translationY);
                 drawSelectionOnViewByStartsAndEnds();
@@ -575,6 +599,7 @@ public class MainActivity extends AppCompatActivity {
                         selectionStartX, selectionStartY, selectionEndX, selectionEndY,
                         Math.abs(selectionEndX - selectionStartX) + 1, Math.abs(selectionEndY - selectionStartY) + 1));
                 break;
+            }
 
             case MotionEvent.ACTION_CANCEL:
             case MotionEvent.ACTION_UP:
@@ -595,10 +620,11 @@ public class MainActivity extends AppCompatActivity {
         if (!hasSelection) {
             return true;
         }
-        float x = event.getX(), y = event.getY();
+
         switch (event.getAction()) {
 
-            case MotionEvent.ACTION_DOWN:
+            case MotionEvent.ACTION_DOWN: {
+                float x = event.getX(), y = event.getY();
                 if (transformeeBitmap == null) {
                     transformeeTranslationX = window.translationX + toScaled(selection.left);
                     transformeeTranslationY = window.translationY + toScaled(selection.top);
@@ -614,8 +640,10 @@ public class MainActivity extends AppCompatActivity {
                 prevX = x;
                 prevY = y;
                 break;
+            }
 
-            case MotionEvent.ACTION_MOVE:
+            case MotionEvent.ACTION_MOVE: {
+                float x = event.getX(), y = event.getY();
                 transformeeTranslationX += x - prevX;
                 transformeeTranslationY += y - prevY;
                 drawTransformeeOnView();
@@ -624,6 +652,7 @@ public class MainActivity extends AppCompatActivity {
                 prevX = x;
                 prevY = y;
                 break;
+            }
         }
         return true;
     };
@@ -637,6 +666,54 @@ public class MainActivity extends AppCompatActivity {
             clearCanvas(previewCanvas, ivPreview);
         }
     };
+
+    private void addBitmap(Bitmap bitmap, int width, int height) {
+        addBitmap(bitmap, width, height, null, getString(R.string.untitled));
+    }
+
+    private void addBitmap(Bitmap bitmap, int width, int height, String path, String title) {
+        window = new Window();
+        windows.add(window);
+        window.bitmap = bitmap;
+        currentBitmapIndex = windows.size() - 1;
+        history = new BitmapHistory();
+        window.history = history;
+        history.offer(bitmap);
+        window.path = path;
+
+        window.scale = (float) ((double) viewWidth / (double) width);
+        imageWidth = (int) toScaled(width);
+        imageHeight = (int) toScaled(height);
+        window.translationX = 0.0f;
+        window.translationY = 0.0f;
+
+        recycleBitmapIfIsNotNull(transformeeBitmap);
+        transformeeBitmap = null;
+        hasSelection = false;
+
+        drawChessboardOnView();
+        drawBitmapOnView();
+        drawGridOnView();
+        drawSelectionOnView();
+
+        tabLayout.addTab(tabLayout.newTab().setText(title).setTag(bitmap));
+        tabLayout.getTabAt(currentBitmapIndex).select();
+    }
+
+    private void bucketFill(int x, int y, int color) {
+        int pixel = bitmap.getPixel(x, y);
+        if (pixel == color) {
+            return;
+        }
+        int bitmapWidth = bitmap.getWidth(), bitmapHeight = bitmap.getHeight();
+        for (y = 0; y < bitmapHeight; ++y) {
+            for (x = 0; x < bitmapWidth; ++x) {
+                if (bitmap.getPixel(x, y) == pixel) {
+                    bitmap.setPixel(x, y, color);
+                }
+            }
+        }
+    }
 
     private void clearCanvas(Canvas canvas) {
         canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
@@ -909,39 +986,6 @@ public class MainActivity extends AppCompatActivity {
         tabLayout.addTab(tabLayout.newTab().setText(R.string.untitled).setTag(bitmap));
     }
 
-    private void addBitmap(Bitmap bitmap, int width, int height) {
-        addBitmap(bitmap, width, height, null, getString(R.string.untitled));
-    }
-
-    private void addBitmap(Bitmap bitmap, int width, int height, String path, String title) {
-        window = new Window();
-        windows.add(window);
-        window.bitmap = bitmap;
-        currentBitmapIndex = windows.size() - 1;
-        history = new BitmapHistory();
-        window.history = history;
-        history.offer(bitmap);
-        window.path = path;
-
-        window.scale = (float) ((double) viewWidth / (double) width);
-        imageWidth = (int) toScaled(width);
-        imageHeight = (int) toScaled(height);
-        window.translationX = 0.0f;
-        window.translationY = 0.0f;
-
-        recycleBitmapIfIsNotNull(transformeeBitmap);
-        transformeeBitmap = null;
-        hasSelection = false;
-
-        drawChessboardOnView();
-        drawBitmapOnView();
-        drawGridOnView();
-        drawSelectionOnView();
-
-        tabLayout.addTab(tabLayout.newTab().setText(title).setTag(bitmap));
-        tabLayout.getTabAt(currentBitmapIndex).select();
-    }
-
     private void onChannelChanged(String hex, SeekBar seekBar) {
         try {
             seekBar.setProgress(Integer.parseUnsignedInt(hex, 16));
@@ -991,6 +1035,7 @@ public class MainActivity extends AppCompatActivity {
         flImageView.setOnTouchListener(onImageViewTouchWithPencilListener);
         rbBackgroundColor.setOnCheckedChangeListener(onBackgroundColorRadioButtonCheckedChangeListener);
         rbForegroundColor.setOnCheckedChangeListener(onForegroundColorRadioButtonCheckedChangeListener);
+        ((RadioButton) findViewById(R.id.rb_bucket_fill)).setOnCheckedChangeListener((OnCheckListener) () -> flImageView.setOnTouchListener(onImageViewTouchWithBucketListener));
         ((RadioButton) findViewById(R.id.rb_eraser)).setOnCheckedChangeListener((OnCheckListener) () -> flImageView.setOnTouchListener(onImageViewTouchWithEraserListener));
         ((RadioButton) findViewById(R.id.rb_eyedropper)).setOnCheckedChangeListener((OnCheckListener) () -> flImageView.setOnTouchListener(onImageViewTouchWithEyedropperListener));
         ((RadioButton) findViewById(R.id.rb_pencil)).setOnCheckedChangeListener((OnCheckListener) () -> flImageView.setOnTouchListener(onImageViewTouchWithPencilListener));
