@@ -12,6 +12,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 
+    <TextView
+        android:id="@+id/tv_status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
     <FrameLayout
         android:id="@+id/fl_iv"
         android:layout_width="match_parent"
@@ -50,201 +55,309 @@
             android:scaleType="centerCrop" />
     </FrameLayout>
 
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:id="@+id/ll_behavior_pencil"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:orientation="horizontal"
+            android:visibility="visible">
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="128dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp">
+
+                <EditText
+                    android:id="@+id/et_pencil_stroke_width"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:autofillHints="0"
+                    android:background="@color/transparent"
+                    android:hint="@string/stroke_width"
+                    android:textAlignment="textEnd"
+                    android:inputType="number" />
+            </com.google.android.material.textfield.TextInputLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/ll_behavior_bucket_fill"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:orientation="horizontal"
+            android:visibility="invisible">
+
+            <CheckBox
+                android:id="@+id/cb_bucket_fill_contiguous"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/contiguous" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/ll_behavior_eraser"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:orientation="horizontal"
+            android:visibility="invisible">
+
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="128dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp">
+
+                <EditText
+                    android:id="@+id/et_eraser_stroke_width"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:autofillHints="0"
+                    android:background="@color/transparent"
+                    android:hint="@string/stroke_width"
+                    android:textAlignment="textEnd"
+                    android:inputType="number" />
+            </com.google.android.material.textfield.TextInputLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/ll_behavior_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:orientation="horizontal"
+            android:visibility="invisible">
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp"
+                android:layout_weight="1">
+
+                <EditText
+                    android:id="@+id/et_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:autofillHints="0"
+                    android:background="@color/transparent"
+                    android:hint="@string/text"
+                    android:inputType="text" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="64dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp">
+
+                <EditText
+                    android:id="@+id/et_text_size"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:autofillHints="0"
+                    android:background="@color/transparent"
+                    android:hint="@string/size"
+                    android:inputType="number"
+                    android:textAlignment="textEnd" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <Button
+                android:id="@+id/b_text_draw"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/draw" />
+        </LinearLayout>
+    </FrameLayout>
+
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="none">
+
+        <RadioGroup
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/rb_scaler"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/scale" />
+
+            <RadioButton
+                android:id="@+id/rb_selector"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/select" />
+
+            <RadioButton
+                android:id="@+id/rb_transformer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/transform" />
+
+            <RadioButton
+                android:id="@+id/rb_pencil"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:text="@string/pencil" />
+
+            <RadioButton
+                android:id="@+id/rb_rectangle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/rectangle" />
+
+            <RadioButton
+                android:id="@+id/rb_bucket_fill"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/bucket_fill" />
+
+            <RadioButton
+                android:id="@+id/rb_eraser"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/eraser" />
+
+            <RadioButton
+                android:id="@+id/rb_eyedropper"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/eyedropper" />
+
+            <RadioButton
+                android:id="@+id/rb_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/text" />
+        </RadioGroup>
+    </HorizontalScrollView>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:gravity="center"
+        android:orientation="horizontal">
 
-        <TextView
-            android:id="@+id/tv_status"
+        <RadioGroup
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
-        <HorizontalScrollView
-            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:scrollbars="none">
+            android:orientation="vertical">
 
-            <RadioGroup
+            <RadioButton
+                android:id="@+id/rb_foreground_color"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:checked="true"
+                android:text="@string/block"
+                android:textColor="@color/black" />
 
-                <RadioButton
-                    android:id="@+id/rb_scaler"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/scale" />
+            <RadioButton
+                android:id="@+id/rb_background_color"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/block"
+                android:textColor="@color/white" />
+        </RadioGroup>
 
-                <RadioButton
-                    android:id="@+id/rb_selector"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/select" />
-
-                <RadioButton
-                    android:id="@+id/rb_transformer"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/transform" />
-
-                <RadioButton
-                    android:id="@+id/rb_pencil"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:checked="true"
-                    android:text="@string/pencil" />
-
-                <RadioButton
-                    android:id="@+id/rb_rectangle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/rectangle" />
-
-                <RadioButton
-                    android:id="@+id/rb_bucket_fill"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/bucket_fill" />
-
-                <RadioButton
-                    android:id="@+id/rb_eraser"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/eraser" />
-
-                <RadioButton
-                    android:id="@+id/rb_eyedropper"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/eyedropper" />
-
-                <RadioButton
-                    android:id="@+id/rb_text"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/text" />
-            </RadioGroup>
-        </HorizontalScrollView>
-
-        <LinearLayout
-            android:layout_width="match_parent"
+        <GridLayout
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:columnCount="3"
             android:gravity="center"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:rowCount="4">
 
-            <RadioGroup
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
+            <TextView
+                android:layout_gravity="center"
+                android:labelFor="@+id/et_alpha"
+                android:text="@string/a" />
 
-                <RadioButton
-                    android:id="@+id/rb_foreground_color"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:checked="true"
-                    android:text="@string/block"
-                    android:textColor="@color/black" />
+            <EditText
+                android:id="@+id/et_alpha"
+                android:layout_width="32dp"
+                android:autofillHints="0"
+                android:inputType="text"
+                android:text="@string/ff"
+                android:textAlignment="center" />
 
-                <RadioButton
-                    android:id="@+id/rb_background_color"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/block"
-                    android:textColor="@color/white" />
-            </RadioGroup>
+            <SeekBar
+                android:id="@+id/sb_alpha"
+                android:layout_width="256dp"
+                android:layout_gravity="center"
+                android:max="255"
+                android:progress="255" />
 
-            <GridLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:columnCount="3"
-                android:gravity="center"
-                android:orientation="horizontal"
-                android:rowCount="4">
+            <TextView
+                android:layout_gravity="center"
+                android:labelFor="@+id/et_red"
+                android:text="@string/r" />
 
-                <TextView
-                    android:layout_gravity="center"
-                    android:labelFor="@+id/et_alpha"
-                    android:text="@string/a" />
+            <EditText
+                android:id="@+id/et_red"
+                android:layout_width="32dp"
+                android:autofillHints="0"
+                android:inputType="text"
+                android:maxLength="2"
+                android:text="@string/double_zero"
+                android:textAlignment="center" />
 
-                <EditText
-                    android:id="@+id/et_alpha"
-                    android:layout_width="32dp"
-                    android:autofillHints="0"
-                    android:inputType="text"
-                    android:text="@string/ff"
-                    android:textAlignment="center" />
+            <SeekBar
+                android:id="@+id/sb_red"
+                android:layout_width="256dp"
+                android:layout_gravity="center"
+                android:max="255" />
 
-                <SeekBar
-                    android:id="@+id/sb_alpha"
-                    android:layout_width="256dp"
-                    android:layout_gravity="center"
-                    android:max="255"
-                    android:progress="255" />
+            <TextView
+                android:layout_gravity="center"
+                android:labelFor="@+id/et_green"
+                android:text="@string/g" />
 
-                <TextView
-                    android:layout_gravity="center"
-                    android:labelFor="@+id/et_red"
-                    android:text="@string/r" />
+            <EditText
+                android:id="@+id/et_green"
+                android:layout_width="32dp"
+                android:autofillHints="0"
+                android:inputType="text"
+                android:maxLength="2"
+                android:text="@string/double_zero"
+                android:textAlignment="center" />
 
-                <EditText
-                    android:id="@+id/et_red"
-                    android:layout_width="32dp"
-                    android:autofillHints="0"
-                    android:inputType="text"
-                    android:maxLength="2"
-                    android:text="@string/double_zero"
-                    android:textAlignment="center" />
+            <SeekBar
+                android:id="@+id/sb_green"
+                android:layout_width="256dp"
+                android:layout_gravity="center"
+                android:max="255" />
 
-                <SeekBar
-                    android:id="@+id/sb_red"
-                    android:layout_width="256dp"
-                    android:layout_gravity="center"
-                    android:max="255" />
-
-                <TextView
-                    android:layout_gravity="center"
-                    android:labelFor="@+id/et_green"
-                    android:text="@string/g" />
-
-                <EditText
-                    android:id="@+id/et_green"
-                    android:layout_width="32dp"
-                    android:autofillHints="0"
-                    android:inputType="text"
-                    android:maxLength="2"
-                    android:text="@string/double_zero"
-                    android:textAlignment="center" />
-
-                <SeekBar
-                    android:id="@+id/sb_green"
-                    android:layout_width="256dp"
-                    android:layout_gravity="center"
-                    android:max="255" />
-
-                <TextView
-                    android:layout_gravity="center"
-                    android:labelFor="@+id/et_blue"
-                    android:text="@string/b" />
+            <TextView
+                android:layout_gravity="center"
+                android:labelFor="@+id/et_blue"
+                android:text="@string/b" />
 
 
-                <EditText
-                    android:id="@+id/et_blue"
-                    android:layout_width="32dp"
-                    android:autofillHints="0"
-                    android:inputType="text"
-                    android:maxLength="2"
-                    android:text="@string/double_zero"
-                    android:textAlignment="center" />
+            <EditText
+                android:id="@+id/et_blue"
+                android:layout_width="32dp"
+                android:autofillHints="0"
+                android:inputType="text"
+                android:maxLength="2"
+                android:text="@string/double_zero"
+                android:textAlignment="center" />
 
-                <SeekBar
-                    android:id="@+id/sb_blue"
-                    android:layout_width="256dp"
-                    android:layout_gravity="center"
-                    android:max="255" />
+            <SeekBar
+                android:id="@+id/sb_blue"
+                android:layout_width="256dp"
+                android:layout_gravity="center"
+                android:max="255" />
 
-            </GridLayout>
+        </GridLayout>
 
-        </LinearLayout>
     </LinearLayout>
 </LinearLayout>

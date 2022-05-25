@@ -3,14 +3,17 @@
     <string name="app_name">Icon Editor</string>
     <string name="b">B</string>
     <string name="block">████</string>
+    <string name="bucket_fill">Bucket Fill</string>
     <string name="cancel">Cancel</string>
     <string name="cell_grid">Cell Grid</string>
     <string name="close">Close</string>
+    <string name="contiguous">Contiguous</string>
     <string name="copy">Copy</string>
     <string name="crop">Crop</string>
     <string name="cut">Cut</string>
     <string name="delete">Delete</string>
     <string name="double_zero">00</string>
+    <string name="draw">Draw</string>
     <string name="edit">✎</string>
     <string name="enabled">Enabled</string>
     <string name="eraser">Eraser</string>
@@ -19,6 +22,7 @@
     <string name="file_name">File name</string>
     <string name="filters">Filters</string>
     <string name="ff">FF</string>
+    <string name="format_02X">%02X</string>
     <string name="forty_eight">48</string>
     <string name="g">G</string>
     <string name="height">Height</string>
@@ -40,16 +44,16 @@
     <string name="size">Size</string>
     <string name="spacing">Spacing</string>
     <string name="stretch">Stretch</string>
+    <string name="stroke_width">Stroke Width</string>
     <string name="text">Text</string>
+    <string name="tool_behavior">Tool Behavior</string>
     <string name="transform">Transform</string>
-    <string name="format_02X">%02X</string>
     <string name="undo">↶</string>
     <string name="untitled">Untitled</string>
     <string name="when_resizing">When resizing</string>
     <string name="width">Width</string>
     <string name="x">X</string>
     <string name="y">Y</string>
-    <string name="bucket_fill">BucketFill</string>
 
     <string-array name="file_types">
         <item>.png</item>
