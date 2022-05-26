@@ -1,5 +1,5 @@
 package com.misterchan.iconeditor;
 
-class SelectionBounds {
+class Positions {
     int left, top, right, bottom;
 }

@@ -54,6 +54,7 @@
     <string name="width">Width</string>
     <string name="x">X</string>
     <string name="y">Y</string>
+    <string name="lock_aspect_ratio">Lock Aspect Ratio</string>
 
     <string-array name="file_types">
         <item>.png</item>

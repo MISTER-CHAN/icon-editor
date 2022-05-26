@@ -76,6 +76,7 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String FORMAT_02X = "%02X";
 
+    private AfterTextChangedListener onPropSizeXTextChangedListener, onPropSizeYTextChangedListener;
     private Bitmap bitmap;
     private Bitmap chessboard;
     private Bitmap chessboardBitmap;
@@ -97,6 +98,7 @@ public class MainActivity extends AppCompatActivity {
     private final CellGrid cellGrid = new CellGrid();
     private CheckBox cbBucketFillContiguous;
     private CheckBox cbCellGridEnabled;
+    private CheckBox cbPropLar;
     private Bitmap.CompressFormat compressFormat = null;
     private double prevDiagonal;
     private EditText etCellGridOffsetX, etCellGridOffsetY;
@@ -131,13 +133,14 @@ public class MainActivity extends AppCompatActivity {
     private LinearLayout llBehaviorPencil;
     private LinearLayout llBehaviorText;
     private List<Window> windows = new ArrayList<>();
+    private Positions selection = new Positions();
+    private PositionsF transfromeeDpb = new PositionsF(); // DPB - Distance from point to bounds
     private RadioButton rbColor;
     private RadioButton rbBackgroundColor;
     private RadioButton rbForegroundColor;
     private RadioButton rbPropStretch, rbPropCrop;
     private RadioButton rbTransformer;
     private SeekBar sbRed, sbGreen, sbBlue, sbAlpha;
-    private SelectionBounds selection = new SelectionBounds();
     private Spinner sFileType;
     private String tree = "";
     private TabLayout tabLayout;
@@ -225,6 +228,16 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    private final CompoundButton.OnCheckedChangeListener onPropLarCheckBoxCheckedChangeListener = (buttonView, isChecked) -> {
+        if (isChecked) {
+            etPropSizeX.addTextChangedListener(onPropSizeXTextChangedListener);
+            etPropSizeY.addTextChangedListener(onPropSizeYTextChangedListener);
+        } else {
+            etPropSizeX.removeTextChangedListener(onPropSizeXTextChangedListener);
+            etPropSizeY.removeTextChangedListener(onPropSizeYTextChangedListener);
+        }
+    };
+
     private final DialogInterface.OnClickListener onCellGridDialogPosButtonClickListener = (dialog, which) -> {
         try {
             cellGrid.enabled = cbCellGridEnabled.isChecked();
@@ -249,8 +262,8 @@ public class MainActivity extends AppCompatActivity {
 
     private final DialogInterface.OnClickListener onNewGraphicDialogPosButtonClickListener = (dialog, which) -> {
         try {
-            int width = Integer.parseInt(etNewGraphicSizeX.getText().toString());
-            int height = Integer.parseInt(etNewGraphicSizeY.getText().toString());
+            int width = Integer.parseUnsignedInt(etNewGraphicSizeX.getText().toString());
+            int height = Integer.parseUnsignedInt(etNewGraphicSizeY.getText().toString());
             createGraphic(width, height);
         } catch (NumberFormatException e) {
         }
@@ -258,8 +271,8 @@ public class MainActivity extends AppCompatActivity {
 
     private final DialogInterface.OnClickListener onPropDialogPosButtonClickListener = (dialog, which) -> {
         try {
-            int width = Integer.parseInt(etPropSizeX.getText().toString());
-            int height = Integer.parseInt(etPropSizeY.getText().toString());
+            int width = Integer.parseUnsignedInt(etPropSizeX.getText().toString());
+            int height = Integer.parseUnsignedInt(etPropSizeY.getText().toString());
             boolean stretch = rbPropStretch.isChecked();
             resizeBitmap(width, height, stretch);
         } catch (NumberFormatException e) {
@@ -673,38 +686,94 @@ public class MainActivity extends AppCompatActivity {
             return true;
         }
 
-        switch (event.getAction()) {
+        switch (event.getPointerCount()) {
 
-            case MotionEvent.ACTION_DOWN: {
-                float x = event.getX(), y = event.getY();
-                if (transformeeBitmap == null) {
-                    transformeeTranslationX = window.translationX + toScaled(selection.left);
-                    transformeeTranslationY = window.translationY + toScaled(selection.top);
-                    transformeeBitmap = Bitmap.createBitmap(bitmap, selection.left, selection.top,
-                            selection.right - selection.left + 1, selection.bottom - selection.top + 1);
-                    canvas.drawRect(selection.left, selection.top, selection.right + 1, selection.bottom + 1, eraser);
-                    history.offer(bitmap);
+            case 1:
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN: {
+                        float x = event.getX(), y = event.getY();
+                        if (transformeeBitmap == null) {
+                            transformeeTranslationX = window.translationX + toScaled(selection.left);
+                            transformeeTranslationY = window.translationY + toScaled(selection.top);
+                            transformeeBitmap = Bitmap.createBitmap(bitmap, selection.left, selection.top,
+                                    selection.right - selection.left + 1, selection.bottom - selection.top + 1);
+                            canvas.drawRect(selection.left, selection.top, selection.right + 1, selection.bottom + 1, eraser);
+                            history.offer(bitmap);
+                        }
+                        drawBitmapOnView();
+                        drawTransformeeOnView();
+                        tvStatus.setText(String.format("Top-left: (%d, %d), Bottom-right: (%d, %d)",
+                                selection.left, selection.top, selection.right, selection.bottom));
+                        prevX = x;
+                        prevY = y;
+                        break;
+                    }
+                    case MotionEvent.ACTION_MOVE: {
+                        float x = event.getX(), y = event.getY();
+                        transformeeTranslationX += x - prevX;
+                        transformeeTranslationY += y - prevY;
+                        drawTransformeeOnView();
+                        tvStatus.setText(String.format("Top-left: (%d, %d), Bottom-right: (%d, %d)",
+                                selection.left, selection.top, selection.right, selection.bottom));
+                        prevX = x;
+                        prevY = y;
+                        break;
+                    }
                 }
-                drawBitmapOnView();
-                drawTransformeeOnView();
-                tvStatus.setText(String.format("Top-left: (%d, %d), Bottom-right: (%d, %d)",
-                        selection.left, selection.top, selection.right, selection.bottom));
-                prevX = x;
-                prevY = y;
                 break;
-            }
 
-            case MotionEvent.ACTION_MOVE: {
-                float x = event.getX(), y = event.getY();
-                transformeeTranslationX += x - prevX;
-                transformeeTranslationY += y - prevY;
-                drawTransformeeOnView();
-                tvStatus.setText(String.format("Top-left: (%d, %d), Bottom-right: (%d, %d)",
-                        selection.left, selection.top, selection.right, selection.bottom));
-                prevX = x;
-                prevY = y;
+            case 2:
+                switch (event.getActionMasked()) {
+                    case MotionEvent.ACTION_MOVE: {
+                        float x0 = event.getX(0), y0 = event.getY(0),
+                                x1 = event.getX(1), y1 = event.getY(1);
+                        PositionsF scaledSelection = new PositionsF();
+                        scaledSelection.left = window.translationX + toScaled(selection.left);
+                        scaledSelection.top = window.translationY + toScaled(selection.top);
+                        scaledSelection.right = window.translationX + toScaled(selection.right);
+                        scaledSelection.bottom = window.translationY + toScaled(selection.bottom);
+                        PositionsF dpb = new PositionsF();
+                        dpb.left = Math.min(x0 - scaledSelection.left, x1 - scaledSelection.left);
+                        dpb.top = Math.min(y0 - scaledSelection.top, y1 - scaledSelection.top);
+                        dpb.right = Math.min(scaledSelection.right - x0, scaledSelection.right - x1);
+                        dpb.bottom = Math.min(scaledSelection.bottom - y0, scaledSelection.bottom - y1);
+                        selection.left -= toOriginal(transfromeeDpb.left - dpb.left);
+                        selection.top -= toOriginal(transfromeeDpb.top - dpb.top);
+                        selection.right += toOriginal(transfromeeDpb.right - dpb.right);
+                        selection.bottom += toOriginal(transfromeeDpb.bottom - dpb.bottom);
+                        drawSelectionOnView();
+                        break;
+                    }
+                    case MotionEvent.ACTION_POINTER_DOWN: {
+                        float x0 = event.getX(0), y0 = event.getY(0),
+                                x1 = event.getX(1), y1 = event.getY(1);
+                        PositionsF scaledSelection = new PositionsF();
+                        scaledSelection.left = window.translationX + toScaled(selection.left);
+                        scaledSelection.top = window.translationY + toScaled(selection.top);
+                        scaledSelection.right = window.translationX + toScaled(selection.right);
+                        scaledSelection.bottom = window.translationY + toScaled(selection.bottom);
+                        transfromeeDpb.left = Math.min(x0 - scaledSelection.left, x1 - scaledSelection.left);
+                        transfromeeDpb.top = Math.min(y0 - scaledSelection.top, y1 - scaledSelection.top);
+                        transfromeeDpb.right = Math.min(scaledSelection.right - x0, scaledSelection.right - x1);
+                        transfromeeDpb.bottom = Math.min(scaledSelection.bottom - y0, scaledSelection.bottom - y1);
+                        break;
+                    }
+                    case MotionEvent.ACTION_POINTER_UP: {
+                        int width = selection.right - selection.left + 1, height = selection.bottom - selection.top + 1;
+                        Bitmap bm = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+                        new Canvas(bm).drawBitmap(transformeeBitmap,
+                                new Rect(0, 0, transformeeBitmap.getWidth(), transformeeBitmap.getHeight()),
+                                new Rect(0, 0, width, height),
+                                opaquePaint);
+                        transformeeBitmap.recycle();
+                        transformeeBitmap = bm;
+                        transformeeTranslationX = window.translationX + toScaled(selection.left);
+                        transformeeTranslationY = window.translationY + toScaled(selection.top);
+                        drawTransformeeOnView();
+                        break;
+                    }
+                }
                 break;
-            }
         }
         return true;
     };
@@ -1013,19 +1082,26 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void drawTextOnCanvas() {
-        if (llBehaviorText.getVisibility() == View.VISIBLE) {
-            paint.setTextSize(Float.parseFloat(etTextSize.getText().toString()));
-            canvas.drawText(etText.getText().toString(), textX, textY, paint);
-            drawBitmapOnView();
-            clearCanvasAndInvalidateView(previewCanvas, ivPreview);
-            llBehaviorText.setVisibility(View.INVISIBLE);
-            history.offer(bitmap);
+        if (llBehaviorText.getVisibility() != View.VISIBLE) {
+            return;
         }
+        try {
+            paint.setTextSize(Float.parseFloat(etTextSize.getText().toString()));
+        } catch (NumberFormatException e) {
+        }
+        canvas.drawText(etText.getText().toString(), textX, textY, paint);
+        drawBitmapOnView();
+        clearCanvasAndInvalidateView(previewCanvas, ivPreview);
+        llBehaviorText.setVisibility(View.INVISIBLE);
+        history.offer(bitmap);
     }
 
     private void drawTextOnView() {
+        try {
+            paint.setTextSize(toScaled((int) Float.parseFloat(etTextSize.getText().toString())));
+        } catch (NumberFormatException e) {
+        }
         clearCanvas(previewCanvas);
-        paint.setTextSize(toScaled((int) Float.parseFloat(etTextSize.getText().toString())));
         previewCanvas.drawText(etText.getText().toString(), window.translationX + toScaled(textX), window.translationY + toScaled(textY), paint);
         ivPreview.invalidate();
     }
@@ -1120,16 +1196,16 @@ public class MainActivity extends AppCompatActivity {
     private void onChannelChanged(String hex, SeekBar seekBar) {
         try {
             seekBar.setProgress(Integer.parseUnsignedInt(hex, 16));
-            int color = Color.argb(
-                    sbAlpha.getProgress(),
-                    sbRed.getProgress(),
-                    sbGreen.getProgress(),
-                    sbBlue.getProgress());
-            paint.setColor(color);
-            rbColor.setTextColor(color);
-
-        } catch (Exception e) {
+        } catch (NumberFormatException e) {
         }
+        int color = Color.argb(
+                sbAlpha.getProgress(),
+                sbRed.getProgress(),
+                sbGreen.getProgress(),
+                sbBlue.getProgress());
+        paint.setColor(color);
+        rbColor.setTextColor(color);
+
     }
 
     @Override
@@ -1168,12 +1244,30 @@ public class MainActivity extends AppCompatActivity {
         tabLayout = findViewById(R.id.tl);
         tvStatus = findViewById(R.id.tv_status);
 
+        onPropSizeXTextChangedListener = s -> {
+            try {
+                int i = Integer.parseUnsignedInt(s);
+                etPropSizeY.removeTextChangedListener(onPropSizeYTextChangedListener);
+                etPropSizeY.setText(String.valueOf(i * bitmap.getHeight() / bitmap.getWidth()));
+                etPropSizeY.addTextChangedListener(onPropSizeYTextChangedListener);
+            } catch (NumberFormatException e) {
+            }
+        };
+
+        onPropSizeYTextChangedListener = s -> {
+            try {
+                int i = Integer.parseUnsignedInt(s);
+                etPropSizeX.removeTextChangedListener(onPropSizeXTextChangedListener);
+                etPropSizeX.setText(String.valueOf(i * bitmap.getWidth() / bitmap.getHeight()));
+                etPropSizeX.addTextChangedListener(onPropSizeXTextChangedListener);
+            } catch (NumberFormatException e) {
+            }
+        };
+
         findViewById(R.id.b_text_draw).setOnClickListener(onDrawTextButtonClickListener);
         etAlpha.addTextChangedListener((AfterTextChangedListener) s -> onChannelChanged(s, sbAlpha));
         etBlue.addTextChangedListener((AfterTextChangedListener) s -> onChannelChanged(s, sbBlue));
-        etEraserStrokeWidth.addTextChangedListener((AfterTextChangedListener) s -> eraser.setStrokeWidth(Float.parseFloat(s)));
         etGreen.addTextChangedListener((AfterTextChangedListener) s -> onChannelChanged(s, sbGreen));
-        etPencilStrokeWidth.addTextChangedListener((AfterTextChangedListener) s -> paint.setStrokeWidth(Float.parseFloat(s)));
         etRed.addTextChangedListener((AfterTextChangedListener) s -> onChannelChanged(s, sbRed));
         etText.addTextChangedListener((AfterTextChangedListener) s -> drawTextOnView());
         etTextSize.addTextChangedListener((AfterTextChangedListener) s -> drawTextOnView());
@@ -1194,6 +1288,20 @@ public class MainActivity extends AppCompatActivity {
         sbGreen.setOnSeekBarChangeListener((OnProgressChangeListener) progress -> etGreen.setText(String.format(FORMAT_02X, progress)));
         sbRed.setOnSeekBarChangeListener((OnProgressChangeListener) progress -> etRed.setText(String.format(FORMAT_02X, progress)));
         tabLayout.addOnTabSelectedListener(onTabSelectedListener);
+
+        etEraserStrokeWidth.addTextChangedListener((AfterTextChangedListener) s -> {
+            try {
+                eraser.setStrokeWidth(Float.parseFloat(s));
+            } catch (NumberFormatException e) {
+            }
+        });
+
+        etPencilStrokeWidth.addTextChangedListener((AfterTextChangedListener) s -> {
+            try {
+                paint.setStrokeWidth(Float.parseFloat(s));
+            } catch (NumberFormatException e) {
+            }
+        });
 
         chessboard = BitmapFactory.decodeResource(getResources(), R.mipmap.chessboard);
     }
@@ -1380,11 +1488,13 @@ public class MainActivity extends AppCompatActivity {
                         .setView(R.layout.properties)
                         .show();
 
+                cbPropLar = propertiesDialog.findViewById(R.id.cb_prop_lar);
                 etPropSizeX = propertiesDialog.findViewById(R.id.et_prop_size_x);
                 etPropSizeY = propertiesDialog.findViewById(R.id.et_prop_size_y);
                 rbPropStretch = propertiesDialog.findViewById(R.id.rb_prop_stretch);
                 rbPropCrop = propertiesDialog.findViewById(R.id.rb_prop_crop);
 
+                cbPropLar.setOnCheckedChangeListener(onPropLarCheckBoxCheckedChangeListener);
                 etPropSizeX.setText(String.valueOf(bitmap.getWidth()));
                 etPropSizeY.setText(String.valueOf(bitmap.getHeight()));
                 rbPropStretch.setChecked(true);
