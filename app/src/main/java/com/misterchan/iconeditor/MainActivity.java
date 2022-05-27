@@ -99,8 +99,10 @@ public class MainActivity extends AppCompatActivity {
     private CheckBox cbBucketFillContiguous;
     private CheckBox cbCellGridEnabled;
     private CheckBox cbPropLar;
+    private CheckBox cbTransformerLar;
     private Bitmap.CompressFormat compressFormat = null;
     private double prevDiagonal;
+    private double transformeeWhRatio; // Wh - Width and height
     private EditText etCellGridOffsetX, etCellGridOffsetY;
     private EditText etCellGridSizeX, etCellGridSizeY;
     private EditText etCellGridSpacingX, etCellGridSpacingY;
@@ -132,6 +134,7 @@ public class MainActivity extends AppCompatActivity {
     private LinearLayout llBehaviorEraser;
     private LinearLayout llBehaviorPencil;
     private LinearLayout llBehaviorText;
+    private LinearLayout llBehaviorTransformer;
     private List<Window> windows = new ArrayList<>();
     private Positions selection = new Positions();
     private PositionsF transfromeeDpb = new PositionsF(); // DPB - Distance from point to bounds
@@ -153,6 +156,7 @@ public class MainActivity extends AppCompatActivity {
             setAntiAlias(false);
             setColor(Color.WHITE);
             setDither(false);
+            setTextAlign(Paint.Align.CENTER);
         }
     };
 
@@ -180,6 +184,7 @@ public class MainActivity extends AppCompatActivity {
             setAntiAlias(false);
             setColor(Color.BLACK);
             setDither(false);
+            setTextAlign(Paint.Align.CENTER);
         }
     };
 
@@ -674,6 +679,8 @@ public class MainActivity extends AppCompatActivity {
                         textY = toOriginal(event.getY() - window.translationY);
                         llBehaviorText.setVisibility(View.VISIBLE);
                         drawTextOnView();
+                        prevX = window.translationX;
+                        prevY = window.translationY;
                         break;
                 }
         }
@@ -692,16 +699,19 @@ public class MainActivity extends AppCompatActivity {
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN: {
                         float x = event.getX(), y = event.getY();
-                        if (transformeeBitmap == null) {
-                            transformeeTranslationX = window.translationX + toScaled(selection.left);
-                            transformeeTranslationY = window.translationY + toScaled(selection.top);
-                            transformeeBitmap = Bitmap.createBitmap(bitmap, selection.left, selection.top,
-                                    selection.right - selection.left + 1, selection.bottom - selection.top + 1);
-                            canvas.drawRect(selection.left, selection.top, selection.right + 1, selection.bottom + 1, eraser);
-                            history.offer(bitmap);
+                        int width = selection.right - selection.left + 1, height = selection.bottom - selection.top + 1;
+                        if (width > 0 && height > 0) {
+                            if (transformeeBitmap == null) {
+                                transformeeTranslationX = window.translationX + toScaled(selection.left);
+                                transformeeTranslationY = window.translationY + toScaled(selection.top);
+                                transformeeBitmap = Bitmap.createBitmap(bitmap, selection.left, selection.top,
+                                        width, height);
+                                canvas.drawRect(selection.left, selection.top, selection.right + 1, selection.bottom + 1, eraser);
+                                history.offer(bitmap);
+                            }
+                            drawBitmapOnView();
+                            drawTransformeeOnView();
                         }
-                        drawBitmapOnView();
-                        drawTransformeeOnView();
                         tvStatus.setText(String.format("Top-left: (%d, %d), Bottom-right: (%d, %d)",
                                 selection.left, selection.top, selection.right, selection.bottom));
                         prevX = x;
@@ -737,11 +747,44 @@ public class MainActivity extends AppCompatActivity {
                         dpb.top = Math.min(y0 - scaledSelection.top, y1 - scaledSelection.top);
                         dpb.right = Math.min(scaledSelection.right - x0, scaledSelection.right - x1);
                         dpb.bottom = Math.min(scaledSelection.bottom - y0, scaledSelection.bottom - y1);
-                        selection.left -= toOriginal(transfromeeDpb.left - dpb.left);
-                        selection.top -= toOriginal(transfromeeDpb.top - dpb.top);
-                        selection.right += toOriginal(transfromeeDpb.right - dpb.right);
-                        selection.bottom += toOriginal(transfromeeDpb.bottom - dpb.bottom);
+                        if (cbTransformerLar.isChecked()) {
+                            PositionsF dpbDiff = new PositionsF();
+                            dpbDiff.left = transfromeeDpb.left - dpb.left;
+                            dpbDiff.top = transfromeeDpb.top - dpb.top;
+                            dpbDiff.right = transfromeeDpb.right - dpb.right;
+                            dpbDiff.bottom = transfromeeDpb.bottom - dpb.bottom;
+                            if (Math.abs(dpbDiff.left) + Math.abs(dpbDiff.right) >= Math.abs(dpbDiff.top) + Math.abs(dpbDiff.bottom)) {
+                                selection.left -= toOriginal(transfromeeDpb.left - dpb.left);
+                                selection.right += toOriginal(transfromeeDpb.right - dpb.right);
+                                double width = selection.right - selection.left + 1, height = width / transformeeWhRatio;
+                                double centerVertical = (selection.top + selection.bottom + 1) / 2.0;
+                                selection.top = (int) (centerVertical - height / 2.0);
+                                selection.bottom = (int) (centerVertical + height / 2.0);
+                                scaledSelection.top = window.translationY + toScaled(selection.top);
+                                scaledSelection.bottom = window.translationY + toScaled(selection.bottom);
+                                transfromeeDpb.top = Math.min(y0 - scaledSelection.top, y1 - scaledSelection.top);
+                                transfromeeDpb.bottom = Math.min(scaledSelection.bottom - y0, scaledSelection.bottom - y1);
+                            } else {
+                                selection.top -= toOriginal(transfromeeDpb.top - dpb.top);
+                                selection.bottom += toOriginal(transfromeeDpb.bottom - dpb.bottom);
+                                double height = selection.bottom - selection.top + 1, width = height * transformeeWhRatio;
+                                double centerHorizontal = (selection.right + selection.left + 1) / 2.0;
+                                selection.left = (int) (centerHorizontal - width / 2.0);
+                                selection.right = (int) (centerHorizontal + width / 2.0);
+                                scaledSelection.left = window.translationX + toScaled(selection.left);
+                                scaledSelection.right = window.translationX + toScaled(selection.right);
+                                transfromeeDpb.left = Math.min(x0 - scaledSelection.left, x1 - scaledSelection.left);
+                                transfromeeDpb.right = Math.min(scaledSelection.right - x0, scaledSelection.right - x1);
+                            }
+                        } else {
+                            selection.left -= toOriginal(transfromeeDpb.left - dpb.left);
+                            selection.top -= toOriginal(transfromeeDpb.top - dpb.top);
+                            selection.right += toOriginal(transfromeeDpb.right - dpb.right);
+                            selection.bottom += toOriginal(transfromeeDpb.bottom - dpb.bottom);
+                        }
                         drawSelectionOnView();
+                        tvStatus.setText(String.format("Area: %d × %d",
+                                selection.right - selection.left + 1, selection.bottom - selection.top + 1));
                         break;
                     }
                     case MotionEvent.ACTION_POINTER_DOWN: {
@@ -756,20 +799,33 @@ public class MainActivity extends AppCompatActivity {
                         transfromeeDpb.top = Math.min(y0 - scaledSelection.top, y1 - scaledSelection.top);
                         transfromeeDpb.right = Math.min(scaledSelection.right - x0, scaledSelection.right - x1);
                         transfromeeDpb.bottom = Math.min(scaledSelection.bottom - y0, scaledSelection.bottom - y1);
+                        if (cbTransformerLar.isChecked()) {
+                            transformeeWhRatio = (double) (selection.right - selection.left + 1) / (double) (selection.bottom - selection.top + 1);
+                        }
+                        tvStatus.setText(String.format("Area: %d × %d",
+                                selection.right - selection.left + 1, selection.bottom - selection.top + 1));
                         break;
                     }
                     case MotionEvent.ACTION_POINTER_UP: {
                         int width = selection.right - selection.left + 1, height = selection.bottom - selection.top + 1;
-                        Bitmap bm = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-                        new Canvas(bm).drawBitmap(transformeeBitmap,
-                                new Rect(0, 0, transformeeBitmap.getWidth(), transformeeBitmap.getHeight()),
-                                new Rect(0, 0, width, height),
-                                opaquePaint);
-                        transformeeBitmap.recycle();
-                        transformeeBitmap = bm;
-                        transformeeTranslationX = window.translationX + toScaled(selection.left);
-                        transformeeTranslationY = window.translationY + toScaled(selection.top);
+                        if (width > 0 && height > 0) {
+                            Bitmap bm = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+                            new Canvas(bm).drawBitmap(transformeeBitmap,
+                                    new Rect(0, 0, transformeeBitmap.getWidth(), transformeeBitmap.getHeight()),
+                                    new Rect(0, 0, width, height),
+                                    opaquePaint);
+                            transformeeBitmap.recycle();
+                            transformeeBitmap = bm;
+                            transformeeTranslationX = window.translationX + toScaled(selection.left);
+                            transformeeTranslationY = window.translationY + toScaled(selection.top);
+                        } else if (transformeeBitmap != null) {
+                            transformeeBitmap.recycle();
+                            transformeeBitmap = null;
+                        }
                         drawTransformeeOnView();
+                        prevX = event.getX(1 - event.getActionIndex());
+                        prevY = event.getY(1 - event.getActionIndex());
+                        tvStatus.setText("");
                         break;
                     }
                 }
@@ -782,8 +838,10 @@ public class MainActivity extends AppCompatActivity {
     private final CompoundButton.OnCheckedChangeListener onTransformerRadioButtonCheckedChangeListener = (buttonView, isChecked) -> {
         if (isChecked) {
             flImageView.setOnTouchListener(onImageViewTouchWithTransformerListener);
+            llBehaviorTransformer.setVisibility(View.VISIBLE);
         } else {
             drawTransformeeOnCanvas();
+            llBehaviorTransformer.setVisibility(View.GONE);
         }
     };
 
@@ -1108,8 +1166,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void drawTransformeeOnCanvas() {
         if (transformeeBitmap != null) {
-            optimizeSelection();
             if (hasSelection) {
+                optimizeSelection();
+                drawSelectionOnView();
                 canvas.drawBitmap(transformeeBitmap, selection.left, selection.top, opaquePaint);
                 drawBitmapOnView();
                 history.offer(bitmap);
@@ -1215,6 +1274,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         cbBucketFillContiguous = findViewById(R.id.cb_bucket_fill_contiguous);
+        cbTransformerLar = findViewById(R.id.cb_transformer_lar);
         etAlpha = findViewById(R.id.et_alpha);
         etBlue = findViewById(R.id.et_blue);
         etEraserStrokeWidth = findViewById(R.id.et_eraser_stroke_width);
@@ -1233,6 +1293,7 @@ public class MainActivity extends AppCompatActivity {
         llBehaviorEraser = findViewById(R.id.ll_behavior_eraser);
         llBehaviorPencil = findViewById(R.id.ll_behavior_pencil);
         llBehaviorText = findViewById(R.id.ll_behavior_text);
+        llBehaviorTransformer = findViewById(R.id.ll_behavior_transformer);
         rbBackgroundColor = findViewById(R.id.rb_background_color);
         rbForegroundColor = findViewById(R.id.rb_foreground_color);
         rbColor = rbForegroundColor;

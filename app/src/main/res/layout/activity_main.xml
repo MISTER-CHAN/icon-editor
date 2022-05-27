@@ -60,6 +60,21 @@
         android:layout_height="wrap_content">
 
         <LinearLayout
+            android:id="@+id/ll_behavior_transformer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:orientation="horizontal"
+            android:visibility="invisible">
+
+            <CheckBox
+                android:id="@+id/cb_transformer_lar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/lock_aspect_ratio" />
+        </LinearLayout>
+
+        <LinearLayout
             android:id="@+id/ll_behavior_pencil"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -79,8 +94,8 @@
                     android:autofillHints="0"
                     android:background="@color/transparent"
                     android:hint="@string/stroke_width"
-                    android:textAlignment="textEnd"
-                    android:inputType="number" />
+                    android:inputType="number"
+                    android:textAlignment="textEnd" />
             </com.google.android.material.textfield.TextInputLayout>
         </LinearLayout>
 
@@ -121,8 +136,8 @@
                     android:autofillHints="0"
                     android:background="@color/transparent"
                     android:hint="@string/stroke_width"
-                    android:textAlignment="textEnd"
-                    android:inputType="number" />
+                    android:inputType="number"
+                    android:textAlignment="textEnd" />
             </com.google.android.material.textfield.TextInputLayout>
         </LinearLayout>
 
