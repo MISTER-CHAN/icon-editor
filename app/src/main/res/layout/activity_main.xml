@@ -189,72 +189,87 @@
         </LinearLayout>
     </FrameLayout>
 
-    <HorizontalScrollView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:scrollbars="none">
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
 
-        <RadioGroup
+        <CheckBox
+            android:id="@+id/cb_scaler"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:text="@string/scale" />
 
-            <RadioButton
-                android:id="@+id/rb_scaler"
+        <HorizontalScrollView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:scrollbars="none">
+
+            <RadioGroup
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/scale" />
+                android:orientation="horizontal">
 
-            <RadioButton
-                android:id="@+id/rb_selector"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/select" />
+                <RadioButton
+                    android:id="@+id/rb_scaler"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/scale"
+                    android:visibility="gone" />
 
-            <RadioButton
-                android:id="@+id/rb_transformer"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/transform" />
+                <RadioButton
+                    android:id="@+id/rb_selector"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/select" />
 
-            <RadioButton
-                android:id="@+id/rb_pencil"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:checked="true"
-                android:text="@string/pencil" />
+                <RadioButton
+                    android:id="@+id/rb_transformer"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/transform" />
 
-            <RadioButton
-                android:id="@+id/rb_rectangle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/rectangle" />
+                <RadioButton
+                    android:id="@+id/rb_pencil"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:text="@string/pencil" />
 
-            <RadioButton
-                android:id="@+id/rb_bucket_fill"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/bucket_fill" />
+                <RadioButton
+                    android:id="@+id/rb_rectangle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/rectangle" />
 
-            <RadioButton
-                android:id="@+id/rb_eraser"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/eraser" />
+                <RadioButton
+                    android:id="@+id/rb_bucket_fill"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/bucket_fill" />
 
-            <RadioButton
-                android:id="@+id/rb_eyedropper"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/eyedropper" />
+                <RadioButton
+                    android:id="@+id/rb_eraser"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/eraser" />
 
-            <RadioButton
-                android:id="@+id/rb_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/text" />
-        </RadioGroup>
-    </HorizontalScrollView>
+                <RadioButton
+                    android:id="@+id/rb_eyedropper"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/eyedropper" />
+
+                <RadioButton
+                    android:id="@+id/rb_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/text" />
+            </RadioGroup>
+        </HorizontalScrollView>
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"

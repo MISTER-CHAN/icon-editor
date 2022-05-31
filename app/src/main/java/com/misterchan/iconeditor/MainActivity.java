@@ -99,6 +99,7 @@ public class MainActivity extends AppCompatActivity {
     private CheckBox cbBucketFillContiguous;
     private CheckBox cbCellGridEnabled;
     private CheckBox cbPropLar;
+    private CheckBox cbScaler;
     private CheckBox cbTransformerLar;
     private Bitmap.CompressFormat compressFormat = null;
     private double prevDiagonal;
@@ -142,6 +143,7 @@ public class MainActivity extends AppCompatActivity {
     private RadioButton rbBackgroundColor;
     private RadioButton rbForegroundColor;
     private RadioButton rbPropStretch, rbPropCrop;
+    private RadioButton rbScaler;
     private RadioButton rbTransformer;
     private SeekBar sbRed, sbGreen, sbBlue, sbAlpha;
     private Spinner sFileType;
@@ -706,7 +708,7 @@ public class MainActivity extends AppCompatActivity {
                                 transformeeTranslationY = window.translationY + toScaled(selection.top);
                                 transformeeBitmap = Bitmap.createBitmap(bitmap, selection.left, selection.top,
                                         width, height);
-                                canvas.drawRect(selection.left, selection.top, selection.right + 1, selection.bottom + 1, eraser);
+                                canvas.drawRect(selection.left, selection.top, selection.right + 1, selection.bottom + 1, paint);
                                 history.offer(bitmap);
                             }
                             drawBitmapOnView();
@@ -834,9 +836,25 @@ public class MainActivity extends AppCompatActivity {
         return true;
     };
 
+    private final CompoundButton.OnCheckedChangeListener onScalerCheckBoxCheckedChangeListener = (buttonView, isChecked) -> {
+        if (isChecked) {
+            rbScaler.setChecked(true);
+        } else {
+            ((RadioButton) cbScaler.getTag()).setChecked(true);
+        }
+    };
+
+    @SuppressLint("ClickableViewAccessibility")
+    private final CompoundButton.OnCheckedChangeListener onScalerRadioButtonCheckedChangeListener = (buttonView, isChecked) -> {
+        if (isChecked) {
+            flImageView.setOnTouchListener(onImageViewTouchWithScalerListener);
+        }
+    };
+
     @SuppressLint("ClickableViewAccessibility")
     private final CompoundButton.OnCheckedChangeListener onTransformerRadioButtonCheckedChangeListener = (buttonView, isChecked) -> {
         if (isChecked) {
+            cbScaler.setTag(buttonView);
             flImageView.setOnTouchListener(onImageViewTouchWithTransformerListener);
             llBehaviorTransformer.setVisibility(View.VISIBLE);
         } else {
@@ -848,6 +866,7 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("ClickableViewAccessibility")
     private final CompoundButton.OnCheckedChangeListener onTextRadioButtonCheckedChangeListener = (buttonView, isChecked) -> {
         if (isChecked) {
+            cbScaler.setTag(buttonView);
             flImageView.setOnTouchListener(onImageViewTouchWithTextListener);
         } else {
             drawTextOnCanvas();
@@ -1274,6 +1293,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         cbBucketFillContiguous = findViewById(R.id.cb_bucket_fill_contiguous);
+        cbScaler = findViewById(R.id.cb_scaler);
         cbTransformerLar = findViewById(R.id.cb_transformer_lar);
         etAlpha = findViewById(R.id.et_alpha);
         etBlue = findViewById(R.id.et_blue);
@@ -1297,6 +1317,8 @@ public class MainActivity extends AppCompatActivity {
         rbBackgroundColor = findViewById(R.id.rb_background_color);
         rbForegroundColor = findViewById(R.id.rb_foreground_color);
         rbColor = rbForegroundColor;
+        RadioButton rbPencil = findViewById(R.id.rb_pencil);
+        rbScaler = findViewById(R.id.rb_scaler);
         rbTransformer = findViewById(R.id.rb_transformer);
         sbAlpha = findViewById(R.id.sb_alpha);
         sbBlue = findViewById(R.id.sb_blue);
@@ -1326,6 +1348,8 @@ public class MainActivity extends AppCompatActivity {
         };
 
         findViewById(R.id.b_text_draw).setOnClickListener(onDrawTextButtonClickListener);
+        cbScaler.setOnCheckedChangeListener(onScalerCheckBoxCheckedChangeListener);
+        cbScaler.setTag(rbPencil);
         etAlpha.addTextChangedListener((AfterTextChangedListener) s -> onChannelChanged(s, sbAlpha));
         etBlue.addTextChangedListener((AfterTextChangedListener) s -> onChannelChanged(s, sbBlue));
         etGreen.addTextChangedListener((AfterTextChangedListener) s -> onChannelChanged(s, sbGreen));
@@ -1335,13 +1359,13 @@ public class MainActivity extends AppCompatActivity {
         flImageView.setOnTouchListener(onImageViewTouchWithPencilListener);
         rbBackgroundColor.setOnCheckedChangeListener(onBackgroundColorRadioButtonCheckedChangeListener);
         rbForegroundColor.setOnCheckedChangeListener(onForegroundColorRadioButtonCheckedChangeListener);
-        ((RadioButton) findViewById(R.id.rb_bucket_fill)).setOnCheckedChangeListener((OnCheckListener) isChecked -> onToolChange(isChecked, onImageViewTouchWithBucketListener, llBehaviorBucketFill));
-        ((RadioButton) findViewById(R.id.rb_eraser)).setOnCheckedChangeListener((OnCheckListener) isChecked -> onToolChange(isChecked, onImageViewTouchWithEraserListener, llBehaviorEraser));
-        ((RadioButton) findViewById(R.id.rb_eyedropper)).setOnCheckedChangeListener((OnCheckListener) isChecked -> onToolChange(isChecked, onImageViewTouchWithEyedropperListener, null));
-        ((RadioButton) findViewById(R.id.rb_pencil)).setOnCheckedChangeListener((OnCheckListener) isChecked -> onToolChange(isChecked, onImageViewTouchWithPencilListener, llBehaviorPencil));
-        ((RadioButton) findViewById(R.id.rb_rectangle)).setOnCheckedChangeListener((OnCheckListener) isChecked -> onToolChange(isChecked, onImageViewTouchWithRectListener, null));
-        ((RadioButton) findViewById(R.id.rb_scaler)).setOnCheckedChangeListener((OnCheckListener) isChecked -> onToolChange(isChecked, onImageViewTouchWithScalerListener, null));
-        ((RadioButton) findViewById(R.id.rb_selector)).setOnCheckedChangeListener((OnCheckListener) isChecked -> onToolChange(isChecked, onImageViewTouchWithSelectorListener, null));
+        ((RadioButton) findViewById(R.id.rb_bucket_fill)).setOnCheckedChangeListener((buttonView, isChecked) -> onToolChange(buttonView, isChecked, onImageViewTouchWithBucketListener, llBehaviorBucketFill));
+        ((RadioButton) findViewById(R.id.rb_eraser)).setOnCheckedChangeListener((buttonView, isChecked) -> onToolChange(buttonView, isChecked, onImageViewTouchWithEraserListener, llBehaviorEraser));
+        ((RadioButton) findViewById(R.id.rb_eyedropper)).setOnCheckedChangeListener((buttonView, isChecked) -> onToolChange(buttonView, isChecked, onImageViewTouchWithEyedropperListener, null));
+        rbPencil.setOnCheckedChangeListener((buttonView, isChecked) -> onToolChange(buttonView, isChecked, onImageViewTouchWithPencilListener, llBehaviorPencil));
+        ((RadioButton) findViewById(R.id.rb_rectangle)).setOnCheckedChangeListener((buttonView, isChecked) -> onToolChange(buttonView, isChecked, onImageViewTouchWithRectListener, null));
+        rbScaler.setOnCheckedChangeListener(onScalerRadioButtonCheckedChangeListener);
+        ((RadioButton) findViewById(R.id.rb_selector)).setOnCheckedChangeListener((buttonView, isChecked) -> onToolChange(buttonView, isChecked, onImageViewTouchWithSelectorListener, null));
         ((RadioButton) findViewById(R.id.rb_text)).setOnCheckedChangeListener(onTextRadioButtonCheckedChangeListener);
         rbTransformer.setOnCheckedChangeListener(onTransformerRadioButtonCheckedChangeListener);
         sbAlpha.setOnSeekBarChangeListener((OnProgressChangeListener) progress -> etAlpha.setText(String.format(FORMAT_02X, progress)));
@@ -1398,8 +1422,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @SuppressLint("ClickableViewAccessibility")
-    private void onToolChange(boolean isChecked, View.OnTouchListener onImageViewTouchListener, View toolBehavior) {
+    private void onToolChange(CompoundButton buttonView, boolean isChecked, View.OnTouchListener onImageViewTouchListener, View toolBehavior) {
         if (isChecked) {
+            cbScaler.setTag(buttonView);
+            cbScaler.setChecked(false);
             flImageView.setOnTouchListener(onImageViewTouchListener);
         }
         if (toolBehavior != null) {
