@@ -12,7 +12,6 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.RectF;
-import android.graphics.Xfermode;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -104,7 +103,7 @@ public class MainActivity extends AppCompatActivity {
     private CheckBox cbTransformerLar;
     private Bitmap.CompressFormat compressFormat = null;
     private double prevDiagonal;
-    private double transformeeWhRatio; // Wh - Width and height
+    private double transformeeAspectRatio;
     private EditText etCellGridOffsetX, etCellGridOffsetY;
     private EditText etCellGridSizeX, etCellGridSizeY;
     private EditText etCellGridSpacingX, etCellGridSpacingY;
@@ -785,7 +784,7 @@ public class MainActivity extends AppCompatActivity {
                             if (Math.abs(dpbDiff.left) + Math.abs(dpbDiff.right) >= Math.abs(dpbDiff.top) + Math.abs(dpbDiff.bottom)) {
                                 selection.left -= toOriginal(transfromeeDpb.left - dpb.left);
                                 selection.right += toOriginal(transfromeeDpb.right - dpb.right);
-                                double width = selection.right - selection.left + 1, height = width / transformeeWhRatio;
+                                double width = selection.right - selection.left + 1, height = width / transformeeAspectRatio;
                                 double centerVertical = (selection.top + selection.bottom + 1) / 2.0;
                                 selection.top = (int) (centerVertical - height / 2.0);
                                 selection.bottom = (int) (centerVertical + height / 2.0);
@@ -796,7 +795,7 @@ public class MainActivity extends AppCompatActivity {
                             } else {
                                 selection.top -= toOriginal(transfromeeDpb.top - dpb.top);
                                 selection.bottom += toOriginal(transfromeeDpb.bottom - dpb.bottom);
-                                double height = selection.bottom - selection.top + 1, width = height * transformeeWhRatio;
+                                double height = selection.bottom - selection.top + 1, width = height * transformeeAspectRatio;
                                 double centerHorizontal = (selection.right + selection.left + 1) / 2.0;
                                 selection.left = (int) (centerHorizontal - width / 2.0);
                                 selection.right = (int) (centerHorizontal + width / 2.0);
@@ -829,7 +828,7 @@ public class MainActivity extends AppCompatActivity {
                         transfromeeDpb.right = Math.min(scaledSelection.right - x0, scaledSelection.right - x1);
                         transfromeeDpb.bottom = Math.min(scaledSelection.bottom - y0, scaledSelection.bottom - y1);
                         if (cbTransformerLar.isChecked()) {
-                            transformeeWhRatio = (double) (selection.right - selection.left + 1) / (double) (selection.bottom - selection.top + 1);
+                            transformeeAspectRatio = (double) (selection.right - selection.left + 1) / (double) (selection.bottom - selection.top + 1);
                         }
                         tvStatus.setText(String.format("Area: %d × %d",
                                 selection.right - selection.left + 1, selection.bottom - selection.top + 1));
