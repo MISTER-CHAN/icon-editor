@@ -12,6 +12,7 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.Xfermode;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -95,7 +96,7 @@ public class MainActivity extends AppCompatActivity {
     private Canvas previewCanvas;
     private Canvas selectionCanvas;
     private Canvas viewCanvas;
-    private final CellGrid cellGrid = new CellGrid();
+    private CellGrid cellGrid;
     private CheckBox cbBucketFillContiguous;
     private CheckBox cbCellGridEnabled;
     private CheckBox cbPropLar;
@@ -167,6 +168,13 @@ public class MainActivity extends AppCompatActivity {
         {
             setColor(Color.RED);
             setStrokeWidth(2.0f);
+        }
+    };
+
+    private final Paint colorPaint = new Paint() {
+
+        {
+            setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC));
         }
     };
 
@@ -247,9 +255,19 @@ public class MainActivity extends AppCompatActivity {
 
     private final DialogInterface.OnClickListener onCellGridDialogPosButtonClickListener = (dialog, which) -> {
         try {
+            int sizeX = Integer.parseInt(etCellGridSizeX.getText().toString()),
+                    sizeY = Integer.parseInt(etCellGridSizeY.getText().toString()),
+                    spacingX = Integer.parseInt(etCellGridSpacingX.getText().toString()),
+                    spacingY = Integer.parseInt(etCellGridSpacingY.getText().toString()),
+                    offsetX = Integer.parseInt(etCellGridOffsetX.getText().toString()),
+                    offsetY = Integer.parseInt(etCellGridOffsetY.getText().toString());
             cellGrid.enabled = cbCellGridEnabled.isChecked();
-            cellGrid.sizeX = Integer.parseInt(etCellGridSizeX.getText().toString());
-            cellGrid.sizeY = Integer.parseInt(etCellGridSizeY.getText().toString());
+            cellGrid.sizeX = sizeX;
+            cellGrid.sizeY = sizeY;
+            cellGrid.spacingX = spacingX;
+            cellGrid.spacingY = spacingY;
+            cellGrid.offsetX = offsetX;
+            cellGrid.offsetY = offsetY;
         } catch (NumberFormatException e) {
         }
         drawGridOnView();
@@ -340,6 +358,7 @@ public class MainActivity extends AppCompatActivity {
             bitmap = window.bitmap;
             canvas = new Canvas(bitmap);
             history = window.history;
+            cellGrid = window.cellGrid;
 
             int width = bitmap.getWidth(), height = bitmap.getHeight();
             imageWidth = (int) toScaled(width);
@@ -701,6 +720,9 @@ public class MainActivity extends AppCompatActivity {
             case 1:
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN: {
+                        if (!hasSelection) {
+                            break;
+                        }
                         float x = event.getX(), y = event.getY();
                         int width = selection.right - selection.left + 1, height = selection.bottom - selection.top + 1;
                         if (width > 0 && height > 0) {
@@ -709,7 +731,8 @@ public class MainActivity extends AppCompatActivity {
                                 transformeeTranslationY = window.translationY + toScaled(selection.top);
                                 transformeeBitmap = Bitmap.createBitmap(bitmap, selection.left, selection.top,
                                         width, height);
-                                canvas.drawRect(selection.left, selection.top, selection.right + 1, selection.bottom + 1, paint);
+                                colorPaint.setColor(paint.getColor());
+                                canvas.drawRect(selection.left, selection.top, selection.right + 1, selection.bottom + 1, colorPaint);
                                 history.offer(bitmap);
                             }
                             drawBitmapOnView();
@@ -722,6 +745,9 @@ public class MainActivity extends AppCompatActivity {
                         break;
                     }
                     case MotionEvent.ACTION_MOVE: {
+                        if (transformeeBitmap == null) {
+                            break;
+                        }
                         float x = event.getX(), y = event.getY();
                         transformeeTranslationX += x - prevX;
                         transformeeTranslationY += y - prevY;
@@ -889,6 +915,8 @@ public class MainActivity extends AppCompatActivity {
         window.history = history;
         history.offer(bitmap);
         window.path = path;
+        cellGrid = new CellGrid();
+        window.cellGrid = cellGrid;
 
         window.scale = (float) ((double) viewWidth / (double) width);
         imageWidth = (int) toScaled(width);
@@ -1044,10 +1072,10 @@ public class MainActivity extends AppCompatActivity {
 
     private void drawGridOnView() {
         clearCanvas(gridCanvas);
-        float startX = window.translationX >= 0.0f ? window.translationX : window.translationX % window.scale;
-        float startY = window.translationY >= 0.0f ? window.translationY : window.translationY % window.scale;
-        float endX = Math.min(window.translationX + imageWidth, viewWidth);
-        float endY = Math.min(window.translationY + imageHeight, viewHeight);
+        float startX = window.translationX >= 0.0f ? window.translationX : window.translationX % window.scale,
+                startY = window.translationY >= 0.0f ? window.translationY : window.translationY % window.scale,
+                endX = Math.min(window.translationX + imageWidth, viewWidth),
+                endY = Math.min(window.translationY + imageHeight, viewHeight);
         if (isScaledMuch()) {
             for (float x = startX; x < endX; x += window.scale) {
                 gridCanvas.drawLine(x, startY, x, endY, gridPaint);
@@ -1057,18 +1085,54 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         if (cellGrid.enabled) {
-            if (cellGrid.sizeX > 0) {
-                float scaledSizeX = toScaled(cellGrid.sizeX);
-                startX = window.translationX >= 0.0f ? window.translationX : window.translationX % scaledSizeX + toScaled(cellGrid.offsetX);
-                for (float x = startX; x < endX; x += scaledSizeX) {
-                    gridCanvas.drawLine(x, startY, x, endY, cellGridPaint);
+            if (cellGrid.sizeX > 1) {
+                float scaledSizeX = toScaled(cellGrid.sizeX),
+                        scaledSpacingX = toScaled(cellGrid.spacingX);
+                startX = (window.translationX >= 0.0f ? window.translationX : window.translationX % (scaledSizeX + scaledSpacingX)) + toScaled(cellGrid.offsetX);
+                startY = Math.max(0.0f, window.translationY);
+                if (cellGrid.spacingX <= 0) {
+                    float x = startX;
+                    while (x < endX) {
+                        gridCanvas.drawLine(x, startY, x, endY, cellGridPaint);
+                        x += scaledSizeX;
+                    }
+                } else {
+                    float x = startX;
+                    while (true) {
+                        gridCanvas.drawLine(x, startY, x, endY, cellGridPaint);
+                        if ((x += scaledSizeX) >= endX) {
+                            break;
+                        }
+                        gridCanvas.drawLine(x, startY, x, endY, cellGridPaint);
+                        if ((x += scaledSpacingX) >= endX) {
+                            break;
+                        }
+                    }
                 }
             }
-            if (cellGrid.sizeY > 0) {
-                float scaledSizeY = toScaled(cellGrid.sizeY);
-                startY = window.translationY >= 0.0f ? window.translationY : window.translationY % scaledSizeY + toScaled(cellGrid.offsetY);
-                for (float y = startY; y < endY; y += scaledSizeY) {
-                    gridCanvas.drawLine(startX, y, endX, y, cellGridPaint);
+            if (cellGrid.sizeY > 1) {
+                float scaledSizeY = toScaled(cellGrid.sizeY),
+                        scaledSpacingY = toScaled(cellGrid.spacingY);
+                startY = (window.translationY >= 0.0f ? window.translationY : window.translationY % (scaledSizeY + scaledSpacingY)) + toScaled(cellGrid.offsetY);
+                startX = Math.max(0.0f, window.translationX);
+                if (cellGrid.spacingY <= 0) {
+                    float y = startY;
+                    while (y < endY) {
+                        gridCanvas.drawLine(startX, y, endX, y, cellGridPaint);
+                        y += scaledSizeY;
+                    }
+                } else {
+                    float y = startY;
+                    while (true) {
+                        gridCanvas.drawLine(startX, y, endX, y, cellGridPaint);
+                        if ((y += scaledSizeY) >= endY) {
+                            break;
+                        }
+                        gridCanvas.drawLine(startX, y, endX, y, cellGridPaint);
+                        if ((y += scaledSpacingY) >= endY) {
+                            break;
+                        }
+                    }
                 }
             }
         }
@@ -1229,6 +1293,8 @@ public class MainActivity extends AppCompatActivity {
         window.history = history;
         history.offer(bitmap);
         window.path = null;
+        cellGrid = new CellGrid();
+        window.cellGrid = cellGrid;
 
         window.scale = 20.0f;
         imageWidth = 960;
@@ -1483,6 +1549,11 @@ public class MainActivity extends AppCompatActivity {
                     clipboard = Bitmap.createBitmap(transformeeBitmap);
                 }
                 break;
+
+            case R.id.i_crop: {
+
+                break;
+            }
 
             case R.id.i_cut:
                 if (!hasSelection) {
