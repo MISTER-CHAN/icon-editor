@@ -661,6 +661,7 @@ public class MainActivity extends AppCompatActivity {
                     case MotionEvent.ACTION_DOWN:
                         prevX = event.getX() - toScaled(textX);
                         prevY = event.getY() - toScaled(textY);
+                        drawTextOnView();
                         break;
 
                     case MotionEvent.ACTION_MOVE: {
@@ -680,7 +681,7 @@ public class MainActivity extends AppCompatActivity {
                         textX = toOriginal(event.getX() - window.translationX);
                         textY = toOriginal(event.getY() - window.translationY);
                         llBehaviorText.setVisibility(View.VISIBLE);
-                        drawTextOnView();
+                        scaleTextSizeAndDrawTextOnView();
                         prevX = window.translationX;
                         prevY = window.translationY;
                         break;
@@ -855,6 +856,7 @@ public class MainActivity extends AppCompatActivity {
     private final CompoundButton.OnCheckedChangeListener onTransformerRadioButtonCheckedChangeListener = (buttonView, isChecked) -> {
         if (isChecked) {
             cbScaler.setTag(buttonView);
+            cbScaler.setChecked(false);
             flImageView.setOnTouchListener(onImageViewTouchWithTransformerListener);
             llBehaviorTransformer.setVisibility(View.VISIBLE);
         } else {
@@ -867,14 +869,11 @@ public class MainActivity extends AppCompatActivity {
     private final CompoundButton.OnCheckedChangeListener onTextRadioButtonCheckedChangeListener = (buttonView, isChecked) -> {
         if (isChecked) {
             cbScaler.setTag(buttonView);
+            cbScaler.setChecked(false);
             flImageView.setOnTouchListener(onImageViewTouchWithTextListener);
         } else {
             drawTextOnCanvas();
         }
-    };
-
-    private final View.OnClickListener onDrawTextButtonClickListener = v -> {
-        drawTextOnCanvas();
     };
 
     private void addBitmap(Bitmap bitmap, int width, int height) {
@@ -1174,10 +1173,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void drawTextOnView() {
-        try {
-            paint.setTextSize(toScaled((int) Float.parseFloat(etTextSize.getText().toString())));
-        } catch (NumberFormatException e) {
-        }
         clearCanvas(previewCanvas);
         previewCanvas.drawText(etText.getText().toString(), window.translationX + toScaled(textX), window.translationY + toScaled(textY), paint);
         ivPreview.invalidate();
@@ -1283,7 +1278,9 @@ public class MainActivity extends AppCompatActivity {
                 sbBlue.getProgress());
         paint.setColor(color);
         rbColor.setTextColor(color);
-
+        if (llBehaviorText.getVisibility() == View.VISIBLE) {
+            drawTextOnView();
+        }
     }
 
     @Override
@@ -1347,7 +1344,7 @@ public class MainActivity extends AppCompatActivity {
             }
         };
 
-        findViewById(R.id.b_text_draw).setOnClickListener(onDrawTextButtonClickListener);
+        findViewById(R.id.b_text_draw).setOnClickListener(v -> drawTextOnCanvas());
         cbScaler.setOnCheckedChangeListener(onScalerCheckBoxCheckedChangeListener);
         cbScaler.setTag(rbPencil);
         etAlpha.addTextChangedListener((AfterTextChangedListener) s -> onChannelChanged(s, sbAlpha));
@@ -1355,7 +1352,7 @@ public class MainActivity extends AppCompatActivity {
         etGreen.addTextChangedListener((AfterTextChangedListener) s -> onChannelChanged(s, sbGreen));
         etRed.addTextChangedListener((AfterTextChangedListener) s -> onChannelChanged(s, sbRed));
         etText.addTextChangedListener((AfterTextChangedListener) s -> drawTextOnView());
-        etTextSize.addTextChangedListener((AfterTextChangedListener) s -> drawTextOnView());
+        etTextSize.addTextChangedListener((AfterTextChangedListener) s -> scaleTextSizeAndDrawTextOnView());
         flImageView.setOnTouchListener(onImageViewTouchWithPencilListener);
         rbBackgroundColor.setOnCheckedChangeListener(onBackgroundColorRadioButtonCheckedChangeListener);
         rbForegroundColor.setOnCheckedChangeListener(onForegroundColorRadioButtonCheckedChangeListener);
@@ -1722,6 +1719,14 @@ public class MainActivity extends AppCompatActivity {
     private void saveAs() {
         String path = null;
         getTree.launch(null);
+    }
+
+    private void scaleTextSizeAndDrawTextOnView() {
+        try {
+            paint.setTextSize(toScaled((int) Float.parseFloat(etTextSize.getText().toString())));
+        } catch (NumberFormatException e) {
+        }
+        drawTextOnView();
     }
 
     private void showPaintColorOnSeekBars() {
