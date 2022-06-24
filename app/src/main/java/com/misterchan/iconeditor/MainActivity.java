@@ -8,6 +8,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
@@ -21,6 +22,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -49,13 +51,86 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class MainActivity extends AppCompatActivity {
+
+    private final class FloodFill extends Thread {
+
+        int x, y, color;
+
+        private FloodFill(int x, int y, int color) {
+            this.x = x;
+            this.y = y;
+            this.color = color;
+        }
+
+        @Override
+        public void run() {
+            int pixel = bitmap.getPixel(x, y);
+            if (pixel == color) {
+                return;
+            }
+            int left, top, right, bottom;
+            if (hasSelection) {
+                left = selection.left;
+                top = selection.top;
+                right = selection.right;
+                bottom = selection.bottom;
+            } else {
+                left = 0;
+                top = 0;
+                right = bitmap.getWidth() - 1;
+                bottom = bitmap.getHeight() - 1;
+            }
+            Timer timer = new Timer();
+            timer.schedule(new ViewBitmapTask(), 50L, 50L);
+            Queue<Point> pointsToBeSet = new LinkedList<>();
+            boolean[][] havePointsBeenSet = new boolean[right - left + 1][bottom - top + 1];
+            pointsToBeSet.offer(new Point(x, y));
+            Point point;
+            while ((point = pointsToBeSet.poll()) != null) {
+                int px = bitmap.getPixel(point.x, point.y);
+                int xr = point.x - left, yr = point.y - top; // r - relative
+                havePointsBeenSet[xr][yr] = true;
+                if (px == pixel && px != color) {
+                    bitmap.setPixel(point.x, point.y, color);
+                    int xn = point.x - 1, xp = point.x + 1, yn = point.y - 1, yp = point.y + 1; // n - negative, p - positive
+                    if (left <= xn && !havePointsBeenSet[xn - left][yr])
+                        pointsToBeSet.offer(new Point(xn, point.y));
+                    if (xp <= right && !havePointsBeenSet[xp - left][yr])
+                        pointsToBeSet.offer(new Point(xp, point.y));
+                    if (top <= yn && !havePointsBeenSet[xr][yn - top])
+                        pointsToBeSet.offer(new Point(point.x, yn));
+                    if (yp <= bottom && !havePointsBeenSet[xr][yp - top])
+                        pointsToBeSet.offer(new Point(point.x, yp));
+                }
+            }
+            timer.cancel();
+            timer.purge();
+            drawBitmapOnView();
+            history.offer(bitmap);
+        }
+    }
+
+    private final class ViewBitmapTask extends TimerTask {
+        @Override
+        public void run() {
+            drawBitmapOnCanvas(bitmap, window.translationX, window.translationY, viewCanvas);
+            imageView.invalidate();
+        }
+    }
+
+    private static final Pattern PATTERN_FILE_NAME = Pattern.compile("[\"*/:<>?\\\\|]");
+    private static final Pattern PATTERN_TREE = Pattern.compile("^content://com\\.android\\.externalstorage\\.documents/tree/primary%3A(?<path>.*)$");
+
+    private static final String FORMAT_02X = "%02X";
 
     private static final Bitmap.CompressFormat[] COMPRESS_FORMATS = {
             Bitmap.CompressFormat.PNG,
@@ -64,17 +139,13 @@ public class MainActivity extends AppCompatActivity {
 
     private static final InputFilter[] FILE_NAME_FILTERS = new InputFilter[]{
             (source, start, end, dest, dstart, dend) -> {
-                Matcher matcher = Pattern.compile("[\"*/:<>?\\\\|]").matcher(source.toString());
+                Matcher matcher = PATTERN_FILE_NAME.matcher(source.toString());
                 if (matcher.find()) {
                     return "";
                 }
                 return null;
             }
     };
-
-    private static final Pattern TREE_PATTERN = Pattern.compile("^content://com\\.android\\.externalstorage\\.documents/tree/primary%3A(?<path>.*)$");
-
-    private static final String FORMAT_02X = "%02X";
 
     private AfterTextChangedListener onPropSizeXTextChangedListener, onPropSizeYTextChangedListener;
     private Bitmap bitmap;
@@ -124,6 +195,7 @@ public class MainActivity extends AppCompatActivity {
     private ImageView ivGrid;
     private ImageView ivPreview;
     private ImageView ivSelection;
+    private InputMethodManager inputMethodManager;
     private int currentBitmapIndex;
     private int imageWidth, imageHeight;
     private int rectX, rectY;
@@ -143,7 +215,6 @@ public class MainActivity extends AppCompatActivity {
     private RadioButton rbBackgroundColor;
     private RadioButton rbForegroundColor;
     private RadioButton rbPropStretch, rbPropCrop;
-    private RadioButton rbScaler;
     private RadioButton rbTransformer;
     private SeekBar sbRed, sbGreen, sbBlue, sbAlpha;
     private Spinner sFileType;
@@ -204,7 +275,12 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    private final Paint opaquePaint = new Paint();
+    private final Paint opaquePaint = new Paint() {
+
+        {
+            setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC));
+        }
+    };
 
     private final Paint pointPaint = new Paint() {
 
@@ -299,6 +375,8 @@ public class MainActivity extends AppCompatActivity {
             int height = Integer.parseUnsignedInt(etPropSizeY.getText().toString());
             boolean stretch = rbPropStretch.isChecked();
             resizeBitmap(width, height, stretch);
+            drawBitmapOnView();
+            history.offer(bitmap);
         } catch (NumberFormatException e) {
         }
     };
@@ -321,7 +399,7 @@ public class MainActivity extends AppCompatActivity {
         if (result == null) {
             return;
         }
-        Matcher matcher = TREE_PATTERN.matcher(result.toString());
+        Matcher matcher = PATTERN_TREE.matcher(result.toString());
         if (!matcher.find()) {
             return;
         }
@@ -390,13 +468,14 @@ public class MainActivity extends AppCompatActivity {
             case MotionEvent.ACTION_DOWN: {
                 float x = event.getX(), y = event.getY();
                 int originalX = toOriginal(x - window.translationX), originalY = toOriginal(y - window.translationY);
+                if (!(0 <= originalX && originalX < bitmap.getWidth() && 0 <= originalY && originalY < bitmap.getHeight())) {
+                    break;
+                }
                 if (cbBucketFillContiguous.isChecked()) {
                     floodFill(originalX, originalY, paint.getColor());
                 } else {
                     bucketFill(originalX, originalY, paint.getColor());
                 }
-                drawBitmapOnView();
-                history.offer(bitmap);
                 tvStatus.setText("");
                 break;
             }
@@ -557,11 +636,15 @@ public class MainActivity extends AppCompatActivity {
                     }
                     case MotionEvent.ACTION_MOVE: {
                         float x = event.getX(), y = event.getY();
-                        window.translationX += x - prevX;
-                        window.translationY += y - prevY;
+                        float deltaX = x - prevX, deltaY = y - prevY;
+                        window.translationX += deltaX;
+                        window.translationY += deltaY;
                         drawChessboardOnView();
                         drawBitmapOnView();
                         drawGridOnView();
+                        if (transformeeBitmap != null) {
+                            drawTransformeeOnViewBySelection();
+                        }
                         drawSelectionOnView();
                         prevX = x;
                         prevY = y;
@@ -592,6 +675,9 @@ public class MainActivity extends AppCompatActivity {
                         drawChessboardOnView();
                         drawBitmapOnView();
                         drawGridOnView();
+                        if (transformeeBitmap != null) {
+                            drawTransformeeOnViewBySelection();
+                        }
                         drawSelectionOnView();
                         this.pivotX = pivotX;
                         this.pivotY = pivotY;
@@ -735,7 +821,7 @@ public class MainActivity extends AppCompatActivity {
                                 history.offer(bitmap);
                             }
                             drawBitmapOnView();
-                            drawTransformeeOnView();
+                            drawTransformeeAndSelectionOnViewByTranslation();
                         }
                         tvStatus.setText(String.format("Top-left: (%d, %d), Bottom-right: (%d, %d)",
                                 selection.left, selection.top, selection.right, selection.bottom));
@@ -750,7 +836,7 @@ public class MainActivity extends AppCompatActivity {
                         float x = event.getX(), y = event.getY();
                         transformeeTranslationX += x - prevX;
                         transformeeTranslationY += y - prevY;
-                        drawTransformeeOnView();
+                        drawTransformeeAndSelectionOnViewByTranslation();
                         tvStatus.setText(String.format("Top-left: (%d, %d), Bottom-right: (%d, %d)",
                                 selection.left, selection.top, selection.right, selection.bottom));
                         prevX = x;
@@ -850,7 +936,7 @@ public class MainActivity extends AppCompatActivity {
                             transformeeBitmap.recycle();
                             transformeeBitmap = null;
                         }
-                        drawTransformeeOnView();
+                        drawTransformeeAndSelectionOnViewByTranslation();
                         prevX = event.getX(1 - event.getActionIndex());
                         prevY = event.getY(1 - event.getActionIndex());
                         tvStatus.setText("");
@@ -862,26 +948,20 @@ public class MainActivity extends AppCompatActivity {
         return true;
     };
 
+    @SuppressLint("ClickableViewAccessibility")
     private final CompoundButton.OnCheckedChangeListener onScalerCheckBoxCheckedChangeListener = (buttonView, isChecked) -> {
         if (isChecked) {
-            rbScaler.setChecked(true);
-        } else {
-            ((RadioButton) cbScaler.getTag()).setChecked(true);
-        }
-    };
-
-    @SuppressLint("ClickableViewAccessibility")
-    private final CompoundButton.OnCheckedChangeListener onScalerRadioButtonCheckedChangeListener = (buttonView, isChecked) -> {
-        if (isChecked) {
             flImageView.setOnTouchListener(onImageViewTouchWithScalerListener);
+        } else {
+            flImageView.setOnTouchListener((View.OnTouchListener) cbScaler.getTag());
         }
     };
 
     @SuppressLint("ClickableViewAccessibility")
     private final CompoundButton.OnCheckedChangeListener onTransformerRadioButtonCheckedChangeListener = (buttonView, isChecked) -> {
         if (isChecked) {
-            cbScaler.setTag(buttonView);
             cbScaler.setChecked(false);
+            cbScaler.setTag(onImageViewTouchWithTransformerListener);
             flImageView.setOnTouchListener(onImageViewTouchWithTransformerListener);
             llBehaviorTransformer.setVisibility(View.VISIBLE);
         } else {
@@ -893,8 +973,8 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("ClickableViewAccessibility")
     private final CompoundButton.OnCheckedChangeListener onTextRadioButtonCheckedChangeListener = (buttonView, isChecked) -> {
         if (isChecked) {
-            cbScaler.setTag(buttonView);
             cbScaler.setChecked(false);
+            cbScaler.setTag(onImageViewTouchWithTextListener);
             flImageView.setOnTouchListener(onImageViewTouchWithTextListener);
         } else {
             drawTextOnCanvas();
@@ -960,6 +1040,8 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }
+        drawBitmapOnView();
+        history.offer(bitmap);
     }
 
     private void clearCanvas(Canvas canvas) {
@@ -988,12 +1070,11 @@ public class MainActivity extends AppCompatActivity {
         float top = translY >= 0.0f ? translY : translY % window.scale;
         if (isScaledMuch()) {
             float t = top, b = t + window.scale;
-            Paint paint = new Paint();
             for (int y = startY; y < endY; ++y, t += window.scale, b += window.scale) {
                 float l = left;
                 for (int x = startX; x < endX; ++x) {
-                    paint.setColor(bm.getPixel(x, y));
-                    cv.drawRect(l, t, l += window.scale, b, paint);
+                    colorPaint.setColor(bm.getPixel(x, y));
+                    cv.drawRect(l, t, l += window.scale, b, colorPaint);
                 }
             }
         } else {
@@ -1146,6 +1227,19 @@ public class MainActivity extends AppCompatActivity {
         ivPreview.invalidate();
     }
 
+    private void drawSelectionOnView() {
+        clearCanvas(selectionCanvas);
+        if (hasSelection) {
+            selectionCanvas.drawRect(
+                    window.translationX + toScaled(selection.left),
+                    window.translationY + toScaled(selection.top),
+                    window.translationX + toScaled(selection.right + 1),
+                    window.translationY + toScaled(selection.bottom + 1),
+                    selector);
+        }
+        ivSelection.invalidate();
+    }
+
     private void drawSelectionOnViewByStartsAndEnds() {
         clearCanvas(selectionCanvas);
         if (hasSelection) {
@@ -1173,19 +1267,6 @@ public class MainActivity extends AppCompatActivity {
         ivSelection.invalidate();
     }
 
-    private void drawSelectionOnView() {
-        clearCanvas(selectionCanvas);
-        if (hasSelection) {
-            selectionCanvas.drawRect(
-                    window.translationX + toScaled(selection.left),
-                    window.translationY + toScaled(selection.top),
-                    window.translationX + toScaled(selection.right + 1),
-                    window.translationY + toScaled(selection.bottom + 1),
-                    selector);
-        }
-        ivSelection.invalidate();
-    }
-
     private void drawTextOnCanvas() {
         if (llBehaviorText.getVisibility() != View.VISIBLE) {
             return;
@@ -1197,6 +1278,7 @@ public class MainActivity extends AppCompatActivity {
         canvas.drawText(etText.getText().toString(), textX, textY, paint);
         drawBitmapOnView();
         clearCanvasAndInvalidateView(previewCanvas, ivPreview);
+        inputMethodManager.hideSoftInputFromWindow(getWindow().getDecorView().getWindowToken(), 0);
         llBehaviorText.setVisibility(View.INVISIBLE);
         history.offer(bitmap);
     }
@@ -1223,55 +1305,35 @@ public class MainActivity extends AppCompatActivity {
         clearCanvasAndInvalidateView(previewCanvas, ivPreview);
     }
 
-    private void drawTransformeeOnView() {
+    private void drawTransformeeAndSelectionOnViewByTranslation() {
         clearCanvas(previewCanvas);
-        if (hasSelection) {
-            if (transformeeBitmap != null) {
-                selection.left = toOriginal(transformeeTranslationX - window.translationX);
-                selection.top = toOriginal(transformeeTranslationY - window.translationY);
-                selection.right = selection.left + transformeeBitmap.getWidth() - 1;
-                selection.bottom = selection.top + transformeeBitmap.getHeight() - 1;
-                float ttx = toScaled(selection.left) + window.translationX;
-                float tty = toScaled(selection.top) + window.translationY;
-                drawBitmapOnCanvas(transformeeBitmap, ttx, tty, previewCanvas);
-            }
+        if (hasSelection && transformeeBitmap != null) {
+            selection.left = toOriginal(transformeeTranslationX - window.translationX);
+            selection.top = toOriginal(transformeeTranslationY - window.translationY);
+            selection.right = selection.left + transformeeBitmap.getWidth() - 1;
+            selection.bottom = selection.top + transformeeBitmap.getHeight() - 1;
+            float ttx = toScaled(selection.left) + window.translationX;
+            float tty = toScaled(selection.top) + window.translationY;
+            drawBitmapOnCanvas(transformeeBitmap, ttx, tty, previewCanvas);
         }
         ivPreview.invalidate();
         drawSelectionOnView();
     }
 
+    private void drawTransformeeOnViewBySelection() {
+        clearCanvas(previewCanvas);
+        if (hasSelection && transformeeBitmap != null) {
+            float ttx = toScaled(selection.left) + window.translationX;
+            float tty = toScaled(selection.top) + window.translationY;
+            drawBitmapOnCanvas(transformeeBitmap, ttx, tty, previewCanvas);
+            transformeeTranslationX = ttx;
+            transformeeTranslationY = tty;
+        }
+        ivPreview.invalidate();
+    }
+
     private void floodFill(int x, int y, int color) {
-        int pixel = bitmap.getPixel(x, y);
-        if (pixel == color) {
-            return;
-        }
-        int left, top, right, bottom;
-        if (hasSelection) {
-            left = selection.left;
-            top = selection.top;
-            right = selection.right;
-            bottom = selection.bottom;
-        } else {
-            left = 0;
-            top = 0;
-            right = bitmap.getWidth() - 1;
-            bottom = bitmap.getHeight() - 1;
-        }
-        Deque<int[]> pointsToBeSet = new LinkedList<>();
-        pointsToBeSet.offerLast(new int[]{x, y});
-        while (!pointsToBeSet.isEmpty()) {
-            int[] point = pointsToBeSet.poll();
-            if (left <= point[0] && point[0] <= right && top <= point[1] && point[1] <= bottom) {
-                int px = bitmap.getPixel(point[0], point[1]);
-                if (px == pixel && px != color) {
-                    bitmap.setPixel(point[0], point[1], color);
-                    pointsToBeSet.offer(new int[]{point[0] - 1, point[1]});
-                    pointsToBeSet.offer(new int[]{point[0] + 1, point[1]});
-                    pointsToBeSet.offer(new int[]{point[0], point[1] - 1});
-                    pointsToBeSet.offer(new int[]{point[0], point[1] + 1});
-                }
-            }
-        }
+        new FloodFill(x, y, color).start();
     }
 
     private boolean isScaledMuch() {
@@ -1367,6 +1429,7 @@ public class MainActivity extends AppCompatActivity {
         etTextSize = findViewById(R.id.et_text_size);
         flImageView = findViewById(R.id.fl_iv);
         imageView = findViewById(R.id.iv);
+        inputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
         ivChessboard = findViewById(R.id.iv_chessboard);
         ivGrid = findViewById(R.id.iv_grid);
         ivPreview = findViewById(R.id.iv_preview);
@@ -1380,7 +1443,6 @@ public class MainActivity extends AppCompatActivity {
         rbForegroundColor = findViewById(R.id.rb_foreground_color);
         rbColor = rbForegroundColor;
         RadioButton rbPencil = findViewById(R.id.rb_pencil);
-        rbScaler = findViewById(R.id.rb_scaler);
         rbTransformer = findViewById(R.id.rb_transformer);
         sbAlpha = findViewById(R.id.sb_alpha);
         sbBlue = findViewById(R.id.sb_blue);
@@ -1411,7 +1473,7 @@ public class MainActivity extends AppCompatActivity {
 
         findViewById(R.id.b_text_draw).setOnClickListener(v -> drawTextOnCanvas());
         cbScaler.setOnCheckedChangeListener(onScalerCheckBoxCheckedChangeListener);
-        cbScaler.setTag(rbPencil);
+        cbScaler.setTag(onImageViewTouchWithPencilListener);
         etAlpha.addTextChangedListener((AfterTextChangedListener) s -> onChannelChanged(s, sbAlpha));
         etBlue.addTextChangedListener((AfterTextChangedListener) s -> onChannelChanged(s, sbBlue));
         etGreen.addTextChangedListener((AfterTextChangedListener) s -> onChannelChanged(s, sbGreen));
@@ -1426,7 +1488,6 @@ public class MainActivity extends AppCompatActivity {
         ((RadioButton) findViewById(R.id.rb_eyedropper)).setOnCheckedChangeListener((buttonView, isChecked) -> onToolChange(buttonView, isChecked, onImageViewTouchWithEyedropperListener, null));
         rbPencil.setOnCheckedChangeListener((buttonView, isChecked) -> onToolChange(buttonView, isChecked, onImageViewTouchWithPencilListener, llBehaviorPencil));
         ((RadioButton) findViewById(R.id.rb_rectangle)).setOnCheckedChangeListener((buttonView, isChecked) -> onToolChange(buttonView, isChecked, onImageViewTouchWithRectListener, null));
-        rbScaler.setOnCheckedChangeListener(onScalerRadioButtonCheckedChangeListener);
         ((RadioButton) findViewById(R.id.rb_selector)).setOnCheckedChangeListener((buttonView, isChecked) -> onToolChange(buttonView, isChecked, onImageViewTouchWithSelectorListener, null));
         ((RadioButton) findViewById(R.id.rb_text)).setOnCheckedChangeListener(onTextRadioButtonCheckedChangeListener);
         rbTransformer.setOnCheckedChangeListener(onTransformerRadioButtonCheckedChangeListener);
@@ -1486,8 +1547,8 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("ClickableViewAccessibility")
     private void onToolChange(CompoundButton buttonView, boolean isChecked, View.OnTouchListener onImageViewTouchListener, View toolBehavior) {
         if (isChecked) {
-            cbScaler.setTag(buttonView);
             cbScaler.setChecked(false);
+            cbScaler.setTag(onImageViewTouchListener);
             flImageView.setOnTouchListener(onImageViewTouchListener);
         }
         if (toolBehavior != null) {
@@ -1550,7 +1611,17 @@ public class MainActivity extends AppCompatActivity {
                 break;
 
             case R.id.i_crop: {
-
+                if (!hasSelection) {
+                    break;
+                }
+                drawTransformeeOnCanvas();
+                drawTextOnCanvas();
+                int width = selection.right - selection.left + 1, height = selection.bottom - selection.top + 1;
+                Bitmap bm = Bitmap.createBitmap(bitmap, selection.left, selection.top, width, height);
+                resizeBitmap(width, height, false);
+                canvas.drawBitmap(bm, 0.0f, 0.0f, opaquePaint);
+                drawBitmapOnView();
+                history.offer(bitmap);
                 break;
             }
 
@@ -1628,7 +1699,7 @@ public class MainActivity extends AppCompatActivity {
                 transformeeTranslationY = window.translationY + toScaled(selection.top);
                 hasSelection = true;
                 rbTransformer.setChecked(true);
-                drawTransformeeOnView();
+                drawTransformeeAndSelectionOnViewByTranslation();
                 break;
 
             case R.id.i_properties:
@@ -1667,6 +1738,19 @@ public class MainActivity extends AppCompatActivity {
 
             case R.id.i_save_as:
                 saveAs();
+                break;
+
+            case R.id.i_select_all:
+                selection.left = 0;
+                selection.top = 0;
+                selection.right = bitmap.getWidth() - 1;
+                selection.bottom = bitmap.getHeight() - 1;
+                hasSelection = true;
+                drawSelectionOnView();
+                selectionStartX = selection.left;
+                selectionStartY = selection.top;
+                selectionEndX = selection.right;
+                selectionEndY = selection.bottom;
                 break;
 
             case R.id.i_undo: {
@@ -1745,7 +1829,6 @@ public class MainActivity extends AppCompatActivity {
         bitmap = bm;
         window.bitmap = bitmap;
         canvas = cv;
-        history.offer(bitmap);
         imageWidth = (int) toScaled(width);
         imageHeight = (int) toScaled(height);
 
@@ -1754,7 +1837,6 @@ public class MainActivity extends AppCompatActivity {
         hasSelection = false;
 
         drawChessboardOnView();
-        drawBitmapOnView();
         drawGridOnView();
         drawSelectionOnView();
     }
@@ -1838,11 +1920,11 @@ public class MainActivity extends AppCompatActivity {
         imageWidth = (int) toScaled(bitmap.getWidth());
         imageHeight = (int) toScaled(bitmap.getHeight());
 
-        hasSelection = false;
-
         recycleBitmapIfIsNotNull(transformeeBitmap);
         transformeeBitmap = null;
         clearCanvasAndInvalidateView(previewCanvas, ivPreview);
+
+        optimizeSelection();
 
         drawChessboardOnView();
         drawBitmapOnView();

@@ -26,6 +26,7 @@
     <string name="forty_eight">48</string>
     <string name="g">G</string>
     <string name="height">Height</string>
+    <string name="lock_aspect_ratio">Lock Aspect Ratio</string>
     <string name="new_">New</string>
     <string name="not_supported_file_type">Not supported file type</string>
     <string name="offset">Offset</string>
@@ -41,6 +42,7 @@
     <string name="save_as">Save As</string>
     <string name="scale">Scale</string>
     <string name="select">Select</string>
+    <string name="select_all">Select All</string>
     <string name="size">Size</string>
     <string name="spacing">Spacing</string>
     <string name="stretch">Stretch</string>
@@ -54,7 +56,6 @@
     <string name="width">Width</string>
     <string name="x">X</string>
     <string name="y">Y</string>
-    <string name="lock_aspect_ratio">Lock Aspect Ratio</string>
 
     <string-array name="file_types">
         <item>.png</item>

@@ -231,13 +231,6 @@
                     android:orientation="horizontal">
 
                     <RadioButton
-                        android:id="@+id/rb_scaler"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/scale"
-                        android:visibility="gone" />
-
-                    <RadioButton
                         android:id="@+id/rb_selector"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"

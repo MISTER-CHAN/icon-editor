@@ -62,6 +62,10 @@
             <item
                 android:id="@+id/i_delete"
                 android:title="@string/delete" />
+
+            <item
+                android:id="@+id/i_select_all"
+                android:title="@string/select_all" />
         </menu>
     </item>
 
