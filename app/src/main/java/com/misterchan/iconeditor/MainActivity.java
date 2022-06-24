@@ -89,6 +89,9 @@ public class MainActivity extends AppCompatActivity {
                 right = bitmap.getWidth() - 1;
                 bottom = bitmap.getHeight() - 1;
             }
+            if (!(left <= x && x <= right && top <= y && y <= bottom)) {
+                return;
+            }
             Timer timer = new Timer();
             timer.schedule(new ViewBitmapTask(), 50L, 50L);
             Queue<Point> pointsToBeSet = new LinkedList<>();
