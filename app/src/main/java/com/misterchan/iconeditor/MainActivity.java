@@ -156,7 +156,7 @@ public class MainActivity extends AppCompatActivity {
 
         {
             setAntiAlias(false);
-            setColor(Color.WHITE);
+            setColor(Color.TRANSPARENT);
             setDither(false);
             setTextAlign(Paint.Align.CENTER);
         }
@@ -391,7 +391,7 @@ public class MainActivity extends AppCompatActivity {
                 float x = event.getX(), y = event.getY();
                 int originalX = toOriginal(x - window.translationX), originalY = toOriginal(y - window.translationY);
                 if (cbBucketFillContiguous.isChecked()) {
-                    bucketFillContiguously(originalX, originalY, paint.getColor());
+                    floodFill(originalX, originalY, paint.getColor());
                 } else {
                     bucketFill(originalX, originalY, paint.getColor());
                 }
@@ -962,40 +962,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void bucketFillContiguously(int x, int y, int color) {
-        int pixel = bitmap.getPixel(x, y);
-        if (pixel == color) {
-            return;
-        }
-        int left, top, right, bottom;
-        if (hasSelection) {
-            left = selection.left;
-            top = selection.top;
-            right = selection.right;
-            bottom = selection.bottom;
-        } else {
-            left = 0;
-            top = 0;
-            right = bitmap.getWidth() - 1;
-            bottom = bitmap.getHeight() - 1;
-        }
-        Deque<int[]> pointsToBeSet = new LinkedList<>();
-        pointsToBeSet.offerLast(new int[]{x, y});
-        while (!pointsToBeSet.isEmpty()) {
-            int[] point = pointsToBeSet.poll();
-            if (left <= point[0] && point[0] <= right && top <= point[1] && point[1] <= bottom) {
-                int px = bitmap.getPixel(point[0], point[1]);
-                if (px == pixel && px != color) {
-                    bitmap.setPixel(point[0], point[1], color);
-                    pointsToBeSet.offer(new int[]{point[0] - 1, point[1]});
-                    pointsToBeSet.offer(new int[]{point[0] + 1, point[1]});
-                    pointsToBeSet.offer(new int[]{point[0], point[1] - 1});
-                    pointsToBeSet.offer(new int[]{point[0], point[1] + 1});
-                }
-            }
-        }
-    }
-
     private void clearCanvas(Canvas canvas) {
         canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
     }
@@ -1272,6 +1238,40 @@ public class MainActivity extends AppCompatActivity {
         }
         ivPreview.invalidate();
         drawSelectionOnView();
+    }
+
+    private void floodFill(int x, int y, int color) {
+        int pixel = bitmap.getPixel(x, y);
+        if (pixel == color) {
+            return;
+        }
+        int left, top, right, bottom;
+        if (hasSelection) {
+            left = selection.left;
+            top = selection.top;
+            right = selection.right;
+            bottom = selection.bottom;
+        } else {
+            left = 0;
+            top = 0;
+            right = bitmap.getWidth() - 1;
+            bottom = bitmap.getHeight() - 1;
+        }
+        Deque<int[]> pointsToBeSet = new LinkedList<>();
+        pointsToBeSet.offerLast(new int[]{x, y});
+        while (!pointsToBeSet.isEmpty()) {
+            int[] point = pointsToBeSet.poll();
+            if (left <= point[0] && point[0] <= right && top <= point[1] && point[1] <= bottom) {
+                int px = bitmap.getPixel(point[0], point[1]);
+                if (px == pixel && px != color) {
+                    bitmap.setPixel(point[0], point[1], color);
+                    pointsToBeSet.offer(new int[]{point[0] - 1, point[1]});
+                    pointsToBeSet.offer(new int[]{point[0] + 1, point[1]});
+                    pointsToBeSet.offer(new int[]{point[0], point[1] - 1});
+                    pointsToBeSet.offer(new int[]{point[0], point[1] + 1});
+                }
+            }
+        }
     }
 
     private boolean isScaledMuch() {

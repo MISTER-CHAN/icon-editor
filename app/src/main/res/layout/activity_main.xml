@@ -313,7 +313,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/block"
-                    android:textColor="@color/white" />
+                    android:textColor="@color/transparent" />
             </RadioGroup>
 
             <GridLayout
