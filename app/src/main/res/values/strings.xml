@@ -20,6 +20,7 @@
     <string name="eyedropper">Eyedropper</string>
     <string name="file">File</string>
     <string name="file_name">File name</string>
+    <string name="fill_clipped_area">Fill Clipped Area</string>
     <string name="filters">Filters</string>
     <string name="ff">FF</string>
     <string name="format_02X">%02X</string>

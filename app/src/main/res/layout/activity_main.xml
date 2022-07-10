@@ -83,6 +83,12 @@
                 android:visibility="invisible">
 
                 <CheckBox
+                    android:id="@+id/cb_transformer_fill"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/fill_clipped_area" />
+
+                <CheckBox
                     android:id="@+id/cb_transformer_lar"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"

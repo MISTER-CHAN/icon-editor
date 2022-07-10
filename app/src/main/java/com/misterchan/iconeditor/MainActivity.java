@@ -174,8 +174,8 @@ public class MainActivity extends AppCompatActivity {
     private CheckBox cbCellGridEnabled;
     private CheckBox cbPropLar;
     private CheckBox cbScaler;
+    private CheckBox cbTransformerFill;
     private CheckBox cbTransformerLar;
-    private Bitmap.CompressFormat compressFormat = null;
     private double prevDiagonal;
     private double transformeeAspectRatio;
     private EditText etCellGridOffsetX, etCellGridOffsetY;
@@ -358,7 +358,7 @@ public class MainActivity extends AppCompatActivity {
         }
         fileName += sFileType.getSelectedItem().toString();
         window.path = Environment.getExternalStorageDirectory().getPath() + File.separator + tree + File.separator + fileName;
-        compressFormat = COMPRESS_FORMATS[sFileType.getSelectedItemPosition()];
+        window.compressFormat = COMPRESS_FORMATS[sFileType.getSelectedItemPosition()];
         save(window.path);
         tabLayout.getTabAt(tabLayout.getSelectedTabPosition()).setText(fileName);
     };
@@ -817,10 +817,14 @@ public class MainActivity extends AppCompatActivity {
                             if (transformeeBitmap == null) {
                                 transformeeTranslationX = window.translationX + toScaled(selection.left);
                                 transformeeTranslationY = window.translationY + toScaled(selection.top);
-                                transformeeBitmap = Bitmap.createBitmap(bitmap, selection.left, selection.top,
-                                        width, height);
-                                colorPaint.setColor(paint.getColor());
-                                canvas.drawRect(selection.left, selection.top, selection.right + 1, selection.bottom + 1, colorPaint);
+                                transformeeBitmap = Bitmap.createBitmap(bitmap,
+                                        selection.left, selection.top, width, height);
+                                if (cbTransformerFill.isChecked()) {
+                                    colorPaint.setColor(paint.getColor());
+                                    canvas.drawRect(selection.left, selection.top, selection.right + 1, selection.bottom + 1, colorPaint);
+                                } else {
+                                    canvas.drawRect(selection.left, selection.top, selection.right + 1, selection.bottom + 1, eraser);
+                                }
                                 history.offer(bitmap);
                             }
                             drawBitmapOnView();
@@ -985,10 +989,14 @@ public class MainActivity extends AppCompatActivity {
     };
 
     private void addBitmap(Bitmap bitmap, int width, int height) {
-        addBitmap(bitmap, width, height, null, getString(R.string.untitled));
+        addBitmap(bitmap,
+                width, height,
+                null, getString(R.string.untitled), null);
     }
 
-    private void addBitmap(Bitmap bitmap, int width, int height, String path, String title) {
+    private void addBitmap(Bitmap bitmap,
+                           int width, int height,
+                           String path, String title, Bitmap.CompressFormat compressFormat) {
         window = new Window();
         windows.add(window);
         window.bitmap = bitmap;
@@ -997,6 +1005,7 @@ public class MainActivity extends AppCompatActivity {
         window.history = history;
         history.offer(bitmap);
         window.path = path;
+        window.compressFormat = compressFormat;
         cellGrid = new CellGrid();
         window.cellGrid = cellGrid;
 
@@ -1295,9 +1304,9 @@ public class MainActivity extends AppCompatActivity {
     private void drawTransformeeOnCanvas() {
         if (transformeeBitmap != null) {
             if (hasSelection) {
+                canvas.drawBitmap(transformeeBitmap, selection.left, selection.top, paint);
                 optimizeSelection();
                 drawSelectionOnView();
-                canvas.drawBitmap(transformeeBitmap, selection.left, selection.top, opaquePaint);
                 drawBitmapOnView();
                 history.offer(bitmap);
                 tvStatus.setText("");
@@ -1421,6 +1430,7 @@ public class MainActivity extends AppCompatActivity {
 
         cbBucketFillContiguous = findViewById(R.id.cb_bucket_fill_contiguous);
         cbScaler = findViewById(R.id.cb_scaler);
+        cbTransformerFill = findViewById(R.id.cb_transformer_fill);
         cbTransformerLar = findViewById(R.id.cb_transformer_lar);
         etAlpha = findViewById(R.id.et_alpha);
         etBlue = findViewById(R.id.et_blue);
@@ -1788,6 +1798,7 @@ public class MainActivity extends AppCompatActivity {
         bm.recycle();
         DocumentFile documentFile = DocumentFile.fromSingleUri(this, uri);
         String path = null;
+        Bitmap.CompressFormat compressFormat = null;
         switch (documentFile.getType()) {
             case "image/jpeg":
                 compressFormat = Bitmap.CompressFormat.JPEG;
@@ -1801,7 +1812,9 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(this, R.string.not_supported_file_type, Toast.LENGTH_SHORT).show();
                 break;
         }
-        addBitmap(bitmap, width, height, path, documentFile.getName());
+        addBitmap(bitmap,
+                width, height,
+                path, documentFile.getName(), compressFormat);
     }
 
     private void optimizeSelection() {
@@ -1859,7 +1872,7 @@ public class MainActivity extends AppCompatActivity {
 
         File file = new File(path);
         try (FileOutputStream fos = new FileOutputStream(file)) {
-            bitmap.compress(compressFormat, 100, fos);
+            bitmap.compress(window.compressFormat, 100, fos);
             fos.flush();
         } catch (IOException e) {
             Toast.makeText(this, "Failed\n" + e.getMessage(), Toast.LENGTH_LONG).show();
