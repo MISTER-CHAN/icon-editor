@@ -647,6 +647,8 @@ public class MainActivity extends AppCompatActivity {
                         drawGridOnView();
                         if (transformeeBitmap != null) {
                             drawTransformeeOnViewBySelection();
+                        } else if (llBehaviorText.getVisibility() == View.VISIBLE) {
+                            drawTextOnView();
                         }
                         drawSelectionOnView();
                         prevX = x;
@@ -680,6 +682,8 @@ public class MainActivity extends AppCompatActivity {
                         drawGridOnView();
                         if (transformeeBitmap != null) {
                             drawTransformeeOnViewBySelection();
+                        } else if (llBehaviorText.getVisibility() == View.VISIBLE) {
+                            scaleTextSizeAndDrawTextOnView();
                         }
                         drawSelectionOnView();
                         this.pivotX = pivotX;
