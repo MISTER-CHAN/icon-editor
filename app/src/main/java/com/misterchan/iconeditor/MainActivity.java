@@ -230,7 +230,7 @@ public class MainActivity extends AppCompatActivity {
 
         {
             setAntiAlias(false);
-            setColor(Color.TRANSPARENT);
+            setColor(Color.WHITE);
             setDither(false);
             setTextAlign(Paint.Align.CENTER);
         }
