@@ -6,6 +6,7 @@
     <string name="bucket_fill">Bucket Fill</string>
     <string name="cancel">Cancel</string>
     <string name="cell_grid">Cell Grid</string>
+    <string name="circle">Circle</string>
     <string name="close">Close</string>
     <string name="contiguous">Contiguous</string>
     <string name="copy">Copy</string>
@@ -27,12 +28,14 @@
     <string name="forty_eight">48</string>
     <string name="g">G</string>
     <string name="height">Height</string>
+    <string name="line">Line</string>
     <string name="lock_aspect_ratio">Lock Aspect Ratio</string>
     <string name="new_">New</string>
     <string name="not_supported_file_type">Not supported file type</string>
     <string name="offset">Offset</string>
     <string name="ok">OK</string>
     <string name="open">Open</string>
+    <string name="oval">Oval</string>
     <string name="paste">Paste</string>
     <string name="pencil">Pencil</string>
     <string name="properties">Properties</string>
@@ -44,6 +47,7 @@
     <string name="scale">Scale</string>
     <string name="select">Select</string>
     <string name="select_all">Select All</string>
+    <string name="shape">Shape</string>
     <string name="size">Size</string>
     <string name="spacing">Spacing</string>
     <string name="stretch">Stretch</string>
@@ -57,6 +61,7 @@
     <string name="width">Width</string>
     <string name="x">X</string>
     <string name="y">Y</string>
+    <string name="fill">Fill</string>
 
     <string-array name="file_types">
         <item>.png</item>

@@ -23,7 +23,8 @@
         android:id="@+id/tv_status"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="4dp" />
+        android:layout_margin="4dp"
+        android:maxLines="1" />
 
     <FrameLayout
         android:id="@+id/fl_iv"
@@ -118,6 +119,60 @@
                         android:inputType="number"
                         android:textAlignment="textEnd" />
                 </com.google.android.material.textfield.TextInputLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/ll_behavior_shape"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:orientation="horizontal"
+                android:visibility="invisible">
+
+                <CheckBox
+                    android:id="@+id/cb_style_fill"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:text="@string/fill" />
+
+                <HorizontalScrollView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fadingEdgeLength="16dp"
+                    android:requiresFadingEdge="horizontal">
+
+                    <RadioGroup
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <RadioButton
+                            android:id="@+id/rb_line"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/line" />
+
+                        <RadioButton
+                            android:id="@+id/rb_rect"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:checked="true"
+                            android:text="@string/rectangle" />
+
+                        <RadioButton
+                            android:id="@+id/rb_oval"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/oval" />
+
+                        <RadioButton
+                            android:id="@+id/rb_circle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/circle" />
+                    </RadioGroup>
+                </HorizontalScrollView>
             </LinearLayout>
 
             <LinearLayout
@@ -220,15 +275,14 @@
                 android:id="@+id/cb_scaler"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="?android:attr/colorBackground"
-                android:elevation="4dp"
-                android:paddingEnd="4dp"
                 android:text="@string/scale" />
 
             <HorizontalScrollView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:fadingEdgeLength="16dp"
+                android:requiresFadingEdge="horizontal"
                 android:scrollbars="none">
 
                 <RadioGroup
@@ -256,10 +310,10 @@
                         android:text="@string/pencil" />
 
                     <RadioButton
-                        android:id="@+id/rb_rectangle"
+                        android:id="@+id/rb_shape"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/rectangle" />
+                        android:text="@string/shape" />
 
                     <RadioButton
                         android:id="@+id/rb_bucket_fill"

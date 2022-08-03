@@ -141,7 +141,7 @@ public class MainActivity extends AppCompatActivity {
     };
 
     private static final InputFilter[] FILE_NAME_FILTERS = new InputFilter[]{
-            (source, start, end, dest, dstart, dend) -> {
+            (source, sourceStart, sourceEnd, dest, destStart, destEnd) -> {
                 Matcher matcher = PATTERN_FILE_NAME.matcher(source.toString());
                 if (matcher.find()) {
                     return "";
@@ -201,14 +201,15 @@ public class MainActivity extends AppCompatActivity {
     private InputMethodManager inputMethodManager;
     private int currentBitmapIndex;
     private int imageWidth, imageHeight;
-    private int rectX, rectY;
     private int selectionStartX, selectionStartY;
     private int selectionEndX, selectionEndY;
+    private int shapeStartX = -1, shapeStartY = -1;
     private int textX, textY;
     private int viewWidth, viewHeight;
     private LinearLayout llBehaviorBucketFill;
     private LinearLayout llBehaviorEraser;
     private LinearLayout llBehaviorPencil;
+    private LinearLayout llBehaviorShape;
     private LinearLayout llBehaviorText;
     private LinearLayout llBehaviorTransformer;
     private List<Window> windows = new ArrayList<>();
@@ -232,6 +233,8 @@ public class MainActivity extends AppCompatActivity {
             setAntiAlias(false);
             setColor(Color.WHITE);
             setDither(false);
+            setStrokeWidth(1.0f);
+            setStyle(Style.FILL);
             setTextAlign(Paint.Align.CENTER);
         }
     };
@@ -267,6 +270,7 @@ public class MainActivity extends AppCompatActivity {
             setAntiAlias(false);
             setColor(Color.BLACK);
             setDither(false);
+            setStrokeWidth(1.0f);
             setTextAlign(Paint.Align.CENTER);
         }
     };
@@ -589,41 +593,6 @@ public class MainActivity extends AppCompatActivity {
     };
 
     @SuppressLint("ClickableViewAccessibility")
-    private final View.OnTouchListener onImageViewTouchWithRectListener = (v, event) -> {
-        float x = event.getX(), y = event.getY();
-        int originalX = toOriginal(x - window.translationX), originalY = toOriginal(y - window.translationY);
-        switch (event.getAction()) {
-
-            case MotionEvent.ACTION_DOWN: {
-                drawRectOnView(originalX, originalY, originalX, originalY);
-                rectX = originalX;
-                rectY = originalY;
-                tvStatus.setText(String.format("Start: (%d, %d), Stop: (%d, %d), Area: 1 × 1",
-                        originalX, originalY, originalX, originalY));
-                break;
-            }
-
-            case MotionEvent.ACTION_MOVE: {
-                drawRectOnView(rectX, rectY, originalX, originalY);
-                tvStatus.setText(String.format("Start: (%d, %d), Stop: (%d, %d), Area: %d × %d",
-                        rectX, rectY, originalX, originalY,
-                        Math.abs(originalX - rectX) + 1, Math.abs(originalY - rectY) + 1));
-                break;
-            }
-
-            case MotionEvent.ACTION_CANCEL:
-            case MotionEvent.ACTION_UP:
-                drawRectOnCanvas(rectX, rectY, originalX, originalY);
-                drawBitmapOnView();
-                clearCanvasAndInvalidateView(previewCanvas, ivPreview);
-                history.offer(bitmap);
-                tvStatus.setText("");
-                break;
-        }
-        return true;
-    };
-
-    @SuppressLint("ClickableViewAccessibility")
     private final View.OnTouchListener onImageViewTouchWithScalerListener = (v, event) -> {
         switch (event.getPointerCount()) {
 
@@ -764,7 +733,7 @@ public class MainActivity extends AppCompatActivity {
     };
 
     @SuppressLint("ClickableViewAccessibility")
-    View.OnTouchListener onImageViewTouchWithTextListener = (v, event) -> {
+    private View.OnTouchListener onImageViewTouchWithTextListener = (v, event) -> {
         switch (llBehaviorText.getVisibility()) {
 
             case View.VISIBLE: {
@@ -802,7 +771,48 @@ public class MainActivity extends AppCompatActivity {
     };
 
     @SuppressLint("ClickableViewAccessibility")
-    View.OnTouchListener onImageViewTouchWithTransformerListener = (v, event) -> {
+    private final View.OnTouchListener onImageViewTouchWithShapeListener = (v, event) -> {
+        float x = event.getX(), y = event.getY();
+        int originalX = toOriginal(x - window.translationX), originalY = toOriginal(y - window.translationY);
+        switch (event.getAction()) {
+
+            case MotionEvent.ACTION_DOWN: {
+                if (shapeStartX == -1) {
+                    drawPointOnView(originalX, originalY);
+                    shapeStartX = originalX;
+                    shapeStartY = originalY;
+                    setStrokeWidth(toScaled((int) paint.getStrokeWidth()));
+                    tvStatus.setText(String.format("(%d, %d)", originalX, originalY));
+                    break;
+                }
+            }
+
+            case MotionEvent.ACTION_MOVE: {
+                String result = drawShapeOnView(shapeStartX, shapeStartY, originalX, originalY);
+                tvStatus.setText(
+                        String.format("Start: (%d, %d), Stop: (%d, %d), ", shapeStartX, shapeStartY, originalX, originalY)
+                                + result);
+                break;
+            }
+
+            case MotionEvent.ACTION_CANCEL:
+            case MotionEvent.ACTION_UP:
+                if (originalX != shapeStartX || originalY != shapeStartY) {
+                    setStrokeWidth(etPencilStrokeWidth.getText().toString());
+                    drawShapeOnCanvas(shapeStartX, shapeStartY, originalX, originalY);
+                    shapeStartX = -1;
+                    drawBitmapOnView();
+                    clearCanvasAndInvalidateView(previewCanvas, ivPreview);
+                    history.offer(bitmap);
+                    tvStatus.setText("");
+                }
+                break;
+        }
+        return true;
+    };
+
+    @SuppressLint("ClickableViewAccessibility")
+    private View.OnTouchListener onImageViewTouchWithTransformerListener = (v, event) -> {
         if (!hasSelection) {
             return true;
         }
@@ -995,6 +1005,83 @@ public class MainActivity extends AppCompatActivity {
             drawTextOnCanvas();
         }
     };
+
+    private final Shape circle = new Shape() {
+        @Override
+        public void drawShapeOnCanvas(int x0, int y0, int x1, int y1) {
+            canvas.drawCircle(x0, y0,
+                    (float) Math.sqrt(Math.pow(x1 - x0, 2.0) + Math.pow(y1 - y0, 2.0)),
+                    paint);
+        }
+
+        @Override
+        public String drawShapeOnView(int x0, int y0, int x1, int y1) {
+            float radius =
+                    (float) Math.sqrt(Math.pow(x1 - x0, 2.0) + Math.pow(y1 - y0, 2.0));
+            previewCanvas.drawCircle(
+                    window.translationX + toScaled(x0),
+                    window.translationY + toScaled(y0),
+                    toScaled((int) radius),
+                    paint);
+            return String.format("Radius: %f", radius);
+        }
+    };
+
+    private final Shape line = new Shape() {
+        @Override
+        public void drawShapeOnCanvas(int x0, int y0, int x1, int y1) {
+            canvas.drawLine(x0, y0, x1, y1, paint);
+        }
+
+        @Override
+        public String drawShapeOnView(int x0, int y0, int x1, int y1) {
+            previewCanvas.drawLine(
+                    window.translationX + toScaled(x0),
+                    window.translationY + toScaled(y0),
+                    window.translationX + toScaled(x1),
+                    window.translationY + toScaled(y1),
+                    paint);
+            return String.format("Length: %f", Math.sqrt(Math.pow(x1 - x0, 2.0) + Math.pow(y1 - y0, 2.0)));
+        }
+    };
+
+    private final Shape oval = new Shape() {
+        @Override
+        public void drawShapeOnCanvas(int x0, int y0, int x1, int y1) {
+            canvas.drawOval(x0, y0, x1, y1, paint);
+        }
+
+        @Override
+        public String drawShapeOnView(int x0, int y0, int x1, int y1) {
+            previewCanvas.drawOval(
+                    window.translationX + toScaled(x0),
+                    window.translationY + toScaled(y0),
+                    window.translationX + toScaled(x1),
+                    window.translationY + toScaled(y1),
+                    paint);
+            return String.format("Axes: %d, %d", Math.abs(x1 - x0) + 1, Math.abs(y1 - y0) + 1);
+        }
+    };
+
+    private final Shape rect = new Shape() {
+        @Override
+        public void drawShapeOnCanvas(int x0, int y0, int x1, int y1) {
+            canvas.drawRect(x0, y0, x1, y1, paint);
+        }
+
+        @Override
+        public String drawShapeOnView(int x0, int y0, int x1, int y1) {
+            previewCanvas.drawRect(
+                    window.translationX + toScaled(x0),
+                    window.translationY + toScaled(y0),
+                    window.translationX + toScaled(x1),
+                    window.translationY + toScaled(y1),
+                    paint);
+            return String.format("Area: %d × %d", Math.abs(x1 - x0) + 1, Math.abs(y1 - y0) + 1);
+        }
+    };
+
+    private Shape shape = rect;
 
     private void addBitmap(Bitmap bitmap, int width, int height) {
         addBitmap(bitmap,
@@ -1221,28 +1308,13 @@ public class MainActivity extends AppCompatActivity {
         imageView.invalidate();
     }
 
-    private void drawRectOnCanvas(int left, int top, int right, int bottom) {
-        if (left <= right) ++right;
-        else ++left;
-        if (top <= bottom) ++bottom;
-        else ++top;
-
-        canvas.drawRect(left, top, right, bottom, paint);
-    }
-
-    private void drawRectOnView(int left, int top, int right, int bottom) {
+    private void drawPointOnView(int x, int y) {
         clearCanvas(previewCanvas);
-
-        if (left <= right) ++right;
-        else ++left;
-        if (top <= bottom) ++bottom;
-        else ++top;
-
         previewCanvas.drawRect(
-                window.translationX + toScaled(left),
-                window.translationY + toScaled(top),
-                window.translationX + toScaled(right),
-                window.translationY + toScaled(bottom),
+                window.translationX + toScaled(x),
+                window.translationY + toScaled(y),
+                window.translationX + toScaled(x + 1),
+                window.translationY + toScaled(y + 1),
                 paint);
         ivPreview.invalidate();
     }
@@ -1285,6 +1357,29 @@ public class MainActivity extends AppCompatActivity {
                     selector);
         }
         ivSelection.invalidate();
+    }
+
+    private void drawShapeOnCanvas(int x0, int y0, int x1, int y1) {
+        if (x0 <= x1) ++x1;
+        else ++x0;
+        if (y0 <= y1) ++y1;
+        else ++y0;
+        shape.drawShapeOnCanvas(x0, y0, x1, y1);
+    }
+
+    private String drawShapeOnView(int x0, int y0, int x1, int y1) {
+
+        clearCanvas(previewCanvas);
+
+        if (x0 <= x1) ++x1;
+        else ++x0;
+        if (y0 <= y1) ++y1;
+        else ++y0;
+
+        String result = shape.drawShapeOnView(x0, y0, x1, y1);
+        ivPreview.invalidate();
+
+        return result;
     }
 
     private void drawTextOnCanvas() {
@@ -1414,6 +1509,8 @@ public class MainActivity extends AppCompatActivity {
         etEraserStrokeWidth.setText(String.valueOf(eraser.getStrokeWidth()));
         etPencilStrokeWidth.setText(String.valueOf(paint.getStrokeWidth()));
         etTextSize.setText(String.valueOf(paint.getTextSize()));
+
+        clearCanvasAndInvalidateView(previewCanvas, ivPreview);
     }
 
     private void onChannelChanged(String hex, SeekBar seekBar) {
@@ -1461,6 +1558,7 @@ public class MainActivity extends AppCompatActivity {
         llBehaviorBucketFill = findViewById(R.id.ll_behavior_bucket_fill);
         llBehaviorEraser = findViewById(R.id.ll_behavior_eraser);
         llBehaviorPencil = findViewById(R.id.ll_behavior_pencil);
+        llBehaviorShape = findViewById(R.id.ll_behavior_shape);
         llBehaviorText = findViewById(R.id.ll_behavior_text);
         llBehaviorTransformer = findViewById(R.id.ll_behavior_transformer);
         rbBackgroundColor = findViewById(R.id.rb_background_color);
@@ -1501,6 +1599,7 @@ public class MainActivity extends AppCompatActivity {
         etAlpha.addTextChangedListener((AfterTextChangedListener) s -> onChannelChanged(s, sbAlpha));
         etBlue.addTextChangedListener((AfterTextChangedListener) s -> onChannelChanged(s, sbBlue));
         etGreen.addTextChangedListener((AfterTextChangedListener) s -> onChannelChanged(s, sbGreen));
+        etPencilStrokeWidth.addTextChangedListener((AfterTextChangedListener) this::setStrokeWidth);
         etRed.addTextChangedListener((AfterTextChangedListener) s -> onChannelChanged(s, sbRed));
         etText.addTextChangedListener((AfterTextChangedListener) s -> drawTextOnView());
         etTextSize.addTextChangedListener((AfterTextChangedListener) s -> scaleTextSizeAndDrawTextOnView());
@@ -1508,11 +1607,15 @@ public class MainActivity extends AppCompatActivity {
         rbBackgroundColor.setOnCheckedChangeListener(onBackgroundColorRadioButtonCheckedChangeListener);
         rbForegroundColor.setOnCheckedChangeListener(onForegroundColorRadioButtonCheckedChangeListener);
         ((RadioButton) findViewById(R.id.rb_bucket_fill)).setOnCheckedChangeListener((buttonView, isChecked) -> onToolChange(buttonView, isChecked, onImageViewTouchWithBucketListener, llBehaviorBucketFill));
+        ((RadioButton) findViewById(R.id.rb_circle)).setOnCheckedChangeListener((OnCheckedListener) () -> shape = circle);
         ((RadioButton) findViewById(R.id.rb_eraser)).setOnCheckedChangeListener((buttonView, isChecked) -> onToolChange(buttonView, isChecked, onImageViewTouchWithEraserListener, llBehaviorEraser));
         ((RadioButton) findViewById(R.id.rb_eyedropper)).setOnCheckedChangeListener((buttonView, isChecked) -> onToolChange(buttonView, isChecked, onImageViewTouchWithEyedropperListener, null));
+        ((RadioButton) findViewById(R.id.rb_line)).setOnCheckedChangeListener((OnCheckedListener) () -> shape = line);
+        ((RadioButton) findViewById(R.id.rb_oval)).setOnCheckedChangeListener((OnCheckedListener) () -> shape = oval);
         rbPencil.setOnCheckedChangeListener((buttonView, isChecked) -> onToolChange(buttonView, isChecked, onImageViewTouchWithPencilListener, llBehaviorPencil));
-        ((RadioButton) findViewById(R.id.rb_rectangle)).setOnCheckedChangeListener((buttonView, isChecked) -> onToolChange(buttonView, isChecked, onImageViewTouchWithRectListener, null));
+        ((RadioButton) findViewById(R.id.rb_rect)).setOnCheckedChangeListener((OnCheckedListener) () -> shape = rect);
         ((RadioButton) findViewById(R.id.rb_selector)).setOnCheckedChangeListener((buttonView, isChecked) -> onToolChange(buttonView, isChecked, onImageViewTouchWithSelectorListener, null));
+        ((RadioButton) findViewById(R.id.rb_shape)).setOnCheckedChangeListener((buttonView, isChecked) -> onToolChange(buttonView, isChecked, onImageViewTouchWithShapeListener, llBehaviorShape));
         ((RadioButton) findViewById(R.id.rb_text)).setOnCheckedChangeListener(onTextRadioButtonCheckedChangeListener);
         rbTransformer.setOnCheckedChangeListener(onTransformerRadioButtonCheckedChangeListener);
         sbAlpha.setOnSeekBarChangeListener((OnProgressChangeListener) progress -> etAlpha.setText(String.format(FORMAT_02X, progress)));
@@ -1521,16 +1624,15 @@ public class MainActivity extends AppCompatActivity {
         sbRed.setOnSeekBarChangeListener((OnProgressChangeListener) progress -> etRed.setText(String.format(FORMAT_02X, progress)));
         tabLayout.addOnTabSelectedListener(onTabSelectedListener);
 
+        ((CheckBox) findViewById(R.id.cb_style_fill)).setOnCheckedChangeListener((buttonView, isChecked) -> {
+            Paint.Style style = isChecked ? Paint.Style.FILL : Paint.Style.STROKE;
+            foregroundPaint.setStyle(style);
+            backgroundPaint.setStyle(style);
+        });
+
         etEraserStrokeWidth.addTextChangedListener((AfterTextChangedListener) s -> {
             try {
                 eraser.setStrokeWidth(Float.parseFloat(s));
-            } catch (NumberFormatException e) {
-            }
-        });
-
-        etPencilStrokeWidth.addTextChangedListener((AfterTextChangedListener) s -> {
-            try {
-                paint.setStrokeWidth(Float.parseFloat(s));
             } catch (NumberFormatException e) {
             }
         });
@@ -1906,6 +2008,20 @@ public class MainActivity extends AppCompatActivity {
         } catch (NumberFormatException e) {
         }
         drawTextOnView();
+    }
+
+    private void setStrokeWidth(float f) {
+        foregroundPaint.setStrokeWidth(f);
+        backgroundPaint.setStrokeWidth(f);
+    }
+
+    private void setStrokeWidth(String s) {
+        try {
+            float f = Float.parseFloat(s);
+            foregroundPaint.setStrokeWidth(f);
+            backgroundPaint.setStrokeWidth(f);
+        } catch (NumberFormatException e) {
+        }
     }
 
     private void showPaintColorOnSeekBars() {
