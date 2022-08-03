@@ -418,7 +418,7 @@ public class MainActivity extends AppCompatActivity {
         sFileType = fileNameDialog.findViewById(R.id.s_file_type);
 
         etFileName.setFilters(FILE_NAME_FILTERS);
-        sFileType.setAdapter(new ArrayAdapter<>(this, androidx.appcompat.R.layout.support_simple_spinner_dropdown_item, getResources().getStringArray(R.array.file_types)));
+        sFileType.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, getResources().getStringArray(R.array.file_types)));
     };
 
     private final ActivityResultLauncher<String> getImage =
@@ -987,7 +987,11 @@ public class MainActivity extends AppCompatActivity {
             cbScaler.setChecked(false);
             cbScaler.setTag(onImageViewTouchWithTextListener);
             flImageView.setOnTouchListener(onImageViewTouchWithTextListener);
+            foregroundPaint.setAntiAlias(true);
+            backgroundPaint.setAntiAlias(true);
         } else {
+            foregroundPaint.setAntiAlias(false);
+            backgroundPaint.setAntiAlias(false);
             drawTextOnCanvas();
         }
     };
@@ -1301,7 +1305,10 @@ public class MainActivity extends AppCompatActivity {
 
     private void drawTextOnView() {
         clearCanvas(previewCanvas);
-        previewCanvas.drawText(etText.getText().toString(), window.translationX + toScaled(textX), window.translationY + toScaled(textY), paint);
+        float x = window.translationX + toScaled(textX), y = window.translationY + toScaled(textY);
+        previewCanvas.drawText(etText.getText().toString(), x, y, paint);
+        previewCanvas.drawLine(x, 0.0f, x, viewHeight, cellGridPaint);
+        previewCanvas.drawLine(0.0f, y, viewWidth, y, cellGridPaint);
         ivPreview.invalidate();
     }
 
