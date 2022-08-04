@@ -163,6 +163,7 @@ public class MainActivity extends AppCompatActivity {
     private BitmapHistory history;
     private boolean hasNotLoaded = true;
     private boolean hasSelection = false;
+    private boolean isShapeStopped = true;
     private Canvas canvas;
     private Canvas chessboardCanvas;
     private Canvas gridCanvas;
@@ -203,7 +204,7 @@ public class MainActivity extends AppCompatActivity {
     private int imageWidth, imageHeight;
     private int selectionStartX, selectionStartY;
     private int selectionEndX, selectionEndY;
-    private int shapeStartX = -1, shapeStartY = -1;
+    private int shapeStartX, shapeStartY;
     private int textX, textY;
     private int viewWidth, viewHeight;
     private LinearLayout llBehaviorBucketFill;
@@ -234,7 +235,7 @@ public class MainActivity extends AppCompatActivity {
             setColor(Color.WHITE);
             setDither(false);
             setStrokeWidth(1.0f);
-            setStyle(Style.FILL);
+            setStyle(Style.FILL_AND_STROKE);
             setTextAlign(Paint.Align.CENTER);
         }
     };
@@ -261,6 +262,15 @@ public class MainActivity extends AppCompatActivity {
             setColor(Color.BLACK);
             setDither(false);
             setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
+        }
+    };
+
+    private final Paint fillPaint = new Paint() {
+        {
+
+            setAntiAlias(false);
+            setColor(Color.BLACK);
+            setStyle(Style.FILL_AND_STROKE);
         }
     };
 
@@ -618,6 +628,8 @@ public class MainActivity extends AppCompatActivity {
                             drawTransformeeOnViewBySelection();
                         } else if (llBehaviorText.getVisibility() == View.VISIBLE) {
                             drawTextOnView();
+                        } else if (!isShapeStopped) {
+                            drawPointOnView(shapeStartX, shapeStartY);
                         }
                         drawSelectionOnView();
                         prevX = x;
@@ -653,6 +665,8 @@ public class MainActivity extends AppCompatActivity {
                             drawTransformeeOnViewBySelection();
                         } else if (llBehaviorText.getVisibility() == View.VISIBLE) {
                             scaleTextSizeAndDrawTextOnView();
+                        } else if (!isShapeStopped) {
+                            drawPointOnView(shapeStartX, shapeStartY);
                         }
                         drawSelectionOnView();
                         this.pivotX = pivotX;
@@ -777,11 +791,12 @@ public class MainActivity extends AppCompatActivity {
         switch (event.getAction()) {
 
             case MotionEvent.ACTION_DOWN: {
-                if (shapeStartX == -1) {
+                setStrokeWidth(toScaled((int) paint.getStrokeWidth()));
+                if (isShapeStopped) {
+                    isShapeStopped = false;
                     drawPointOnView(originalX, originalY);
                     shapeStartX = originalX;
                     shapeStartY = originalY;
-                    setStrokeWidth(toScaled((int) paint.getStrokeWidth()));
                     tvStatus.setText(String.format("(%d, %d)", originalX, originalY));
                     break;
                 }
@@ -797,10 +812,10 @@ public class MainActivity extends AppCompatActivity {
 
             case MotionEvent.ACTION_CANCEL:
             case MotionEvent.ACTION_UP:
+                setStrokeWidth(etPencilStrokeWidth.getText().toString());
                 if (originalX != shapeStartX || originalY != shapeStartY) {
-                    setStrokeWidth(etPencilStrokeWidth.getText().toString());
                     drawShapeOnCanvas(shapeStartX, shapeStartY, originalX, originalY);
-                    shapeStartX = -1;
+                    isShapeStopped = true;
                     drawBitmapOnView();
                     clearCanvasAndInvalidateView(previewCanvas, ivPreview);
                     history.offer(bitmap);
@@ -1009,37 +1024,41 @@ public class MainActivity extends AppCompatActivity {
     private final Shape circle = new Shape() {
         @Override
         public void drawShapeOnCanvas(int x0, int y0, int x1, int y1) {
-            canvas.drawCircle(x0, y0,
-                    (float) Math.sqrt(Math.pow(x1 - x0, 2.0) + Math.pow(y1 - y0, 2.0)),
+            canvas.drawCircle(x0 + 0.5f, y0 + 0.5f,
+                    (int) Math.sqrt(Math.pow(x1 - x0, 2.0) + Math.pow(y1 - y0, 2.0)),
                     paint);
         }
 
         @Override
         public String drawShapeOnView(int x0, int y0, int x1, int y1) {
-            float radius =
-                    (float) Math.sqrt(Math.pow(x1 - x0, 2.0) + Math.pow(y1 - y0, 2.0));
+            int radius =
+                    (int) Math.sqrt(Math.pow(x1 - x0, 2.0) + Math.pow(y1 - y0, 2.0));
             previewCanvas.drawCircle(
-                    window.translationX + toScaled(x0),
-                    window.translationY + toScaled(y0),
-                    toScaled((int) radius),
+                    window.translationX + toScaled(x0 + 0.5f),
+                    window.translationY + toScaled(y0 + 0.5f),
+                    toScaled(radius),
                     paint);
-            return String.format("Radius: %f", radius);
+            return String.format("Radius: %f", radius + 0.5f);
         }
     };
 
     private final Shape line = new Shape() {
         @Override
         public void drawShapeOnCanvas(int x0, int y0, int x1, int y1) {
+            if (x0 <= x1) ++x1;
+            else ++x0;
+            if (y0 <= y1) ++y1;
+            else ++y0;
             canvas.drawLine(x0, y0, x1, y1, paint);
         }
 
         @Override
         public String drawShapeOnView(int x0, int y0, int x1, int y1) {
             previewCanvas.drawLine(
-                    window.translationX + toScaled(x0),
-                    window.translationY + toScaled(y0),
-                    window.translationX + toScaled(x1),
-                    window.translationY + toScaled(y1),
+                    window.translationX + toScaled(x0 + 0.5f),
+                    window.translationY + toScaled(y0 + 0.5f),
+                    window.translationX + toScaled(x1 + 0.5f),
+                    window.translationY + toScaled(y1 + 0.5f),
                     paint);
             return String.format("Length: %f", Math.sqrt(Math.pow(x1 - x0, 2.0) + Math.pow(y1 - y0, 2.0)));
         }
@@ -1048,36 +1067,40 @@ public class MainActivity extends AppCompatActivity {
     private final Shape oval = new Shape() {
         @Override
         public void drawShapeOnCanvas(int x0, int y0, int x1, int y1) {
-            canvas.drawOval(x0, y0, x1, y1, paint);
+            float startX = Math.min(x0, x1), startY = Math.min(y0, y1),
+                    stopX = Math.max(x0, x1) + 1.0f, stopY = Math.max(y0, y1) + 1.0f;
+            canvas.drawOval(startX, startY, stopX, stopY, paint);
         }
 
         @Override
         public String drawShapeOnView(int x0, int y0, int x1, int y1) {
             previewCanvas.drawOval(
-                    window.translationX + toScaled(x0),
-                    window.translationY + toScaled(y0),
-                    window.translationX + toScaled(x1),
-                    window.translationY + toScaled(y1),
+                    window.translationX + toScaled(x0 + 0.5f),
+                    window.translationY + toScaled(y0 + 0.5f),
+                    window.translationX + toScaled(x1 + 0.5f),
+                    window.translationY + toScaled(y1 + 0.5f),
                     paint);
-            return String.format("Axes: %d, %d", Math.abs(x1 - x0) + 1, Math.abs(y1 - y0) + 1);
+            return String.format("Axes: %d, %d", Math.abs(x1 - x0) + 1, Math.abs(y1 - y0));
         }
     };
 
     private final Shape rect = new Shape() {
         @Override
         public void drawShapeOnCanvas(int x0, int y0, int x1, int y1) {
-            canvas.drawRect(x0, y0, x1, y1, paint);
+            float startX = Math.min(x0, x1), startY = Math.min(y0, y1),
+                    stopX = Math.max(x0, x1), stopY = Math.max(y0, y1);
+            canvas.drawRect(startX, startY, stopX, stopY, paint);
         }
 
         @Override
         public String drawShapeOnView(int x0, int y0, int x1, int y1) {
             previewCanvas.drawRect(
-                    window.translationX + toScaled(x0),
-                    window.translationY + toScaled(y0),
-                    window.translationX + toScaled(x1),
-                    window.translationY + toScaled(y1),
+                    window.translationX + toScaled(x0 + 0.5f),
+                    window.translationY + toScaled(y0 + 0.5f),
+                    window.translationX + toScaled(x1 + 0.5f),
+                    window.translationY + toScaled(y1 + 0.5f),
                     paint);
-            return String.format("Area: %d × %d", Math.abs(x1 - x0) + 1, Math.abs(y1 - y0) + 1);
+            return String.format("Area: %d × %d", Math.abs(x1 - x0), Math.abs(y1 - y0));
         }
     };
 
@@ -1310,12 +1333,13 @@ public class MainActivity extends AppCompatActivity {
 
     private void drawPointOnView(int x, int y) {
         clearCanvas(previewCanvas);
+        fillPaint.setColor(paint.getColor());
         previewCanvas.drawRect(
                 window.translationX + toScaled(x),
                 window.translationY + toScaled(y),
                 window.translationX + toScaled(x + 1),
                 window.translationY + toScaled(y + 1),
-                paint);
+                fillPaint);
         ivPreview.invalidate();
     }
 
@@ -1360,25 +1384,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void drawShapeOnCanvas(int x0, int y0, int x1, int y1) {
-        if (x0 <= x1) ++x1;
-        else ++x0;
-        if (y0 <= y1) ++y1;
-        else ++y0;
         shape.drawShapeOnCanvas(x0, y0, x1, y1);
     }
 
     private String drawShapeOnView(int x0, int y0, int x1, int y1) {
-
         clearCanvas(previewCanvas);
-
-        if (x0 <= x1) ++x1;
-        else ++x0;
-        if (y0 <= y1) ++y1;
-        else ++y0;
-
         String result = shape.drawShapeOnView(x0, y0, x1, y1);
         ivPreview.invalidate();
-
         return result;
     }
 
@@ -1625,7 +1637,7 @@ public class MainActivity extends AppCompatActivity {
         tabLayout.addOnTabSelectedListener(onTabSelectedListener);
 
         ((CheckBox) findViewById(R.id.cb_style_fill)).setOnCheckedChangeListener((buttonView, isChecked) -> {
-            Paint.Style style = isChecked ? Paint.Style.FILL : Paint.Style.STROKE;
+            Paint.Style style = isChecked ? Paint.Style.FILL_AND_STROKE : Paint.Style.STROKE;
             foregroundPaint.setStyle(style);
             backgroundPaint.setStyle(style);
         });
@@ -2049,6 +2061,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private float toScaled(int original) {
+        return original * window.scale;
+    }
+
+    private float toScaled(float original) {
         return original * window.scale;
     }
 
