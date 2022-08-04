@@ -1038,7 +1038,7 @@ public class MainActivity extends AppCompatActivity {
                     window.translationY + toScaled(y0 + 0.5f),
                     toScaled(radius),
                     paint);
-            return String.format("Radius: %f", radius + 0.5f);
+            return String.format("Radius: %.1f", radius + 0.5f);
         }
     };
 
@@ -1060,7 +1060,7 @@ public class MainActivity extends AppCompatActivity {
                     window.translationX + toScaled(x1 + 0.5f),
                     window.translationY + toScaled(y1 + 0.5f),
                     paint);
-            return String.format("Length: %f", Math.sqrt(Math.pow(x1 - x0, 2.0) + Math.pow(y1 - y0, 2.0)));
+            return String.format("Length: %f", Math.sqrt(Math.pow(x1 - x0, 2.0) + Math.pow(y1 - y0, 2.0)) + 1);
         }
     };
 
@@ -1080,7 +1080,7 @@ public class MainActivity extends AppCompatActivity {
                     window.translationX + toScaled(x1 + 0.5f),
                     window.translationY + toScaled(y1 + 0.5f),
                     paint);
-            return String.format("Axes: %d, %d", Math.abs(x1 - x0) + 1, Math.abs(y1 - y0));
+            return String.format("Axes: %d, %d", Math.abs(x1 - x0) + 1, Math.abs(y1 - y0) + 1);
         }
     };
 
@@ -1100,7 +1100,7 @@ public class MainActivity extends AppCompatActivity {
                     window.translationX + toScaled(x1 + 0.5f),
                     window.translationY + toScaled(y1 + 0.5f),
                     paint);
-            return String.format("Area: %d × %d", Math.abs(x1 - x0), Math.abs(y1 - y0));
+            return String.format("Area: %d × %d", Math.abs(x1 - x0) + 1, Math.abs(y1 - y0) + 1);
         }
     };
 
