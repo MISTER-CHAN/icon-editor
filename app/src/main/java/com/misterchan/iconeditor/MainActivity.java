@@ -328,14 +328,6 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    private final Paint transformer = new Paint() {
-        {
-            setColor(Color.BLUE);
-            setStrokeWidth(4.0f);
-            setStyle(Style.STROKE);
-        }
-    };
-
     private Paint paint = foregroundPaint;
 
     private final CompoundButton.OnCheckedChangeListener onBackgroundColorRadioButtonCheckedChangeListener = (buttonView, isChecked) -> {
