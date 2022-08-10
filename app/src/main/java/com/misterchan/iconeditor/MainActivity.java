@@ -1078,8 +1078,8 @@ public class MainActivity extends AppCompatActivity {
             flImageView.setOnTouchListener(onImageViewTouchWithTextListener);
             paint.setAntiAlias(true);
         } else {
-            paint.setAntiAlias(false);
             drawTextOnCanvas();
+            paint.setAntiAlias(false);
         }
     };
 
