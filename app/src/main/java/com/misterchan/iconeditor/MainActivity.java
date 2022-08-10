@@ -218,9 +218,7 @@ public class MainActivity extends AppCompatActivity {
     private ImageView ivPreview;
     private ImageView ivSelection;
     private InputMethodManager inputMethodManager;
-    private int backgroundColor = Color.WHITE;
     private int currentBitmapIndex;
-    private int foregroundColor = Color.BLACK;
     private int imageWidth, imageHeight;
     private int selectionStartX, selectionStartY;
     private int selectionEndX, selectionEndY;
@@ -328,16 +326,16 @@ public class MainActivity extends AppCompatActivity {
 
     private final CompoundButton.OnCheckedChangeListener onBackgroundColorRadioButtonCheckedChangeListener = (buttonView, isChecked) -> {
         if (isChecked) {
-            paint.setColor(backgroundColor);
             rbColor = rbBackgroundColor;
+            paint.setColor(rbColor.getCurrentTextColor());
             showPaintColorOnSeekBars();
         }
     };
 
     private final CompoundButton.OnCheckedChangeListener onForegroundColorRadioButtonCheckedChangeListener = (buttonView, isChecked) -> {
         if (isChecked) {
-            paint.setColor(foregroundColor);
             rbColor = rbForegroundColor;
+            paint.setColor(rbColor.getCurrentTextColor());
             showPaintColorOnSeekBars();
         }
     };
