@@ -17,6 +17,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.text.InputFilter;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -245,6 +246,7 @@ public class MainActivity extends AppCompatActivity {
     private String tree = "";
     private TabLayout tabLayout;
     private TextView tvStatus;
+    private Uri fileToBeOpened;
     private Window window;
 
     private final Paint cellGridPaint = new Paint() {
@@ -403,19 +405,7 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    private final ActivityResultCallback<Uri> imageCallback = result -> {
-        if (result == null) {
-            return;
-        }
-        try (InputStream inputStream = getContentResolver().openInputStream(result)) {
-            Bitmap bm = BitmapFactory.decodeStream(inputStream);
-            openFile(bm, result);
-            bm.recycle();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    };
+    private final ActivityResultCallback<Uri> imageCallback = this::openFile;
 
     private final ActivityResultCallback<Uri> treeCallback = result -> {
         if (result == null) {
@@ -861,18 +851,18 @@ public class MainActivity extends AppCompatActivity {
                             drawBitmapOnView();
                             drawTransformeeAndSelectionOnViewByTranslation();
                             if (stretchingBound == Position.NULL) {
-                                PositionsF scaledSelection = new PositionsF(
+                                PositionsF selectionBounds = new PositionsF(
                                         window.translationX + toScaled(selection.left),
                                         window.translationY + toScaled(selection.top),
-                                        window.translationX + toScaled(selection.right),
-                                        window.translationY + toScaled(selection.bottom));
-                                if (scaledSelection.left - 100.0f <= x && x < scaledSelection.left + 100.0f) {
+                                        window.translationX + toScaled(selection.right + 1),
+                                        window.translationY + toScaled(selection.bottom + 1));
+                                if (selectionBounds.left - 100.0f <= x && x < selectionBounds.left + 100.0f) {
                                     stretchingBound = Position.LEFT;
-                                } else if (scaledSelection.top - 100.0f <= y && y < scaledSelection.top + 100.0f) {
+                                } else if (selectionBounds.top - 100.0f <= y && y < selectionBounds.top + 100.0f) {
                                     stretchingBound = Position.TOP;
-                                } else if (scaledSelection.right - 100.0f <= x && x < scaledSelection.right + 100.0f) {
+                                } else if (selectionBounds.right - 100.0f <= x && x < selectionBounds.right + 100.0f) {
                                     stretchingBound = Position.RIGHT;
-                                } else if (scaledSelection.bottom - 100.0f <= y && y < scaledSelection.bottom + 100.0f) {
+                                } else if (selectionBounds.bottom - 100.0f <= y && y < selectionBounds.bottom + 100.0f) {
                                     stretchingBound = Position.BOTTOM;
                                 }
                                 if (stretchingBound != Position.NULL) {
@@ -1588,6 +1578,12 @@ public class MainActivity extends AppCompatActivity {
         etTextSize.setText(String.valueOf(paint.getTextSize()));
 
         clearCanvasAndInvalidateView(previewCanvas, ivPreview);
+
+        if (fileToBeOpened != null) {
+            openFile(fileToBeOpened);
+            windows.remove(0);
+            tabLayout.removeTabAt(0);
+        }
     }
 
     private void onChannelChanged(String hex, SeekBar seekBar) {
@@ -1714,6 +1710,8 @@ public class MainActivity extends AppCompatActivity {
         });
 
         chessboard = BitmapFactory.decodeResource(getResources(), R.mipmap.chessboard);
+
+        fileToBeOpened = getIntent().getData();
     }
 
     @Override
@@ -1992,7 +1990,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void openFile(Bitmap bm, Uri uri) {
+    private void openBitmap(Bitmap bm, Uri uri) {
         int width = bm.getWidth(), height = bm.getHeight();
         bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         canvas = new Canvas(bitmap);
@@ -2017,6 +2015,20 @@ public class MainActivity extends AppCompatActivity {
         addBitmap(bitmap,
                 width, height,
                 path, documentFile.getName(), compressFormat);
+    }
+
+    private void openFile(Uri uri) {
+        if (uri == null) {
+            return;
+        }
+        try (InputStream inputStream = getContentResolver().openInputStream(uri)) {
+            Bitmap bm = BitmapFactory.decodeStream(inputStream);
+            openBitmap(bm, uri);
+            bm.recycle();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void optimizeSelection() {
@@ -2201,6 +2213,8 @@ public class MainActivity extends AppCompatActivity {
         clearCanvasAndInvalidateView(previewCanvas, ivPreview);
 
         optimizeSelection();
+        isShapeStopped = true;
+        hasStretched = false;
 
         drawChessboardOnView();
         drawBitmapOnView();
