@@ -218,7 +218,9 @@ public class MainActivity extends AppCompatActivity {
     private ImageView ivPreview;
     private ImageView ivSelection;
     private InputMethodManager inputMethodManager;
+    private int backgroundColor = Color.WHITE;
     private int currentBitmapIndex;
+    private int foregroundColor = Color.BLACK;
     private int imageWidth, imageHeight;
     private int selectionStartX, selectionStartY;
     private int selectionEndX, selectionEndY;
@@ -246,17 +248,6 @@ public class MainActivity extends AppCompatActivity {
     private TabLayout tabLayout;
     private TextView tvStatus;
     private Window window;
-
-    private final Paint backgroundPaint = new Paint() {
-        {
-            setAntiAlias(false);
-            setColor(Color.WHITE);
-            setDither(false);
-            setStrokeWidth(1.0f);
-            setStyle(Style.FILL_AND_STROKE);
-            setTextAlign(Paint.Align.CENTER);
-        }
-    };
 
     private final Paint cellGridPaint = new Paint() {
         {
@@ -289,17 +280,6 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    private final Paint foregroundPaint = new Paint() {
-        {
-            setAntiAlias(false);
-            setColor(Color.BLACK);
-            setDither(false);
-            setStrokeWidth(1.0f);
-            setStyle(Style.FILL_AND_STROKE);
-            setTextAlign(Paint.Align.CENTER);
-        }
-    };
-
     private final Paint gridPaint = new Paint() {
         {
             setColor(Color.GRAY);
@@ -309,6 +289,17 @@ public class MainActivity extends AppCompatActivity {
     private final Paint opaquePaint = new Paint() {
         {
             setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC));
+        }
+    };
+
+    private final Paint paint = new Paint() {
+        {
+            setAntiAlias(false);
+            setColor(Color.BLACK);
+            setDither(false);
+            setStrokeWidth(1.0f);
+            setStyle(Style.FILL_AND_STROKE);
+            setTextAlign(Paint.Align.CENTER);
         }
     };
 
@@ -328,11 +319,16 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    private Paint paint = foregroundPaint;
+    private final Paint textLine = new Paint() {
+        {
+            setColor(Color.BLUE);
+            setStrokeWidth(2.0f);
+        }
+    };
 
     private final CompoundButton.OnCheckedChangeListener onBackgroundColorRadioButtonCheckedChangeListener = (buttonView, isChecked) -> {
         if (isChecked) {
-            paint = backgroundPaint;
+            paint.setColor(backgroundColor);
             rbColor = rbBackgroundColor;
             showPaintColorOnSeekBars();
         }
@@ -340,7 +336,7 @@ public class MainActivity extends AppCompatActivity {
 
     private final CompoundButton.OnCheckedChangeListener onForegroundColorRadioButtonCheckedChangeListener = (buttonView, isChecked) -> {
         if (isChecked) {
-            paint = foregroundPaint;
+            paint.setColor(foregroundColor);
             rbColor = rbForegroundColor;
             showPaintColorOnSeekBars();
         }
@@ -764,7 +760,7 @@ public class MainActivity extends AppCompatActivity {
         switch (event.getAction()) {
 
             case MotionEvent.ACTION_DOWN: {
-                setStrokeWidth(toScaled((int) paint.getStrokeWidth()));
+                paint.setStrokeWidth(toScaled((int) paint.getStrokeWidth()));
                 if (isShapeStopped) {
                     isShapeStopped = false;
                     drawPointOnView(originalX, originalY);
@@ -1065,10 +1061,14 @@ public class MainActivity extends AppCompatActivity {
             cbScaler.setTag(onImageViewTouchWithTransformerListener);
             flImageView.setOnTouchListener(onImageViewTouchWithTransformerListener);
             llBehaviorTransformer.setVisibility(View.VISIBLE);
+            selector.setColor(Color.BLUE);
+            drawSelectionOnView();
         } else {
             drawTransformeeOnCanvas();
             llBehaviorTransformer.setVisibility(View.GONE);
             stretchingBound = Position.NULL;
+            selector.setColor(Color.DKGRAY);
+            drawSelectionOnView();
         }
     };
 
@@ -1078,11 +1078,9 @@ public class MainActivity extends AppCompatActivity {
             cbScaler.setChecked(false);
             cbScaler.setTag(onImageViewTouchWithTextListener);
             flImageView.setOnTouchListener(onImageViewTouchWithTextListener);
-            foregroundPaint.setAntiAlias(true);
-            backgroundPaint.setAntiAlias(true);
+            paint.setAntiAlias(true);
         } else {
-            foregroundPaint.setAntiAlias(false);
-            backgroundPaint.setAntiAlias(false);
+            paint.setAntiAlias(false);
             drawTextOnCanvas();
         }
     };
@@ -1479,9 +1477,12 @@ public class MainActivity extends AppCompatActivity {
     private void drawTextOnView() {
         clearCanvas(previewCanvas);
         float x = window.translationX + toScaled(textX), y = window.translationY + toScaled(textY);
+        Paint.FontMetrics fontMetrics = paint.getFontMetrics();
+        float centerVertical = y + fontMetrics.ascent / 2.0f;
         previewCanvas.drawText(etText.getText().toString(), x, y, paint);
         previewCanvas.drawLine(x, 0.0f, x, viewHeight, cellGridPaint);
-        previewCanvas.drawLine(0.0f, y, viewWidth, y, cellGridPaint);
+        previewCanvas.drawLine(0.0f, y, viewWidth, y, textLine);
+        previewCanvas.drawLine(0.0f, centerVertical, viewWidth, centerVertical, cellGridPaint);
         ivPreview.invalidate();
     }
 
@@ -1704,8 +1705,7 @@ public class MainActivity extends AppCompatActivity {
 
         ((CheckBox) findViewById(R.id.cb_style_fill)).setOnCheckedChangeListener((buttonView, isChecked) -> {
             Paint.Style style = isChecked ? Paint.Style.FILL_AND_STROKE : Paint.Style.STROKE;
-            foregroundPaint.setStyle(style);
-            backgroundPaint.setStyle(style);
+            paint.setStyle(style);
         });
 
         etEraserStrokeWidth.addTextChangedListener((AfterTextChangedListener) s -> {
@@ -2101,16 +2101,10 @@ public class MainActivity extends AppCompatActivity {
         drawTextOnView();
     }
 
-    private void setStrokeWidth(float f) {
-        foregroundPaint.setStrokeWidth(f);
-        backgroundPaint.setStrokeWidth(f);
-    }
-
     private void setStrokeWidth(String s) {
         try {
             float f = Float.parseFloat(s);
-            foregroundPaint.setStrokeWidth(f);
-            backgroundPaint.setStrokeWidth(f);
+            paint.setStrokeWidth(f);
         } catch (NumberFormatException e) {
         }
     }
