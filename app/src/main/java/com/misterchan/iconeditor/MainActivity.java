@@ -286,6 +286,12 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    private final Paint imageBound = new Paint() {
+        {
+            setColor(Color.DKGRAY);
+        }
+    };
+
     private final Paint opaquePaint = new Paint() {
         {
             setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC));
@@ -1282,15 +1288,6 @@ public class MainActivity extends AppCompatActivity {
         float right = Math.min(window.translationX + imageWidth, viewWidth);
         float bottom = Math.min(window.translationY + imageHeight, viewHeight);
 
-        chessboardCanvas.drawLine(left, top, left - 100.0f, top, gridPaint);
-        chessboardCanvas.drawLine(left, top, left, top - 100.0f, gridPaint);
-        chessboardCanvas.drawLine(right, top, right + 100.0f, top, gridPaint);
-        chessboardCanvas.drawLine(right, top, right, top - 100.0f, gridPaint);
-        chessboardCanvas.drawLine(left, bottom, left - 100.0f, bottom, gridPaint);
-        chessboardCanvas.drawLine(left, bottom, left, bottom + 100.0f, gridPaint);
-        chessboardCanvas.drawLine(right, bottom, right + 100.0f, bottom, gridPaint);
-        chessboardCanvas.drawLine(right, bottom, right, bottom + 100.0f, gridPaint);
-
         chessboardCanvas.drawBitmap(chessboard,
                 new Rect((int) left, (int) top, (int) right, (int) bottom),
                 new RectF(left, top, right, bottom),
@@ -1312,6 +1309,16 @@ public class MainActivity extends AppCompatActivity {
                 gridCanvas.drawLine(startX, y, endX, y, gridPaint);
             }
         }
+
+        gridCanvas.drawLine(startX - 100.0f, startY, startX, startY, imageBound);
+        gridCanvas.drawLine(endX, startY, endX + 100.0f, startY, imageBound);
+        gridCanvas.drawLine(endX, startY - 100.0f, endX, startY, imageBound);
+        gridCanvas.drawLine(endX, endY, endX, endY + 100.0f, imageBound);
+        gridCanvas.drawLine(endX + 100.0f, endY, endX, endY, imageBound);
+        gridCanvas.drawLine(startX, endY, startX - 100.0f, endY, imageBound);
+        gridCanvas.drawLine(startX, endY + 100.0f, startX, endY, imageBound);
+        gridCanvas.drawLine(startX, startY, startX, startY - 100.0f, imageBound);
+
         if (cellGrid.enabled) {
             if (cellGrid.sizeX > 1) {
                 float scaledSizeX = toScaled(cellGrid.sizeX),
