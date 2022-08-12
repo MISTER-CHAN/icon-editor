@@ -21,6 +21,7 @@
     <string name="eyedropper">Eyedropper</string>
     <string name="file">File</string>
     <string name="file_name">File name</string>
+    <string name="fill">Fill</string>
     <string name="fill_clipped_area">Fill Clipped Area</string>
     <string name="filters">Filters</string>
     <string name="ff">FF</string>
@@ -44,7 +45,6 @@
     <string name="redo">↷</string>
     <string name="save">Save</string>
     <string name="save_as">Save As</string>
-    <string name="scale">Scale</string>
     <string name="select">Select</string>
     <string name="select_all">Select All</string>
     <string name="shape">Shape</string>
@@ -61,7 +61,7 @@
     <string name="width">Width</string>
     <string name="x">X</string>
     <string name="y">Y</string>
-    <string name="fill">Fill</string>
+    <string name="zoom">Zoom</string>
 
     <string-array name="file_types">
         <item>.png</item>

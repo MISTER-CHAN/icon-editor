@@ -272,10 +272,10 @@
             android:orientation="horizontal">
 
             <CheckBox
-                android:id="@+id/cb_scaler"
+                android:id="@+id/cb_zoom"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/scale" />
+                android:text="@string/zoom" />
 
             <HorizontalScrollView
                 android:layout_width="0dp"
