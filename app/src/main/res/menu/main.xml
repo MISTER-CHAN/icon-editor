@@ -66,13 +66,30 @@
             <item
                 android:id="@+id/i_select_all"
                 android:title="@string/select_all" />
+
+            <item
+                android:id="@+id/i_deselect"
+                android:title="@string/deselect" />
         </menu>
     </item>
 
     <item
-        android:id="@+id/i_crop"
-        android:title="@string/crop"
-        app:showAsAction="collapseActionView" />
+        android:title="@string/image"
+        app:showAsAction="collapseActionView">
+
+        <menu>
+
+            <item
+                android:id="@+id/i_size"
+                android:title="@string/size"
+                app:showAsAction="collapseActionView" />
+
+            <item
+                android:id="@+id/i_crop"
+                android:title="@string/crop"
+                app:showAsAction="collapseActionView" />
+        </menu>
+    </item>
 
     <item
         android:id="@+id/i_cell_grid"
@@ -80,7 +97,20 @@
         app:showAsAction="collapseActionView" />
 
     <item
-        android:id="@+id/i_properties"
-        android:title="@string/properties"
-        app:showAsAction="collapseActionView" />
+        android:title="@string/help"
+        app:showAsAction="collapseActionView">
+
+        <menu>
+
+            <item
+                android:id="@+id/homepage"
+                android:title="@string/homepage"
+                app:showAsAction="collapseActionView" />
+
+            <item
+                android:id="@+id/about"
+                android:title="@string/about"
+                app:showAsAction="collapseActionView" />
+        </menu>
+    </item>
 </menu>

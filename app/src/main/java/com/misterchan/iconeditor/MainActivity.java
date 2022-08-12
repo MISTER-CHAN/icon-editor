@@ -167,7 +167,7 @@ public class MainActivity extends AppCompatActivity {
             }
     };
 
-    private AfterTextChangedListener onPropSizeXTextChangedListener, onPropSizeYTextChangedListener;
+    private AfterTextChangedListener onImgSizeXTextChangedListener, onImgSizeYTextChangedListener;
     private Bitmap bitmap;
     private Bitmap chessboard;
     private Bitmap chessboardBitmap;
@@ -191,7 +191,7 @@ public class MainActivity extends AppCompatActivity {
     private CellGrid cellGrid;
     private CheckBox cbBucketFillContiguous;
     private CheckBox cbCellGridEnabled;
-    private CheckBox cbPropLar;
+    private CheckBox cbImgLar;
     private CheckBox cbTransformerFill;
     private CheckBox cbTransformerLar;
     private CheckBox cbZoom;
@@ -202,9 +202,9 @@ public class MainActivity extends AppCompatActivity {
     private EditText etCellGridSpacingX, etCellGridSpacingY;
     private EditText etEraserStrokeWidth;
     private EditText etFileName;
+    private EditText etImgSizeX, etImgSizeY;
     private EditText etNewGraphicSizeX, etNewGraphicSizeY;
     private EditText etPencilStrokeWidth;
-    private EditText etPropSizeX, etPropSizeY;
     private EditText etRed, etGreen, etBlue, etAlpha;
     private EditText etText;
     private EditText etTextSize;
@@ -239,7 +239,7 @@ public class MainActivity extends AppCompatActivity {
     private RadioButton rbColor;
     private RadioButton rbBackgroundColor;
     private RadioButton rbForegroundColor;
-    private RadioButton rbPropStretch, rbPropCrop;
+    private RadioButton rbImgCrop, rbImgStretch;
     private RadioButton rbTransformer;
     private SeekBar sbRed, sbGreen, sbBlue, sbAlpha;
     private Spinner sFileType;
@@ -295,7 +295,7 @@ public class MainActivity extends AppCompatActivity {
 
     private final Paint marginPaint = new Paint() {
         {
-            setColor(Color.RED);
+            setColor(Color.MAGENTA);
             setStrokeWidth(2.0f);
             setTextSize(24.0f);
         }
@@ -357,13 +357,13 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    private final CompoundButton.OnCheckedChangeListener onPropLarCheckBoxCheckedChangeListener = (buttonView, isChecked) -> {
+    private final CompoundButton.OnCheckedChangeListener onImgSizeLarCheckBoxCheckedChangeListener = (buttonView, isChecked) -> {
         if (isChecked) {
-            etPropSizeX.addTextChangedListener(onPropSizeXTextChangedListener);
-            etPropSizeY.addTextChangedListener(onPropSizeYTextChangedListener);
+            etImgSizeX.addTextChangedListener(onImgSizeXTextChangedListener);
+            etImgSizeY.addTextChangedListener(onImgSizeYTextChangedListener);
         } else {
-            etPropSizeX.removeTextChangedListener(onPropSizeXTextChangedListener);
-            etPropSizeY.removeTextChangedListener(onPropSizeYTextChangedListener);
+            etImgSizeX.removeTextChangedListener(onImgSizeXTextChangedListener);
+            etImgSizeY.removeTextChangedListener(onImgSizeYTextChangedListener);
         }
     };
 
@@ -399,23 +399,23 @@ public class MainActivity extends AppCompatActivity {
         tabLayout.getTabAt(tabLayout.getSelectedTabPosition()).setText(fileName);
     };
 
+    private final DialogInterface.OnClickListener onImgSizeDialogPosButtonClickListener = (dialog, which) -> {
+        try {
+            int width = Integer.parseUnsignedInt(etImgSizeX.getText().toString());
+            int height = Integer.parseUnsignedInt(etImgSizeY.getText().toString());
+            boolean stretch = rbImgStretch.isChecked();
+            resizeBitmap(width, height, stretch);
+            drawBitmapOnView();
+            history.offer(bitmap);
+        } catch (NumberFormatException e) {
+        }
+    };
+
     private final DialogInterface.OnClickListener onNewGraphicDialogPosButtonClickListener = (dialog, which) -> {
         try {
             int width = Integer.parseUnsignedInt(etNewGraphicSizeX.getText().toString());
             int height = Integer.parseUnsignedInt(etNewGraphicSizeY.getText().toString());
             createGraphic(width, height);
-        } catch (NumberFormatException e) {
-        }
-    };
-
-    private final DialogInterface.OnClickListener onPropDialogPosButtonClickListener = (dialog, which) -> {
-        try {
-            int width = Integer.parseUnsignedInt(etPropSizeX.getText().toString());
-            int height = Integer.parseUnsignedInt(etPropSizeY.getText().toString());
-            boolean stretch = rbPropStretch.isChecked();
-            resizeBitmap(width, height, stretch);
-            drawBitmapOnView();
-            history.offer(bitmap);
         } catch (NumberFormatException e) {
         }
     };
@@ -764,7 +764,6 @@ public class MainActivity extends AppCompatActivity {
                                 } else {
                                     canvas.drawRect(selection.left, selection.top, selection.right + 1, selection.bottom + 1, eraser);
                                 }
-                                history.offer(bitmap);
                             }
                             drawBitmapOnView();
                             drawTransformeeAndSelectionOnViewByTranslation(false);
@@ -792,13 +791,13 @@ public class MainActivity extends AppCompatActivity {
                                     }
                                     tvStatus.setText(String.format("Selected bound: %s", stretchingBound.name));
                                 } else {
-                                    tvStatus.setText(String.format("Left: %d, Top: %d, Right: %d, Bottom: %d",
-                                            selection.left, selection.top, selection.right, selection.bottom));
+                                    tvStatus.setText(String.format("Left: %d, Top: %d",
+                                            selection.left, selection.top));
                                 }
                             } else {
                                 stretchByBound(x, y);
-                                tvStatus.setText(String.format("Left: %d, Top: %d, Right: %d, Bottom: %d",
-                                        selection.left, selection.top, selection.right, selection.bottom));
+                                tvStatus.setText(String.format("Left: %d, Top: %d",
+                                        selection.left, selection.top));
                             }
                         }
                         prevX = x;
@@ -814,13 +813,11 @@ public class MainActivity extends AppCompatActivity {
                             transformeeTranslationX += x - prevX;
                             transformeeTranslationY += y - prevY;
                             drawTransformeeAndSelectionOnViewByTranslation(true);
-                            tvStatus.setText(String.format("Left: %d, Top: %d, Right: %d, Bottom: %d",
-                                    selection.left, selection.top, selection.right, selection.bottom,
-                                    selection.right - selection.left + 1, selection.bottom - selection.top + 1));
+                            tvStatus.setText(String.format("Left: %d, Top: %d",
+                                    selection.left, selection.top));
                         } else {
                             stretchByBound(x, y);
-                            tvStatus.setText(String.format("L: %d, T: %d, R: %d, B: %d, Area: %d × %d",
-                                    selection.left, selection.top, selection.right, selection.bottom,
+                            tvStatus.setText(String.format("Area: %d × %d",
                                     selection.right - selection.left + 1, selection.bottom - selection.top + 1));
                         }
                         prevX = x;
@@ -913,8 +910,7 @@ public class MainActivity extends AppCompatActivity {
                             selection.bottom += toOriginal(transfromeeDpb.bottom - dpb.bottom);
                         }
                         drawSelectionOnView();
-                        tvStatus.setText(String.format("L: %d, T: %d, R: %d, B: %d, Area: %d × %d",
-                                selection.left, selection.top, selection.right, selection.bottom,
+                        tvStatus.setText(String.format("Area: %d × %d",
                                 selection.right - selection.left + 1, selection.bottom - selection.top + 1));
                         break;
                     }
@@ -934,8 +930,7 @@ public class MainActivity extends AppCompatActivity {
                         if (cbTransformerLar.isChecked()) {
                             transformeeAspectRatio = (double) (selection.right - selection.left + 1) / (double) (selection.bottom - selection.top + 1);
                         }
-                        tvStatus.setText(String.format("L: %d, T: %d, R: %d, B: %d, Area: %d × %d",
-                                selection.left, selection.top, selection.right, selection.bottom,
+                        tvStatus.setText(String.format("Area: %d × %d",
                                 selection.right - selection.left + 1, selection.bottom - selection.top + 1));
                         break;
                     }
@@ -1709,22 +1704,22 @@ public class MainActivity extends AppCompatActivity {
         tabLayout = findViewById(R.id.tl);
         tvStatus = findViewById(R.id.tv_status);
 
-        onPropSizeXTextChangedListener = s -> {
+        onImgSizeXTextChangedListener = s -> {
             try {
                 int i = Integer.parseUnsignedInt(s);
-                etPropSizeY.removeTextChangedListener(onPropSizeYTextChangedListener);
-                etPropSizeY.setText(String.valueOf(i * bitmap.getHeight() / bitmap.getWidth()));
-                etPropSizeY.addTextChangedListener(onPropSizeYTextChangedListener);
+                etImgSizeY.removeTextChangedListener(onImgSizeYTextChangedListener);
+                etImgSizeY.setText(String.valueOf(i * bitmap.getHeight() / bitmap.getWidth()));
+                etImgSizeY.addTextChangedListener(onImgSizeYTextChangedListener);
             } catch (NumberFormatException e) {
             }
         };
 
-        onPropSizeYTextChangedListener = s -> {
+        onImgSizeYTextChangedListener = s -> {
             try {
                 int i = Integer.parseUnsignedInt(s);
-                etPropSizeX.removeTextChangedListener(onPropSizeXTextChangedListener);
-                etPropSizeX.setText(String.valueOf(i * bitmap.getWidth() / bitmap.getHeight()));
-                etPropSizeX.addTextChangedListener(onPropSizeXTextChangedListener);
+                etImgSizeX.removeTextChangedListener(onImgSizeXTextChangedListener);
+                etImgSizeX.setText(String.valueOf(i * bitmap.getWidth() / bitmap.getHeight()));
+                etImgSizeX.addTextChangedListener(onImgSizeXTextChangedListener);
             } catch (NumberFormatException e) {
             }
         };
@@ -1937,6 +1932,14 @@ public class MainActivity extends AppCompatActivity {
                 }
                 break;
 
+            case R.id.i_deselect:
+                drawTransformeeOnCanvas();
+                drawTextOnCanvas();
+                hasSelection = false;
+                clearCanvasAndInvalidateView(selectionCanvas, ivSelection);
+                tvStatus.setText("");
+                break;
+
             case R.id.i_new:
                 drawTransformeeOnCanvas();
                 drawTextOnCanvas();
@@ -1978,27 +1981,27 @@ public class MainActivity extends AppCompatActivity {
                 drawTransformeeAndSelectionOnViewByTranslation();
                 break;
 
-            case R.id.i_properties:
+            case R.id.i_size:
                 drawTransformeeOnCanvas();
                 drawTextOnCanvas();
 
-                AlertDialog propertiesDialog = new AlertDialog.Builder(this)
+                AlertDialog imageSizeDialog = new AlertDialog.Builder(this)
                         .setNegativeButton(R.string.cancel, null)
-                        .setPositiveButton(R.string.ok, onPropDialogPosButtonClickListener)
-                        .setTitle(R.string.properties)
-                        .setView(R.layout.properties)
+                        .setPositiveButton(R.string.ok, onImgSizeDialogPosButtonClickListener)
+                        .setTitle(R.string.image_size)
+                        .setView(R.layout.image_size)
                         .show();
 
-                cbPropLar = propertiesDialog.findViewById(R.id.cb_prop_lar);
-                etPropSizeX = propertiesDialog.findViewById(R.id.et_prop_size_x);
-                etPropSizeY = propertiesDialog.findViewById(R.id.et_prop_size_y);
-                rbPropStretch = propertiesDialog.findViewById(R.id.rb_prop_stretch);
-                rbPropCrop = propertiesDialog.findViewById(R.id.rb_prop_crop);
+                cbImgLar = imageSizeDialog.findViewById(R.id.cb_img_lar);
+                etImgSizeX = imageSizeDialog.findViewById(R.id.et_img_size_x);
+                etImgSizeY = imageSizeDialog.findViewById(R.id.et_img_size_y);
+                rbImgStretch = imageSizeDialog.findViewById(R.id.rb_img_stretch);
+                rbImgCrop = imageSizeDialog.findViewById(R.id.rb_img_crop);
 
-                cbPropLar.setOnCheckedChangeListener(onPropLarCheckBoxCheckedChangeListener);
-                etPropSizeX.setText(String.valueOf(bitmap.getWidth()));
-                etPropSizeY.setText(String.valueOf(bitmap.getHeight()));
-                rbPropStretch.setChecked(true);
+                cbImgLar.setOnCheckedChangeListener(onImgSizeLarCheckBoxCheckedChangeListener);
+                etImgSizeX.setText(String.valueOf(bitmap.getWidth()));
+                etImgSizeY.setText(String.valueOf(bitmap.getHeight()));
+                rbImgStretch.setChecked(true);
                 break;
 
             case R.id.i_redo: {
@@ -2030,7 +2033,9 @@ public class MainActivity extends AppCompatActivity {
                 break;
 
             case R.id.i_undo: {
-                if (history.canUndo()) {
+                if (transformeeBitmap != null) {
+                    undoOrRedo(history.getCurrent());
+                } else if (history.canUndo()) {
                     undoOrRedo(history.undo());
                 }
                 break;

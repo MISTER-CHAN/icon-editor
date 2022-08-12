@@ -27,8 +27,8 @@ class BitmapHistory {
         }
     }
 
-    Deque<Node> history = new LinkedList<>();
-    Node current = null;
+    private final Deque<Node> history = new LinkedList<>();
+    private Node current = null;
 
     boolean canRedo() {
         return current != null && current.next != null;
@@ -36,6 +36,10 @@ class BitmapHistory {
 
     boolean canUndo() {
         return current != null && current.prev != null;
+    }
+
+    Bitmap getCurrent() {
+        return current.val;
     }
 
     void offer(Bitmap bitmap) {

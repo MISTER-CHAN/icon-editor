@@ -1,5 +1,6 @@
 <resources>
     <string name="a">A</string>
+    <string name="about">About</string>
     <string name="app_name">Icon Editor</string>
     <string name="b">B</string>
     <string name="block">████</string>
@@ -13,6 +14,7 @@
     <string name="crop">Crop</string>
     <string name="cut">Cut</string>
     <string name="delete">Delete</string>
+    <string name="deselect">Deselect</string>
     <string name="double_zero">00</string>
     <string name="draw">Draw</string>
     <string name="edit">✎</string>
@@ -29,6 +31,10 @@
     <string name="forty_eight">48</string>
     <string name="g">G</string>
     <string name="height">Height</string>
+    <string name="help">Help</string>
+    <string name="homepage">Homepage</string>
+    <string name="image">Image</string>
+    <string name="image_size">Image Size</string>
     <string name="line">Line</string>
     <string name="lock_aspect_ratio">Lock Aspect Ratio</string>
     <string name="new_">New</string>

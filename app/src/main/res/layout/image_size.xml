@@ -34,7 +34,7 @@
                     android:layout_weight="1">
 
                     <EditText
-                        android:id="@+id/et_prop_size_x"
+                        android:id="@+id/et_img_size_x"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:autofillHints="0"
@@ -51,7 +51,7 @@
                     android:layout_weight="1">
 
                     <EditText
-                        android:id="@+id/et_prop_size_y"
+                        android:id="@+id/et_img_size_y"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:autofillHints="0"
@@ -63,7 +63,7 @@
             </LinearLayout>
 
             <CheckBox
-                android:id="@+id/cb_prop_lar"
+                android:id="@+id/cb_img_lar"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/lock_aspect_ratio" />
@@ -79,7 +79,7 @@
             android:orientation="horizontal">
 
             <RadioButton
-                android:id="@+id/rb_prop_stretch"
+                android:id="@+id/rb_img_stretch"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_margin="8dp"
@@ -87,7 +87,7 @@
                 android:text="@string/stretch" />
 
             <RadioButton
-                android:id="@+id/rb_prop_crop"
+                android:id="@+id/rb_img_crop"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_margin="8dp"
