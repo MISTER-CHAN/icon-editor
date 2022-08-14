@@ -41,15 +41,15 @@ public class ColorPicker {
         vPreview.setBackgroundColor(newColor);
     }
 
-    public void show(Context context, OnColorPickListener onColorPickListener) {
+    public void show(Context context, final OnColorPickListener onColorPickListener) {
         show(context, onColorPickListener, null, false);
     }
 
-    public void show(Context context, OnColorPickListener onColorPickListener, final Integer oldColor) {
+    public void show(Context context, final OnColorPickListener onColorPickListener, final Integer oldColor) {
         show(context, onColorPickListener, oldColor, false);
     }
 
-    public void show(Context context, OnColorPickListener onColorPickListener, final Integer oldColor, boolean canDeleteOld) {
+    public void show(Context context, final OnColorPickListener onColorPickListener, final Integer oldColor, boolean canDeleteOld) {
 
         AlertDialog.Builder colorPickingDialogBuilder = new AlertDialog.Builder(context)
                 .setNegativeButton(R.string.cancel, null)
