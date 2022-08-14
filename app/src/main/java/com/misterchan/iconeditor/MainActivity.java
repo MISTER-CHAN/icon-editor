@@ -13,6 +13,7 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -43,6 +44,9 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.documentfile.provider.DocumentFile;
+import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.tabs.TabLayout;
 
@@ -150,8 +154,6 @@ public class MainActivity extends AppCompatActivity {
     private static final Pattern PATTERN_FILE_NAME = Pattern.compile("[\"*/:<>?\\\\|]");
     private static final Pattern PATTERN_TREE = Pattern.compile("^content://com\\.android\\.externalstorage\\.documents/tree/primary%3A(?<path>.*)$");
 
-    private static final String FORMAT_02X = "%02X";
-
     private static final Bitmap.CompressFormat[] COMPRESS_FORMATS = {
             Bitmap.CompressFormat.PNG,
             Bitmap.CompressFormat.JPEG
@@ -195,6 +197,7 @@ public class MainActivity extends AppCompatActivity {
     private CheckBox cbTransformerFill;
     private CheckBox cbTransformerLar;
     private CheckBox cbZoom;
+    private ColorAdapter colorAdapter;
     private double prevDiagonal;
     private double transformeeAspectRatio;
     private EditText etCellGridOffsetX, etCellGridOffsetY;
@@ -205,7 +208,6 @@ public class MainActivity extends AppCompatActivity {
     private EditText etImgSizeX, etImgSizeY;
     private EditText etNewGraphicSizeX, etNewGraphicSizeY;
     private EditText etPencilStrokeWidth;
-    private EditText etRed, etGreen, etBlue, etAlpha;
     private EditText etText;
     private EditText etTextSize;
     private float pivotX, pivotY;
@@ -219,6 +221,7 @@ public class MainActivity extends AppCompatActivity {
     private ImageView ivPreview;
     private ImageView ivSelection;
     private InputMethodManager inputMethodManager;
+    private int backgroundColor = Color.TRANSPARENT;
     private int currentBitmapIndex;
     private int imageWidth, imageHeight;
     private int selectionStartX, selectionStartY;
@@ -232,21 +235,21 @@ public class MainActivity extends AppCompatActivity {
     private LinearLayout llBehaviorShape;
     private LinearLayout llBehaviorText;
     private LinearLayout llBehaviorTransformer;
+    private LinkedList<Integer> swatches;
     private List<Window> windows = new ArrayList<>();
     private Position stretchingBound = Position.NULL;
     private Positions selection = new Positions();
     private PositionsF transfromeeDpb = new PositionsF(); // DPB - Distance from point to bounds
-    private RadioButton rbColor;
-    private RadioButton rbBackgroundColor;
-    private RadioButton rbForegroundColor;
     private RadioButton rbImgCrop, rbImgStretch;
     private RadioButton rbTransformer;
-    private SeekBar sbRed, sbGreen, sbBlue, sbAlpha;
+    private RecyclerView rvSwatches;
     private Spinner sFileType;
     private String tree = "";
     private TabLayout tabLayout;
     private TextView tvStatus;
     private Uri fileToBeOpened;
+    private View vBackgroundColor;
+    private View vForegroundColor;
     private Window window;
 
     private final Paint cellGridPaint = new Paint() {
@@ -341,22 +344,6 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    private final CompoundButton.OnCheckedChangeListener onBackgroundColorRadioButtonCheckedChangeListener = (buttonView, isChecked) -> {
-        if (isChecked) {
-            rbColor = rbBackgroundColor;
-            paint.setColor(rbColor.getCurrentTextColor());
-            showPaintColorOnSeekBars();
-        }
-    };
-
-    private final CompoundButton.OnCheckedChangeListener onForegroundColorRadioButtonCheckedChangeListener = (buttonView, isChecked) -> {
-        if (isChecked) {
-            rbColor = rbForegroundColor;
-            paint.setColor(rbColor.getCurrentTextColor());
-            showPaintColorOnSeekBars();
-        }
-    };
-
     private final CompoundButton.OnCheckedChangeListener onImgSizeLarCheckBoxCheckedChangeListener = (buttonView, isChecked) -> {
         if (isChecked) {
             etImgSizeX.addTextChangedListener(onImgSizeXTextChangedListener);
@@ -419,6 +406,29 @@ public class MainActivity extends AppCompatActivity {
         } catch (NumberFormatException e) {
         }
     };
+
+    private final View.OnClickListener onAddColorViewClickListener = v -> new ColorPicker().show(
+            MainActivity.this,
+            (oldColor, newColor) -> {
+                swatches.offerFirst(newColor);
+                colorAdapter.notifyDataSetChanged();
+            });
+
+    private final View.OnClickListener onBackgroundColorClickListener = v -> new ColorPicker().show(
+            MainActivity.this,
+            (oldColor, newColor) -> {
+                backgroundColor = newColor;
+                vBackgroundColor.setBackgroundColor(newColor);
+            },
+            backgroundColor);
+
+    private final View.OnClickListener onForegroundColorClickListener = v -> new ColorPicker().show(
+            MainActivity.this,
+            (oldColor, newColor) -> {
+                paint.setColor(newColor);
+                vForegroundColor.setBackgroundColor(newColor);
+            },
+            paint.getColor());
 
     private final ActivityResultCallback<Uri> imageCallback = this::openFile;
 
@@ -558,8 +568,9 @@ public class MainActivity extends AppCompatActivity {
             case MotionEvent.ACTION_MOVE: {
                 float x = event.getX(), y = event.getY();
                 int originalX = toOriginal(x - window.translationX), originalY = toOriginal(y - window.translationY);
-                paint.setColor(bitmap.getPixel(originalX, originalY));
-                showPaintColorOnSeekBars();
+                int color = bitmap.getPixel(originalX, originalY);
+                paint.setColor(color);
+                vForegroundColor.setBackgroundColor(color);
                 tvStatus.setText(String.format("(%d, %d)", originalX, originalY));
                 break;
             }
@@ -759,7 +770,7 @@ public class MainActivity extends AppCompatActivity {
                                 transformeeBitmap = Bitmap.createBitmap(bitmap,
                                         selection.left, selection.top, width, height);
                                 if (cbTransformerFill.isChecked()) {
-                                    colorPaint.setColor(paint.getColor());
+                                    colorPaint.setColor(backgroundColor);
                                     canvas.drawRect(selection.left, selection.top, selection.right + 1, selection.bottom + 1, colorPaint);
                                 } else {
                                     canvas.drawRect(selection.left, selection.top, selection.right + 1, selection.bottom + 1, eraser);
@@ -1644,23 +1655,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void onChannelChanged(String hex, SeekBar seekBar) {
-        try {
-            seekBar.setProgress(Integer.parseUnsignedInt(hex, 16));
-        } catch (NumberFormatException e) {
-        }
-        int color = Color.argb(
-                sbAlpha.getProgress(),
-                sbRed.getProgress(),
-                sbGreen.getProgress(),
-                sbBlue.getProgress());
-        paint.setColor(color);
-        rbColor.setTextColor(color);
-        if (llBehaviorText.getVisibility() == View.VISIBLE) {
-            drawTextOnView();
-        }
-    }
-
     @Override
     @SuppressLint("ClickableViewAccessibility")
     protected void onCreate(Bundle savedInstanceState) {
@@ -1671,12 +1665,8 @@ public class MainActivity extends AppCompatActivity {
         cbTransformerFill = findViewById(R.id.cb_transformer_fill);
         cbTransformerLar = findViewById(R.id.cb_transformer_lar);
         cbZoom = findViewById(R.id.cb_zoom);
-        etAlpha = findViewById(R.id.et_alpha);
-        etBlue = findViewById(R.id.et_blue);
         etEraserStrokeWidth = findViewById(R.id.et_eraser_stroke_width);
-        etGreen = findViewById(R.id.et_green);
         etPencilStrokeWidth = findViewById(R.id.et_pencil_stroke_width);
-        etRed = findViewById(R.id.et_red);
         etText = findViewById(R.id.et_text);
         etTextSize = findViewById(R.id.et_text_size);
         flImageView = findViewById(R.id.fl_iv);
@@ -1692,17 +1682,13 @@ public class MainActivity extends AppCompatActivity {
         llBehaviorShape = findViewById(R.id.ll_behavior_shape);
         llBehaviorText = findViewById(R.id.ll_behavior_text);
         llBehaviorTransformer = findViewById(R.id.ll_behavior_transformer);
-        rbBackgroundColor = findViewById(R.id.rb_background_color);
-        rbForegroundColor = findViewById(R.id.rb_foreground_color);
-        rbColor = rbForegroundColor;
         RadioButton rbPencil = findViewById(R.id.rb_pencil);
+        rvSwatches = findViewById(R.id.rv_swatches);
         rbTransformer = findViewById(R.id.rb_transformer);
-        sbAlpha = findViewById(R.id.sb_alpha);
-        sbBlue = findViewById(R.id.sb_blue);
-        sbGreen = findViewById(R.id.sb_green);
-        sbRed = findViewById(R.id.sb_red);
         tabLayout = findViewById(R.id.tl);
         tvStatus = findViewById(R.id.tv_status);
+        vBackgroundColor = findViewById(R.id.v_background_color);
+        vForegroundColor = findViewById(R.id.v_foreground_color);
 
         onImgSizeXTextChangedListener = s -> {
             try {
@@ -1727,16 +1713,10 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.b_text_draw).setOnClickListener(v -> drawTextOnCanvas());
         cbZoom.setOnCheckedChangeListener(onZoomToolCheckBoxCheckedChangeListener);
         cbZoom.setTag(onImageViewTouchWithPencilListener);
-        etAlpha.addTextChangedListener((AfterTextChangedListener) s -> onChannelChanged(s, sbAlpha));
-        etBlue.addTextChangedListener((AfterTextChangedListener) s -> onChannelChanged(s, sbBlue));
-        etGreen.addTextChangedListener((AfterTextChangedListener) s -> onChannelChanged(s, sbGreen));
         etPencilStrokeWidth.addTextChangedListener((AfterTextChangedListener) this::setStrokeWidth);
-        etRed.addTextChangedListener((AfterTextChangedListener) s -> onChannelChanged(s, sbRed));
         etText.addTextChangedListener((AfterTextChangedListener) s -> drawTextOnView());
         etTextSize.addTextChangedListener((AfterTextChangedListener) s -> scaleTextSizeAndDrawTextOnView());
         flImageView.setOnTouchListener(onImageViewTouchWithPencilListener);
-        rbBackgroundColor.setOnCheckedChangeListener(onBackgroundColorRadioButtonCheckedChangeListener);
-        rbForegroundColor.setOnCheckedChangeListener(onForegroundColorRadioButtonCheckedChangeListener);
         ((RadioButton) findViewById(R.id.rb_bucket_fill)).setOnCheckedChangeListener((buttonView, isChecked) -> onToolChange(buttonView, isChecked, onImageViewTouchWithBucketListener, llBehaviorBucketFill));
         ((RadioButton) findViewById(R.id.rb_circle)).setOnCheckedChangeListener((OnCheckedListener) () -> shape = circle);
         ((RadioButton) findViewById(R.id.rb_eraser)).setOnCheckedChangeListener((buttonView, isChecked) -> onToolChange(buttonView, isChecked, onImageViewTouchWithEraserListener, llBehaviorEraser));
@@ -1749,11 +1729,10 @@ public class MainActivity extends AppCompatActivity {
         ((RadioButton) findViewById(R.id.rb_shape)).setOnCheckedChangeListener((buttonView, isChecked) -> onToolChange(buttonView, isChecked, onImageViewTouchWithShapeListener, llBehaviorShape));
         ((RadioButton) findViewById(R.id.rb_text)).setOnCheckedChangeListener(onTextRadioButtonCheckedChangeListener);
         rbTransformer.setOnCheckedChangeListener(onTransformerRadioButtonCheckedChangeListener);
-        sbAlpha.setOnSeekBarChangeListener((OnProgressChangeListener) progress -> etAlpha.setText(String.format(FORMAT_02X, progress)));
-        sbBlue.setOnSeekBarChangeListener((OnProgressChangeListener) progress -> etBlue.setText(String.format(FORMAT_02X, progress)));
-        sbGreen.setOnSeekBarChangeListener((OnProgressChangeListener) progress -> etGreen.setText(String.format(FORMAT_02X, progress)));
-        sbRed.setOnSeekBarChangeListener((OnProgressChangeListener) progress -> etRed.setText(String.format(FORMAT_02X, progress)));
         tabLayout.addOnTabSelectedListener(onTabSelectedListener);
+        findViewById(R.id.tv_color_add).setOnClickListener(onAddColorViewClickListener);
+        vBackgroundColor.setOnClickListener(onBackgroundColorClickListener);
+        vForegroundColor.setOnClickListener(onForegroundColorClickListener);
 
         ((CheckBox) findViewById(R.id.cb_style_fill)).setOnCheckedChangeListener((buttonView, isChecked) -> {
             Paint.Style style = isChecked ? Paint.Style.FILL_AND_STROKE : Paint.Style.STROKE;
@@ -1766,6 +1745,51 @@ public class MainActivity extends AppCompatActivity {
             } catch (NumberFormatException e) {
             }
         });
+
+        rvSwatches.setItemAnimator(new DefaultItemAnimator());
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        layoutManager.setOrientation(RecyclerView.HORIZONTAL);
+        rvSwatches.setLayoutManager(layoutManager);
+        swatches = new LinkedList<Integer>() {
+            {
+                offer(Color.BLACK);
+                offer(Color.WHITE);
+                offer(Color.RED);
+                offer(Color.YELLOW);
+                offer(Color.GREEN);
+                offer(Color.CYAN);
+                offer(Color.BLUE);
+                offer(Color.MAGENTA);
+            }
+        };
+        colorAdapter = new ColorAdapter(swatches) {
+            {
+                setOnItemClickListener(view -> {
+                    int color = ((ColorDrawable) view.getBackground()).getColor();
+                    paint.setColor(color);
+                    vForegroundColor.setBackgroundColor(color);
+                    if (llBehaviorText.getVisibility() == View.VISIBLE) {
+                        drawTextOnView();
+                    }
+                });
+                setOnItemLongClickListener(view -> {
+                    new ColorPicker().show(
+                            MainActivity.this,
+                            (oldColor, newColor) -> {
+                                if (newColor != null) {
+                                    swatches.set(swatches.indexOf(oldColor), newColor);
+                                } else {
+                                    swatches.remove(oldColor);
+                                }
+                                colorAdapter.notifyDataSetChanged();
+                            },
+                            (Integer) view.getTag(),
+                            true);
+                    return true;
+                });
+            }
+        };
+        rvSwatches.setAdapter(colorAdapter);
 
         chessboard = BitmapFactory.decodeResource(getResources(), R.mipmap.chessboard);
 
@@ -2185,26 +2209,6 @@ public class MainActivity extends AppCompatActivity {
             paint.setStrokeWidth(f);
         } catch (NumberFormatException e) {
         }
-    }
-
-    private void showPaintColorOnSeekBars() {
-        int color = paint.getColor();
-        int red = Color.red(color),
-                green = Color.green(color),
-                blue = Color.blue(color),
-                alpha = Color.alpha(color);
-
-        sbRed.setProgress(red);
-        etRed.setText(String.format(FORMAT_02X, red));
-
-        sbGreen.setProgress(green);
-        etGreen.setText(String.format(FORMAT_02X, green));
-
-        sbBlue.setProgress(blue);
-        etBlue.setText(String.format(FORMAT_02X, blue));
-
-        sbAlpha.setProgress(alpha);
-        etAlpha.setText(String.format(FORMAT_02X, alpha));
     }
 
     private void stretchByBound(float viewX, float viewY) {

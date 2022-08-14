@@ -1,6 +1,7 @@
 <resources>
     <string name="a">A</string>
     <string name="about">About</string>
+    <string name="add">+</string>
     <string name="app_name">Icon Editor</string>
     <string name="b">B</string>
     <string name="block">████</string>
@@ -9,6 +10,7 @@
     <string name="cell_grid">Cell Grid</string>
     <string name="circle">Circle</string>
     <string name="close">Close</string>
+    <string name="color_picker">Color Picker</string>
     <string name="contiguous">Contiguous</string>
     <string name="copy">Copy</string>
     <string name="crop">Crop</string>

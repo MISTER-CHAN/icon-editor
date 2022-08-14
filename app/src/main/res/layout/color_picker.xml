@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <FrameLayout
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_marginHorizontal="8dp">
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="center"
+            android:src="@mipmap/chessboard" />
+
+        <View
+            android:id="@+id/v_color_preview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/black" />
+    </FrameLayout>
+
+    <GridLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="8dp"
+        android:columnCount="2"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:rowCount="4">
+
+        <com.google.android.material.textfield.TextInputLayout>
+
+            <EditText
+                android:id="@+id/et_alpha"
+                android:layout_width="64dp"
+                android:layout_height="wrap_content"
+                android:autofillHints="0"
+                android:background="@color/transparent"
+                android:hint="@string/a"
+                android:inputType="text"
+                android:text="@string/ff"
+                android:textAlignment="center" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <SeekBar
+            android:id="@+id/sb_alpha"
+            android:layout_gravity="fill"
+            android:max="255"
+            android:progress="255" />
+
+        <com.google.android.material.textfield.TextInputLayout>
+
+            <EditText
+                android:id="@+id/et_red"
+                android:layout_width="64dp"
+                android:layout_height="wrap_content"
+                android:autofillHints="0"
+                android:background="@color/transparent"
+                android:hint="@string/r"
+                android:inputType="text"
+                android:text="@string/double_zero"
+                android:textAlignment="center" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <SeekBar
+            android:id="@+id/sb_red"
+            android:layout_gravity="fill"
+            android:max="255" />
+
+        <com.google.android.material.textfield.TextInputLayout>
+
+            <EditText
+                android:id="@+id/et_green"
+                android:layout_width="64dp"
+                android:layout_height="wrap_content"
+                android:autofillHints="0"
+                android:background="@color/transparent"
+                android:hint="@string/g"
+                android:inputType="text"
+                android:text="@string/double_zero"
+                android:textAlignment="center" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <SeekBar
+            android:id="@+id/sb_green"
+            android:layout_gravity="fill"
+            android:max="255" />
+
+        <com.google.android.material.textfield.TextInputLayout>
+
+            <EditText
+                android:id="@+id/et_blue"
+                android:layout_width="64dp"
+                android:layout_height="wrap_content"
+                android:autofillHints="0"
+                android:background="@color/transparent"
+                android:hint="@string/b"
+                android:inputType="text"
+                android:text="@string/double_zero"
+                android:textAlignment="center" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <SeekBar
+            android:id="@+id/sb_blue"
+            android:layout_gravity="fill"
+            android:max="255" />
+
+    </GridLayout>
+</LinearLayout>

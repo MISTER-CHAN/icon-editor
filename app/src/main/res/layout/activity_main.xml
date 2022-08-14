@@ -345,121 +345,70 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center"
+            android:layout_margin="4dp"
+            android:gravity="center_vertical"
             android:orientation="horizontal">
 
-            <RadioGroup
+
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:background="@color/black"
+                android:orientation="horizontal">
 
-                <RadioButton
-                    android:id="@+id/rb_foreground_color"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:checked="true"
-                    android:text="@string/block"
-                    android:textColor="@color/black" />
+                <FrameLayout
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_margin="1dp">
 
-                <RadioButton
-                    android:id="@+id/rb_background_color"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/block"
-                    android:textColor="@color/white" />
-            </RadioGroup>
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:scaleType="center"
+                        android:src="@mipmap/chessboard" />
 
-            <GridLayout
-                android:layout_width="wrap_content"
+                    <View
+                        android:id="@+id/v_foreground_color"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@color/black" />
+                </FrameLayout>
+
+                <FrameLayout
+                    android:layout_width="16dp"
+                    android:layout_height="32dp"
+                    android:layout_marginVertical="1dp"
+                    android:layout_marginEnd="1dp">
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:scaleType="center"
+                        android:src="@mipmap/chessboard" />
+
+                    <View
+                        android:id="@+id/v_background_color"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@color/transparent" />
+                </FrameLayout>
+            </LinearLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_swatches"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:columnCount="3"
+                android:layout_weight="1"
+                android:fadingEdgeLength="16dp"
+                android:requiresFadingEdge="horizontal" />
+
+            <TextView
+                android:id="@+id/tv_color_add"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
                 android:gravity="center"
-                android:orientation="horizontal"
-                android:rowCount="4">
-
-                <TextView
-                    android:layout_gravity="center"
-                    android:labelFor="@+id/et_alpha"
-                    android:text="@string/a" />
-
-                <EditText
-                    android:id="@+id/et_alpha"
-                    android:layout_width="32dp"
-                    android:autofillHints="0"
-                    android:inputType="text"
-                    android:text="@string/ff"
-                    android:textAlignment="center" />
-
-                <SeekBar
-                    android:id="@+id/sb_alpha"
-                    android:layout_width="256dp"
-                    android:layout_gravity="center"
-                    android:max="255"
-                    android:progress="255" />
-
-                <TextView
-                    android:layout_gravity="center"
-                    android:labelFor="@+id/et_red"
-                    android:text="@string/r" />
-
-                <EditText
-                    android:id="@+id/et_red"
-                    android:layout_width="32dp"
-                    android:autofillHints="0"
-                    android:inputType="text"
-                    android:maxLength="2"
-                    android:text="@string/double_zero"
-                    android:textAlignment="center" />
-
-                <SeekBar
-                    android:id="@+id/sb_red"
-                    android:layout_width="256dp"
-                    android:layout_gravity="center"
-                    android:max="255" />
-
-                <TextView
-                    android:layout_gravity="center"
-                    android:labelFor="@+id/et_green"
-                    android:text="@string/g" />
-
-                <EditText
-                    android:id="@+id/et_green"
-                    android:layout_width="32dp"
-                    android:autofillHints="0"
-                    android:inputType="text"
-                    android:maxLength="2"
-                    android:text="@string/double_zero"
-                    android:textAlignment="center" />
-
-                <SeekBar
-                    android:id="@+id/sb_green"
-                    android:layout_width="256dp"
-                    android:layout_gravity="center"
-                    android:max="255" />
-
-                <TextView
-                    android:layout_gravity="center"
-                    android:labelFor="@+id/et_blue"
-                    android:text="@string/b" />
-
-
-                <EditText
-                    android:id="@+id/et_blue"
-                    android:layout_width="32dp"
-                    android:autofillHints="0"
-                    android:inputType="text"
-                    android:maxLength="2"
-                    android:text="@string/double_zero"
-                    android:textAlignment="center" />
-
-                <SeekBar
-                    android:id="@+id/sb_blue"
-                    android:layout_width="256dp"
-                    android:layout_gravity="center"
-                    android:max="255" />
-
-            </GridLayout>
-
+                android:text="@string/add"
+                android:textAppearance="?android:attr/textAppearanceLarge" />
         </LinearLayout>
     </LinearLayout>
 </LinearLayout>
