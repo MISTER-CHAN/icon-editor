@@ -33,8 +33,8 @@
 
         <View
             android:id="@+id/v_ruler"
-            android:layout_width="16dp"
-            android:layout_height="16dp"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
             android:background="?android:attr/colorBackground"
             android:elevation="8dp"
             app:layout_constraintStart_toStartOf="parent"
@@ -43,7 +43,7 @@
         <ImageView
             android:id="@+id/iv_ruler_horizontal"
             android:layout_width="0dp"
-            android:layout_height="16dp"
+            android:layout_height="22dp"
             android:background="?android:attr/colorBackground"
             android:elevation="8dp"
             app:layout_constraintEnd_toEndOf="parent"
@@ -52,7 +52,7 @@
 
         <ImageView
             android:id="@+id/iv_ruler_vertical"
-            android:layout_width="16dp"
+            android:layout_width="22dp"
             android:layout_height="0dp"
             android:background="?android:attr/colorBackground"
             android:elevation="8dp"
