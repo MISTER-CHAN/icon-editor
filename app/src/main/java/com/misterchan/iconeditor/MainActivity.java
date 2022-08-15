@@ -18,6 +18,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.text.InputFilter;
+import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -176,6 +177,7 @@ public class MainActivity extends AppCompatActivity {
     private Bitmap clipboard;
     private Bitmap gridBitmap;
     private Bitmap previewBitmap;
+    private Bitmap rulerHBitmap, rulerVBitmap;
     private Bitmap transformeeBitmap;
     private Bitmap selectionBitmap;
     private Bitmap viewBitmap;
@@ -188,13 +190,13 @@ public class MainActivity extends AppCompatActivity {
     private Canvas chessboardCanvas;
     private Canvas gridCanvas;
     private Canvas previewCanvas;
+    private Canvas rulerHCanvas, rulerVCanvas;
     private Canvas selectionCanvas;
     private Canvas viewCanvas;
     private CellGrid cellGrid;
     private CheckBox cbBucketFillContiguous;
     private CheckBox cbCellGridEnabled;
     private CheckBox cbImgLar;
-    private CheckBox cbTransformerFill;
     private CheckBox cbTransformerLar;
     private CheckBox cbZoom;
     private ColorAdapter colorAdapter;
@@ -219,9 +221,9 @@ public class MainActivity extends AppCompatActivity {
     private ImageView ivChessboard;
     private ImageView ivGrid;
     private ImageView ivPreview;
+    private ImageView ivRulerH, ivRulerV;
     private ImageView ivSelection;
     private InputMethodManager inputMethodManager;
-    private int backgroundColor = Color.TRANSPARENT;
     private int currentBitmapIndex;
     private int imageWidth, imageHeight;
     private int selectionStartX, selectionStartY;
@@ -268,10 +270,10 @@ public class MainActivity extends AppCompatActivity {
     private final Paint eraser = new Paint() {
         {
             setAntiAlias(false);
-            setColor(Color.BLACK);
+            setColor(Color.TRANSPARENT);
             setDither(false);
             setStrokeWidth(1.0f);
-            setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
+            setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC));
         }
     };
 
@@ -326,6 +328,14 @@ public class MainActivity extends AppCompatActivity {
             setColor(Color.RED);
             setStrokeWidth(4.0f);
             setTextSize(32.0f);
+        }
+    };
+
+    private final Paint rulerPaint = new Paint() {
+        {
+            setColor(Color.GRAY);
+            setStrokeWidth(1.0f);
+            setTextSize(24.0f);
         }
     };
 
@@ -417,16 +427,19 @@ public class MainActivity extends AppCompatActivity {
     private final View.OnClickListener onBackgroundColorClickListener = v -> new ColorPicker().show(
             MainActivity.this,
             (oldColor, newColor) -> {
-                backgroundColor = newColor;
+                eraser.setColor(newColor);
                 vBackgroundColor.setBackgroundColor(newColor);
             },
-            backgroundColor);
+            eraser.getColor());
 
     private final View.OnClickListener onForegroundColorClickListener = v -> new ColorPicker().show(
             MainActivity.this,
             (oldColor, newColor) -> {
                 paint.setColor(newColor);
                 vForegroundColor.setBackgroundColor(newColor);
+                if (llBehaviorText.getVisibility() == View.VISIBLE) {
+                    drawTextOnView();
+                }
             },
             paint.getColor());
 
@@ -769,12 +782,7 @@ public class MainActivity extends AppCompatActivity {
                                 transformeeTranslationY = window.translationY + toScaled(selection.top);
                                 transformeeBitmap = Bitmap.createBitmap(bitmap,
                                         selection.left, selection.top, width, height);
-                                if (cbTransformerFill.isChecked()) {
-                                    colorPaint.setColor(backgroundColor);
-                                    canvas.drawRect(selection.left, selection.top, selection.right + 1, selection.bottom + 1, colorPaint);
-                                } else {
-                                    canvas.drawRect(selection.left, selection.top, selection.right + 1, selection.bottom + 1, eraser);
-                                }
+                                canvas.drawRect(selection.left, selection.top, selection.right + 1, selection.bottom + 1, eraser);
                             }
                             drawBitmapOnView();
                             drawTransformeeAndSelectionOnViewByTranslation(false);
@@ -1323,7 +1331,19 @@ public class MainActivity extends AppCompatActivity {
                 new Rect((int) left, (int) top, (int) right, (int) bottom),
                 new RectF(left, top, right, bottom),
                 opaquePaint);
+
+        chessboardCanvas.drawLine(left, top, left - 100.0f, top, imageBound);
+        chessboardCanvas.drawLine(right, top, right + 100.0f, top, imageBound);
+        chessboardCanvas.drawLine(right, top - 100.0f, right, top, imageBound);
+        chessboardCanvas.drawLine(right, bottom, right, bottom + 100.0f, imageBound);
+        chessboardCanvas.drawLine(right + 100.0f, bottom, right, bottom, imageBound);
+        chessboardCanvas.drawLine(left, bottom, left - 100.0f, bottom, imageBound);
+        chessboardCanvas.drawLine(left, bottom + 100.0f, left, bottom, imageBound);
+        chessboardCanvas.drawLine(left, top, left, top - 100.0f, imageBound);
+
         ivChessboard.invalidate();
+
+        drawRuler();
     }
 
     private void drawGridOnView() {
@@ -1340,15 +1360,6 @@ public class MainActivity extends AppCompatActivity {
                 gridCanvas.drawLine(startX, y, endX, y, gridPaint);
             }
         }
-
-        gridCanvas.drawLine(startX - 100.0f, startY, startX, startY, imageBound);
-        gridCanvas.drawLine(endX, startY, endX + 100.0f, startY, imageBound);
-        gridCanvas.drawLine(endX, startY - 100.0f, endX, startY, imageBound);
-        gridCanvas.drawLine(endX, endY, endX, endY + 100.0f, imageBound);
-        gridCanvas.drawLine(endX + 100.0f, endY, endX, endY, imageBound);
-        gridCanvas.drawLine(startX, endY, startX - 100.0f, endY, imageBound);
-        gridCanvas.drawLine(startX, endY + 100.0f, startX, endY, imageBound);
-        gridCanvas.drawLine(startX, startY, startX, startY - 100.0f, imageBound);
 
         if (cellGrid.enabled) {
             if (cellGrid.sizeX > 1) {
@@ -1431,6 +1442,32 @@ public class MainActivity extends AppCompatActivity {
                 window.translationY + toScaled(y + 1),
                 fillPaint);
         ivPreview.invalidate();
+    }
+
+    private void drawRuler() {
+        clearCanvas(rulerHCanvas);
+        clearCanvas(rulerVCanvas);
+        final int multiplier = (int) Math.ceil(96.0 / window.scale);
+        final float scaledMultiplier = toScaled(multiplier);
+        float x = window.translationX % scaledMultiplier, height = rulerHBitmap.getHeight();
+        int originalX = (int) (-window.translationX / scaledMultiplier) * multiplier;
+        for (;
+             x < viewWidth;
+             x += scaledMultiplier, originalX += multiplier) {
+            rulerHCanvas.drawLine(x, 0.0f, x, height, rulerPaint);
+            rulerHCanvas.drawText(String.valueOf(originalX), x, height, rulerPaint);
+        }
+        float y = window.translationY % scaledMultiplier, width = rulerVBitmap.getWidth();
+        int originalY = (int) (-window.translationY / scaledMultiplier) * multiplier;
+        float ascent = rulerPaint.getFontMetrics().ascent;
+        for (;
+             y < viewHeight;
+             y += scaledMultiplier, originalY += multiplier) {
+            rulerVCanvas.drawLine(0.0f, y, width, y, rulerPaint);
+            rulerVCanvas.drawText(String.valueOf(originalY), 0.0f, y - ascent, rulerPaint);
+        }
+        ivRulerH.invalidate();
+        ivRulerV.invalidate();
     }
 
     private void drawSelectionOnView() {
@@ -1626,6 +1663,13 @@ public class MainActivity extends AppCompatActivity {
         ivGrid.setImageBitmap(gridBitmap);
         drawGridOnView();
 
+        rulerHBitmap = Bitmap.createBitmap(viewWidth, ivRulerH.getHeight(), Bitmap.Config.ARGB_4444);
+        rulerHCanvas = new Canvas(rulerHBitmap);
+        ivRulerH.setImageBitmap(rulerHBitmap);
+        rulerVBitmap = Bitmap.createBitmap(ivRulerV.getWidth(), viewHeight, Bitmap.Config.ARGB_4444);
+        rulerVCanvas = new Canvas(rulerVBitmap);
+        ivRulerV.setImageBitmap(rulerVBitmap);
+
         chessboardBitmap = Bitmap.createBitmap(viewWidth, viewHeight, Bitmap.Config.ARGB_4444);
         chessboardCanvas = new Canvas(chessboardBitmap);
         ivChessboard.setImageBitmap(chessboardBitmap);
@@ -1662,7 +1706,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         cbBucketFillContiguous = findViewById(R.id.cb_bucket_fill_contiguous);
-        cbTransformerFill = findViewById(R.id.cb_transformer_fill);
         cbTransformerLar = findViewById(R.id.cb_transformer_lar);
         cbZoom = findViewById(R.id.cb_zoom);
         etEraserStrokeWidth = findViewById(R.id.et_eraser_stroke_width);
@@ -1675,6 +1718,8 @@ public class MainActivity extends AppCompatActivity {
         ivChessboard = findViewById(R.id.iv_chessboard);
         ivGrid = findViewById(R.id.iv_grid);
         ivPreview = findViewById(R.id.iv_preview);
+        ivRulerH = findViewById(R.id.iv_ruler_horizontal);
+        ivRulerV = findViewById(R.id.iv_ruler_vertical);
         ivSelection = findViewById(R.id.iv_selection);
         llBehaviorBucketFill = findViewById(R.id.ll_behavior_bucket_fill);
         llBehaviorEraser = findViewById(R.id.ll_behavior_eraser);
@@ -1822,6 +1867,12 @@ public class MainActivity extends AppCompatActivity {
         previewCanvas = null;
         previewBitmap.recycle();
         previewBitmap = null;
+        rulerHCanvas = null;
+        rulerHBitmap.recycle();
+        rulerHBitmap = null;
+        rulerVCanvas = null;
+        rulerVBitmap.recycle();
+        rulerVBitmap = null;
         selectionCanvas = null;
         selectionBitmap.recycle();
         selectionBitmap = null;

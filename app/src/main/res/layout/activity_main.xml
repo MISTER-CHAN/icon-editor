@@ -26,43 +26,80 @@
         android:layout_margin="4dp"
         android:maxLines="1" />
 
-    <FrameLayout
-        android:id="@+id/fl_iv"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1">
 
+        <View
+            android:id="@+id/v_ruler"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:background="?android:attr/colorBackground"
+            android:elevation="8dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <ImageView
-            android:id="@+id/iv_chessboard"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scaleType="center" />
+            android:id="@+id/iv_ruler_horizontal"
+            android:layout_width="0dp"
+            android:layout_height="16dp"
+            android:background="?android:attr/colorBackground"
+            android:elevation="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/v_ruler"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <ImageView
-            android:id="@+id/iv"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scaleType="fitCenter" />
+            android:id="@+id/iv_ruler_vertical"
+            android:layout_width="16dp"
+            android:layout_height="0dp"
+            android:background="?android:attr/colorBackground"
+            android:elevation="8dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/v_ruler" />
 
-        <ImageView
-            android:id="@+id/iv_preview"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scaleType="centerCrop" />
+        <FrameLayout
+            android:id="@+id/fl_iv"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/iv_ruler_vertical"
+            app:layout_constraintTop_toBottomOf="@+id/iv_ruler_horizontal">
 
-        <ImageView
-            android:id="@+id/iv_grid"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scaleType="centerCrop" />
+            <ImageView
+                android:id="@+id/iv_chessboard"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="center" />
 
-        <ImageView
-            android:id="@+id/iv_selection"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scaleType="centerCrop" />
-    </FrameLayout>
+            <ImageView
+                android:id="@+id/iv"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="fitCenter" />
+
+            <ImageView
+                android:id="@+id/iv_preview"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop" />
+
+            <ImageView
+                android:id="@+id/iv_grid"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop" />
+
+            <ImageView
+                android:id="@+id/iv_selection"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop" />
+        </FrameLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -82,12 +119,6 @@
                 android:layout_gravity="center_vertical"
                 android:orientation="horizontal"
                 android:visibility="invisible">
-
-                <CheckBox
-                    android:id="@+id/cb_transformer_fill"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/fill_clipped_area" />
 
                 <CheckBox
                     android:id="@+id/cb_transformer_lar"
