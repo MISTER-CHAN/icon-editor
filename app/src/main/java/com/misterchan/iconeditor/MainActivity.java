@@ -231,7 +231,7 @@ public class MainActivity extends AppCompatActivity {
     private LinearLayout llBehaviorShape;
     private LinearLayout llBehaviorText;
     private LinearLayout llBehaviorTransformer;
-    private LinkedList<Integer> swatches;
+    private LinkedList<Integer> palette;
     private List<Window> windows = new ArrayList<>();
     private Position stretchingBound = Position.NULL;
     private Positions selection = new Positions();
@@ -412,10 +412,10 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    private final View.OnClickListener onAddColorViewClickListener = v -> new ColorPicker().show(
+    private final View.OnClickListener onAddSwatchViewClickListener = v -> new ColorPicker().show(
             MainActivity.this,
             (oldColor, newColor) -> {
-                swatches.offerFirst(newColor);
+                palette.offerFirst(newColor);
                 colorAdapter.notifyDataSetChanged();
             });
 
@@ -1751,7 +1751,7 @@ public class MainActivity extends AppCompatActivity {
         ((RadioButton) findViewById(R.id.rb_text)).setOnCheckedChangeListener(onTextRadioButtonCheckedChangeListener);
         rbTransformer.setOnCheckedChangeListener(onTransformerRadioButtonCheckedChangeListener);
         tabLayout.addOnTabSelectedListener(onTabSelectedListener);
-        findViewById(R.id.tv_color_add).setOnClickListener(onAddColorViewClickListener);
+        findViewById(R.id.tv_color_add).setOnClickListener(onAddSwatchViewClickListener);
         vBackgroundColor.setOnClickListener(onBackgroundColorClickListener);
         vForegroundColor.setOnClickListener(onForegroundColorClickListener);
 
@@ -1771,7 +1771,7 @@ public class MainActivity extends AppCompatActivity {
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         layoutManager.setOrientation(RecyclerView.HORIZONTAL);
         rvSwatches.setLayoutManager(layoutManager);
-        swatches = new LinkedList<Integer>() {
+        palette = new LinkedList<Integer>() {
             {
                 offer(Color.BLACK);
                 offer(Color.WHITE);
@@ -1783,7 +1783,7 @@ public class MainActivity extends AppCompatActivity {
                 offer(Color.MAGENTA);
             }
         };
-        colorAdapter = new ColorAdapter(swatches) {
+        colorAdapter = new ColorAdapter(palette) {
             {
                 setOnItemClickListener(view -> {
                     int color = ((ColorDrawable) view.getBackground()).getColor();
@@ -1798,9 +1798,9 @@ public class MainActivity extends AppCompatActivity {
                             MainActivity.this,
                             (oldColor, newColor) -> {
                                 if (newColor != null) {
-                                    swatches.set(swatches.indexOf(oldColor), newColor);
+                                    palette.set(palette.indexOf(oldColor), newColor);
                                 } else {
-                                    swatches.remove(oldColor);
+                                    palette.remove(oldColor);
                                 }
                                 colorAdapter.notifyDataSetChanged();
                             },
