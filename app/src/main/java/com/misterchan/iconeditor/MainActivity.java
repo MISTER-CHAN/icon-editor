@@ -7,6 +7,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.ColorMatrix;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
@@ -24,6 +25,7 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.webkit.ValueCallback;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -179,6 +181,7 @@ public class MainActivity extends AppCompatActivity {
     private Bitmap selectionBitmap;
     private Bitmap viewBitmap;
     private BitmapHistory history;
+    private BitmapWithFilter bitmapWithFilter;
     private boolean hasNotLoaded = true;
     private boolean hasSelection = false;
     private boolean hasStretched = false;
@@ -234,10 +237,10 @@ public class MainActivity extends AppCompatActivity {
     private LinkedList<Integer> palette;
     private List<Window> windows = new ArrayList<>();
     private Position stretchingBound = Position.NULL;
-    private Positions selection = new Positions();
-    private PositionsF transfromeeDpb = new PositionsF(); // DPB - Distance from point to bounds
     private RadioButton rbImgCrop, rbImgStretch;
     private RadioButton rbTransformer;
+    private Rect selection = new Rect();
+    private RectF transfromeeDpb = new RectF(); // DPB - Distance from point to bounds
     private RecyclerView rvSwatches;
     private Spinner sFileType;
     private String tree = "";
@@ -391,6 +394,16 @@ public class MainActivity extends AppCompatActivity {
         tabLayout.getTabAt(tabLayout.getSelectedTabPosition()).setText(fileName);
     };
 
+    private final DialogInterface.OnCancelListener onFilterCancelListener = dialog -> {
+        drawBitmapOnView();
+        bitmapWithFilter.recycle();
+        bitmapWithFilter = null;
+    };
+
+    private final DialogInterface.OnClickListener onFilterConfirmListener = (dialog, which) -> {
+        drawBitmapWithFilterOnCanvas();
+    };
+
     private final DialogInterface.OnClickListener onImgSizeDialogPosButtonClickListener = (dialog, which) -> {
         try {
             int width = Integer.parseUnsignedInt(etImgSizeX.getText().toString());
@@ -412,31 +425,37 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    private final View.OnClickListener onAddSwatchViewClickListener = v -> new ColorPicker().show(
-            MainActivity.this,
-            (oldColor, newColor) -> {
-                palette.offerFirst(newColor);
-                colorAdapter.notifyDataSetChanged();
-            });
+    private final View.OnClickListener onAddSwatchViewClickListener = v ->
+            ColorPicker.make(MainActivity.this,
+                            R.string.add,
+                            (oldColor, newColor) -> {
+                                palette.offerFirst(newColor);
+                                colorAdapter.notifyDataSetChanged();
+                            })
+                    .show();
 
-    private final View.OnClickListener onBackgroundColorClickListener = v -> new ColorPicker().show(
-            MainActivity.this,
-            (oldColor, newColor) -> {
-                eraser.setColor(newColor);
-                vBackgroundColor.setBackgroundColor(newColor);
-            },
-            eraser.getColor());
+    private final View.OnClickListener onBackgroundColorClickListener = v ->
+            ColorPicker.make(MainActivity.this,
+                            R.string.background_color,
+                            (oldColor, newColor) -> {
+                                eraser.setColor(newColor);
+                                vBackgroundColor.setBackgroundColor(newColor);
+                            },
+                            eraser.getColor())
+                    .show();
 
-    private final View.OnClickListener onForegroundColorClickListener = v -> new ColorPicker().show(
-            MainActivity.this,
-            (oldColor, newColor) -> {
-                paint.setColor(newColor);
-                vForegroundColor.setBackgroundColor(newColor);
-                if (llBehaviorText.getVisibility() == View.VISIBLE) {
-                    drawTextOnView();
-                }
-            },
-            paint.getColor());
+    private final View.OnClickListener onForegroundColorClickListener = v ->
+            ColorPicker.make(MainActivity.this,
+                            R.string.foreground_color,
+                            (oldColor, newColor) -> {
+                                paint.setColor(newColor);
+                                vForegroundColor.setBackgroundColor(newColor);
+                                if (llBehaviorText.getVisibility() == View.VISIBLE) {
+                                    drawTextOnView();
+                                }
+                            },
+                            paint.getColor())
+                    .show();
 
     private final ActivityResultCallback<Uri> imageCallback = this::openFile;
 
@@ -784,7 +803,7 @@ public class MainActivity extends AppCompatActivity {
                             drawBitmapOnView();
                             drawTransformeeAndSelectionOnViewByTranslation(false);
                             if (stretchingBound == Position.NULL) {
-                                PositionsF selectionBounds = new PositionsF(
+                                RectF selectionBounds = new RectF(
                                         window.translationX + toScaled(selection.left),
                                         window.translationY + toScaled(selection.top),
                                         window.translationX + toScaled(selection.right + 1),
@@ -866,18 +885,18 @@ public class MainActivity extends AppCompatActivity {
                     case MotionEvent.ACTION_MOVE: {
                         float x0 = event.getX(0), y0 = event.getY(0),
                                 x1 = event.getX(1), y1 = event.getY(1);
-                        PositionsF scaledSelection = new PositionsF(
+                        RectF scaledSelection = new RectF(
                                 window.translationX + toScaled(selection.left),
                                 window.translationY + toScaled(selection.top),
                                 window.translationX + toScaled(selection.right),
                                 window.translationY + toScaled(selection.bottom));
-                        PositionsF dpb = new PositionsF(
+                        RectF dpb = new RectF(
                                 Math.min(x0 - scaledSelection.left, x1 - scaledSelection.left),
                                 Math.min(y0 - scaledSelection.top, y1 - scaledSelection.top),
                                 Math.min(scaledSelection.right - x0, scaledSelection.right - x1),
                                 Math.min(scaledSelection.bottom - y0, scaledSelection.bottom - y1));
                         if (cbTransformerLar.isChecked()) {
-                            PositionsF dpbDiff = new PositionsF();
+                            RectF dpbDiff = new RectF();
                             dpbDiff.left = transfromeeDpb.left - dpb.left;
                             dpbDiff.top = transfromeeDpb.top - dpb.top;
                             dpbDiff.right = transfromeeDpb.right - dpb.right;
@@ -886,8 +905,8 @@ public class MainActivity extends AppCompatActivity {
                                 selection.left -= toOriginal(transfromeeDpb.left - dpb.left);
                                 selection.right += toOriginal(transfromeeDpb.right - dpb.right);
                                 double width = selection.right - selection.left + 1, height = width / transformer.getAspectRatio();
-                                selection.top = (int) (transformer.getCenterVertical() - height / 2.0);
-                                selection.bottom = (int) (transformer.getCenterVertical() + height / 2.0);
+                                selection.top = (int) (transformer.getCenterY() - height / 2.0);
+                                selection.bottom = (int) (transformer.getCenterY() + height / 2.0);
                                 scaledSelection.top = window.translationY + toScaled(selection.top);
                                 scaledSelection.bottom = window.translationY + toScaled(selection.bottom);
                                 transfromeeDpb.top = Math.min(y0 - scaledSelection.top, y1 - scaledSelection.top);
@@ -896,8 +915,8 @@ public class MainActivity extends AppCompatActivity {
                                 selection.top -= toOriginal(transfromeeDpb.top - dpb.top);
                                 selection.bottom += toOriginal(transfromeeDpb.bottom - dpb.bottom);
                                 double height = selection.bottom - selection.top + 1, width = height * transformer.getAspectRatio();
-                                selection.left = (int) (transformer.getCenterHorizontal() - width / 2.0);
-                                selection.right = (int) (transformer.getCenterHorizontal() + width / 2.0);
+                                selection.left = (int) (transformer.getCenterX() - width / 2.0);
+                                selection.right = (int) (transformer.getCenterX() + width / 2.0);
                                 scaledSelection.left = window.translationX + toScaled(selection.left);
                                 scaledSelection.right = window.translationX + toScaled(selection.right);
                                 transfromeeDpb.left = Math.min(x0 - scaledSelection.left, x1 - scaledSelection.left);
@@ -918,7 +937,7 @@ public class MainActivity extends AppCompatActivity {
                         stretchingBound = Position.NULL;
                         float x0 = event.getX(0), y0 = event.getY(0),
                                 x1 = event.getX(1), y1 = event.getY(1);
-                        PositionsF scaledSelection = new PositionsF();
+                        RectF scaledSelection = new RectF();
                         scaledSelection.left = window.translationX + toScaled(selection.left);
                         scaledSelection.top = window.translationY + toScaled(selection.top);
                         scaledSelection.right = window.translationX + toScaled(selection.right);
@@ -1057,14 +1076,13 @@ public class MainActivity extends AppCompatActivity {
     private final CompoundButton.OnCheckedChangeListener onTransformerRadioButtonCheckedChangeListener = (buttonView, isChecked) -> {
         if (isChecked) {
             cbZoom.setChecked(false);
-            cbZoom.setTag(onImageViewTouchWithTransformerListener);
             flImageView.setOnTouchListener(onImageViewTouchWithTransformerListener);
             llBehaviorTransformer.setVisibility(View.VISIBLE);
             selector.setColor(Color.BLUE);
             drawSelectionOnView();
         } else {
             drawTransformeeOnCanvas();
-            llBehaviorTransformer.setVisibility(View.GONE);
+            llBehaviorTransformer.setVisibility(View.INVISIBLE);
             stretchingBound = Position.NULL;
             selector.setColor(Color.DKGRAY);
             drawSelectionOnView();
@@ -1075,12 +1093,10 @@ public class MainActivity extends AppCompatActivity {
     private final CompoundButton.OnCheckedChangeListener onTextRadioButtonCheckedChangeListener = (buttonView, isChecked) -> {
         if (isChecked) {
             cbZoom.setChecked(false);
-            cbZoom.setTag(onImageViewTouchWithTextListener);
             flImageView.setOnTouchListener(onImageViewTouchWithTextListener);
             paint.setAntiAlias(true);
         } else {
             drawTextOnCanvas();
-            paint.setAntiAlias(false);
         }
     };
 
@@ -1091,6 +1107,50 @@ public class MainActivity extends AppCompatActivity {
         } else {
             flImageView.setOnTouchListener((View.OnTouchListener) cbZoom.getTag());
         }
+    };
+
+    private final OnProgressChangeListener onFilterBrightnessSeekBarProgressChangeListener = progress -> {
+        bitmapWithFilter.setFilter(new ColorMatrix(new float[]{
+                1.0f, 0.0f, 0.0f, 0.0f, progress,
+                0.0f, 1.0f, 0.0f, 0.0f, progress,
+                0.0f, 0.0f, 1.0f, 0.0f, progress,
+                0.0f, 0.0f, 0.0f, 1.0f, 0.0f
+        }));
+        drawBitmapWithFilterOnView();
+    };
+
+    private final OnProgressChangeListener onFilterContrastSeekBarProgressChangeListener = progress -> {
+        float f = progress / 10.0f;
+        bitmapWithFilter.setFilter(new ColorMatrix(new float[]{
+                f, 0.0f, 0.0f, 0.0f, 0.0f,
+                0.0f, f, 0.0f, 0.0f, 0.0f,
+                0.0f, 0.0f, f, 0.0f, 0.0f,
+                0.0f, 0.0f, 0.0f, 1.0f, 0.0f
+        }));
+        drawBitmapWithFilterOnView();
+    };
+
+    private final OnProgressChangeListener onFilterInvertSeekBarProgressChangeListener = progress -> {
+        float f = progress / 10.0f - 1;
+        bitmapWithFilter.setFilter(new ColorMatrix(new float[]{
+                f, 0.0f, 0.0f, 0.0f, 255.0f,
+                0.0f, f, 0.0f, 0.0f, 255.0f,
+                0.0f, 0.0f, f, 0.0f, 255.0f,
+                0.0f, 0.0f, 0.0f, 1.0f, 0.0f
+        }));
+        drawBitmapWithFilterOnView();
+    };
+
+    private final OnProgressChangeListener onFilterSaturationSeekBarProgressChangeListener = progress -> {
+        ColorMatrix colorMatrix = new ColorMatrix();
+        colorMatrix.setSaturation(progress / 10.0f);
+        bitmapWithFilter.setFilter(colorMatrix);
+        drawBitmapWithFilterOnView();
+    };
+
+    private final ValueCallback<float[]> colorMatrixCallBack = value -> {
+        bitmapWithFilter.setFilter(new ColorMatrix(value));
+        drawBitmapWithFilterOnView();
     };
 
     private final Shape circle = new Shape() {
@@ -1257,6 +1317,13 @@ public class MainActivity extends AppCompatActivity {
         imageView.invalidate();
     }
 
+    private void createBitmapWithFilter() {
+        if (!hasSelection) {
+            selectAll();
+        }
+        bitmapWithFilter = new BitmapWithFilter(bitmap, selection);
+    }
+
     private void createGraphic(int width, int height) {
         bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         canvas = new Canvas(bitmap);
@@ -1294,6 +1361,18 @@ public class MainActivity extends AppCompatActivity {
     private void drawBitmapOnView() {
         clearCanvas(viewCanvas);
         drawBitmapOnCanvas(bitmap, window.translationX, window.translationY, viewCanvas);
+        imageView.invalidate();
+    }
+
+    private void drawBitmapWithFilterOnCanvas() {
+        canvas.drawBitmap(bitmapWithFilter.getBitmap(), 0, 0, opaquePaint);
+        drawBitmapOnView();
+        history.offer(bitmap);
+    }
+
+    private void drawBitmapWithFilterOnView() {
+        clearCanvas(viewCanvas);
+        drawBitmapOnCanvas(bitmapWithFilter.getBitmap(), window.translationX, window.translationY, viewCanvas);
         imageView.invalidate();
     }
 
@@ -1538,6 +1617,7 @@ public class MainActivity extends AppCompatActivity {
         clearCanvasAndInvalidateView(previewCanvas, ivPreview);
         inputMethodManager.hideSoftInputFromWindow(getWindow().getDecorView().getWindowToken(), 0);
         llBehaviorText.setVisibility(View.INVISIBLE);
+        paint.setAntiAlias(false);
         history.offer(bitmap);
     }
 
@@ -1794,18 +1874,19 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
                 setOnItemLongClickListener(view -> {
-                    new ColorPicker().show(
-                            MainActivity.this,
-                            (oldColor, newColor) -> {
-                                if (newColor != null) {
-                                    palette.set(palette.indexOf(oldColor), newColor);
-                                } else {
-                                    palette.remove(oldColor);
-                                }
-                                colorAdapter.notifyDataSetChanged();
-                            },
-                            (Integer) view.getTag(),
-                            true);
+                    ColorPicker.make(MainActivity.this,
+                                    R.string.swatch,
+                                    (oldColor, newColor) -> {
+                                        if (newColor != null) {
+                                            palette.set(palette.indexOf(oldColor), newColor);
+                                        } else {
+                                            palette.remove(oldColor);
+                                        }
+                                        colorAdapter.notifyDataSetChanged();
+                                    },
+                                    (Integer) view.getTag(),
+                                    true)
+                            .show();
                     return true;
                 });
             }
@@ -1885,7 +1966,7 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("NonConstantResourceId")
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.i_cell_grid:
+            case R.id.i_cell_grid: {
                 AlertDialog cellGridDialog = new AlertDialog.Builder(this)
                         .setNegativeButton(R.string.cancel, null)
                         .setPositiveButton(R.string.ok, onCellGridDialogPosButtonClickListener)
@@ -1909,7 +1990,7 @@ public class MainActivity extends AppCompatActivity {
                 etCellGridOffsetX.setText(String.valueOf(cellGrid.offsetX));
                 etCellGridOffsetY.setText(String.valueOf(cellGrid.offsetY));
                 break;
-
+            }
             case R.id.i_close:
                 if (windows.size() == 1) {
                     break;
@@ -1996,7 +2077,68 @@ public class MainActivity extends AppCompatActivity {
                 tvStatus.setText("");
                 break;
 
-            case R.id.i_new:
+            case R.id.i_filter_brightness:
+                createBitmapWithFilter();
+                SeekBarDialog
+                        .make(this, R.string.brightness, -255, 255, 0,
+                                onFilterBrightnessSeekBarProgressChangeListener,
+                                onFilterConfirmListener,
+                                onFilterCancelListener)
+                        .show();
+                break;
+
+            case R.id.i_filter_channels:
+                createBitmapWithFilter();
+                ColorMatrixManager
+                        .make(this, true,
+                                colorMatrixCallBack,
+                                onFilterConfirmListener,
+                                onFilterCancelListener)
+                        .show();
+                break;
+
+            case R.id.i_filter_contrast:
+                createBitmapWithFilter();
+                SeekBarDialog
+                        .make(this, R.string.contrast, 0, 100, 10,
+                                onFilterContrastSeekBarProgressChangeListener,
+                                onFilterConfirmListener,
+                                onFilterCancelListener)
+                        .show();
+                break;
+
+            case R.id.i_filter_invert:
+                createBitmapWithFilter();
+                bitmapWithFilter.setFilter(new ColorMatrix(new float[]{
+                        -1.0f, 0.0f, 0.0f, 0.0f, 255.0f,
+                        0.0f, -1.0f, 0.0f, 0.0f, 255.0f,
+                        0.0f, 0.0f, -1.0f, 0.0f, 255.0f,
+                        0.0f, 0.0f, 0.0f, 1.0f, 0.0f
+                }));
+                drawBitmapWithFilterOnCanvas();
+                break;
+
+            case R.id.i_filter_matrix:
+                createBitmapWithFilter();
+                ColorMatrixManager
+                        .make(this, false,
+                                colorMatrixCallBack,
+                                onFilterConfirmListener,
+                                onFilterCancelListener)
+                        .show();
+                break;
+
+            case R.id.i_filter_saturation:
+                createBitmapWithFilter();
+                SeekBarDialog
+                        .make(this, R.string.saturation, 0, 100, 10,
+                                onFilterSaturationSeekBarProgressChangeListener,
+                                onFilterConfirmListener,
+                                onFilterCancelListener)
+                        .show();
+                break;
+
+            case R.id.i_new: {
                 drawTransformeeOnCanvas();
                 drawTextOnCanvas();
 
@@ -2010,7 +2152,7 @@ public class MainActivity extends AppCompatActivity {
                 etNewGraphicSizeX = newGraphicDialog.findViewById(R.id.et_new_size_x);
                 etNewGraphicSizeY = newGraphicDialog.findViewById(R.id.et_new_size_y);
                 break;
-
+            }
             case R.id.i_open:
                 drawTransformeeOnCanvas();
                 drawTextOnCanvas();
@@ -2036,8 +2178,31 @@ public class MainActivity extends AppCompatActivity {
                 rbTransformer.setChecked(true);
                 drawTransformeeAndSelectionOnViewByTranslation();
                 break;
+            case R.id.i_redo:
+                if (history.canRedo()) {
+                    undoOrRedo(history.redo());
+                }
+                break;
 
-            case R.id.i_size:
+            case R.id.i_save:
+                save();
+                break;
+
+            case R.id.i_save_as:
+                saveAs();
+                break;
+
+            case R.id.i_select_all:
+                selectAll();
+                hasSelection = true;
+                drawSelectionOnView();
+                selectionStartX = selection.left;
+                selectionStartY = selection.top;
+                selectionEndX = selection.right;
+                selectionEndY = selection.bottom;
+                break;
+
+            case R.id.i_size: {
                 drawTransformeeOnCanvas();
                 drawTextOnCanvas();
 
@@ -2059,34 +2224,7 @@ public class MainActivity extends AppCompatActivity {
                 etImgSizeY.setText(String.valueOf(bitmap.getHeight()));
                 rbImgStretch.setChecked(true);
                 break;
-
-            case R.id.i_redo: {
-                if (history.canRedo()) {
-                    undoOrRedo(history.redo());
-                }
-                break;
             }
-
-            case R.id.i_save:
-                save();
-                break;
-
-            case R.id.i_save_as:
-                saveAs();
-                break;
-
-            case R.id.i_select_all:
-                selection.left = 0;
-                selection.top = 0;
-                selection.right = bitmap.getWidth() - 1;
-                selection.bottom = bitmap.getHeight() - 1;
-                hasSelection = true;
-                drawSelectionOnView();
-                selectionStartX = selection.left;
-                selectionStartY = selection.top;
-                selectionEndX = selection.right;
-                selectionEndY = selection.bottom;
-                break;
 
             case R.id.i_undo: {
                 if (transformer != null) {
@@ -2098,12 +2236,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    private void recycleBitmapIfIsNotNull(Bitmap bm) {
-        if (bm != null) {
-            bm.recycle();
-        }
     }
 
     @Override
@@ -2165,6 +2297,12 @@ public class MainActivity extends AppCompatActivity {
             selection.bottom = Math.min(bitmapHeight - 1, selection.bottom);
         } else {
             hasSelection = false;
+        }
+    }
+
+    private void recycleBitmapIfIsNotNull(Bitmap bm) {
+        if (bm != null) {
+            bm.recycle();
         }
     }
 
@@ -2238,6 +2376,13 @@ public class MainActivity extends AppCompatActivity {
         drawTextOnView();
     }
 
+    private void selectAll() {
+        selection.left = 0;
+        selection.top = 0;
+        selection.right = bitmap.getWidth() - 1;
+        selection.bottom = bitmap.getHeight() - 1;
+    }
+
     private void setStrokeWidth(String s) {
         try {
             float f = Float.parseFloat(s);
@@ -2279,12 +2424,12 @@ public class MainActivity extends AppCompatActivity {
         if (cbTransformerLar.isChecked()) {
             if (stretchingBound == Position.LEFT || stretchingBound == Position.RIGHT) {
                 double width = selection.right - selection.left + 1, height = width / transformer.getAspectRatio();
-                selection.top = (int) (transformer.getCenterVertical() - height / 2.0);
-                selection.bottom = (int) (transformer.getCenterVertical() + height / 2.0);
+                selection.top = (int) (transformer.getCenterY() - height / 2.0);
+                selection.bottom = (int) (transformer.getCenterY() + height / 2.0);
             } else if (stretchingBound == Position.TOP || stretchingBound == Position.BOTTOM) {
                 double height = selection.bottom - selection.top + 1, width = height * transformer.getAspectRatio();
-                selection.left = (int) (transformer.getCenterHorizontal() - width / 2.0);
-                selection.right = (int) (transformer.getCenterHorizontal() + width / 2.0);
+                selection.left = (int) (transformer.getCenterX() - width / 2.0);
+                selection.right = (int) (transformer.getCenterX() + width / 2.0);
             }
         }
         hasStretched = true;

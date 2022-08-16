@@ -46,6 +46,7 @@
             android:layout_height="22dp"
             android:background="?android:attr/colorBackground"
             android:elevation="8dp"
+            android:scaleType="centerCrop"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/v_ruler"
             app:layout_constraintTop_toTopOf="parent" />
@@ -56,6 +57,7 @@
             android:layout_height="0dp"
             android:background="?android:attr/colorBackground"
             android:elevation="8dp"
+            android:scaleType="centerCrop"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/v_ruler" />
@@ -79,7 +81,7 @@
                 android:id="@+id/iv"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:scaleType="fitCenter" />
+                android:scaleType="centerCrop" />
 
             <ImageView
                 android:id="@+id/iv_preview"
@@ -438,7 +440,7 @@
                 android:layout_width="32dp"
                 android:layout_height="32dp"
                 android:gravity="center"
-                android:text="@string/add"
+                android:text="@string/add_symbol"
                 android:textAppearance="?android:attr/textAppearanceLarge" />
         </LinearLayout>
     </LinearLayout>

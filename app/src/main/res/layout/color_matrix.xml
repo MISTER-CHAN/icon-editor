@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="horizontal"
+    android:paddingVertical="16dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/matrix_open"
+        android:textSize="48sp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:maxLines="4"
+        android:text="@string/rp_gp_bp_ap" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/matrix_close"
+        android:textSize="48sp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/eq" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/matrix_open"
+        android:textSize="48sp" />
+
+    <GridLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:columnCount="5"
+        android:orientation="horizontal"
+        android:rowCount="4">
+
+        <EditText
+            android:id="@+id/et_cm_a"
+            android:layout_width="36dp"
+            android:inputType="numberSigned|numberDecimal"
+            android:text="@string/one"
+            android:textAlignment="textEnd" />
+
+        <EditText
+            android:id="@+id/et_cm_b"
+            android:layout_width="36dp"
+            android:inputType="numberSigned|numberDecimal"
+            android:text="@string/zero"
+            android:textAlignment="textEnd" />
+
+        <EditText
+            android:id="@+id/et_cm_c"
+            android:layout_width="36dp"
+            android:inputType="numberSigned|numberDecimal"
+            android:text="@string/zero"
+            android:textAlignment="textEnd" />
+
+        <EditText
+            android:id="@+id/et_cm_d"
+            android:layout_width="36dp"
+            android:inputType="numberSigned|numberDecimal"
+            android:text="@string/zero"
+            android:textAlignment="textEnd" />
+
+        <EditText
+            android:id="@+id/et_cm_e"
+            android:layout_width="36dp"
+            android:inputType="numberSigned|numberDecimal"
+            android:text="@string/zero"
+            android:textAlignment="textEnd" />
+
+        <EditText
+            android:id="@+id/et_cm_f"
+            android:layout_width="36dp"
+            android:inputType="numberSigned|numberDecimal"
+            android:text="@string/zero"
+            android:textAlignment="textEnd" />
+
+        <EditText
+            android:id="@+id/et_cm_g"
+            android:layout_width="36dp"
+            android:inputType="numberSigned|numberDecimal"
+            android:text="@string/one"
+            android:textAlignment="textEnd" />
+
+        <EditText
+            android:id="@+id/et_cm_h"
+            android:layout_width="36dp"
+            android:inputType="numberSigned|numberDecimal"
+            android:text="@string/zero"
+            android:textAlignment="textEnd" />
+
+        <EditText
+            android:id="@+id/et_cm_i"
+            android:layout_width="36dp"
+            android:inputType="numberSigned|numberDecimal"
+            android:text="@string/zero"
+            android:textAlignment="textEnd" />
+
+        <EditText
+            android:id="@+id/et_cm_j"
+            android:layout_width="36dp"
+            android:inputType="numberSigned|numberDecimal"
+            android:text="@string/zero"
+            android:textAlignment="textEnd" />
+
+        <EditText
+            android:id="@+id/et_cm_k"
+            android:layout_width="36dp"
+            android:inputType="numberSigned|numberDecimal"
+            android:text="@string/zero"
+            android:textAlignment="textEnd" />
+
+        <EditText
+            android:id="@+id/et_cm_l"
+            android:layout_width="36dp"
+            android:inputType="numberSigned|numberDecimal"
+            android:text="@string/zero"
+            android:textAlignment="textEnd" />
+
+        <EditText
+            android:id="@+id/et_cm_m"
+            android:layout_width="36dp"
+            android:inputType="numberSigned|numberDecimal"
+            android:text="@string/one"
+            android:textAlignment="textEnd" />
+
+        <EditText
+            android:id="@+id/et_cm_n"
+            android:layout_width="36dp"
+            android:inputType="numberSigned|numberDecimal"
+            android:text="@string/zero"
+            android:textAlignment="textEnd" />
+
+        <EditText
+            android:id="@+id/et_cm_o"
+            android:layout_width="36dp"
+            android:inputType="numberSigned|numberDecimal"
+            android:text="@string/zero"
+            android:textAlignment="textEnd" />
+
+        <EditText
+            android:id="@+id/et_cm_p"
+            android:layout_width="36dp"
+            android:inputType="numberSigned|numberDecimal"
+            android:text="@string/zero"
+            android:textAlignment="textEnd" />
+
+        <EditText
+            android:id="@+id/et_cm_q"
+            android:layout_width="36dp"
+            android:inputType="numberSigned|numberDecimal"
+            android:text="@string/zero"
+            android:textAlignment="textEnd" />
+
+        <EditText
+            android:id="@+id/et_cm_r"
+            android:layout_width="36dp"
+            android:inputType="numberSigned|numberDecimal"
+            android:text="@string/zero"
+            android:textAlignment="textEnd" />
+
+        <EditText
+            android:id="@+id/et_cm_s"
+            android:layout_width="36dp"
+            android:inputType="numberSigned|numberDecimal"
+            android:text="@string/one"
+            android:textAlignment="textEnd" />
+
+        <EditText
+            android:id="@+id/et_cm_t"
+            android:layout_width="36dp"
+            android:inputType="numberSigned|numberDecimal"
+            android:text="@string/zero"
+            android:textAlignment="textEnd" />
+    </GridLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:maxLines="4"
+        android:text="@string/matrix_close"
+        android:textSize="48sp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/multiply" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/matrix_open"
+        android:textSize="48sp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:maxLines="5"
+        android:text="@string/r_g_b_a_1" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/matrix_close"
+        android:textSize="48sp" />
+</LinearLayout>

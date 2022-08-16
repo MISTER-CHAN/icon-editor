@@ -92,6 +92,44 @@
     </item>
 
     <item
+        android:title="@string/filters"
+        app:showAsAction="collapseActionView">
+
+        <menu>
+
+            <item
+                android:id="@+id/i_filter_brightness"
+                android:title="@string/brightness"
+                app:showAsAction="collapseActionView" />
+
+            <item
+                android:id="@+id/i_filter_contrast"
+                android:title="@string/contrast"
+                app:showAsAction="collapseActionView" />
+
+            <item
+                android:id="@+id/i_filter_saturation"
+                android:title="@string/saturation"
+                app:showAsAction="collapseActionView" />
+
+            <item
+                android:id="@+id/i_filter_invert"
+                android:title="@string/invert"
+                app:showAsAction="collapseActionView" />
+
+            <item
+                android:id="@+id/i_filter_channels"
+                android:title="@string/channels"
+                app:showAsAction="collapseActionView" />
+
+            <item
+                android:id="@+id/i_filter_matrix"
+                android:title="@string/custom"
+                app:showAsAction="collapseActionView" />
+        </menu>
+    </item>
+
+    <item
         android:id="@+id/i_cell_grid"
         android:title="@string/cell_grid"
         app:showAsAction="collapseActionView" />

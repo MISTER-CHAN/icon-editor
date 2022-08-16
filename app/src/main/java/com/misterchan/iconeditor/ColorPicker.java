@@ -17,11 +17,14 @@ public class ColorPicker {
 
     private static final String FORMAT_02X = "%02X";
 
+    private AlertDialog.Builder dialogBuilder;
+
     private EditText etAlpha;
     private EditText etBlue;
     private EditText etGreen;
     private EditText etRed;
-    private int newColor;
+    private int newColor, oldColor;
+    private OnColorPickListener onColorPickListener;
     private SeekBar sbAlpha;
     private SeekBar sbBlue;
     private SeekBar sbGreen;
@@ -41,33 +44,40 @@ public class ColorPicker {
         vPreview.setBackgroundColor(newColor);
     }
 
-    public void show(Context context, final OnColorPickListener onColorPickListener) {
-        show(context, onColorPickListener, null, false);
+    public static ColorPicker make(Context context, int titleId, final OnColorPickListener onColorPickListener) {
+        return make(context, titleId, onColorPickListener, null, false);
     }
 
-    public void show(Context context, final OnColorPickListener onColorPickListener, final Integer oldColor) {
-        show(context, onColorPickListener, oldColor, false);
+    public static ColorPicker make(Context context, int titleId, final OnColorPickListener onColorPickListener, final Integer oldColor) {
+        return make(context, titleId, onColorPickListener, oldColor, false);
     }
 
-    public void show(Context context, final OnColorPickListener onColorPickListener, final Integer oldColor, boolean canDeleteOld) {
-
-        AlertDialog.Builder colorPickingDialogBuilder = new AlertDialog.Builder(context)
+    public static ColorPicker make(Context context, int titleId, final OnColorPickListener onColorPickListener, final Integer oldColor, boolean canDeleteOld) {
+        ColorPicker picker = new ColorPicker();
+        picker.dialogBuilder = new AlertDialog.Builder(context)
                 .setNegativeButton(R.string.cancel, null)
-                .setPositiveButton(R.string.ok, (dialog, which) -> onColorPickListener.onPick(oldColor, newColor))
-                .setTitle(R.string.color_picker)
+                .setTitle(titleId)
                 .setView(R.layout.color_picker);
 
-        int color;
+        picker.onColorPickListener = onColorPickListener;
+
         if (oldColor != null) {
-            color = oldColor;
+            picker.oldColor = oldColor;
             if (canDeleteOld) {
-                colorPickingDialogBuilder.setNeutralButton(R.string.delete, (dialog, which) -> onColorPickListener.onPick(oldColor, null));
+                picker.dialogBuilder.setNeutralButton(R.string.delete, (dialog, which) -> onColorPickListener.onPick(oldColor, null));
             }
         } else {
-            color = Color.BLACK;
+            picker.oldColor = Color.BLACK;
         }
 
-        AlertDialog colorPickingDialog = colorPickingDialogBuilder.show();
+        return picker;
+    }
+
+    public void show() {
+
+        dialogBuilder.setPositiveButton(R.string.ok, (dialog, which) -> onColorPickListener.onPick(oldColor, newColor));
+        AlertDialog colorPickingDialog = dialogBuilder.show();
+
         etAlpha = colorPickingDialog.findViewById(R.id.et_alpha);
         etBlue = colorPickingDialog.findViewById(R.id.et_blue);
         etGreen = colorPickingDialog.findViewById(R.id.et_green);
@@ -87,9 +97,9 @@ public class ColorPicker {
         etGreen.addTextChangedListener((AfterTextChangedListener) s -> onChannelChanged(s, sbGreen));
         etRed.addTextChangedListener((AfterTextChangedListener) s -> onChannelChanged(s, sbRed));
 
-        etAlpha.setText(String.format(FORMAT_02X, Color.alpha(color)));
-        etRed.setText(String.format(FORMAT_02X, Color.red(color)));
-        etGreen.setText(String.format(FORMAT_02X, Color.green(color)));
-        etBlue.setText(String.format(FORMAT_02X, Color.blue(color)));
+        etAlpha.setText(String.format(FORMAT_02X, Color.alpha(oldColor)));
+        etRed.setText(String.format(FORMAT_02X, Color.red(oldColor)));
+        etGreen.setText(String.format(FORMAT_02X, Color.green(oldColor)));
+        etBlue.setText(String.format(FORMAT_02X, Color.blue(oldColor)));
     }
 }

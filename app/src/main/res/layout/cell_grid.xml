@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="16dp">
 
@@ -13,7 +13,7 @@
 
     <GridLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:columnCount="2"
         android:orientation="horizontal"
         android:rowCount="3">
@@ -29,15 +29,14 @@
 
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_margin="8dp"
                 android:layout_weight="1">
 
                 <EditText
                     android:id="@+id/et_cg_size_x"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:autofillHints="0"
+                    android:layout_height="wrap_content"
                     android:background="@color/transparent"
                     android:hint="@string/x"
                     android:inputType="number"
@@ -46,15 +45,14 @@
 
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_margin="8dp"
                 android:layout_weight="1">
 
                 <EditText
                     android:id="@+id/et_cg_size_y"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:autofillHints="0"
+                    android:layout_height="wrap_content"
                     android:background="@color/transparent"
                     android:hint="@string/y"
                     android:inputType="number"
@@ -73,15 +71,14 @@
 
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_margin="8dp"
                 android:layout_weight="1">
 
                 <EditText
                     android:id="@+id/et_cg_spacing_x"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:autofillHints="0"
+                    android:layout_height="wrap_content"
                     android:background="@color/transparent"
                     android:hint="@string/x"
                     android:inputType="number"
@@ -90,15 +87,14 @@
 
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_margin="8dp"
                 android:layout_weight="1">
 
                 <EditText
                     android:id="@+id/et_cg_spacing_y"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:autofillHints="0"
+                    android:layout_height="wrap_content"
                     android:background="@color/transparent"
                     android:hint="@string/y"
                     android:inputType="number"
@@ -119,15 +115,15 @@
 
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_margin="8dp"
                 android:layout_weight="1">
 
                 <EditText
                     android:id="@+id/et_cg_offset_x"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:autofillHints="0"
+                    android:layout_height="wrap_content"
+                    android:autofillHints=""
                     android:background="@color/transparent"
                     android:hint="@string/x"
                     android:inputType="number"
@@ -136,15 +132,15 @@
 
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_margin="8dp"
                 android:layout_weight="1">
 
                 <EditText
                     android:id="@+id/et_cg_offset_y"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:autofillHints="0"
+                    android:layout_height="wrap_content"
+                    android:autofillHints=""
                     android:background="@color/transparent"
                     android:hint="@string/y"
                     android:inputType="number"

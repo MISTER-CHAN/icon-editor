@@ -1,56 +1,64 @@
 <resources>
-    <string name="a">A</string>
+    <string name="a" translatable="false">A</string>
     <string name="about">About</string>
-    <string name="add">+</string>
+    <string name="add">Add</string>
+    <string name="add_symbol" translatable="false">+</string>
     <string name="app_name">Icon Editor</string>
-    <string name="b">B</string>
-    <string name="block">████</string>
+    <string name="b" translatable="false">B</string>
+    <string name="background_color">Background Color</string>
+    <string name="brightness">Brightness</string>
     <string name="bucket_fill">Bucket Fill</string>
     <string name="cancel">Cancel</string>
     <string name="cell_grid">Cell Grid</string>
+    <string name="channels">Channels</string>
     <string name="circle">Circle</string>
     <string name="close">Close</string>
     <string name="color_picker">Color Picker</string>
     <string name="contiguous">Contiguous</string>
+    <string name="contrast">Contrast</string>
     <string name="copy">Copy</string>
     <string name="crop">Crop</string>
+    <string name="custom">Custom</string>
     <string name="cut">Cut</string>
     <string name="delete">Delete</string>
     <string name="deselect">Deselect</string>
-    <string name="double_zero">00</string>
+    <string name="double_zero" translatable="false">00</string>
     <string name="draw">Draw</string>
-    <string name="edit">✎</string>
+    <string name="edit" translatable="false">✎</string>
     <string name="enabled">Enabled</string>
     <string name="eraser">Eraser</string>
     <string name="eyedropper">Eyedropper</string>
     <string name="file">File</string>
     <string name="file_name">File name</string>
     <string name="fill">Fill</string>
-    <string name="fill_clipped_area">Fill Clipped Area</string>
     <string name="filters">Filters</string>
-    <string name="ff">FF</string>
-    <string name="format_02X">%02X</string>
-    <string name="forty_eight">48</string>
-    <string name="g">G</string>
+    <string name="ff" translatable="false">FF</string>
+    <string name="foreground_color">Foreground Color</string>
+    <string name="forty_eight" translatable="false">48</string>
+    <string name="g" translatable="false">G</string>
     <string name="height">Height</string>
     <string name="help">Help</string>
     <string name="homepage">Homepage</string>
     <string name="image">Image</string>
     <string name="image_size">Image Size</string>
+    <string name="invert">Invert</string>
     <string name="line">Line</string>
     <string name="lock_aspect_ratio">Lock Aspect Ratio</string>
     <string name="new_">New</string>
     <string name="not_supported_file_type">Not supported file type</string>
     <string name="offset">Offset</string>
     <string name="ok">OK</string>
+    <string name="one" translatable="false">1</string>
     <string name="open">Open</string>
     <string name="oval">Oval</string>
+    <string name="palette">Palette</string>
     <string name="paste">Paste</string>
     <string name="pencil">Pencil</string>
     <string name="properties">Properties</string>
-    <string name="r">R</string>
+    <string name="r" translatable="false">R</string>
     <string name="rectangle">Rectangle</string>
-    <string name="redo">↷</string>
+    <string name="redo" translatable="false">↷</string>
+    <string name="saturation">Saturation</string>
     <string name="save">Save</string>
     <string name="save_as">Save As</string>
     <string name="select">Select</string>
@@ -60,16 +68,25 @@
     <string name="spacing">Spacing</string>
     <string name="stretch">Stretch</string>
     <string name="stroke_width">Stroke Width</string>
+    <string name="swatch">Swatch</string>
     <string name="text">Text</string>
     <string name="tool_behavior">Tool Behavior</string>
     <string name="transform">Transform</string>
-    <string name="undo">↶</string>
+    <string name="undo" translatable="false">↶</string>
     <string name="untitled">Untitled</string>
     <string name="when_resizing">When resizing</string>
     <string name="width">Width</string>
-    <string name="x">X</string>
-    <string name="y">Y</string>
+    <string name="x" translatable="false">X</string>
+    <string name="y" translatable="false">Y</string>
+    <string name="zero" translatable="false">0</string>
     <string name="zoom">Zoom</string>
+
+    <string name="matrix_open" translatable="false">[</string>
+    <string name="matrix_close" translatable="false">]</string>
+    <string name="rp_gp_bp_ap" translatable="false">𝑅\'\n𝐺\'\n𝐵\'\n𝐴\'</string>
+    <string name="eq" translatable="false">＝</string>
+    <string name="multiply" translatable="false">×</string>
+    <string name="r_g_b_a_1" translatable="false">𝑅\n𝐺\n𝐵\n𝐴\n1</string>
 
     <string-array name="file_types">
         <item>.png</item>

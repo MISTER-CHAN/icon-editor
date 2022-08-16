@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="16dp">
 
     <GridLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:columnCount="2"
         android:orientation="horizontal"
         android:rowCount="2">
@@ -29,15 +29,14 @@
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="0dp"
-                    android:layout_height="match_parent"
+                    android:layout_height="wrap_content"
                     android:layout_margin="8dp"
                     android:layout_weight="1">
 
                     <EditText
                         android:id="@+id/et_img_size_x"
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:autofillHints="0"
+                        android:layout_height="wrap_content"
                         android:background="@color/transparent"
                         android:hint="@string/width"
                         android:inputType="number"
@@ -46,15 +45,14 @@
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="0dp"
-                    android:layout_height="match_parent"
+                    android:layout_height="wrap_content"
                     android:layout_margin="8dp"
                     android:layout_weight="1">
 
                     <EditText
                         android:id="@+id/et_img_size_y"
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:autofillHints="0"
+                        android:layout_height="wrap_content"
                         android:background="@color/transparent"
                         android:hint="@string/height"
                         android:inputType="number"
@@ -81,7 +79,7 @@
             <RadioButton
                 android:id="@+id/rb_img_stretch"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_margin="8dp"
                 android:layout_weight="1"
                 android:text="@string/stretch" />
@@ -89,7 +87,7 @@
             <RadioButton
                 android:id="@+id/rb_img_crop"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_margin="8dp"
                 android:layout_weight="1"
                 android:text="@string/crop" />

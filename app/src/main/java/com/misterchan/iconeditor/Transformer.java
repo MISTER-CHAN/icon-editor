@@ -8,9 +8,16 @@ import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 
 public class Transformer {
+
+    private final static Paint PAINT = new Paint() {
+        {
+            setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC));
+        }
+    };
+
     private Bitmap bitmap;
     private double aspectRatio;
-    private float centerHorizontal, centerVertical;
+    private float centerX, centerY;
     private float translationX, translationY;
 
     public Transformer(Bitmap bitmap, float translationX, float translationY) {
@@ -18,19 +25,18 @@ public class Transformer {
         translateTo(translationX, translationY);
     }
 
-    public void calculateAspectRatio(Positions positions) {
+    public void calculateAspectRatio(Rect rect) {
         aspectRatio =
-                (double) (positions.right - positions.left + 1) / (double) (positions.bottom - positions.top + 1);
+                (double) (rect.right - rect.left + 1) / (double) (rect.bottom - rect.top + 1);
     }
 
-    public void calculateByLocation(Positions positions) {
-        calculateAspectRatio(positions);
-        calculateCenter(positions);
+    public void calculateByLocation(Rect rect) {
+        calculateAspectRatio(rect);
     }
 
-    public void calculateCenter(Positions positions) {
-        centerHorizontal = (positions.left + positions.right + 1) / 2.0f;
-        centerVertical = (positions.top + positions.bottom + 1) / 2.0f;
+    public void calculateCenter(Rect rect) {
+        centerX = (rect.left + rect.right + 1) / 2.0f;
+        centerY = (rect.top + rect.bottom + 1) / 2.0f;
     }
 
     public double getAspectRatio() {
@@ -41,12 +47,12 @@ public class Transformer {
         return bitmap;
     }
 
-    public float getCenterHorizontal() {
-        return centerHorizontal;
+    public float getCenterX() {
+        return centerX;
     }
 
-    public float getCenterVertical() {
-        return centerVertical;
+    public float getCenterY() {
+        return centerY;
     }
 
     public int getHeight() {
@@ -77,11 +83,7 @@ public class Transformer {
         new Canvas(bm).drawBitmap(bitmap,
                 new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight()),
                 new Rect(0, 0, width, height),
-                new Paint() {
-                    {
-                        setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC));
-                    }
-                });
+                PAINT);
         bitmap.recycle();
         bitmap = bm;
         translateTo(translationX, translationY);
