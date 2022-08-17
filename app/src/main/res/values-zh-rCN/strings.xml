@@ -2,8 +2,13 @@
 <resources>
     <string name="about">关于</string>
     <string name="add">添加</string>
+    <string name="antialias">抗锯齿</string>
     <string name="app_name">Icon Editor</string>
+    <string name="around_r">绕 R 轴</string>
+    <string name="around_g">绕 G 轴</string>
+    <string name="around_b">绕 B 轴</string>
     <string name="background_color">背景色</string>
+    <string name="blur_radius">模糊半径</string>
     <string name="brightness">明度</string>
     <string name="bucket_fill">填充</string>
     <string name="cancel">取消</string>
@@ -11,15 +16,17 @@
     <string name="channels">通道</string>
     <string name="circle">圆</string>
     <string name="close">关闭</string>
+    <string name="color_filter">颜色滤镜</string>
     <string name="color_picker">拾色器</string>
     <string name="contiguous">连续</string>
     <string name="contrast">对比度</string>
     <string name="copy">复制</string>
     <string name="crop">裁剪</string>
     <string name="custom">自定义</string>
+    <string name="custom_color_filter">自定义颜色滤镜</string>
     <string name="cut">剪切</string>
     <string name="delete">删除</string>
-    <string name="deselect">取消选择</string>
+    <string name="deselect">不选择</string>
     <string name="draw">绘画</string>
     <string name="enabled">启用</string>
     <string name="eraser">胶擦</string>
@@ -27,6 +34,7 @@
     <string name="file">文件</string>
     <string name="file_name">文件名</string>
     <string name="fill">填充</string>
+    <string name="filter">滤镜</string>
     <string name="filters">滤镜</string>
     <string name="foreground_color">前景色</string>
     <string name="height">高度</string>
@@ -37,6 +45,7 @@
     <string name="invert">负片</string>
     <string name="line">直线</string>
     <string name="lock_aspect_ratio">锁定宽高比</string>
+    <string name="mask_filter">遮罩滤镜</string>
     <string name="new_">新建</string>
     <string name="not_supported_file_type">不支持的文件类型</string>
     <string name="offset">偏移量</string>
@@ -46,13 +55,18 @@
     <string name="palette">调色板</string>
     <string name="paste">粘贴</string>
     <string name="pencil">铅笔</string>
+    <string name="pen_with_filter">滤光笔</string>
     <string name="properties">属性</string>
     <string name="rectangle">矩形</string>
+    <string name="rotate">旋转</string>
+    <string name="rotate_around_r">绕 R 轴旋转</string>
+    <string name="rotate_around_g">绕 G 轴旋转</string>
+    <string name="rotate_around_b">绕 B 轴旋转</string>
     <string name="saturation">饱和度</string>
     <string name="save">保存</string>
     <string name="save_as">另存为</string>
     <string name="select">选择</string>
-    <string name="select_all">选择全部</string>
+    <string name="select_all">全选</string>
     <string name="shape">形状</string>
     <string name="size">尺寸</string>
     <string name="spacing">间距</string>
@@ -60,7 +74,7 @@
     <string name="stroke_width">笔划宽度</string>
     <string name="swatch">颜色</string>
     <string name="text">文本</string>
-    <string name="tool_behavior">工具选项</string>
+    <string name="tool_options">工具选项</string>
     <string name="transform">转换</string>
     <string name="untitled">无标题</string>
     <string name="when_resizing">当重设尺寸</string>

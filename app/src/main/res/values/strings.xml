@@ -3,9 +3,14 @@
     <string name="about">About</string>
     <string name="add">Add</string>
     <string name="add_symbol" translatable="false">+</string>
+    <string name="antialias">Anti-alias</string>
     <string name="app_name">Icon Editor</string>
+    <string name="around_r">Around R</string>
+    <string name="around_g">Around G</string>
+    <string name="around_b">Around B</string>
     <string name="b" translatable="false">B</string>
     <string name="background_color">Background Color</string>
+    <string name="blur_radius">Blur Radius</string>
     <string name="brightness">Brightness</string>
     <string name="bucket_fill">Bucket Fill</string>
     <string name="cancel">Cancel</string>
@@ -13,12 +18,14 @@
     <string name="channels">Channels</string>
     <string name="circle">Circle</string>
     <string name="close">Close</string>
+    <string name="color_filter">Color Filter</string>
     <string name="color_picker">Color Picker</string>
     <string name="contiguous">Contiguous</string>
     <string name="contrast">Contrast</string>
     <string name="copy">Copy</string>
     <string name="crop">Crop</string>
     <string name="custom">Custom</string>
+    <string name="custom_color_filter">Custom Color Filter</string>
     <string name="cut">Cut</string>
     <string name="delete">Delete</string>
     <string name="deselect">Deselect</string>
@@ -31,6 +38,7 @@
     <string name="file">File</string>
     <string name="file_name">File name</string>
     <string name="fill">Fill</string>
+    <string name="filter">Filter</string>
     <string name="filters">Filters</string>
     <string name="ff" translatable="false">FF</string>
     <string name="foreground_color">Foreground Color</string>
@@ -44,6 +52,7 @@
     <string name="invert">Invert</string>
     <string name="line">Line</string>
     <string name="lock_aspect_ratio">Lock Aspect Ratio</string>
+    <string name="mask_filter">Mask Filter</string>
     <string name="new_">New</string>
     <string name="not_supported_file_type">Not supported file type</string>
     <string name="offset">Offset</string>
@@ -54,10 +63,15 @@
     <string name="palette">Palette</string>
     <string name="paste">Paste</string>
     <string name="pencil">Pencil</string>
+    <string name="pen_with_filter">Filter</string>
     <string name="properties">Properties</string>
     <string name="r" translatable="false">R</string>
     <string name="rectangle">Rectangle</string>
     <string name="redo" translatable="false">↷</string>
+    <string name="rotate">Rotate</string>
+    <string name="rotate_around_r">Rotate Around R</string>
+    <string name="rotate_around_g">Rotate Around G</string>
+    <string name="rotate_around_b">Rotate Around B</string>
     <string name="saturation">Saturation</string>
     <string name="save">Save</string>
     <string name="save_as">Save As</string>
@@ -70,7 +84,7 @@
     <string name="stroke_width">Stroke Width</string>
     <string name="swatch">Swatch</string>
     <string name="text">Text</string>
-    <string name="tool_behavior">Tool Behavior</string>
+    <string name="tool_options">Tool Options</string>
     <string name="transform">Transform</string>
     <string name="undo" translatable="false">↶</string>
     <string name="untitled">Untitled</string>

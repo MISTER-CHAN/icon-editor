@@ -118,13 +118,36 @@
                 app:showAsAction="collapseActionView" />
 
             <item
+                android:title="@string/rotate"
+                app:showAsAction="collapseActionView">
+
+                <menu>
+
+                    <item
+                        android:id="@+id/i_filter_rotate_r"
+                        android:title="@string/around_r"
+                        app:showAsAction="collapseActionView" />
+
+                    <item
+                        android:id="@+id/i_filter_rotate_g"
+                        android:title="@string/around_g"
+                        app:showAsAction="collapseActionView" />
+
+                    <item
+                        android:id="@+id/i_filter_rotate_b"
+                        android:title="@string/around_b"
+                        app:showAsAction="collapseActionView" />
+                </menu>
+            </item>
+
+            <item
                 android:id="@+id/i_filter_channels"
                 android:title="@string/channels"
                 app:showAsAction="collapseActionView" />
 
             <item
                 android:id="@+id/i_filter_matrix"
-                android:title="@string/custom"
+                android:title="@string/custom_color_filter"
                 app:showAsAction="collapseActionView" />
         </menu>
     </item>

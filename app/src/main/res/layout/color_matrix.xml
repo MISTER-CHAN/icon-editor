@@ -205,7 +205,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:maxLines="5"
-        android:text="@string/r_g_b_a_1" />
+        android:text="@string/r_g_b_a_1"
+        android:typeface="serif" />
 
     <TextView
         android:layout_width="wrap_content"

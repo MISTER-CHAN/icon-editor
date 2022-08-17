@@ -110,193 +110,265 @@
         android:elevation="8dp"
         android:orientation="vertical">
 
-        <FrameLayout
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical">
 
-            <LinearLayout
-                android:id="@+id/ll_behavior_transformer"
+            <FrameLayout
+                android:id="@+id/fl_tool_options_common"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:orientation="horizontal"
-                android:visibility="invisible">
+                android:layout_height="wrap_content">
 
-                <CheckBox
-                    android:id="@+id/cb_transformer_lar"
+                <LinearLayout
+                    android:id="@+id/ll_options_stroke_width"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/lock_aspect_ratio" />
-            </LinearLayout>
+                    android:layout_gravity="center_vertical"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:visibility="visible">
 
-            <LinearLayout
-                android:id="@+id/ll_behavior_pencil"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:orientation="horizontal"
-                android:visibility="visible">
-
-                <com.google.android.material.textfield.TextInputLayout
-                    android:layout_width="128dp"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="8dp">
-
-                    <EditText
-                        android:id="@+id/et_pencil_stroke_width"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:autofillHints="0"
-                        android:background="@color/transparent"
-                        android:hint="@string/stroke_width"
-                        android:inputType="number"
-                        android:textAlignment="textEnd" />
-                </com.google.android.material.textfield.TextInputLayout>
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/ll_behavior_shape"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:orientation="horizontal"
-                android:visibility="invisible">
-
-                <CheckBox
-                    android:id="@+id/cb_style_fill"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:checked="true"
-                    android:text="@string/fill" />
-
-                <HorizontalScrollView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:fadingEdgeLength="16dp"
-                    android:requiresFadingEdge="horizontal">
-
-                    <RadioGroup
+                    <CheckBox
+                        android:id="@+id/cb_antialias"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal">
+                        android:text="@string/antialias" />
 
-                        <RadioButton
-                            android:id="@+id/rb_line"
-                            android:layout_width="wrap_content"
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="96dp"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="8dp">
+
+                        <EditText
+                            android:id="@+id/et_pencil_stroke_width"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="@string/line" />
+                            android:background="@color/transparent"
+                            android:hint="@string/stroke_width"
+                            android:inputType="numberDecimal"
+                            android:textAlignment="textEnd" />
+                    </com.google.android.material.textfield.TextInputLayout>
+                </LinearLayout>
+            </FrameLayout>
 
-                        <RadioButton
-                            android:id="@+id/rb_rect"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:checked="true"
-                            android:text="@string/rectangle" />
+            <FrameLayout
+                android:id="@+id/fl_tool_options_specific"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
 
-                        <RadioButton
-                            android:id="@+id/rb_oval"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/oval" />
-
-                        <RadioButton
-                            android:id="@+id/rb_circle"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/circle" />
-                    </RadioGroup>
-                </HorizontalScrollView>
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/ll_behavior_bucket_fill"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:orientation="horizontal"
-                android:visibility="invisible">
-
-                <CheckBox
-                    android:id="@+id/cb_bucket_fill_contiguous"
+                <LinearLayout
+                    android:id="@+id/ll_options_transformer"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/contiguous" />
+                    android:layout_gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:visibility="invisible">
 
-            </LinearLayout>
+                    <CheckBox
+                        android:id="@+id/cb_transformer_lar"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/lock_aspect_ratio" />
+                </LinearLayout>
 
-            <LinearLayout
-                android:id="@+id/ll_behavior_eraser"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:orientation="horizontal"
-                android:visibility="invisible">
-
-
-                <com.google.android.material.textfield.TextInputLayout
-                    android:layout_width="128dp"
+                <LinearLayout
+                    android:id="@+id/ll_options_pencil"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_margin="8dp">
+                    android:layout_gravity="center_vertical"
+                    android:orientation="horizontal">
 
-                    <EditText
-                        android:id="@+id/et_eraser_stroke_width"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:autofillHints="0"
-                        android:background="@color/transparent"
-                        android:hint="@string/stroke_width"
-                        android:inputType="number"
-                        android:textAlignment="textEnd" />
-                </com.google.android.material.textfield.TextInputLayout>
-            </LinearLayout>
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="96dp"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="8dp">
 
-            <LinearLayout
-                android:id="@+id/ll_behavior_text"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:orientation="horizontal"
-                android:visibility="invisible">
+                        <EditText
+                            android:id="@+id/et_blur_radius"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="@color/transparent"
+                            android:hint="@string/blur_radius"
+                            android:inputType="numberDecimal"
+                            android:textAlignment="textEnd" />
+                    </com.google.android.material.textfield.TextInputLayout>
+                </LinearLayout>
 
-                <com.google.android.material.textfield.TextInputLayout
-                    android:layout_width="0dp"
+                <LinearLayout
+                    android:id="@+id/ll_options_filter"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_margin="8dp"
-                    android:layout_weight="1">
+                    android:layout_gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:visibility="invisible">
 
-                    <EditText
-                        android:id="@+id/et_text"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:autofillHints="0"
-                        android:background="@color/transparent"
-                        android:hint="@string/text"
-                        android:inputType="text" />
-                </com.google.android.material.textfield.TextInputLayout>
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="96dp"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="8dp">
 
-                <com.google.android.material.textfield.TextInputLayout
-                    android:layout_width="72dp"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="8dp">
+                        <EditText
+                            android:id="@+id/et_filter_stroke_width"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="@color/transparent"
+                            android:hint="@string/stroke_width"
+                            android:inputType="numberDecimal"
+                            android:textAlignment="textEnd" />
+                    </com.google.android.material.textfield.TextInputLayout>
 
-                    <EditText
-                        android:id="@+id/et_text_size"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:autofillHints="0"
-                        android:background="@color/transparent"
-                        android:hint="@string/size"
-                        android:inputType="number"
-                        android:textAlignment="textEnd" />
-                </com.google.android.material.textfield.TextInputLayout>
+                    <Button
+                        android:id="@+id/b_color_filter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="2dp"
+                        android:text="@string/color_filter" />
+                </LinearLayout>
 
-                <Button
-                    android:id="@+id/b_text_draw"
+                <LinearLayout
+                    android:id="@+id/ll_options_shape"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/draw" />
-            </LinearLayout>
-        </FrameLayout>
+                    android:layout_gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:visibility="invisible">
+
+                    <CheckBox
+                        android:id="@+id/cb_style_fill"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:text="@string/fill" />
+
+                    <HorizontalScrollView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fadingEdgeLength="16dp"
+                        android:requiresFadingEdge="horizontal">
+
+                        <RadioGroup
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <RadioButton
+                                android:id="@+id/rb_line"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/line" />
+
+                            <RadioButton
+                                android:id="@+id/rb_rect"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:checked="true"
+                                android:text="@string/rectangle" />
+
+                            <RadioButton
+                                android:id="@+id/rb_oval"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/oval" />
+
+                            <RadioButton
+                                android:id="@+id/rb_circle"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/circle" />
+                        </RadioGroup>
+                    </HorizontalScrollView>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/ll_options_bucket_fill"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:visibility="invisible">
+
+                    <CheckBox
+                        android:id="@+id/cb_bucket_fill_contiguous"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/contiguous" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/ll_options_eraser"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:visibility="invisible">
+
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="128dp"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="8dp">
+
+                        <EditText
+                            android:id="@+id/et_eraser_stroke_width"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:autofillHints="0"
+                            android:background="@color/transparent"
+                            android:hint="@string/stroke_width"
+                            android:inputType="numberDecimal"
+                            android:textAlignment="textEnd" />
+                    </com.google.android.material.textfield.TextInputLayout>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/ll_options_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:visibility="invisible">
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="8dp"
+                        android:layout_weight="1">
+
+                        <EditText
+                            android:id="@+id/et_text"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:autofillHints="0"
+                            android:background="@color/transparent"
+                            android:hint="@string/text"
+                            android:inputType="text" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="72dp"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="8dp">
+
+                        <EditText
+                            android:id="@+id/et_text_size"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:autofillHints="0"
+                            android:background="@color/transparent"
+                            android:hint="@string/size"
+                            android:inputType="numberDecimal"
+                            android:textAlignment="textEnd" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <Button
+                        android:id="@+id/b_text_draw"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/draw" />
+                </LinearLayout>
+            </FrameLayout>
+        </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -341,6 +413,12 @@
                         android:layout_height="wrap_content"
                         android:checked="true"
                         android:text="@string/pencil" />
+
+                    <RadioButton
+                        android:id="@+id/rb_filter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/pen_with_filter" />
 
                     <RadioButton
                         android:id="@+id/rb_shape"

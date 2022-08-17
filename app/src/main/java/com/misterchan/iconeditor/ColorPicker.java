@@ -24,7 +24,6 @@ public class ColorPicker {
     private EditText etGreen;
     private EditText etRed;
     private int newColor, oldColor;
-    private OnColorPickListener onColorPickListener;
     private SeekBar sbAlpha;
     private SeekBar sbBlue;
     private SeekBar sbGreen;
@@ -56,10 +55,9 @@ public class ColorPicker {
         ColorPicker picker = new ColorPicker();
         picker.dialogBuilder = new AlertDialog.Builder(context)
                 .setNegativeButton(R.string.cancel, null)
+                .setPositiveButton(R.string.ok, (dialog, which) -> onColorPickListener.onPick(oldColor, picker.newColor))
                 .setTitle(titleId)
                 .setView(R.layout.color_picker);
-
-        picker.onColorPickListener = onColorPickListener;
 
         if (oldColor != null) {
             picker.oldColor = oldColor;
@@ -75,18 +73,17 @@ public class ColorPicker {
 
     public void show() {
 
-        dialogBuilder.setPositiveButton(R.string.ok, (dialog, which) -> onColorPickListener.onPick(oldColor, newColor));
-        AlertDialog colorPickingDialog = dialogBuilder.show();
+        AlertDialog dialog = dialogBuilder.show();
 
-        etAlpha = colorPickingDialog.findViewById(R.id.et_alpha);
-        etBlue = colorPickingDialog.findViewById(R.id.et_blue);
-        etGreen = colorPickingDialog.findViewById(R.id.et_green);
-        etRed = colorPickingDialog.findViewById(R.id.et_red);
-        sbAlpha = colorPickingDialog.findViewById(R.id.sb_alpha);
-        sbBlue = colorPickingDialog.findViewById(R.id.sb_blue);
-        sbGreen = colorPickingDialog.findViewById(R.id.sb_green);
-        sbRed = colorPickingDialog.findViewById(R.id.sb_red);
-        vPreview = colorPickingDialog.findViewById(R.id.v_color_preview);
+        etAlpha = dialog.findViewById(R.id.et_alpha);
+        etBlue = dialog.findViewById(R.id.et_blue);
+        etGreen = dialog.findViewById(R.id.et_green);
+        etRed = dialog.findViewById(R.id.et_red);
+        sbAlpha = dialog.findViewById(R.id.sb_alpha);
+        sbBlue = dialog.findViewById(R.id.sb_blue);
+        sbGreen = dialog.findViewById(R.id.sb_green);
+        sbRed = dialog.findViewById(R.id.sb_red);
+        vPreview = dialog.findViewById(R.id.v_color_preview);
 
         sbAlpha.setOnSeekBarChangeListener((OnProgressChangeListener) progress -> etAlpha.setText(String.format(FORMAT_02X, progress)));
         sbBlue.setOnSeekBarChangeListener((OnProgressChangeListener) progress -> etBlue.setText(String.format(FORMAT_02X, progress)));
