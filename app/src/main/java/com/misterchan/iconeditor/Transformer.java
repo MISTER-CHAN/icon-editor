@@ -32,6 +32,7 @@ public class Transformer {
 
     public void calculateByLocation(Rect rect) {
         calculateAspectRatio(rect);
+        calculateCenter(rect);
     }
 
     public void calculateCenter(Rect rect) {

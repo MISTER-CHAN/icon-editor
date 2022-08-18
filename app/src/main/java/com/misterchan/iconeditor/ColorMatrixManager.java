@@ -7,6 +7,7 @@ import android.view.WindowManager;
 import android.webkit.ValueCallback;
 import android.widget.EditText;
 
+import androidx.annotation.Size;
 import androidx.appcompat.app.AlertDialog;
 
 import java.text.DecimalFormat;
@@ -24,7 +25,7 @@ public class ColorMatrixManager {
                                           int titleId,
                                           final ValueCallback<float[]> valueCallback,
                                           final DialogInterface.OnClickListener onPosButtonClickListener,
-                                          float[] defaultMatrix) {
+                                          @Size(value = 20) float[] defaultMatrix) {
         return make(context,
                 titleId,
                 valueCallback,
@@ -56,7 +57,7 @@ public class ColorMatrixManager {
                                           final ValueCallback<float[]> valueCallback,
                                           final DialogInterface.OnClickListener onPosButtonClickListener,
                                           final DialogInterface.OnCancelListener onCancelListener,
-                                          float[] defaultMatrix) {
+                                          @Size(value = 20) float[] defaultMatrix) {
         ColorMatrixManager manager = new ColorMatrixManager();
 
         manager.a = defaultMatrix;
@@ -68,8 +69,8 @@ public class ColorMatrixManager {
                 .setView(R.layout.color_matrix);
 
         if (onCancelListener != null) {
-                manager.dialogBuilder.setNegativeButton(R.string.cancel,
-                        (dialog, which) -> onCancelListener.onCancel(dialog));
+            manager.dialogBuilder.setNegativeButton(R.string.cancel,
+                    (dialog, which) -> onCancelListener.onCancel(dialog));
         }
 
         manager.valueCallback = valueCallback;

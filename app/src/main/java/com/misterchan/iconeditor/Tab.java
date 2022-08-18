@@ -2,7 +2,7 @@ package com.misterchan.iconeditor;
 
 import android.graphics.Bitmap;
 
-class Window {
+class Tab {
     Bitmap bitmap;
     Bitmap.CompressFormat compressFormat;
     BitmapHistory history;

@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.BlendMode;
 import android.graphics.BlurMaskFilter;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -44,8 +45,10 @@ import android.widget.Toast;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+import androidx.annotation.Size;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.documentfile.provider.DocumentFile;
@@ -93,6 +96,20 @@ public class MainActivity extends AppCompatActivity {
             Bitmap.CompressFormat.PNG,
             Bitmap.CompressFormat.JPEG
     };
+
+    private static final ColorMatrixColorFilter COLOR_FILTER_DARKEN = new ColorMatrixColorFilter(new float[]{
+            0.5f, 0.0f, 0.0f, 0.0f, 0.0f,
+            0.0f, 0.5f, 0.0f, 0.0f, 0.0f,
+            0.0f, 0.0f, 0.5f, 0.0f, 0.0f,
+            0.0f, 0.0f, 0.0f, 1.0f, 0.0f
+    });
+
+    private static final ColorMatrixColorFilter COLOR_FILTER_LIGHTEN = new ColorMatrixColorFilter(new float[]{
+            0.5f, 0.0f, 0.0f, 0.0f, 128.0f,
+            0.0f, 0.5f, 0.0f, 0.0f, 128.0f,
+            0.0f, 0.0f, 0.5f, 0.0f, 128.0f,
+            0.0f, 0.0f, 0.0f, 1.0f, 0.0f
+    });
 
     private static final InputFilter[] FILE_NAME_FILTERS = new InputFilter[]{
             (source, sourceStart, sourceEnd, dest, destStart, destEnd) -> {
@@ -152,7 +169,6 @@ public class MainActivity extends AppCompatActivity {
     private float pivotX, pivotY;
     private float prevX, prevY;
     private FrameLayout flImageView;
-    private FrameLayout flToolOptionsCommon;
     private FrameLayout flToolOptionsSpecific;
     private ImageView imageView;
     private ImageView ivChessboard;
@@ -161,13 +177,14 @@ public class MainActivity extends AppCompatActivity {
     private ImageView ivRulerH, ivRulerV;
     private ImageView ivSelection;
     private InputMethodManager inputMethodManager;
-    private int currentBitmapIndex;
+    private int currentTabIndex;
     private int imageWidth, imageHeight;
     private int selectionStartX, selectionStartY;
     private int selectionEndX, selectionEndY;
     private int shapeStartX, shapeStartY;
     private int textX, textY;
     private int viewWidth, viewHeight;
+    private LinearLayout llOptionsAntialias;
     private LinearLayout llOptionsBucketFill;
     private LinearLayout llOptionsEraser;
     private LinearLayout llOptionsFilter;
@@ -176,8 +193,9 @@ public class MainActivity extends AppCompatActivity {
     private LinearLayout llOptionsStrokeWidth;
     private LinearLayout llOptionsText;
     private LinearLayout llOptionsTransformer;
+    private LinearLayout llToolOptionsCommon;
     private LinkedList<Integer> palette;
-    private List<Window> windows = new ArrayList<>();
+    private List<Tab> tabs = new ArrayList<>();
     private Position stretchingBound = Position.NULL;
     private RadioButton rbImgCrop, rbImgStretch;
     private RadioButton rbTransformer;
@@ -186,19 +204,26 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView rvSwatches;
     private Spinner sFileType;
     private String tree = "";
+    private Tab tab;
     private TabLayout tabLayout;
     private TextView tvStatus;
     private Transformer transformer;
     private Uri fileToBeOpened;
     private View vBackgroundColor;
     private View vForegroundColor;
-    private Window window;
 
+    @Size(value = 20)
     private float[] colorMatrix = new float[]{
             1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
             0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
             0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
             0.0f, 0.0f, 0.0f, 1.0f, 0.0f
+    };
+
+    private final Paint blackPaint = new Paint() {
+        {
+            setColor(Color.BLACK);
+        }
     };
 
     private final Paint cellGridPaint = new Paint() {
@@ -349,9 +374,9 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
         fileName += sFileType.getSelectedItem().toString();
-        window.path = Environment.getExternalStorageDirectory().getPath() + File.separator + tree + File.separator + fileName;
-        window.compressFormat = COMPRESS_FORMATS[sFileType.getSelectedItemPosition()];
-        save(window.path);
+        tab.path = Environment.getExternalStorageDirectory().getPath() + File.separator + tree + File.separator + fileName;
+        tab.compressFormat = COMPRESS_FORMATS[sFileType.getSelectedItemPosition()];
+        save(tab.path);
         tabLayout.getTabAt(tabLayout.getSelectedTabPosition()).setText(fileName);
     };
 
@@ -455,12 +480,12 @@ public class MainActivity extends AppCompatActivity {
             drawTransformeeOnCanvas();
             drawTextOnCanvas();
 
-            currentBitmapIndex = tab.getPosition();
-            window = windows.get(currentBitmapIndex);
-            bitmap = window.bitmap;
+            currentTabIndex = tab.getPosition();
+            MainActivity.this.tab = tabs.get(currentTabIndex);
+            bitmap = MainActivity.this.tab.bitmap;
             canvas = new Canvas(bitmap);
-            history = window.history;
-            cellGrid = window.cellGrid;
+            history = MainActivity.this.tab.history;
+            cellGrid = MainActivity.this.tab.cellGrid;
 
             int width = bitmap.getWidth(), height = bitmap.getHeight();
             imageWidth = (int) toScaled(width);
@@ -494,7 +519,7 @@ public class MainActivity extends AppCompatActivity {
 
             case MotionEvent.ACTION_DOWN: {
                 float x = event.getX(), y = event.getY();
-                int originalX = toOriginal(x - window.translationX), originalY = toOriginal(y - window.translationY);
+                int originalX = toOriginal(x - tab.translationX), originalY = toOriginal(y - tab.translationY);
                 if (!(0 <= originalX && originalX < bitmap.getWidth() && 0 <= originalY && originalY < bitmap.getHeight())) {
                     break;
                 }
@@ -510,13 +535,13 @@ public class MainActivity extends AppCompatActivity {
         return true;
     };
 
-    @SuppressLint("ClickableViewAccessibility")
+    @SuppressLint({"ClickableViewAccessibility", "DefaultLocale"})
     private final View.OnTouchListener onImageViewTouchWithEraserListener = (v, event) -> {
         switch (event.getAction()) {
 
             case MotionEvent.ACTION_DOWN: {
                 float x = event.getX(), y = event.getY();
-                int originalX = toOriginal(x - window.translationX), originalY = toOriginal(y - window.translationY);
+                int originalX = toOriginal(x - tab.translationX), originalY = toOriginal(y - tab.translationY);
                 canvas.drawPoint(originalX, originalY, eraser);
                 drawBitmapOnView();
                 tvStatus.setText(String.format("(%d, %d)", originalX, originalY));
@@ -527,10 +552,10 @@ public class MainActivity extends AppCompatActivity {
 
             case MotionEvent.ACTION_MOVE: {
                 float x = event.getX(), y = event.getY();
-                int originalX = toOriginal(x - window.translationX), originalY = toOriginal(y - window.translationY);
+                int originalX = toOriginal(x - tab.translationX), originalY = toOriginal(y - tab.translationY);
                 drawLineOnCanvas(
-                        toOriginal(prevX - window.translationX),
-                        toOriginal(prevY - window.translationY),
+                        toOriginal(prevX - tab.translationX),
+                        toOriginal(prevY - tab.translationY),
                         originalX,
                         originalY,
                         eraser);
@@ -550,14 +575,14 @@ public class MainActivity extends AppCompatActivity {
         return true;
     };
 
-    @SuppressLint("ClickableViewAccessibility")
+    @SuppressLint({"ClickableViewAccessibility", "DefaultLocale"})
     private final View.OnTouchListener onImageViewTouchWithEyedropperListener = (v, event) -> {
         switch (event.getAction()) {
 
             case MotionEvent.ACTION_DOWN:
             case MotionEvent.ACTION_MOVE: {
                 float x = event.getX(), y = event.getY();
-                int originalX = toOriginal(x - window.translationX), originalY = toOriginal(y - window.translationY);
+                int originalX = toOriginal(x - tab.translationX), originalY = toOriginal(y - tab.translationY);
                 int color = bitmap.getPixel(originalX, originalY);
                 paint.setColor(color);
                 vForegroundColor.setBackgroundColor(color);
@@ -575,14 +600,14 @@ public class MainActivity extends AppCompatActivity {
         return true;
     };
 
-    @SuppressLint("ClickableViewAccessibility")
+    @SuppressLint({"ClickableViewAccessibility", "DefaultLocale"})
     private final View.OnTouchListener onImageViewTouchWithFilterListener = (v, event) -> {
         switch (event.getAction()) {
 
             case MotionEvent.ACTION_DOWN:
             case MotionEvent.ACTION_MOVE: {
                 float x = event.getX(), y = event.getY();
-                int originalX = toOriginal(x - window.translationX), originalY = toOriginal(y - window.translationY);
+                int originalX = toOriginal(x - tab.translationX), originalY = toOriginal(y - tab.translationY);
                 int sw = (int) filter.getStrokeWidth();
                 int rad = (int) (filter.getStrokeWidth() / 2.0f);
                 int left = originalX - rad, top = originalY - rad, right = left + sw, bottom = top + sw;
@@ -595,6 +620,7 @@ public class MainActivity extends AppCompatActivity {
                         filter);
                 canvas.drawBitmap(bm, left, top, paint);
                 drawBitmapOnView();
+                tvStatus.setText(String.format("(%d, %d)", originalX, originalY));
                 break;
             }
             case MotionEvent.ACTION_UP:
@@ -606,13 +632,13 @@ public class MainActivity extends AppCompatActivity {
         return true;
     };
 
-    @SuppressLint("ClickableViewAccessibility")
+    @SuppressLint({"ClickableViewAccessibility", "DefaultLocale"})
     private final View.OnTouchListener onImageViewTouchWithPencilListener = (v, event) -> {
         switch (event.getAction()) {
 
             case MotionEvent.ACTION_DOWN: {
                 float x = event.getX(), y = event.getY();
-                int originalX = toOriginal(x - window.translationX), originalY = toOriginal(y - window.translationY);
+                int originalX = toOriginal(x - tab.translationX), originalY = toOriginal(y - tab.translationY);
                 canvas.drawPoint(originalX, originalY, paint);
                 drawBitmapOnView();
                 tvStatus.setText(String.format("(%d, %d)", originalX, originalY));
@@ -623,10 +649,10 @@ public class MainActivity extends AppCompatActivity {
 
             case MotionEvent.ACTION_MOVE: {
                 float x = event.getX(), y = event.getY();
-                int originalX = toOriginal(x - window.translationX), originalY = toOriginal(y - window.translationY);
+                int originalX = toOriginal(x - tab.translationX), originalY = toOriginal(y - tab.translationY);
                 drawLineOnCanvas(
-                        toOriginal(prevX - window.translationX),
-                        toOriginal(prevY - window.translationY),
+                        toOriginal(prevX - tab.translationX),
+                        toOriginal(prevY - tab.translationY),
                         originalX,
                         originalY,
                         paint);
@@ -646,19 +672,19 @@ public class MainActivity extends AppCompatActivity {
         return true;
     };
 
-    @SuppressLint("ClickableViewAccessibility")
+    @SuppressLint({"ClickableViewAccessibility", "DefaultLocale"})
     private final View.OnTouchListener onImageViewTouchWithSelectorListener = (v, event) -> {
         switch (event.getAction()) {
 
             case MotionEvent.ACTION_DOWN: {
                 float x = event.getX(), y = event.getY();
                 if (hasSelection && selectionStartX == selectionEndX && selectionStartY == selectionEndY) {
-                    selectionEndX = toOriginal(x - window.translationX);
-                    selectionEndY = toOriginal(y - window.translationY);
+                    selectionEndX = toOriginal(x - tab.translationX);
+                    selectionEndY = toOriginal(y - tab.translationY);
                 } else {
                     hasSelection = true;
-                    selectionStartX = toOriginal(x - window.translationX);
-                    selectionStartY = toOriginal(y - window.translationY);
+                    selectionStartX = toOriginal(x - tab.translationX);
+                    selectionStartY = toOriginal(y - tab.translationY);
                     selectionEndX = selectionStartX;
                     selectionEndY = selectionStartY;
                 }
@@ -670,8 +696,8 @@ public class MainActivity extends AppCompatActivity {
 
             case MotionEvent.ACTION_MOVE: {
                 float x = event.getX(), y = event.getY();
-                selectionEndX = toOriginal(x - window.translationX);
-                selectionEndY = toOriginal(y - window.translationY);
+                selectionEndX = toOriginal(x - tab.translationX);
+                selectionEndY = toOriginal(y - tab.translationY);
                 drawSelectionOnViewByStartsAndEnds();
                 tvStatus.setText(String.format("Start: (%d, %d), End: (%d, %d), Area: %d × %d",
                         selectionStartX, selectionStartY, selectionEndX, selectionEndY,
@@ -684,7 +710,7 @@ public class MainActivity extends AppCompatActivity {
                 optimizeSelection();
                 drawSelectionOnView();
                 tvStatus.setText(hasSelection
-                        ? String.format("Start: (%d, %d), End: (%d, %d), Area: %d × %d",
+                        ? String.format("L: %d, T: %d, R: %d, B: %d, Area: %d × %d",
                         selection.left, selection.top, selection.right, selection.bottom,
                         selection.right - selection.left + 1, selection.bottom - selection.top + 1)
                         : "");
@@ -693,10 +719,10 @@ public class MainActivity extends AppCompatActivity {
         return true;
     };
 
-    @SuppressLint("ClickableViewAccessibility")
+    @SuppressLint({"ClickableViewAccessibility", "DefaultLocale", "SetTextI18n"})
     private final View.OnTouchListener onImageViewTouchWithShapeListener = (v, event) -> {
         float x = event.getX(), y = event.getY();
-        int originalX = toOriginal(x - window.translationX), originalY = toOriginal(y - window.translationY);
+        int originalX = toOriginal(x - tab.translationX), originalY = toOriginal(y - tab.translationY);
         switch (event.getAction()) {
 
             case MotionEvent.ACTION_DOWN: {
@@ -736,7 +762,7 @@ public class MainActivity extends AppCompatActivity {
     };
 
     @SuppressLint("ClickableViewAccessibility")
-    private View.OnTouchListener onImageViewTouchWithTextListener = (v, event) -> {
+    private final View.OnTouchListener onImageViewTouchWithTextListener = (v, event) -> {
         switch (llOptionsText.getVisibility()) {
 
             case View.VISIBLE: {
@@ -761,12 +787,13 @@ public class MainActivity extends AppCompatActivity {
             case View.INVISIBLE:
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
-                        textX = toOriginal(event.getX() - window.translationX);
-                        textY = toOriginal(event.getY() - window.translationY);
+                        textX = toOriginal(event.getX() - tab.translationX);
+                        textY = toOriginal(event.getY() - tab.translationY);
+                        llOptionsAntialias.setVisibility(View.VISIBLE);
                         llOptionsText.setVisibility(View.VISIBLE);
                         scaleTextSizeAndDrawTextOnView();
-                        prevX = window.translationX;
-                        prevY = window.translationY;
+                        prevX = tab.translationX;
+                        prevY = tab.translationY;
                         break;
                 }
         }
@@ -790,18 +817,18 @@ public class MainActivity extends AppCompatActivity {
                             if (transformer == null) {
                                 transformer = new Transformer(
                                         Bitmap.createBitmap(bitmap, selection.left, selection.top, width, height),
-                                        window.translationX + toScaled(selection.left),
-                                        window.translationY + toScaled(selection.top));
+                                        tab.translationX + toScaled(selection.left),
+                                        tab.translationY + toScaled(selection.top));
                                 canvas.drawRect(selection.left, selection.top, selection.right + 1, selection.bottom + 1, eraser);
                             }
                             drawBitmapOnView();
                             drawTransformeeAndSelectionOnViewByTranslation(false);
                             if (stretchingBound == Position.NULL) {
                                 RectF selectionBounds = new RectF(
-                                        window.translationX + toScaled(selection.left),
-                                        window.translationY + toScaled(selection.top),
-                                        window.translationX + toScaled(selection.right + 1),
-                                        window.translationY + toScaled(selection.bottom + 1));
+                                        tab.translationX + toScaled(selection.left),
+                                        tab.translationY + toScaled(selection.top),
+                                        tab.translationX + toScaled(selection.right + 1),
+                                        tab.translationY + toScaled(selection.bottom + 1));
                                 if (selectionBounds.left - 50.0f <= x && x < selectionBounds.left + 50.0f) {
                                     stretchingBound = Position.LEFT;
                                 } else if (selectionBounds.top - 50.0f <= y && y < selectionBounds.top + 50.0f) {
@@ -858,8 +885,8 @@ public class MainActivity extends AppCompatActivity {
                                 int width = selection.right - selection.left + 1, height = selection.bottom - selection.top + 1;
                                 if (width > 0 && height > 0) {
                                     transformer.resize(width, height,
-                                            window.translationX + toScaled(selection.left),
-                                            window.translationY + toScaled(selection.top));
+                                            tab.translationX + toScaled(selection.left),
+                                            tab.translationY + toScaled(selection.top));
                                 } else if (transformer != null) {
                                     transformer.recycle();
                                     transformer = null;
@@ -880,10 +907,10 @@ public class MainActivity extends AppCompatActivity {
                         float x0 = event.getX(0), y0 = event.getY(0),
                                 x1 = event.getX(1), y1 = event.getY(1);
                         RectF scaledSelection = new RectF(
-                                window.translationX + toScaled(selection.left),
-                                window.translationY + toScaled(selection.top),
-                                window.translationX + toScaled(selection.right),
-                                window.translationY + toScaled(selection.bottom));
+                                tab.translationX + toScaled(selection.left),
+                                tab.translationY + toScaled(selection.top),
+                                tab.translationX + toScaled(selection.right),
+                                tab.translationY + toScaled(selection.bottom));
                         RectF dpb = new RectF(
                                 Math.min(x0 - scaledSelection.left, x1 - scaledSelection.left),
                                 Math.min(y0 - scaledSelection.top, y1 - scaledSelection.top),
@@ -901,8 +928,8 @@ public class MainActivity extends AppCompatActivity {
                                 double width = selection.right - selection.left + 1, height = width / transformer.getAspectRatio();
                                 selection.top = (int) (transformer.getCenterY() - height / 2.0);
                                 selection.bottom = (int) (transformer.getCenterY() + height / 2.0);
-                                scaledSelection.top = window.translationY + toScaled(selection.top);
-                                scaledSelection.bottom = window.translationY + toScaled(selection.bottom);
+                                scaledSelection.top = tab.translationY + toScaled(selection.top);
+                                scaledSelection.bottom = tab.translationY + toScaled(selection.bottom);
                                 transfromeeDpb.top = Math.min(y0 - scaledSelection.top, y1 - scaledSelection.top);
                                 transfromeeDpb.bottom = Math.min(scaledSelection.bottom - y0, scaledSelection.bottom - y1);
                             } else {
@@ -911,8 +938,8 @@ public class MainActivity extends AppCompatActivity {
                                 double height = selection.bottom - selection.top + 1, width = height * transformer.getAspectRatio();
                                 selection.left = (int) (transformer.getCenterX() - width / 2.0);
                                 selection.right = (int) (transformer.getCenterX() + width / 2.0);
-                                scaledSelection.left = window.translationX + toScaled(selection.left);
-                                scaledSelection.right = window.translationX + toScaled(selection.right);
+                                scaledSelection.left = tab.translationX + toScaled(selection.left);
+                                scaledSelection.right = tab.translationX + toScaled(selection.right);
                                 transfromeeDpb.left = Math.min(x0 - scaledSelection.left, x1 - scaledSelection.left);
                                 transfromeeDpb.right = Math.min(scaledSelection.right - x0, scaledSelection.right - x1);
                             }
@@ -932,10 +959,10 @@ public class MainActivity extends AppCompatActivity {
                         float x0 = event.getX(0), y0 = event.getY(0),
                                 x1 = event.getX(1), y1 = event.getY(1);
                         RectF scaledSelection = new RectF();
-                        scaledSelection.left = window.translationX + toScaled(selection.left);
-                        scaledSelection.top = window.translationY + toScaled(selection.top);
-                        scaledSelection.right = window.translationX + toScaled(selection.right);
-                        scaledSelection.bottom = window.translationY + toScaled(selection.bottom);
+                        scaledSelection.left = tab.translationX + toScaled(selection.left);
+                        scaledSelection.top = tab.translationY + toScaled(selection.top);
+                        scaledSelection.right = tab.translationX + toScaled(selection.right);
+                        scaledSelection.bottom = tab.translationY + toScaled(selection.bottom);
                         transfromeeDpb.left = Math.min(x0 - scaledSelection.left, x1 - scaledSelection.left);
                         transfromeeDpb.top = Math.min(y0 - scaledSelection.top, y1 - scaledSelection.top);
                         transfromeeDpb.right = Math.min(scaledSelection.right - x0, scaledSelection.right - x1);
@@ -951,8 +978,8 @@ public class MainActivity extends AppCompatActivity {
                         int width = selection.right - selection.left + 1, height = selection.bottom - selection.top + 1;
                         if (width > 0 && height > 0) {
                             transformer.resize(width, height,
-                                    window.translationX + toScaled(selection.left),
-                                    window.translationY + toScaled(selection.top));
+                                    tab.translationX + toScaled(selection.left),
+                                    tab.translationY + toScaled(selection.top));
                         } else if (transformer != null) {
                             transformer.recycle();
                             transformer = null;
@@ -969,7 +996,7 @@ public class MainActivity extends AppCompatActivity {
         return true;
     };
 
-    @SuppressLint("ClickableViewAccessibility")
+    @SuppressLint({"ClickableViewAccessibility", "DefaultLocale"})
     private final View.OnTouchListener onImageViewTouchWithZoomToolListener = (v, event) -> {
         switch (event.getPointerCount()) {
 
@@ -978,7 +1005,7 @@ public class MainActivity extends AppCompatActivity {
                     case MotionEvent.ACTION_DOWN: {
                         float x = event.getX(), y = event.getY();
                         tvStatus.setText(String.format("(%d, %d)",
-                                toOriginal(x - window.translationX), toOriginal(y - window.translationY)));
+                                toOriginal(x - tab.translationX), toOriginal(y - tab.translationY)));
                         prevX = x;
                         prevY = y;
                         break;
@@ -986,8 +1013,8 @@ public class MainActivity extends AppCompatActivity {
                     case MotionEvent.ACTION_MOVE: {
                         float x = event.getX(), y = event.getY();
                         float deltaX = x - prevX, deltaY = y - prevY;
-                        window.translationX += deltaX;
-                        window.translationY += deltaY;
+                        tab.translationX += deltaX;
+                        tab.translationY += deltaY;
                         drawChessboardOnView();
                         drawBitmapOnView();
                         drawGridOnView();
@@ -1017,14 +1044,14 @@ public class MainActivity extends AppCompatActivity {
                                 x1 = event.getX(1), y1 = event.getY(1);
                         double diagonal = Math.sqrt(Math.pow(x0 - x1, 2.0) + Math.pow(y0 - y1, 2.0));
                         double diagonalRatio = diagonal / prevDiagonal;
-                        float scale = (float) (window.scale * diagonalRatio);
+                        float scale = (float) (tab.scale * diagonalRatio);
                         int scaledWidth = (int) (bitmap.getWidth() * scale), scaledHeight = (int) (bitmap.getHeight() * scale);
-                        window.scale = scale;
+                        tab.scale = scale;
                         imageWidth = scaledWidth;
                         imageHeight = scaledHeight;
                         float pivotX = (float) (this.pivotX * diagonalRatio), pivotY = (float) (this.pivotY * diagonalRatio);
-                        window.translationX = window.translationX - pivotX + this.pivotX;
-                        window.translationY = window.translationY - pivotY + this.pivotY;
+                        tab.translationX = tab.translationX - pivotX + this.pivotX;
+                        tab.translationY = tab.translationY - pivotY + this.pivotY;
                         drawChessboardOnView();
                         drawBitmapOnView();
                         drawGridOnView();
@@ -1044,8 +1071,8 @@ public class MainActivity extends AppCompatActivity {
                     case MotionEvent.ACTION_POINTER_DOWN: {
                         float x0 = event.getX(0), y0 = event.getY(0),
                                 x1 = event.getX(1), y1 = event.getY(1);
-                        this.pivotX = (x0 + x1) / 2.0f - window.translationX;
-                        this.pivotY = (y0 + y1) / 2.0f - window.translationY;
+                        this.pivotX = (x0 + x1) / 2.0f - tab.translationX;
+                        this.pivotY = (y0 + y1) / 2.0f - tab.translationY;
                         prevDiagonal = Math.sqrt(Math.pow(x0 - x1, 2.0) + Math.pow(y0 - y1, 2.0));
                         tvStatus.setText("");
                         break;
@@ -1054,7 +1081,7 @@ public class MainActivity extends AppCompatActivity {
                         float x = event.getX(1 - event.getActionIndex());
                         float y = event.getY(1 - event.getActionIndex());
                         tvStatus.setText(String.format("(%d, %d)",
-                                toOriginal(x - window.translationX), toOriginal(y - window.translationY)));
+                                toOriginal(x - tab.translationX), toOriginal(y - tab.translationY)));
                         prevX = event.getX(1 - event.getActionIndex());
                         prevY = event.getY(1 - event.getActionIndex());
                         break;
@@ -1088,6 +1115,7 @@ public class MainActivity extends AppCompatActivity {
             cbZoom.setTag(onImageViewTouchWithPencilListener);
             flImageView.setOnTouchListener(onImageViewTouchWithPencilListener);
             hideBehavior();
+            llOptionsAntialias.setVisibility(View.VISIBLE);
             llOptionsStrokeWidth.setVisibility(View.VISIBLE);
             llOptionsPencil.setVisibility(View.VISIBLE);
             setBlurRadius(etBlurRadius.getText().toString());
@@ -1117,13 +1145,12 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("ClickableViewAccessibility")
     private final CompoundButton.OnCheckedChangeListener onTextRadioButtonCheckedChangeListener = (buttonView, isChecked) -> {
         if (isChecked) {
-            paint.setAntiAlias(true);
             cbZoom.setChecked(false);
             cbZoom.setTag(onImageViewTouchWithTextListener);
             flImageView.setOnTouchListener(onImageViewTouchWithTextListener);
             hideBehavior();
         } else {
-            drawTextOnCanvas();
+            drawTextOnCanvas(true);
         }
     };
 
@@ -1212,7 +1239,8 @@ public class MainActivity extends AppCompatActivity {
         ColorMatrixManager.make(this,
                         R.string.filter,
                         paintFilterCallBack,
-                        null, colorMatrix)
+                        null,
+                        colorMatrix)
                 .show();
     };
 
@@ -1229,8 +1257,8 @@ public class MainActivity extends AppCompatActivity {
             int radius =
                     (int) Math.sqrt(Math.pow(x1 - x0, 2.0) + Math.pow(y1 - y0, 2.0));
             previewCanvas.drawCircle(
-                    window.translationX + toScaled(x0 + 0.5f),
-                    window.translationY + toScaled(y0 + 0.5f),
+                    tab.translationX + toScaled(x0 + 0.5f),
+                    tab.translationY + toScaled(y0 + 0.5f),
                     toScaled(radius),
                     paint);
             return String.format("Radius: %.1f", radius + 0.5f);
@@ -1250,10 +1278,10 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public String drawShapeOnView(int x0, int y0, int x1, int y1) {
             previewCanvas.drawLine(
-                    window.translationX + toScaled(x0 + 0.5f),
-                    window.translationY + toScaled(y0 + 0.5f),
-                    window.translationX + toScaled(x1 + 0.5f),
-                    window.translationY + toScaled(y1 + 0.5f),
+                    tab.translationX + toScaled(x0 + 0.5f),
+                    tab.translationY + toScaled(y0 + 0.5f),
+                    tab.translationX + toScaled(x1 + 0.5f),
+                    tab.translationY + toScaled(y1 + 0.5f),
                     paint);
             return String.format("Length: %f", Math.sqrt(Math.pow(x1 - x0, 2.0) + Math.pow(y1 - y0, 2.0)) + 1);
         }
@@ -1270,10 +1298,10 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public String drawShapeOnView(int x0, int y0, int x1, int y1) {
             previewCanvas.drawOval(
-                    window.translationX + toScaled(x0 + 0.5f),
-                    window.translationY + toScaled(y0 + 0.5f),
-                    window.translationX + toScaled(x1 + 0.5f),
-                    window.translationY + toScaled(y1 + 0.5f),
+                    tab.translationX + toScaled(x0 + 0.5f),
+                    tab.translationY + toScaled(y0 + 0.5f),
+                    tab.translationX + toScaled(x1 + 0.5f),
+                    tab.translationY + toScaled(y1 + 0.5f),
                     paint);
             return String.format("Axes: %d, %d", Math.abs(x1 - x0) + 1, Math.abs(y1 - y0) + 1);
         }
@@ -1290,10 +1318,10 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public String drawShapeOnView(int x0, int y0, int x1, int y1) {
             previewCanvas.drawRect(
-                    window.translationX + toScaled(x0 + 0.5f),
-                    window.translationY + toScaled(y0 + 0.5f),
-                    window.translationX + toScaled(x1 + 0.5f),
-                    window.translationY + toScaled(y1 + 0.5f),
+                    tab.translationX + toScaled(x0 + 0.5f),
+                    tab.translationY + toScaled(y0 + 0.5f),
+                    tab.translationX + toScaled(x1 + 0.5f),
+                    tab.translationY + toScaled(y1 + 0.5f),
                     paint);
             return String.format("Area: %d × %d", Math.abs(x1 - x0) + 1, Math.abs(y1 - y0) + 1);
         }
@@ -1310,23 +1338,23 @@ public class MainActivity extends AppCompatActivity {
     private void addBitmap(Bitmap bitmap,
                            int width, int height,
                            String path, String title, Bitmap.CompressFormat compressFormat) {
-        window = new Window();
-        windows.add(window);
-        window.bitmap = bitmap;
-        currentBitmapIndex = windows.size() - 1;
+        tab = new Tab();
+        tabs.add(tab);
+        tab.bitmap = bitmap;
+        currentTabIndex = tabs.size() - 1;
         history = new BitmapHistory();
-        window.history = history;
+        tab.history = history;
         history.offer(bitmap);
-        window.path = path;
-        window.compressFormat = compressFormat;
+        tab.path = path;
+        tab.compressFormat = compressFormat;
         cellGrid = new CellGrid();
-        window.cellGrid = cellGrid;
+        tab.cellGrid = cellGrid;
 
-        window.scale = (float) ((double) viewWidth / (double) width);
+        tab.scale = (float) ((double) viewWidth / (double) width);
         imageWidth = (int) toScaled(width);
         imageHeight = (int) toScaled(height);
-        window.translationX = 0.0f;
-        window.translationY = 0.0f;
+        tab.translationX = 0.0f;
+        tab.translationY = 0.0f;
 
         if (transformer != null) {
             transformer.recycle();
@@ -1340,10 +1368,10 @@ public class MainActivity extends AppCompatActivity {
         drawSelectionOnView();
 
         tabLayout.addTab(tabLayout.newTab().setText(title).setTag(bitmap));
-        tabLayout.getTabAt(currentBitmapIndex).select();
+        tabLayout.getTabAt(currentTabIndex).select();
     }
 
-    private void bucketFill(int x, int y, final int color) {
+    private void bucketFill(int x, int y, @ColorInt final int color) {
         final int pixel = bitmap.getPixel(x, y);
         if (pixel == color) {
             return;
@@ -1405,15 +1433,15 @@ public class MainActivity extends AppCompatActivity {
         int scaledBmpWidth = (int) toScaled(bitmapWidth), scaledBmpHeight = (int) toScaled(bitmapHeight);
         int endX = Math.min(toOriginal(translX + scaledBmpWidth <= viewWidth ? scaledBmpWidth : viewWidth - translX) + 1, bitmapWidth);
         int endY = Math.min(toOriginal(translY + scaledBmpHeight <= viewHeight ? scaledBmpHeight : viewHeight - translY) + 1, bitmapHeight);
-        float left = translX >= 0.0f ? translX : translX % window.scale;
-        float top = translY >= 0.0f ? translY : translY % window.scale;
+        float left = translX >= 0.0f ? translX : translX % tab.scale;
+        float top = translY >= 0.0f ? translY : translY % tab.scale;
         if (isScaledMuch()) {
-            float t = top, b = t + window.scale;
-            for (int y = startY; y < endY; ++y, t += window.scale, b += window.scale) {
+            float t = top, b = t + tab.scale;
+            for (int y = startY; y < endY; ++y, t += tab.scale, b += tab.scale) {
                 float l = left;
                 for (int x = startX; x < endX; ++x) {
                     colorPaint.setColor(bm.getPixel(x, y));
-                    cv.drawRect(l, t, l += window.scale, b, colorPaint);
+                    cv.drawRect(l, t, l += tab.scale, b, colorPaint);
                 }
             }
         } else {
@@ -1428,28 +1456,28 @@ public class MainActivity extends AppCompatActivity {
 
     private void drawBitmapOnView() {
         clearCanvas(viewCanvas);
-        drawBitmapOnCanvas(bitmap, window.translationX, window.translationY, viewCanvas);
+        drawBitmapOnCanvas(bitmap, tab.translationX, tab.translationY, viewCanvas);
         imageView.invalidate();
     }
 
     private void drawBitmapWithFilterOnCanvas() {
-        canvas.drawBitmap(bitmapWithFilter.getBitmap(), 0, 0, opaquePaint);
+        canvas.drawBitmap(bitmapWithFilter.getBitmap(), 0.0f, 0.0f, opaquePaint);
         drawBitmapOnView();
         history.offer(bitmap);
     }
 
     private void drawBitmapWithFilterOnView() {
         clearCanvas(viewCanvas);
-        drawBitmapOnCanvas(bitmapWithFilter.getBitmap(), window.translationX, window.translationY, viewCanvas);
+        drawBitmapOnCanvas(bitmapWithFilter.getBitmap(), tab.translationX, tab.translationY, viewCanvas);
         imageView.invalidate();
     }
 
     private void drawChessboardOnView() {
         clearCanvas(chessboardCanvas);
-        float left = Math.max(0.0f, window.translationX);
-        float top = Math.max(0.0f, window.translationY);
-        float right = Math.min(window.translationX + imageWidth, viewWidth);
-        float bottom = Math.min(window.translationY + imageHeight, viewHeight);
+        float left = Math.max(0.0f, tab.translationX);
+        float top = Math.max(0.0f, tab.translationY);
+        float right = Math.min(tab.translationX + imageWidth, viewWidth);
+        float bottom = Math.min(tab.translationY + imageHeight, viewHeight);
 
         chessboardCanvas.drawBitmap(chessboard,
                 new Rect((int) left, (int) top, (int) right, (int) bottom),
@@ -1472,15 +1500,15 @@ public class MainActivity extends AppCompatActivity {
 
     private void drawGridOnView() {
         clearCanvas(gridCanvas);
-        float startX = window.translationX >= 0.0f ? window.translationX : window.translationX % window.scale,
-                startY = window.translationY >= 0.0f ? window.translationY : window.translationY % window.scale,
-                endX = Math.min(window.translationX + imageWidth, viewWidth),
-                endY = Math.min(window.translationY + imageHeight, viewHeight);
+        float startX = tab.translationX >= 0.0f ? tab.translationX : tab.translationX % tab.scale,
+                startY = tab.translationY >= 0.0f ? tab.translationY : tab.translationY % tab.scale,
+                endX = Math.min(tab.translationX + imageWidth, viewWidth),
+                endY = Math.min(tab.translationY + imageHeight, viewHeight);
         if (isScaledMuch()) {
-            for (float x = startX; x < endX; x += window.scale) {
+            for (float x = startX; x < endX; x += tab.scale) {
                 gridCanvas.drawLine(x, startY, x, endY, gridPaint);
             }
-            for (float y = startY; y < endY; y += window.scale) {
+            for (float y = startY; y < endY; y += tab.scale) {
                 gridCanvas.drawLine(startX, y, endX, y, gridPaint);
             }
         }
@@ -1489,8 +1517,8 @@ public class MainActivity extends AppCompatActivity {
             if (cellGrid.sizeX > 1) {
                 float scaledSizeX = toScaled(cellGrid.sizeX),
                         scaledSpacingX = toScaled(cellGrid.spacingX);
-                startX = (window.translationX >= 0.0f ? window.translationX : window.translationX % (scaledSizeX + scaledSpacingX)) + toScaled(cellGrid.offsetX);
-                startY = Math.max(0.0f, window.translationY);
+                startX = (tab.translationX >= 0.0f ? tab.translationX : tab.translationX % (scaledSizeX + scaledSpacingX)) + toScaled(cellGrid.offsetX);
+                startY = Math.max(0.0f, tab.translationY);
                 if (cellGrid.spacingX <= 0) {
                     float x = startX;
                     while (x < endX) {
@@ -1514,8 +1542,8 @@ public class MainActivity extends AppCompatActivity {
             if (cellGrid.sizeY > 1) {
                 float scaledSizeY = toScaled(cellGrid.sizeY),
                         scaledSpacingY = toScaled(cellGrid.spacingY);
-                startY = (window.translationY >= 0.0f ? window.translationY : window.translationY % (scaledSizeY + scaledSpacingY)) + toScaled(cellGrid.offsetY);
-                startX = Math.max(0.0f, window.translationX);
+                startY = (tab.translationY >= 0.0f ? tab.translationY : tab.translationY % (scaledSizeY + scaledSpacingY)) + toScaled(cellGrid.offsetY);
+                startX = Math.max(0.0f, tab.translationX);
                 if (cellGrid.spacingY <= 0) {
                     float y = startY;
                     while (y < endY) {
@@ -1560,10 +1588,10 @@ public class MainActivity extends AppCompatActivity {
         clearCanvas(previewCanvas);
         fillPaint.setColor(paint.getColor());
         previewCanvas.drawRect(
-                window.translationX + toScaled(x),
-                window.translationY + toScaled(y),
-                window.translationX + toScaled(x + 1),
-                window.translationY + toScaled(y + 1),
+                tab.translationX + toScaled(x),
+                tab.translationY + toScaled(y),
+                tab.translationX + toScaled(x + 1),
+                tab.translationY + toScaled(y + 1),
                 fillPaint);
         ivPreview.invalidate();
     }
@@ -1571,18 +1599,18 @@ public class MainActivity extends AppCompatActivity {
     private void drawRuler() {
         clearCanvas(rulerHCanvas);
         clearCanvas(rulerVCanvas);
-        final int multiplier = (int) Math.ceil(96.0 / window.scale);
+        final int multiplier = (int) Math.ceil(96.0 / tab.scale);
         final float scaledMultiplier = toScaled(multiplier);
-        float x = window.translationX % scaledMultiplier, height = rulerHBitmap.getHeight();
-        int originalX = (int) (-window.translationX / scaledMultiplier) * multiplier;
+        float x = tab.translationX % scaledMultiplier, height = rulerHBitmap.getHeight();
+        int originalX = (int) (-tab.translationX / scaledMultiplier) * multiplier;
         for (;
              x < viewWidth;
              x += scaledMultiplier, originalX += multiplier) {
             rulerHCanvas.drawLine(x, 0.0f, x, height, rulerPaint);
             rulerHCanvas.drawText(String.valueOf(originalX), x, height, rulerPaint);
         }
-        float y = window.translationY % scaledMultiplier, width = rulerVBitmap.getWidth();
-        int originalY = (int) (-window.translationY / scaledMultiplier) * multiplier;
+        float y = tab.translationY % scaledMultiplier, width = rulerVBitmap.getWidth();
+        int originalY = (int) (-tab.translationY / scaledMultiplier) * multiplier;
         float ascent = rulerPaint.getFontMetrics().ascent;
         for (;
              y < viewHeight;
@@ -1601,16 +1629,16 @@ public class MainActivity extends AppCompatActivity {
     private void drawSelectionOnView(boolean showMargins) {
         clearCanvas(selectionCanvas);
         if (hasSelection) {
-            float left = Math.max(0.0f, window.translationX + toScaled(selection.left)),
-                    top = Math.max(0.0f, window.translationY + toScaled(selection.top)),
-                    right = Math.min(viewWidth, window.translationX + toScaled(selection.right + 1)),
-                    bottom = Math.min(viewHeight, window.translationY + toScaled(selection.bottom + 1));
+            float left = Math.max(0.0f, tab.translationX + toScaled(selection.left)),
+                    top = Math.max(0.0f, tab.translationY + toScaled(selection.top)),
+                    right = Math.min(viewWidth, tab.translationX + toScaled(selection.right + 1)),
+                    bottom = Math.min(viewHeight, tab.translationY + toScaled(selection.bottom + 1));
             selectionCanvas.drawRect(left, top, right, bottom, selector);
             if (showMargins) {
-                float imageLeft = Math.max(0.0f, window.translationX),
-                        imageTop = Math.max(0.0f, window.translationY),
-                        imageRight = Math.min(viewWidth, window.translationX + imageWidth),
-                        imageBottom = Math.min(viewHeight, window.translationY + imageHeight);
+                float imageLeft = Math.max(0.0f, tab.translationX),
+                        imageTop = Math.max(0.0f, tab.translationY),
+                        imageRight = Math.min(viewWidth, tab.translationX + imageWidth),
+                        imageBottom = Math.min(viewHeight, tab.translationY + imageHeight);
                 float centerHorizontal = (left + right) / 2.0f,
                         centerVertical = (top + bottom) / 2.0f;
                 if (left > 0.0f) {
@@ -1652,10 +1680,10 @@ public class MainActivity extends AppCompatActivity {
                 selection.bottom = selectionStartY;
             }
             selectionCanvas.drawRect(
-                    window.translationX + toScaled(selection.left),
-                    window.translationY + toScaled(selection.top),
-                    window.translationX + toScaled(selection.right + 1),
-                    window.translationY + toScaled(selection.bottom + 1),
+                    tab.translationX + toScaled(selection.left),
+                    tab.translationY + toScaled(selection.top),
+                    tab.translationX + toScaled(selection.right + 1),
+                    tab.translationY + toScaled(selection.bottom + 1),
                     selector);
         }
         ivSelection.invalidate();
@@ -1673,7 +1701,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void drawTextOnCanvas() {
-        if (llOptionsText.getVisibility() != View.VISIBLE) {
+        drawTextOnCanvas(false);
+    }
+
+    private void drawTextOnCanvas(boolean force) {
+        if (!force && llOptionsText.getVisibility() != View.VISIBLE) {
             return;
         }
         try {
@@ -1683,15 +1715,15 @@ public class MainActivity extends AppCompatActivity {
         canvas.drawText(etText.getText().toString(), textX, textY, paint);
         drawBitmapOnView();
         clearCanvasAndInvalidateView(previewCanvas, ivPreview);
-        inputMethodManager.hideSoftInputFromWindow(getWindow().getDecorView().getWindowToken(), 0);
+        hideSoftInputFromWindow();
+        llOptionsAntialias.setVisibility(View.GONE);
         llOptionsText.setVisibility(View.INVISIBLE);
-        paint.setAntiAlias(cbAntiAlias.isChecked());
         history.offer(bitmap);
     }
 
     private void drawTextOnView() {
         clearCanvas(previewCanvas);
-        float x = window.translationX + toScaled(textX), y = window.translationY + toScaled(textY);
+        float x = tab.translationX + toScaled(textX), y = tab.translationY + toScaled(textY);
         Paint.FontMetrics fontMetrics = paint.getFontMetrics();
         float centerVertical = y + fontMetrics.ascent / 2.0f;
         previewCanvas.drawText(etText.getText().toString(), x, y, paint);
@@ -1704,7 +1736,7 @@ public class MainActivity extends AppCompatActivity {
     private void drawTransformeeOnCanvas() {
         if (transformer != null) {
             if (hasSelection) {
-                canvas.drawBitmap(transformer.getBitmap(), selection.left, selection.top, paint);
+                canvas.drawBitmap(transformer.getBitmap(), selection.left, selection.top, blackPaint);
                 optimizeSelection();
                 drawSelectionOnView();
                 drawBitmapOnView();
@@ -1724,12 +1756,12 @@ public class MainActivity extends AppCompatActivity {
     private void drawTransformeeAndSelectionOnViewByTranslation(boolean showMargins) {
         clearCanvas(previewCanvas);
         if (hasSelection && transformer != null) {
-            selection.left = toOriginal(transformer.getTranslationX() - window.translationX);
-            selection.top = toOriginal(transformer.getTranslationY() - window.translationY);
+            selection.left = toOriginal(transformer.getTranslationX() - tab.translationX);
+            selection.top = toOriginal(transformer.getTranslationY() - tab.translationY);
             selection.right = selection.left + transformer.getWidth() - 1;
             selection.bottom = selection.top + transformer.getHeight() - 1;
-            float ttx = toScaled(selection.left) + window.translationX;
-            float tty = toScaled(selection.top) + window.translationY;
+            float ttx = toScaled(selection.left) + tab.translationX;
+            float tty = toScaled(selection.top) + tab.translationY;
             drawBitmapOnCanvas(transformer.getBitmap(), ttx, tty, previewCanvas);
         }
         ivPreview.invalidate();
@@ -1739,15 +1771,15 @@ public class MainActivity extends AppCompatActivity {
     private void drawTransformeeOnViewBySelection() {
         clearCanvas(previewCanvas);
         if (hasSelection && transformer != null) {
-            float ttx = toScaled(selection.left) + window.translationX;
-            float tty = toScaled(selection.top) + window.translationY;
+            float ttx = toScaled(selection.left) + tab.translationX;
+            float tty = toScaled(selection.top) + tab.translationY;
             drawBitmapOnCanvas(transformer.getBitmap(), ttx, tty, previewCanvas);
             transformer.translateTo(ttx, tty);
         }
         ivPreview.invalidate();
     }
 
-    private void floodFill(int x, int y, final int color) {
+    private void floodFill(int x, int y, @ColorInt final int color) {
         final int pixel = bitmap.getPixel(x, y);
         if (pixel == color) {
             return;
@@ -1797,40 +1829,44 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void hideBehavior() {
-        for (int i = 0; i < flToolOptionsCommon.getChildCount(); ++i) {
-            flToolOptionsCommon.getChildAt(i).setVisibility(View.GONE);
+        for (int i = 0; i < llToolOptionsCommon.getChildCount(); ++i) {
+            llToolOptionsCommon.getChildAt(i).setVisibility(View.GONE);
         }
         for (int i = 0; i < flToolOptionsSpecific.getChildCount(); ++i) {
             flToolOptionsSpecific.getChildAt(i).setVisibility(View.INVISIBLE);
         }
     }
 
+    private void hideSoftInputFromWindow() {
+        inputMethodManager.hideSoftInputFromWindow(getWindow().getDecorView().getWindowToken(), 0);
+    }
+
     private boolean isScaledMuch() {
-        return window.scale >= 16.0f;
+        return tab.scale >= 16.0f;
     }
 
     private void load() {
         viewWidth = imageView.getWidth();
         viewHeight = imageView.getHeight();
 
-        window = new Window();
-        windows.add(window);
+        tab = new Tab();
+        tabs.add(tab);
         bitmap = Bitmap.createBitmap(48, 48, Bitmap.Config.ARGB_8888);
-        window.bitmap = bitmap;
-        currentBitmapIndex = 0;
+        tab.bitmap = bitmap;
+        currentTabIndex = 0;
         canvas = new Canvas(bitmap);
         history = new BitmapHistory();
-        window.history = history;
+        tab.history = history;
         history.offer(bitmap);
-        window.path = null;
+        tab.path = null;
         cellGrid = new CellGrid();
-        window.cellGrid = cellGrid;
+        tab.cellGrid = cellGrid;
 
-        window.scale = 20.0f;
+        tab.scale = 20.0f;
         imageWidth = 960;
         imageHeight = 960;
-        window.translationX = 0.0f;
-        window.translationY = 0.0f;
+        tab.translationX = 0.0f;
+        tab.translationY = 0.0f;
 
         viewBitmap = Bitmap.createBitmap(viewWidth, viewHeight, Bitmap.Config.ARGB_8888);
         viewCanvas = new Canvas(viewBitmap);
@@ -1874,7 +1910,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (fileToBeOpened != null) {
             openFile(fileToBeOpened);
-            windows.remove(0);
+            tabs.remove(0);
             tabLayout.removeTabAt(0);
         }
     }
@@ -1895,7 +1931,7 @@ public class MainActivity extends AppCompatActivity {
         etPencilStrokeWidth = findViewById(R.id.et_pencil_stroke_width);
         etText = findViewById(R.id.et_text);
         etTextSize = findViewById(R.id.et_text_size);
-        flToolOptionsCommon = findViewById(R.id.fl_tool_options_common);
+        llToolOptionsCommon = findViewById(R.id.ll_tool_options_common);
         flToolOptionsSpecific = findViewById(R.id.fl_tool_options_specific);
         flImageView = findViewById(R.id.fl_iv);
         imageView = findViewById(R.id.iv);
@@ -1906,6 +1942,7 @@ public class MainActivity extends AppCompatActivity {
         ivRulerH = findViewById(R.id.iv_ruler_horizontal);
         ivRulerV = findViewById(R.id.iv_ruler_vertical);
         ivSelection = findViewById(R.id.iv_selection);
+        llOptionsAntialias = findViewById(R.id.ll_options_antialias);
         llOptionsBucketFill = findViewById(R.id.ll_options_bucket_fill);
         llOptionsEraser = findViewById(R.id.ll_options_eraser);
         llOptionsFilter = findViewById(R.id.ll_options_filter);
@@ -1961,7 +1998,7 @@ public class MainActivity extends AppCompatActivity {
         ((RadioButton) findViewById(R.id.rb_pencil)).setOnCheckedChangeListener(onPencilRadioButtonCheckedChangeListener);
         ((RadioButton) findViewById(R.id.rb_rect)).setOnCheckedChangeListener((OnCheckedListener) () -> shape = rect);
         ((RadioButton) findViewById(R.id.rb_selector)).setOnCheckedChangeListener((buttonView, isChecked) -> onToolChange(isChecked, onImageViewTouchWithSelectorListener));
-        ((RadioButton) findViewById(R.id.rb_shape)).setOnCheckedChangeListener((buttonView, isChecked) -> onToolChange(isChecked, onImageViewTouchWithShapeListener, new View[]{llOptionsStrokeWidth, llOptionsShape}));
+        ((RadioButton) findViewById(R.id.rb_shape)).setOnCheckedChangeListener((buttonView, isChecked) -> onToolChange(isChecked, onImageViewTouchWithShapeListener, new View[]{llOptionsAntialias, llOptionsStrokeWidth, llOptionsShape}));
         ((RadioButton) findViewById(R.id.rb_text)).setOnCheckedChangeListener(onTextRadioButtonCheckedChangeListener);
         rbTransformer.setOnCheckedChangeListener(onTransformerRadioButtonCheckedChangeListener);
         tabLayout.addOnTabSelectedListener(onTabSelectedListener);
@@ -2087,6 +2124,63 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
+    private Bitmap mergeWithGray(Bitmap a, Bitmap b) {
+        return mergeWithGray(new Bitmap[]{a, b});
+    }
+
+    private Bitmap mergeWithGray(@Size(value = 2) final Bitmap[] bitmaps) {
+        final int[] width = {bitmaps[0].getWidth(), bitmaps[1].getWidth()},
+                height = {bitmaps[0].getHeight(), bitmaps[1].getHeight()};
+        final int w = Math.max(width[0], width[1]), h = Math.max(height[0], height[1]), area = w * h;
+        final int[] left = {0, 0}, top = {0, 0};
+        {
+            final int iaw = width[0] >= width[1] ? 0 : 1, iiw = 1 - iaw, // iaw - Index of max width; iiw - Min.
+                    iah = height[0] >= width[1] ? 0 : 1, iih = 1 - iah;
+            left[iiw] = (width[iaw] - width[iiw]) >> 1;
+            top[iih] = (height[iah] - height[iih]) >> 1;
+        }
+        final Bitmap[] bitmaps_ = {
+                Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888),
+                Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+        };
+        {
+            final Canvas[] canvases = {new Canvas(bitmaps_[0]), new Canvas(bitmaps_[1])};
+            final Paint paint = new Paint();
+
+            canvases[0].drawColor(Color.WHITE, BlendMode.DST_OVER);
+            paint.setColorFilter(COLOR_FILTER_LIGHTEN);
+            canvases[0].drawBitmap(bitmaps[0], left[0], top[0], paint);
+
+            canvases[1].drawColor(Color.BLACK, BlendMode.DST_OVER);
+            paint.setColorFilter(COLOR_FILTER_DARKEN);
+            canvases[1].drawBitmap(bitmaps[1], left[1], top[1], paint);
+        }
+        int[][] pixels = {new int[area], new int[area]};
+        int[] pixels_ = new int[area];
+        bitmaps_[0].getPixels(pixels[0], 0, w, 0, 0, w, h);
+        bitmaps_[1].getPixels(pixels[1], 0, w, 0, 0, w, h);
+
+        for (int i = 0; i < area; ++i) {
+            float[] red = {Color.red(pixels[0][i]) / 255.0f, Color.red(pixels[1][i]) / 255.0f},
+                    green = {Color.green(pixels[0][i]) / 255.0f, Color.green(pixels[1][i]) / 255.0f},
+                    blue = {Color.blue(pixels[0][i]) / 255.0f, Color.blue(pixels[1][i]) / 255.0f};
+            float[] average = {(red[0] + green[0] + blue[0]) / 3, (red[1] + green[1] + blue[1]) / 3};
+            float a = Math.min(Math.max(1 + (average[1] - average[0]), 0.0f), 1.0f);
+            float ar = Math.min(Math.max(1 + (red[1] - red[0]), 0.0f), 1.0f),
+                    ag = Math.min(Math.max(1 + (green[1] - green[0]), 0.0f), 1.0f),
+                    ab = Math.min(Math.max(1 + (blue[1] - blue[0]), 0.0f), 1.0f);
+            pixels_[i] = Color.argb(
+                    a,
+                    Math.min(Math.max(ar > 0.0f ? (red[1] / ar) : 1.0f, 0.0f), 1.0f),
+                    Math.min(Math.max(ag > 0.0f ? (green[1] / ag) : 1.0f, 0.0f), 1.0f),
+                    Math.min(Math.max(ab > 0.0f ? (red[1] / ab) : 1.0f, 0.0f), 1.0f));
+        }
+
+        Bitmap bm = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+        bm.setPixels(pixels_, 0, w, 0, 0, w, h);
+        return bm;
+    }
+
     @Override
     public void onBackPressed() {
         moveTaskToBack(true);
@@ -2147,15 +2241,15 @@ public class MainActivity extends AppCompatActivity {
                 break;
             }
             case R.id.i_close:
-                if (windows.size() == 1) {
+                if (tabs.size() == 1) {
                     break;
                 }
                 if (transformer != null) {
                     transformer.recycle();
                     transformer = null;
                 }
-                windows.remove(currentBitmapIndex);
-                tabLayout.removeTabAt(currentBitmapIndex);
+                tabs.remove(currentTabIndex);
+                tabLayout.removeTabAt(currentTabIndex);
                 break;
 
             case R.id.i_copy:
@@ -2323,6 +2417,18 @@ public class MainActivity extends AppCompatActivity {
                         .show();
                 break;
 
+            case R.id.i_merge_with_gray: {
+                if (currentTabIndex >= tabs.size()) {
+                    break;
+                }
+                Bitmap bm = mergeWithGray(bitmap, tabs.get(currentTabIndex + 1).bitmap);
+                createGraphic(bm.getWidth(), bm.getHeight());
+                canvas.drawBitmap(bm, 0.0f, 0.0f, opaquePaint);
+                drawBitmapOnView();
+                bm.recycle();
+                history.offer(bitmap);
+                break;
+            }
             case R.id.i_new: {
                 drawTransformeeOnCanvas();
                 drawTextOnCanvas();
@@ -2352,13 +2458,13 @@ public class MainActivity extends AppCompatActivity {
                 drawTransformeeOnCanvas();
                 drawTextOnCanvas();
 
-                selection.left = window.translationX >= 0.0f ? 0 : toOriginal(-window.translationX) + 1;
-                selection.top = window.translationY >= 0.0f ? 0 : toOriginal(-window.translationY) + 1;
+                selection.left = tab.translationX >= 0.0f ? 0 : toOriginal(-tab.translationX) + 1;
+                selection.top = tab.translationY >= 0.0f ? 0 : toOriginal(-tab.translationY) + 1;
                 selection.right = selection.left + Math.min(clipboard.getWidth(), bitmap.getWidth());
                 selection.bottom = selection.top + Math.min(clipboard.getHeight(), bitmap.getHeight());
                 transformer = new Transformer(Bitmap.createBitmap(clipboard),
-                        window.translationX + toScaled(selection.left),
-                        window.translationY + toScaled(selection.top));
+                        tab.translationX + toScaled(selection.left),
+                        tab.translationY + toScaled(selection.top));
                 hasSelection = true;
                 rbTransformer.setChecked(true);
                 drawTransformeeAndSelectionOnViewByTranslation();
@@ -2435,7 +2541,7 @@ public class MainActivity extends AppCompatActivity {
         int width = bm.getWidth(), height = bm.getHeight();
         bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         canvas = new Canvas(bitmap);
-        canvas.drawBitmap(bm, 0.0f, 0.0f, paint);
+        canvas.drawBitmap(bm, 0.0f, 0.0f, opaquePaint);
         bm.recycle();
         DocumentFile documentFile = DocumentFile.fromSingleUri(this, uri);
         String path = null;
@@ -2505,7 +2611,7 @@ public class MainActivity extends AppCompatActivity {
         }
         bitmap.recycle();
         bitmap = bm;
-        window.bitmap = bitmap;
+        tab.bitmap = bitmap;
         canvas = cv;
         imageWidth = (int) toScaled(width);
         imageHeight = (int) toScaled(height);
@@ -2522,7 +2628,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void save() {
-        save(window.path);
+        save(tab.path);
     }
 
     private void save(String path) {
@@ -2536,7 +2642,7 @@ public class MainActivity extends AppCompatActivity {
 
         File file = new File(path);
         try (FileOutputStream fos = new FileOutputStream(file)) {
-            bitmap.compress(window.compressFormat, 100, fos);
+            bitmap.compress(tab.compressFormat, 100, fos);
             fos.flush();
         } catch (IOException e) {
             Toast.makeText(this, "Failed\n" + e.getMessage(), Toast.LENGTH_LONG).show();
@@ -2585,28 +2691,28 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void stretchByBound(float viewX, float viewY) {
-        float halfScale = window.scale / 2.0f;
+        float halfScale = tab.scale / 2.0f;
         switch (stretchingBound) {
             case LEFT: {
-                int left = toOriginal(viewX - window.translationX + halfScale);
+                int left = toOriginal(viewX - tab.translationX + halfScale);
                 if (left != selection.left) selection.left = left;
                 else return;
                 break;
             }
             case TOP: {
-                int top = toOriginal(viewY - window.translationY + halfScale);
+                int top = toOriginal(viewY - tab.translationY + halfScale);
                 if (top != selection.top) selection.top = top;
                 else return;
                 break;
             }
             case RIGHT: {
-                int right = toOriginal(viewX - window.translationX + halfScale) - 1;
+                int right = toOriginal(viewX - tab.translationX + halfScale) - 1;
                 if (right != selection.right) selection.right = right;
                 else return;
                 break;
             }
             case BOTTOM: {
-                int bottom = toOriginal(viewY - window.translationY + halfScale) - 1;
+                int bottom = toOriginal(viewY - tab.translationY + halfScale) - 1;
                 if (bottom != selection.bottom) selection.bottom = bottom;
                 else return;
                 break;
@@ -2630,22 +2736,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private int toOriginal(float scaled) {
-        return (int) (scaled / window.scale);
+        return (int) (scaled / tab.scale);
     }
 
     private float toScaled(int original) {
-        return original * window.scale;
+        return original * tab.scale;
     }
 
     private float toScaled(float original) {
-        return original * window.scale;
+        return original * tab.scale;
     }
 
     private void undoOrRedo(Bitmap bm) {
         optimizeSelection();
         bitmap.recycle();
         bitmap = Bitmap.createBitmap(bm.getWidth(), bm.getHeight(), Bitmap.Config.ARGB_8888);
-        window.bitmap = bitmap;
+        tab.bitmap = bitmap;
         canvas = new Canvas(bitmap);
         canvas.drawBitmap(bm, 0.0f, 0.0f, opaquePaint);
 

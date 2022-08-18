@@ -115,10 +115,27 @@
             android:layout_height="wrap_content"
             android:gravity="center_vertical">
 
-            <FrameLayout
-                android:id="@+id/fl_tool_options_common"
+            <LinearLayout
+                android:id="@+id/ll_tool_options_common"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content">
+
+                <LinearLayout
+                    android:id="@+id/ll_options_antialias"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:visibility="visible">
+
+                <CheckBox
+                    android:id="@+id/cb_antialias"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/antialias" />
+
+                </LinearLayout>
 
                 <LinearLayout
                     android:id="@+id/ll_options_stroke_width"
@@ -128,12 +145,6 @@
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
                     android:visibility="visible">
-
-                    <CheckBox
-                        android:id="@+id/cb_antialias"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/antialias" />
 
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="96dp"
@@ -150,7 +161,7 @@
                             android:textAlignment="textEnd" />
                     </com.google.android.material.textfield.TextInputLayout>
                 </LinearLayout>
-            </FrameLayout>
+            </LinearLayout>
 
             <FrameLayout
                 android:id="@+id/fl_tool_options_specific"

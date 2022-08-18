@@ -7,6 +7,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.SeekBar;
 
+import androidx.annotation.ColorInt;
 import androidx.appcompat.app.AlertDialog;
 
 public class ColorPicker {
@@ -17,13 +18,14 @@ public class ColorPicker {
 
     private static final String FORMAT_02X = "%02X";
 
-    private AlertDialog.Builder dialogBuilder;
+    @ColorInt
+    private int newColor, oldColor;
 
+    private AlertDialog.Builder dialogBuilder;
     private EditText etAlpha;
     private EditText etBlue;
     private EditText etGreen;
     private EditText etRed;
-    private int newColor, oldColor;
     private SeekBar sbAlpha;
     private SeekBar sbBlue;
     private SeekBar sbGreen;
@@ -47,11 +49,11 @@ public class ColorPicker {
         return make(context, titleId, onColorPickListener, null, false);
     }
 
-    public static ColorPicker make(Context context, int titleId, final OnColorPickListener onColorPickListener, final Integer oldColor) {
+    public static ColorPicker make(Context context, int titleId, final OnColorPickListener onColorPickListener, @ColorInt final Integer oldColor) {
         return make(context, titleId, onColorPickListener, oldColor, false);
     }
 
-    public static ColorPicker make(Context context, int titleId, final OnColorPickListener onColorPickListener, final Integer oldColor, boolean canDeleteOld) {
+    public static ColorPicker make(Context context, int titleId, final OnColorPickListener onColorPickListener, @ColorInt final Integer oldColor, boolean canDeleteOld) {
         ColorPicker picker = new ColorPicker();
         picker.dialogBuilder = new AlertDialog.Builder(context)
                 .setNegativeButton(R.string.cancel, null)

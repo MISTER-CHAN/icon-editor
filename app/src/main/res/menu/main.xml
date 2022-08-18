@@ -92,6 +92,19 @@
     </item>
 
     <item
+        android:title="@string/layer"
+        app:showAsAction="collapseActionView">
+
+        <menu>
+
+            <item
+                android:id="@+id/i_merge_with_gray"
+                android:title="@string/merge_with_gray"
+                app:showAsAction="collapseActionView" />
+        </menu>
+    </item>
+
+    <item
         android:title="@string/filters"
         app:showAsAction="collapseActionView">
 
