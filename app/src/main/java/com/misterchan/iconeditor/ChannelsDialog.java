@@ -4,16 +4,14 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.view.Gravity;
 import android.view.WindowManager;
-import android.webkit.ValueCallback;
-import android.widget.EditText;
 import android.widget.SeekBar;
 
 import androidx.appcompat.app.AlertDialog;
 
-public class ChannelsManager {
+public class ChannelsDialog {
 
-    private AlertDialog.Builder dialogBuilder;
-    private ValueCallback<float[]> valueCallback;
+    private final AlertDialog.Builder builder;
+    private ColorMatrixManager.OnMatrixElementsChangeListener onMatrixElementsChangeListener;
 
     private float[] a = new float[]{
             1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
@@ -22,25 +20,31 @@ public class ChannelsManager {
             0.0f, 0.0f, 0.0f, 1.0f, 0.0f
     };
 
-    public static ChannelsManager make(Context context,
-                                       final ValueCallback<float[]> valueCallback,
-                                       final DialogInterface.OnClickListener onPosButtonClickListener,
-                                       final DialogInterface.OnCancelListener onCancelListener) {
-        ChannelsManager manager = new ChannelsManager();
-        manager.dialogBuilder = new AlertDialog.Builder(context)
-                .setOnCancelListener(onCancelListener)
-                .setNegativeButton(R.string.cancel, (dialog, which) -> onCancelListener.onCancel(dialog))
-                .setPositiveButton(R.string.ok, onPosButtonClickListener)
+    public ChannelsDialog(Context context) {
+        builder = new AlertDialog.Builder(context)
                 .setTitle(R.string.channels)
                 .setView(R.layout.channels);
+    }
 
-        manager.valueCallback = valueCallback;
+    public ChannelsDialog setOnCancelListener(DialogInterface.OnCancelListener listener) {
+        builder.setOnCancelListener(listener);
+        builder.setNegativeButton(R.string.cancel,
+                (dialog, which) -> listener.onCancel(dialog));
+        return this;
+    }
 
-        return manager;
+    public ChannelsDialog setOnPositiveButtonClickListener(DialogInterface.OnClickListener listener) {
+        builder.setPositiveButton(R.string.ok, listener);
+        return this;
+    }
+
+    public ChannelsDialog setOnMatrixChangeListener(ColorMatrixManager.OnMatrixElementsChangeListener listener) {
+        onMatrixElementsChangeListener = listener;
+        return this;
     }
 
     public void show() {
-        AlertDialog dialog = dialogBuilder.show();
+        AlertDialog dialog = builder.show();
 
         android.view.Window window = dialog.getWindow();
         WindowManager.LayoutParams lp = window.getAttributes();
@@ -58,7 +62,7 @@ public class ChannelsManager {
                 a[1] = f;
                 a[2] = f;
             }
-            valueCallback.onReceiveValue(a);
+            onMatrixElementsChangeListener.onChanged(a);
         });
         ((SeekBar) dialog.findViewById(R.id.sb_green)).setOnSeekBarChangeListener((OnProgressChangeListener) progress -> {
             float f = progress / 10.0f;
@@ -70,7 +74,7 @@ public class ChannelsManager {
                 a[5] = f;
                 a[7] = f;
             }
-            valueCallback.onReceiveValue(a);
+            onMatrixElementsChangeListener.onChanged(a);
         });
         ((SeekBar) dialog.findViewById(R.id.sb_blue)).setOnSeekBarChangeListener((OnProgressChangeListener) progress -> {
             float f = progress / 10.0f;
@@ -82,7 +86,7 @@ public class ChannelsManager {
                 a[10] = f;
                 a[11] = f;
             }
-            valueCallback.onReceiveValue(a);
+            onMatrixElementsChangeListener.onChanged(a);
         });
         ((SeekBar) dialog.findViewById(R.id.sb_alpha)).setOnSeekBarChangeListener((OnProgressChangeListener) progress -> {
             float f = progress / 10.0f;
@@ -95,7 +99,7 @@ public class ChannelsManager {
                 a[16] = f;
                 a[17] = f;
             }
-            valueCallback.onReceiveValue(a);
+            onMatrixElementsChangeListener.onChanged(a);
         });
     }
 }

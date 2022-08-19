@@ -79,7 +79,7 @@
     <string name="tool_options">工具選項</string>
     <string name="transform">轉換</string>
     <string name="untitled">無標題</string>
-    <string name="when_resizing">當重設尺寸</string>
+    <string name="when_resizing">當重設尺寸時</string>
     <string name="width">寛度</string>
     <string name="zoom">縮放</string>
 </resources>

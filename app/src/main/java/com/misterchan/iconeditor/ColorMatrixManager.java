@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.view.Gravity;
 import android.view.WindowManager;
-import android.webkit.ValueCallback;
 import android.widget.EditText;
 
 import androidx.annotation.Size;
@@ -16,19 +15,23 @@ public class ColorMatrixManager {
 
     private static final DecimalFormat DEC_FORMAT = new DecimalFormat("0.#######");
 
+    public interface OnMatrixElementsChangeListener {
+        void onChanged(float[] matrix);
+    }
+
     private AlertDialog.Builder dialogBuilder;
-    private ValueCallback<float[]> valueCallback;
+    private OnMatrixElementsChangeListener onMatrixElementsChangeListener;
 
     private float[] a;
 
     public static ColorMatrixManager make(Context context,
                                           int titleId,
-                                          final ValueCallback<float[]> valueCallback,
+                                          final OnMatrixElementsChangeListener onMatrixElementsChangeListener,
                                           final DialogInterface.OnClickListener onPosButtonClickListener,
                                           @Size(value = 20) float[] defaultMatrix) {
         return make(context,
                 titleId,
-                valueCallback,
+                onMatrixElementsChangeListener,
                 onPosButtonClickListener,
                 null,
                 defaultMatrix);
@@ -36,12 +39,12 @@ public class ColorMatrixManager {
 
     public static ColorMatrixManager make(Context context,
                                           int titleId,
-                                          final ValueCallback<float[]> valueCallback,
+                                          final OnMatrixElementsChangeListener onMatrixElementsChangeListener,
                                           final DialogInterface.OnClickListener onPosButtonClickListener,
                                           final DialogInterface.OnCancelListener onCancelListener) {
         return make(context,
                 titleId,
-                valueCallback,
+                onMatrixElementsChangeListener,
                 onPosButtonClickListener,
                 onCancelListener,
                 new float[]{
@@ -54,7 +57,7 @@ public class ColorMatrixManager {
 
     public static ColorMatrixManager make(Context context,
                                           int titleId,
-                                          final ValueCallback<float[]> valueCallback,
+                                          final OnMatrixElementsChangeListener onMatrixElementsChangeListener,
                                           final DialogInterface.OnClickListener onPosButtonClickListener,
                                           final DialogInterface.OnCancelListener onCancelListener,
                                           @Size(value = 20) float[] defaultMatrix) {
@@ -73,7 +76,7 @@ public class ColorMatrixManager {
                     (dialog, which) -> onCancelListener.onCancel(dialog));
         }
 
-        manager.valueCallback = valueCallback;
+        manager.onMatrixElementsChangeListener = onMatrixElementsChangeListener;
 
         return manager;
     }
@@ -108,6 +111,6 @@ public class ColorMatrixManager {
             a[index] = f;
         } catch (NumberFormatException e) {
         }
-        valueCallback.onReceiveValue(a);
+        onMatrixElementsChangeListener.onChanged(a);
     }
 }

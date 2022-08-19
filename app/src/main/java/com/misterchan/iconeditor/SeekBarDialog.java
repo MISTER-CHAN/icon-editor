@@ -8,36 +8,57 @@ import android.widget.SeekBar;
 
 import androidx.appcompat.app.AlertDialog;
 
+import java.security.PublicKey;
+
 public class SeekBarDialog {
 
-    private AlertDialog.Builder dialogBuilder;
+    private final AlertDialog.Builder builder;
     private int max, min, progress;
     private OnProgressChangeListener onProgressChangeListener;
 
-    public static SeekBarDialog make(Context context, int titleId, int min, int max, int progress,
-                                     final OnProgressChangeListener onProgressChangeListener,
-                                     final DialogInterface.OnClickListener onPosButtonClickListener,
-                                     final DialogInterface.OnCancelListener onCancelListener) {
-
-        SeekBarDialog seekBarDialog = new SeekBarDialog();
-
-        seekBarDialog.dialogBuilder = new AlertDialog.Builder(context)
-                .setOnCancelListener(onCancelListener)
-                .setNegativeButton(R.string.cancel, (dialog, which) -> onCancelListener.onCancel(dialog))
-                .setPositiveButton(R.string.ok, onPosButtonClickListener)
-                .setTitle(titleId)
+    public SeekBarDialog(Context context) {
+        builder = new AlertDialog.Builder(context)
                 .setView(R.layout.seek_bar);
+    }
 
-        seekBarDialog.max = max;
-        seekBarDialog.min = min;
-        seekBarDialog.progress = progress;
-        seekBarDialog.onProgressChangeListener = onProgressChangeListener;
+    public SeekBarDialog setMax(int max) {
+        this.max = max;
+        return this;
+    }
 
-        return seekBarDialog;
+    public SeekBarDialog setMin(int min) {
+        this.min = min;
+        return this;
+    }
+
+    public SeekBarDialog setOnCancelListener(DialogInterface.OnCancelListener listener) {
+        builder.setOnCancelListener(listener);
+        builder.setNegativeButton(R.string.cancel, (dialog, which) -> listener.onCancel(dialog));
+        return this;
+    }
+
+    public SeekBarDialog setOnPositiveButtonClickListener(DialogInterface.OnClickListener listener) {
+        builder.setPositiveButton(R.string.ok, listener);
+        return this;
+    }
+
+    public SeekBarDialog setOnProgressChangeListener(OnProgressChangeListener listener) {
+        onProgressChangeListener = listener;
+        return this;
+    }
+
+    public SeekBarDialog setProgress(int progress) {
+        this.progress = progress;
+        return this;
+    }
+
+    public SeekBarDialog setTitle(int titleId) {
+        builder.setTitle(titleId);
+        return this;
     }
 
     public void show() {
-        AlertDialog dialog = dialogBuilder.show();
+        AlertDialog dialog = builder.show();
 
         android.view.Window window = dialog.getWindow();
         WindowManager.LayoutParams lp = window.getAttributes();
