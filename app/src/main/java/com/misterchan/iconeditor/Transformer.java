@@ -79,7 +79,11 @@ public class Transformer {
         }
     }
 
-    public void resize(int width, int height, float translationX, float translationY) {
+    public void rotate() {
+
+    }
+
+    public void stretch(int width, int height, float translationX, float translationY) {
         Bitmap bm = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         new Canvas(bm).drawBitmap(bitmap,
                 new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight()),

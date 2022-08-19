@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:text="@string/tutorial_merge_as_hidden"
+        android:visibility="gone" />
+
+    <GridLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:columnCount="2"
+        android:orientation="horizontal"
+        android:rowCount="2">
+
+        <TextView
+            android:layout_gravity="center_vertical|start"
+            android:layout_margin="8dp"
+            android:text="@string/scale_to_white" />
+
+        <SeekBar
+            android:id="@+id/sb_scale_to_white"
+            android:layout_gravity="fill"
+            android:max="8"
+            android:min="0"
+            android:progress="4" />
+
+        <TextView
+            android:layout_gravity="center_vertical|start"
+            android:layout_margin="8dp"
+            android:text="@string/scale_to_black" />
+
+        <SeekBar
+            android:id="@+id/sb_scale_to_black"
+            android:layout_gravity="fill"
+            android:max="8"
+            android:min="0"
+            android:progress="4" />
+    </GridLayout>
+</LinearLayout>

@@ -30,16 +30,19 @@
     <string name="draw">绘画</string>
     <string name="enabled">启用</string>
     <string name="eraser">胶擦</string>
+    <string name="exception_merge_as_hidden">异常：请选中两张图像中第一个图像的分页。\n\n“合成为隐藏图”功能介绍：\nMissing tutorial</string>
     <string name="eyedropper">滴管</string>
     <string name="file">文件</string>
     <string name="file_name">文件名</string>
     <string name="fill">填充</string>
     <string name="filter">滤镜</string>
     <string name="filters">滤镜</string>
+    <string name="flip">翻转</string>
     <string name="foreground_color">画笔颜色</string>
     <string name="height">高度</string>
     <string name="help">帮助</string>
     <string name="homepage">主页</string>
+    <string name="horizontally">水平</string>
     <string name="image">图像</string>
     <string name="image_size">图像尺寸</string>
     <string name="invert">反相</string>
@@ -47,11 +50,13 @@
     <string name="line">直线</string>
     <string name="lock_aspect_ratio">锁定宽高比</string>
     <string name="mask_filter">遮罩滤镜</string>
-    <string name="merge_with_gray">Merge with Gray（实验性功能）</string>
+    <string name="merge_as_hidden">Merge as Hidden（实验性功能）</string>
     <string name="new_">新建</string>
+    <string name="ninety_degrees">90°</string>
     <string name="not_supported_file_type">不支持的文件类型</string>
     <string name="offset">偏移量</string>
     <string name="ok">确定</string>
+    <string name="one_eighty_degrees">180°</string>
     <string name="open">打开</string>
     <string name="oval">椭圆</string>
     <string name="palette">调色板</string>
@@ -67,6 +72,7 @@
     <string name="saturation">饱和度</string>
     <string name="save">保存</string>
     <string name="save_as">另存为</string>
+    <string name="scale_to_black">压缩至黑色</string>
     <string name="select">选择</string>
     <string name="select_all">全选</string>
     <string name="shape">形状</string>
@@ -78,8 +84,12 @@
     <string name="text">文本</string>
     <string name="tool_options">工具选项</string>
     <string name="transform">转换</string>
+    <string name="tutorial_merge_as_hidden">Tutorial</string>
+    <string name="two_seventy_degrees">270°</string>
     <string name="untitled">无标题</string>
+    <string name="vertically">垂直</string>
     <string name="when_resizing">当重设尺寸时</string>
     <string name="width">宽度</string>
     <string name="zoom">缩放</string>
+    <string name="scale_to_white">压缩至白色</string>
 </resources>

@@ -11,6 +11,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
@@ -96,20 +97,6 @@ public class MainActivity extends AppCompatActivity {
             Bitmap.CompressFormat.JPEG
     };
 
-    private static final ColorMatrixColorFilter COLOR_FILTER_DARKEN = new ColorMatrixColorFilter(new float[]{
-            0.5f, 0.0f, 0.0f, 0.0f, 0.0f,
-            0.0f, 0.5f, 0.0f, 0.0f, 0.0f,
-            0.0f, 0.0f, 0.5f, 0.0f, 0.0f,
-            0.0f, 0.0f, 0.0f, 1.0f, 0.0f
-    });
-
-    private static final ColorMatrixColorFilter COLOR_FILTER_LIGHTEN = new ColorMatrixColorFilter(new float[]{
-            0.5f, 0.0f, 0.0f, 0.0f, 128.0f,
-            0.0f, 0.5f, 0.0f, 0.0f, 128.0f,
-            0.0f, 0.0f, 0.5f, 0.0f, 128.0f,
-            0.0f, 0.0f, 0.0f, 1.0f, 0.0f
-    });
-
     private static final InputFilter[] FILE_NAME_FILTERS = new InputFilter[]{
             (source, sourceStart, sourceEnd, dest, destStart, destEnd) -> {
                 Matcher matcher = PATTERN_FILE_NAME.matcher(source.toString());
@@ -135,6 +122,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean hasNotLoaded = true;
     private boolean hasSelection = false;
     private boolean hasStretched = false;
+    private boolean isEditingText = false;
     private boolean isShapeStopped = true;
     private Canvas canvas;
     private Canvas chessboardCanvas;
@@ -417,6 +405,14 @@ public class MainActivity extends AppCompatActivity {
                             },
                             paint.getColor())
                     .show();
+
+    private final MergeAsHiddenDialog.OnFinishSettingListener onFinishSettingHiddenImageListener = scale -> {
+        Bitmap bm = mergeAsHidden(new Bitmap[]{bitmap, tabs.get(currentTabIndex + 1).bitmap}, scale);
+        createGraphic(bm.getWidth(), bm.getHeight());
+        canvas.drawBitmap(bm, 0.0f, 0.0f, opaquePaint);
+        drawBitmapOnView();
+        bm.recycle();
+    };
 
     private final NewGraphicPropertiesDialog.OnFinishSettingListener onFinishSettingNewGraphicPropertiesListener = this::createGraphic;
 
@@ -733,39 +729,38 @@ public class MainActivity extends AppCompatActivity {
 
     @SuppressLint("ClickableViewAccessibility")
     private final View.OnTouchListener onImageViewTouchWithTextListener = (v, event) -> {
-        switch (llOptionsText.getVisibility()) {
+        if (isEditingText) {
 
-            case View.VISIBLE: {
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        prevX = event.getX() - toScaled(textX);
-                        prevY = event.getY() - toScaled(textY);
-                        drawTextOnView();
-                        break;
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    prevX = event.getX() - toScaled(textX);
+                    prevY = event.getY() - toScaled(textY);
+                    drawTextOnView();
+                    break;
 
-                    case MotionEvent.ACTION_MOVE: {
-                        float x = event.getX(), y = event.getY();
-                        textX = toOriginal(x - prevX);
-                        textY = toOriginal(y - prevY);
-                        drawTextOnView();
-                        break;
-                    }
+                case MotionEvent.ACTION_MOVE: {
+                    float x = event.getX(), y = event.getY();
+                    textX = toOriginal(x - prevX);
+                    textY = toOriginal(y - prevY);
+                    drawTextOnView();
+                    break;
                 }
-                break;
             }
 
-            case View.INVISIBLE:
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        textX = toOriginal(event.getX() - tab.translationX);
-                        textY = toOriginal(event.getY() - tab.translationY);
-                        llOptionsAntialias.setVisibility(View.VISIBLE);
-                        llOptionsText.setVisibility(View.VISIBLE);
-                        scaleTextSizeAndDrawTextOnView();
-                        prevX = tab.translationX;
-                        prevY = tab.translationY;
-                        break;
-                }
+        } else {
+
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    textX = toOriginal(event.getX() - tab.translationX);
+                    textY = toOriginal(event.getY() - tab.translationY);
+                    llOptionsAntialias.setVisibility(View.VISIBLE);
+                    llOptionsText.setVisibility(View.VISIBLE);
+                    scaleTextSizeAndDrawTextOnView();
+                    isEditingText = true;
+                    prevX = tab.translationX;
+                    prevY = tab.translationY;
+                    break;
+            }
         }
         return true;
     };
@@ -841,7 +836,7 @@ public class MainActivity extends AppCompatActivity {
                                 hasStretched = false;
                                 int width = selection.right - selection.left + 1, height = selection.bottom - selection.top + 1;
                                 if (width > 0 && height > 0) {
-                                    transformer.resize(width, height,
+                                    transformer.stretch(width, height,
                                             tab.translationX + toScaled(selection.left),
                                             tab.translationY + toScaled(selection.top));
                                 } else if (transformer != null) {
@@ -934,7 +929,7 @@ public class MainActivity extends AppCompatActivity {
                     case MotionEvent.ACTION_POINTER_UP: {
                         int width = selection.right - selection.left + 1, height = selection.bottom - selection.top + 1;
                         if (width > 0 && height > 0) {
-                            transformer.resize(width, height,
+                            transformer.stretch(width, height,
                                     tab.translationX + toScaled(selection.left),
                                     tab.translationY + toScaled(selection.top));
                         } else if (transformer != null) {
@@ -1107,7 +1102,7 @@ public class MainActivity extends AppCompatActivity {
             flImageView.setOnTouchListener(onImageViewTouchWithTextListener);
             hideToolOptions();
         } else {
-            drawTextOnCanvas(true);
+            drawTextOnCanvas();
         }
     };
 
@@ -1685,13 +1680,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void drawTextOnCanvas() {
-        drawTextOnCanvas(false);
-    }
-
-    private void drawTextOnCanvas(boolean force) {
-        if (!force && llOptionsText.getVisibility() != View.VISIBLE) {
+        if (!isEditingText) {
             return;
         }
+        isEditingText = false;
         try {
             paint.setTextSize(Float.parseFloat(etTextSize.getText().toString()));
         } catch (NumberFormatException e) {
@@ -1899,11 +1891,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private Bitmap mergeWithGray(Bitmap a, Bitmap b) {
-        return mergeWithGray(new Bitmap[]{a, b});
-    }
-
-    private Bitmap mergeWithGray(@Size(value = 2) Bitmap... bitmaps) {
+    private Bitmap mergeAsHidden(@Size(value = 2) Bitmap[] bitmaps, @Size(value = 2) float[] scale) {
         final int[] width = {bitmaps[0].getWidth(), bitmaps[1].getWidth()},
                 height = {bitmaps[0].getHeight(), bitmaps[1].getHeight()};
         final int w = Math.max(width[0], width[1]), h = Math.max(height[0], height[1]), area = w * h;
@@ -1921,13 +1909,25 @@ public class MainActivity extends AppCompatActivity {
         {
             final Canvas[] canvases = {new Canvas(bitmaps_[0]), new Canvas(bitmaps_[1])};
             final Paint paint = new Paint();
+            float shift;
 
             canvases[0].drawColor(Color.WHITE, BlendMode.DST_OVER);
-            paint.setColorFilter(COLOR_FILTER_LIGHTEN);
+            shift = (1.0f - scale[0]) * 255.0f;
+            paint.setColorFilter(new ColorMatrixColorFilter(new float[]{
+                    scale[0], 0.0f, 0.0f, 0.0f, shift,
+                    0.0f, scale[0], 0.0f, 0.0f, shift,
+                    0.0f, 0.0f, scale[0], 0.0f, shift,
+                    0.0f, 0.0f, 0.0f, 1.0f, 0.0f
+            }));
             canvases[0].drawBitmap(bitmaps[0], left[0], top[0], paint);
 
             canvases[1].drawColor(Color.BLACK, BlendMode.DST_OVER);
-            paint.setColorFilter(COLOR_FILTER_DARKEN);
+            paint.setColorFilter(new ColorMatrixColorFilter(new float[]{
+                    scale[1], 0.0f, 0.0f, 0.0f, 0.0f,
+                    0.0f, scale[1], 0.0f, 0.0f, 0.0f,
+                    0.0f, 0.0f, scale[1], 0.0f, 0.0f,
+                    0.0f, 0.0f, 0.0f, 1.0f, 0.0f
+            }));
             canvases[1].drawBitmap(bitmaps[1], left[1], top[1], paint);
         }
         int[][] pixels = {new int[area], new int[area]};
@@ -2228,7 +2228,6 @@ public class MainActivity extends AppCompatActivity {
                 history.offer(bitmap);
                 break;
             }
-
             case R.id.i_cut:
                 if (!hasSelection) {
                     break;
@@ -2356,16 +2355,30 @@ public class MainActivity extends AppCompatActivity {
                         .show();
                 break;
 
+            case R.id.i_flip_horizontally: {
+                drawTransformeeOnCanvas();
+                drawTextOnCanvas();
+                scale(-1.0f, 1.0f, false);
+                break;
+            }
+            case R.id.i_flip_vertically: {
+                drawTransformeeOnCanvas();
+                drawTextOnCanvas();
+                scale(1.0f, -1.0f, false);
+                break;
+            }
             case R.id.i_merge_with_gray: {
                 if (currentTabIndex + 1 >= tabs.size()) {
+                    new AlertDialog.Builder(this)
+                            .setMessage(R.string.exception_merge_as_hidden)
+                            .setPositiveButton(R.string.ok, null)
+                            .setTitle(R.string.merge_as_hidden)
+                            .show();
                     break;
                 }
-                Bitmap bm = mergeWithGray(bitmap, tabs.get(currentTabIndex + 1).bitmap);
-                createGraphic(bm.getWidth(), bm.getHeight());
-                canvas.drawBitmap(bm, 0.0f, 0.0f, opaquePaint);
-                drawBitmapOnView();
-                bm.recycle();
-                history.offer(bitmap);
+                new MergeAsHiddenDialog(this)
+                        .setOnFinishSettingListener(onFinishSettingHiddenImageListener)
+                        .show();
                 break;
             }
             case R.id.i_new: {
@@ -2401,10 +2414,29 @@ public class MainActivity extends AppCompatActivity {
                 rbTransformer.setChecked(true);
                 drawTransformeeAndSelectionOnViewByTranslation();
                 break;
+
             case R.id.i_redo:
                 if (history.canRedo()) {
                     undoOrRedo(history.redo());
                 }
+                break;
+
+            case R.id.i_rotate_90:
+                drawTransformeeOnCanvas();
+                drawTextOnCanvas();
+                rotate(90.0f, false);
+                break;
+
+            case R.id.i_rotate_180:
+                drawTransformeeOnCanvas();
+                drawTextOnCanvas();
+                rotate(180.0f, false);
+                break;
+
+            case R.id.i_rotate_270:
+                drawTransformeeOnCanvas();
+                drawTextOnCanvas();
+                rotate(270.0f, false);
                 break;
 
             case R.id.i_save:
@@ -2544,6 +2576,27 @@ public class MainActivity extends AppCompatActivity {
         drawSelectionOnView();
     }
 
+    private void rotate(float degrees) {
+        rotate(degrees, false);
+    }
+
+    private void rotate(float degrees, boolean filter) {
+        int left = 0, top = 0, width = bitmap.getWidth(), height = bitmap.getHeight();
+        if (hasSelection) {
+            left = selection.left;
+            top = selection.top;
+            width = selection.right - selection.left + 1;
+            height = selection.bottom - selection.top + 1;
+        }
+        Matrix matrix = new Matrix();
+        matrix.setRotate(degrees, width / 2.0f, height / 2.0f);
+        Bitmap bm = Bitmap.createBitmap(bitmap, left, top, width, height, matrix, filter);
+        canvas.drawBitmap(bm, left, top, opaquePaint);
+        bm.recycle();
+        drawBitmapOnView();
+        history.offer(bitmap);
+    }
+
     private void save() {
         save(tab.path);
     }
@@ -2574,6 +2627,27 @@ public class MainActivity extends AppCompatActivity {
     private void saveAs() {
         String path = null;
         getTree.launch(null);
+    }
+
+    private void scale(float x, float y) {
+        scale(x, y, true);
+    }
+
+    private void scale(float x, float y, boolean filter) {
+        int left = 0, top = 0, width = bitmap.getWidth(), height = bitmap.getHeight();
+        if (hasSelection) {
+            left = selection.left;
+            top = selection.top;
+            width = selection.right - selection.left + 1;
+            height = selection.bottom - selection.top + 1;
+        }
+        Matrix matrix = new Matrix();
+        matrix.setScale(x, y, 0.0f, 0.0f);
+        Bitmap bm = Bitmap.createBitmap(bitmap, left, top, width, height, matrix, filter);
+        canvas.drawBitmap(bm, left, top, opaquePaint);
+        bm.recycle();
+        drawBitmapOnView();
+        history.offer(bitmap);
     }
 
     private void scaleTextSizeAndDrawTextOnView() {

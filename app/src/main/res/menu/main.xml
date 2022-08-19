@@ -81,13 +81,49 @@
 
             <item
                 android:id="@+id/i_size"
-                android:title="@string/size"
-                app:showAsAction="collapseActionView" />
+                android:title="@string/size" />
 
             <item
                 android:id="@+id/i_crop"
-                android:title="@string/crop"
-                app:showAsAction="collapseActionView" />
+                android:title="@string/crop" />
+
+            <item android:title="@string/transform">
+
+                <menu>
+
+                    <item android:title="@string/flip">
+
+                        <menu>
+
+                            <item
+                                android:id="@+id/i_flip_horizontally"
+                                android:title="@string/horizontally" />
+
+                            <item
+                                android:id="@+id/i_flip_vertically"
+                                android:title="@string/vertically" />
+                        </menu>
+                    </item>
+
+                    <item android:title="@string/rotate">
+
+                        <menu>
+
+                            <item
+                                android:id="@+id/i_rotate_90"
+                                android:title="@string/ninety_degrees" />
+
+                            <item
+                                android:id="@+id/i_rotate_180"
+                                android:title="@string/one_eighty_degrees" />
+
+                            <item
+                                android:id="@+id/i_rotate_270"
+                                android:title="@string/two_seventy_degrees" />
+                        </menu>
+                    </item>
+                </menu>
+            </item>
         </menu>
     </item>
 
@@ -99,8 +135,7 @@
 
             <item
                 android:id="@+id/i_merge_with_gray"
-                android:title="@string/merge_with_gray"
-                app:showAsAction="collapseActionView" />
+                android:title="@string/merge_as_hidden" />
         </menu>
     </item>
 
@@ -112,56 +147,45 @@
 
             <item
                 android:id="@+id/i_filter_brightness"
-                android:title="@string/brightness"
-                app:showAsAction="collapseActionView" />
+                android:title="@string/brightness" />
 
             <item
                 android:id="@+id/i_filter_contrast"
-                android:title="@string/contrast"
-                app:showAsAction="collapseActionView" />
+                android:title="@string/contrast" />
 
             <item
                 android:id="@+id/i_filter_saturation"
-                android:title="@string/saturation"
-                app:showAsAction="collapseActionView" />
+                android:title="@string/saturation" />
 
             <item
                 android:id="@+id/i_filter_invert"
-                android:title="@string/invert"
-                app:showAsAction="collapseActionView" />
+                android:title="@string/invert" />
 
-            <item
-                android:title="@string/rotate"
-                app:showAsAction="collapseActionView">
+            <item android:title="@string/rotate">
 
                 <menu>
 
                     <item
                         android:id="@+id/i_filter_rotate_r"
-                        android:title="@string/around_r"
-                        app:showAsAction="collapseActionView" />
+                        android:title="@string/around_r" />
 
                     <item
                         android:id="@+id/i_filter_rotate_g"
-                        android:title="@string/around_g"
-                        app:showAsAction="collapseActionView" />
+                        android:title="@string/around_g" />
 
                     <item
                         android:id="@+id/i_filter_rotate_b"
-                        android:title="@string/around_b"
-                        app:showAsAction="collapseActionView" />
+                        android:title="@string/around_b" />
                 </menu>
             </item>
 
             <item
                 android:id="@+id/i_filter_channels"
-                android:title="@string/channels"
-                app:showAsAction="collapseActionView" />
+                android:title="@string/channels" />
 
             <item
                 android:id="@+id/i_filter_matrix"
-                android:title="@string/custom_color_filter"
-                app:showAsAction="collapseActionView" />
+                android:title="@string/custom_color_filter" />
         </menu>
     </item>
 
@@ -178,13 +202,11 @@
 
             <item
                 android:id="@+id/homepage"
-                android:title="@string/homepage"
-                app:showAsAction="collapseActionView" />
+                android:title="@string/homepage" />
 
             <item
                 android:id="@+id/about"
-                android:title="@string/about"
-                app:showAsAction="collapseActionView" />
+                android:title="@string/about" />
         </menu>
     </item>
 </menu>

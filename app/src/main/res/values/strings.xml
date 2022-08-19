@@ -10,7 +10,7 @@
     <string name="around_b">Around B</string>
     <string name="b" translatable="false">B</string>
     <string name="background_color">Background Color</string>
-    <string name="blur_radius">Blur Radius</string>
+    <string name="blur_radius">Blur</string>
     <string name="brightness">Brightness</string>
     <string name="bucket_fill">Bucket Fill</string>
     <string name="cancel">Cancel</string>
@@ -34,19 +34,22 @@
     <string name="edit" translatable="false">✎</string>
     <string name="enabled">Enabled</string>
     <string name="eraser">Eraser</string>
+    <string name="exception_merge_as_hidden">Exception: Please select the first tab of two images.</string>
     <string name="eyedropper">Eyedropper</string>
+    <string name="ff" translatable="false">FF</string>
     <string name="file">File</string>
     <string name="file_name">File name</string>
     <string name="fill">Fill</string>
     <string name="filter">Filter</string>
     <string name="filters">Filters</string>
-    <string name="ff" translatable="false">FF</string>
+    <string name="flip">Flip</string>
     <string name="foreground_color">Foreground Color</string>
     <string name="forty_eight" translatable="false">48</string>
     <string name="g" translatable="false">G</string>
     <string name="height">Height</string>
     <string name="help">Help</string>
     <string name="homepage">Homepage</string>
+    <string name="horizontally">Horizontally</string>
     <string name="image">Image</string>
     <string name="image_size">Image Size</string>
     <string name="invert">Invert</string>
@@ -54,12 +57,14 @@
     <string name="line">Line</string>
     <string name="lock_aspect_ratio">Lock Aspect Ratio</string>
     <string name="mask_filter">Mask Filter</string>
-    <string name="merge_with_gray">Merge with Gray (Beta)</string>
+    <string name="merge_as_hidden">Merge as a Hidden Image (Beta)</string>
     <string name="new_">New</string>
+    <string name="ninety_degrees">90°</string>
     <string name="not_supported_file_type">Not supported file type</string>
     <string name="offset">Offset</string>
     <string name="ok">OK</string>
     <string name="one" translatable="false">1</string>
+    <string name="one_eighty_degrees">180°</string>
     <string name="open">Open</string>
     <string name="oval">Oval</string>
     <string name="palette">Palette</string>
@@ -77,19 +82,24 @@
     <string name="saturation">Saturation</string>
     <string name="save">Save</string>
     <string name="save_as">Save As</string>
+    <string name="scale_to_white">Scale to White</string>
+    <string name="scale_to_black">Scale to Black</string>
     <string name="select">Select</string>
     <string name="select_all">Select All</string>
     <string name="shape">Shape</string>
     <string name="size">Size</string>
     <string name="spacing">Spacing</string>
     <string name="stretch">Stretch</string>
-    <string name="stroke_width">Stroke Width</string>
+    <string name="stroke_width">Width</string>
     <string name="swatch">Swatch</string>
     <string name="text">Text</string>
     <string name="tool_options">Tool Options</string>
     <string name="transform">Transform</string>
+    <string name="tutorial_merge_as_hidden">Tutorial</string>
+    <string name="two_seventy_degrees">270°</string>
     <string name="undo" translatable="false">↶</string>
     <string name="untitled">Untitled</string>
+    <string name="vertically">Vertically</string>
     <string name="when_resizing">When resizing</string>
     <string name="width">Width</string>
     <string name="x" translatable="false">X</string>

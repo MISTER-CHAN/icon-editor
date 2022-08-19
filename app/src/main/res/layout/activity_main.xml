@@ -113,27 +113,28 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center_vertical">
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
             <LinearLayout
                 android:id="@+id/ll_tool_options_common"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
                 <LinearLayout
                     android:id="@+id/ll_options_antialias"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:gravity="center_vertical"
                     android:orientation="horizontal"
                     android:visibility="visible">
 
-                <CheckBox
-                    android:id="@+id/cb_antialias"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/antialias" />
+                    <CheckBox
+                        android:id="@+id/cb_antialias"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/antialias" />
 
                 </LinearLayout>
 
@@ -141,15 +142,13 @@
                     android:id="@+id/ll_options_stroke_width"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:gravity="center_vertical"
                     android:orientation="horizontal"
                     android:visibility="visible">
 
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="96dp"
                         android:layout_height="wrap_content"
-                        android:layout_margin="8dp">
+                        android:layout_marginHorizontal="2dp">
 
                         <EditText
                             android:id="@+id/et_pencil_stroke_width"
@@ -170,7 +169,7 @@
 
                 <LinearLayout
                     android:id="@+id/ll_options_transformer"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
                     android:orientation="horizontal"
@@ -188,12 +187,13 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
-                    android:orientation="horizontal">
+                    android:orientation="horizontal"
+                    android:visibility="visible">
 
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="96dp"
                         android:layout_height="wrap_content"
-                        android:layout_margin="8dp">
+                        android:layout_marginHorizontal="2dp">
 
                         <EditText
                             android:id="@+id/et_blur_radius"
@@ -211,13 +211,14 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
+                    android:gravity="center_vertical"
                     android:orientation="horizontal"
                     android:visibility="invisible">
 
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="96dp"
                         android:layout_height="wrap_content"
-                        android:layout_margin="8dp">
+                        android:layout_marginHorizontal="2dp">
 
                         <EditText
                             android:id="@+id/et_filter_stroke_width"
@@ -233,7 +234,7 @@
                         android:id="@+id/b_color_filter"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_margin="2dp"
+                        android:layout_marginHorizontal="2dp"
                         android:text="@string/color_filter" />
                 </LinearLayout>
 
@@ -242,6 +243,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
+                    android:gravity="center_vertical"
                     android:orientation="horizontal"
                     android:visibility="invisible">
 
@@ -318,12 +320,12 @@
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="128dp"
                         android:layout_height="wrap_content"
-                        android:layout_margin="8dp">
+                        android:layout_marginHorizontal="2dp">
 
                         <EditText
                             android:id="@+id/et_eraser_stroke_width"
                             android:layout_width="match_parent"
-                            android:layout_height="match_parent"
+                            android:layout_height="wrap_content"
                             android:autofillHints="0"
                             android:background="@color/transparent"
                             android:hint="@string/stroke_width"
@@ -337,19 +339,20 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
+                    android:gravity="center_vertical"
                     android:orientation="horizontal"
                     android:visibility="invisible">
 
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_margin="8dp"
+                        android:layout_marginHorizontal="2dp"
                         android:layout_weight="1">
 
                         <EditText
                             android:id="@+id/et_text"
                             android:layout_width="match_parent"
-                            android:layout_height="match_parent"
+                            android:layout_height="wrap_content"
                             android:autofillHints="0"
                             android:background="@color/transparent"
                             android:hint="@string/text"
@@ -359,7 +362,7 @@
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="72dp"
                         android:layout_height="wrap_content"
-                        android:layout_margin="8dp">
+                        android:layout_marginHorizontal="2dp">
 
                         <EditText
                             android:id="@+id/et_text_size"
