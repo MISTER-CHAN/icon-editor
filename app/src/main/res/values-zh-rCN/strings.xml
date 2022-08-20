@@ -15,6 +15,7 @@
     <string name="cell_grid">网格</string>
     <string name="channels">通道</string>
     <string name="circle">圆</string>
+    <string name="clear_destination">清除目标</string>
     <string name="close">关闭</string>
     <string name="color_filter">颜色滤镜</string>
     <string name="color_picker">拾色器</string>
@@ -78,6 +79,13 @@
     <string name="shape">形状</string>
     <string name="size">尺寸</string>
     <string name="spacing">间距</string>
+    <string name="state_area">面积：%d × %d</string>
+    <string name="state_left_top">左：%d，上：%d</string>
+    <string name="state_l_t_r_b_a">左：%d，上：%d，右：%d，下：%d，面积：%d × %d</string>
+    <string name="state_selected_bound">选定边界：%s</string>
+    <string name="state_start_end_area">始：(%d, %d)，止：(%d, %d)，面积：%d × %d</string>
+    <string name="state_start_end_area_1">始：(%d, %d)，止：(%d, %d)，面积：1 × 1</string>
+    <string name="state_start_stop_">始：(%d, %d)，止：(%d, %d)，</string>
     <string name="stretch">拉伸</string>
     <string name="stroke_width">笔划宽度</string>
     <string name="swatch">颜色</string>

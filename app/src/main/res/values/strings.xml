@@ -17,11 +17,13 @@
     <string name="cell_grid">Cell Grid</string>
     <string name="channels">Channels</string>
     <string name="circle">Circle</string>
+    <string name="clear_destination">Clear Destination</string>
     <string name="close">Close</string>
     <string name="color_filter">Color Filter</string>
     <string name="color_picker">Color Picker</string>
     <string name="contiguous">Contiguous</string>
     <string name="contrast">Contrast</string>
+    <string name="coordinate" translatable="false">(%d, %d)</string>
     <string name="copy">Copy</string>
     <string name="crop">Crop</string>
     <string name="custom">Custom</string>
@@ -89,6 +91,14 @@
     <string name="shape">Shape</string>
     <string name="size">Size</string>
     <string name="spacing">Spacing</string>
+    <string name="state_area">Area: %d × %d</string>
+    <string name="state_eyedropper" translatable="false">(%d, %d) A: %d, R: %d, G: %d, B: %d</string>
+    <string name="state_left_top">Left: %d, Top: %d</string>
+    <string name="state_l_t_r_b_a">L: %d, T: %d, R: %d, B: %d, Area: %d × %d"</string>
+    <string name="state_selected_bound">Selected bound: %s</string>
+    <string name="state_start_end_area">Start: (%d, %d), End: (%d, %d), Area: %d × %d"</string>
+    <string name="state_start_end_area_1">Start: (%d, %d), End: (%d, %d), Area: 1 × 1"</string>
+    <string name="state_start_stop_">Start: (%d, %d), Stop: (%d, %d), </string>
     <string name="stretch">Stretch</string>
     <string name="stroke_width">Width</string>
     <string name="swatch">Swatch</string>
