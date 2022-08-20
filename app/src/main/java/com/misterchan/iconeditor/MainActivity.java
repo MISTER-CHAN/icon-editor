@@ -583,6 +583,7 @@ public class MainActivity extends AppCompatActivity {
                 int width = right - left, height = bottom - top;
                 Bitmap bm = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
                 Canvas cv = new Canvas(bm);
+                cv.drawColor(Color.BLACK);
                 cv.drawLine(originalPrevX - left, originalPrevY - top,
                         originalX - left, originalY - top,
                         filterStroke);
