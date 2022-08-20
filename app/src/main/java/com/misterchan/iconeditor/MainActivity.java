@@ -460,6 +460,8 @@ public class MainActivity extends AppCompatActivity {
             drawGridOnView();
             drawSelectionOnView();
             clearCanvasAndInvalidateView(previewCanvas, ivPreview);
+
+            tvState.setText(String.format(getString(R.string.state_area), width, height));
         }
 
         @Override
