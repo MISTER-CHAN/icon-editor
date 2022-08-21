@@ -161,24 +161,6 @@
                 android:id="@+id/i_filter_invert"
                 android:title="@string/invert" />
 
-            <item android:title="@string/rotate">
-
-                <menu>
-
-                    <item
-                        android:id="@+id/i_filter_rotate_r"
-                        android:title="@string/around_r" />
-
-                    <item
-                        android:id="@+id/i_filter_rotate_g"
-                        android:title="@string/around_g" />
-
-                    <item
-                        android:id="@+id/i_filter_rotate_b"
-                        android:title="@string/around_b" />
-                </menu>
-            </item>
-
             <item
                 android:id="@+id/i_filter_channels"
                 android:title="@string/channels" />

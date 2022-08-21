@@ -53,52 +53,19 @@ public class ChannelsDialog {
         window.setAttributes(lp);
 
         ((SeekBar) dialog.findViewById(R.id.sb_red)).setOnSeekBarChangeListener((OnProgressChangeListener) progress -> {
-            float f = progress / 10.0f;
-            if (f <= 1.0f) {
-                a[0] = f;
-            }
-            if (f >= 1.0f) {
-                f -= 1.0f;
-                a[1] = f;
-                a[2] = f;
-            }
+            a[0] = progress / 10.0f;
             onMatrixElementsChangeListener.onChanged(a);
         });
         ((SeekBar) dialog.findViewById(R.id.sb_green)).setOnSeekBarChangeListener((OnProgressChangeListener) progress -> {
-            float f = progress / 10.0f;
-            if (f <= 1.0f) {
-                a[6] = f;
-            }
-            if (f >= 1.0f) {
-                f -= 1.0f;
-                a[5] = f;
-                a[7] = f;
-            }
+            a[6] = progress / 10.0f;
             onMatrixElementsChangeListener.onChanged(a);
         });
         ((SeekBar) dialog.findViewById(R.id.sb_blue)).setOnSeekBarChangeListener((OnProgressChangeListener) progress -> {
-            float f = progress / 10.0f;
-            if (f <= 1.0f) {
-                a[12] = f;
-            }
-            if (f >= 1.0f) {
-                f -= 1.0f;
-                a[10] = f;
-                a[11] = f;
-            }
+            a[12] = progress / 10.0f;
             onMatrixElementsChangeListener.onChanged(a);
         });
         ((SeekBar) dialog.findViewById(R.id.sb_alpha)).setOnSeekBarChangeListener((OnProgressChangeListener) progress -> {
-            float f = progress / 10.0f;
-            if (f <= 1.0f) {
-                a[18] = f;
-            }
-            if (f >= 1.0f) {
-                f -= 1.0f;
-                a[15] = f;
-                a[16] = f;
-                a[17] = f;
-            }
+            a[18] = progress / 10.0f;
             onMatrixElementsChangeListener.onChanged(a);
         });
     }

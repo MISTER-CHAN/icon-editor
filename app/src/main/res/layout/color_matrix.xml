@@ -9,31 +9,37 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/matrix_open"
-        android:textSize="48sp" />
+        android:layout_marginHorizontal="2dp"
+        android:lineSpacingMultiplier="0.75"
+        android:text="@string/matrix_4_open" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginHorizontal="2dp"
         android:maxLines="4"
         android:text="@string/rp_gp_bp_ap" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/matrix_close"
-        android:textSize="48sp" />
+        android:layout_marginHorizontal="2dp"
+        android:lineSpacingMultiplier="0.75"
+        android:text="@string/matrix_4_close" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginHorizontal="2dp"
         android:text="@string/eq" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/matrix_open"
-        android:textSize="48sp" />
+        android:layout_marginHorizontal="2dp"
+        android:lineSpacingMultiplier="0.75"
+        android:text="@string/matrix_4_open_large"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
 
     <GridLayout
         android:layout_width="wrap_content"
@@ -186,24 +192,22 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:maxLines="4"
-        android:text="@string/matrix_close"
-        android:textSize="48sp" />
+        android:layout_marginHorizontal="2dp"
+        android:lineSpacingMultiplier="0.75"
+        android:text="@string/matrix_4_close_large"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/multiply" />
+        android:layout_marginHorizontal="2dp"
+        android:lineSpacingMultiplier="0.75"
+        android:text="@string/matrix_5_open" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/matrix_open"
-        android:textSize="48sp" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="2dp"
         android:maxLines="5"
         android:text="@string/r_g_b_a_1"
         android:typeface="serif" />
@@ -211,6 +215,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/matrix_close"
-        android:textSize="48sp" />
+        android:layout_marginHorizontal="2dp"
+        android:lineSpacingMultiplier="0.75"
+        android:text="@string/matrix_5_close" />
 </LinearLayout>

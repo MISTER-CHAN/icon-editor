@@ -121,7 +121,7 @@ public class MainActivity extends AppCompatActivity {
     private BitmapWithFilter bitmapWithFilter;
     private boolean hasNotLoaded = true;
     private boolean hasSelection = false;
-    private boolean hasStretched = false;
+    private boolean hasDraged = false;
     private boolean isEditingText = false;
     private boolean isShapeStopped = true;
     private Canvas canvas;
@@ -176,7 +176,7 @@ public class MainActivity extends AppCompatActivity {
     private LinearLayout llToolOptionsCommon;
     private LinkedList<Integer> palette;
     private List<Tab> tabs = new ArrayList<>();
-    private Position stretchingBound = Position.NULL;
+    private Position dragingBound = Position.NULL;
     private RadioButton rbTransformer;
     private Rect selection = new Rect();
     private RectF transfromeeDpb = new RectF(); // DPB - Distance from point to bounds
@@ -343,6 +343,7 @@ public class MainActivity extends AppCompatActivity {
         drawBitmapOnView();
         bitmapWithFilter.recycle();
         bitmapWithFilter = null;
+        tvState.setText("");
     };
 
     private final DialogInterface.OnClickListener onFilterConfirmListener = (dialog, which) -> {
@@ -461,7 +462,7 @@ public class MainActivity extends AppCompatActivity {
             drawSelectionOnView();
             clearCanvasAndInvalidateView(previewCanvas, ivPreview);
 
-            tvState.setText(String.format(getString(R.string.state_area), width, height));
+            tvState.setText(String.format(getString(R.string.state_size), width, height));
         }
 
         @Override
@@ -657,30 +658,49 @@ public class MainActivity extends AppCompatActivity {
 
             case MotionEvent.ACTION_DOWN: {
                 float x = event.getX(), y = event.getY();
-                if (hasSelection && selectionStartX == selectionEndX && selectionStartY == selectionEndY) {
-                    selectionEndX = toOriginal(x - tab.translationX);
-                    selectionEndY = toOriginal(y - tab.translationY);
+                if (dragingBound == Position.NULL) {
+                    if (hasSelection && checkDragingBound(x, y) != Position.NULL) {
+                        tvState.setText(String.format(getString(R.string.state_selected_bound),
+                                dragingBound.name));
+                    } else {
+                        if (hasSelection && selectionStartX == selectionEndX && selectionStartY == selectionEndY) {
+                            selectionEndX = toOriginal(x - tab.translationX);
+                            selectionEndY = toOriginal(y - tab.translationY);
+                        } else {
+                            hasSelection = true;
+                            selectionStartX = toOriginal(x - tab.translationX);
+                            selectionStartY = toOriginal(y - tab.translationY);
+                            selectionEndX = selectionStartX;
+                            selectionEndY = selectionStartY;
+                        }
+                        drawSelectionOnViewByStartsAndEnds();
+                        tvState.setText(String.format(getString(R.string.state_start_end_size_1),
+                                selectionStartX, selectionStartY, selectionStartX, selectionStartY));
+                    }
                 } else {
-                    hasSelection = true;
-                    selectionStartX = toOriginal(x - tab.translationX);
-                    selectionStartY = toOriginal(y - tab.translationY);
-                    selectionEndX = selectionStartX;
-                    selectionEndY = selectionStartY;
+                    dragBound(x, y);
+                    drawSelectionOnView();
+                    tvState.setText(String.format(getString(R.string.state_size),
+                            selection.right - selection.left + 1, selection.bottom - selection.top + 1));
                 }
-                drawSelectionOnViewByStartsAndEnds();
-                tvState.setText(String.format(getString(R.string.state_start_end_area_1),
-                        selectionStartX, selectionStartY, selectionStartX, selectionStartY));
                 break;
             }
 
             case MotionEvent.ACTION_MOVE: {
                 float x = event.getX(), y = event.getY();
-                selectionEndX = toOriginal(x - tab.translationX);
-                selectionEndY = toOriginal(y - tab.translationY);
-                drawSelectionOnViewByStartsAndEnds();
-                tvState.setText(String.format(getString(R.string.state_start_end_area),
-                        selectionStartX, selectionStartY, selectionEndX, selectionEndY,
-                        Math.abs(selectionEndX - selectionStartX) + 1, Math.abs(selectionEndY - selectionStartY) + 1));
+                if (dragingBound == Position.NULL) {
+                    selectionEndX = toOriginal(x - tab.translationX);
+                    selectionEndY = toOriginal(y - tab.translationY);
+                    drawSelectionOnViewByStartsAndEnds();
+                    tvState.setText(String.format(getString(R.string.state_start_end_size),
+                            selectionStartX, selectionStartY, selectionEndX, selectionEndY,
+                            Math.abs(selectionEndX - selectionStartX) + 1, Math.abs(selectionEndY - selectionStartY) + 1));
+                } else {
+                    dragBound(x, y);
+                    drawSelectionOnView();
+                    tvState.setText(String.format(getString(R.string.state_size),
+                            selection.right - selection.left + 1, selection.bottom - selection.top + 1));
+                }
                 break;
             }
 
@@ -688,11 +708,19 @@ public class MainActivity extends AppCompatActivity {
             case MotionEvent.ACTION_UP:
                 optimizeSelection();
                 drawSelectionOnView();
-                tvState.setText(hasSelection ?
-                        String.format(getString(R.string.state_l_t_r_b_a),
-                                selection.left, selection.top, selection.right, selection.bottom,
-                                selection.right - selection.left + 1, selection.bottom - selection.top + 1) :
-                        "");
+                if (dragingBound != Position.NULL) {
+                    if (hasDraged) {
+                        dragingBound = Position.NULL;
+                        hasDraged = false;
+                        tvState.setText("");
+                    }
+                } else {
+                    tvState.setText(hasSelection ?
+                            String.format(getString(R.string.state_l_t_r_b_size),
+                                    selection.left, selection.top, selection.right, selection.bottom,
+                                    selection.right - selection.left + 1, selection.bottom - selection.top + 1) :
+                            "");
+                }
                 break;
         }
         return true;
@@ -802,14 +830,13 @@ public class MainActivity extends AppCompatActivity {
                             }
                             drawBitmapOnView();
                             drawTransformeeAndSelectionOnViewByTranslation(false);
-                            if (stretchingBound == Position.NULL) {
-                                checkStretchingBound(x, y);
-                                if (stretchingBound != Position.NULL) {
+                            if (dragingBound == Position.NULL) {
+                                if (checkDragingBound(x, y) != Position.NULL) {
                                     if (cbTransformerLar.isChecked()) {
                                         transformer.calculateByLocation(selection);
                                     }
                                     tvState.setText(String.format(getString(R.string.state_selected_bound),
-                                            stretchingBound.name));
+                                            dragingBound.name));
                                 } else {
                                     tvState.setText(String.format(getString(R.string.state_left_top),
                                             selection.left, selection.top));
@@ -829,14 +856,14 @@ public class MainActivity extends AppCompatActivity {
                             break;
                         }
                         float x = event.getX(), y = event.getY();
-                        if (stretchingBound == Position.NULL) {
+                        if (dragingBound == Position.NULL) {
                             transformer.translateBy(x - prevX, y - prevY);
                             drawTransformeeAndSelectionOnViewByTranslation(true);
                             tvState.setText(String.format(getString(R.string.state_left_top),
                                     selection.left, selection.top));
                         } else {
                             stretchByBound(x, y);
-                            tvState.setText(String.format(getString(R.string.state_area),
+                            tvState.setText(String.format(getString(R.string.state_size),
                                     selection.right - selection.left + 1, selection.bottom - selection.top + 1));
                         }
                         prevX = x;
@@ -845,10 +872,10 @@ public class MainActivity extends AppCompatActivity {
                     }
                     case MotionEvent.ACTION_UP:
                     case MotionEvent.ACTION_CANCEL:
-                        if (stretchingBound != Position.NULL) {
-                            if (hasStretched) {
-                                stretchingBound = Position.NULL;
-                                hasStretched = false;
+                        if (dragingBound != Position.NULL) {
+                            if (hasDraged) {
+                                dragingBound = Position.NULL;
+                                hasDraged = false;
                                 int width = selection.right - selection.left + 1, height = selection.bottom - selection.top + 1;
                                 if (width > 0 && height > 0) {
                                     transformer.stretch(width, height,
@@ -917,12 +944,12 @@ public class MainActivity extends AppCompatActivity {
                             selection.bottom += toOriginal(transfromeeDpb.bottom - dpb.bottom);
                         }
                         drawSelectionOnView();
-                        tvState.setText(String.format(getString(R.string.state_area),
+                        tvState.setText(String.format(getString(R.string.state_size),
                                 selection.right - selection.left + 1, selection.bottom - selection.top + 1));
                         break;
                     }
                     case MotionEvent.ACTION_POINTER_DOWN: {
-                        stretchingBound = Position.NULL;
+                        dragingBound = Position.NULL;
                         float x0 = event.getX(0), y0 = event.getY(0),
                                 x1 = event.getX(1), y1 = event.getY(1);
                         RectF scaledSelection = new RectF();
@@ -937,7 +964,7 @@ public class MainActivity extends AppCompatActivity {
                         if (cbTransformerLar.isChecked()) {
                             transformer.calculateByLocation(selection);
                         }
-                        tvState.setText(String.format(getString(R.string.state_area),
+                        tvState.setText(String.format(getString(R.string.state_size),
                                 selection.right - selection.left + 1, selection.bottom - selection.top + 1));
                         break;
                     }
@@ -1103,7 +1130,7 @@ public class MainActivity extends AppCompatActivity {
             drawSelectionOnView();
         } else {
             drawTransformeeOnCanvas();
-            stretchingBound = Position.NULL;
+            dragingBound = Position.NULL;
             selector.setColor(Color.DKGRAY);
             drawSelectionOnView();
         }
@@ -1138,18 +1165,11 @@ public class MainActivity extends AppCompatActivity {
                 0.0f, 0.0f, 0.0f, 1.0f, 0.0f
         }));
         drawBitmapWithFilterOnView();
+        tvState.setText(String.format(getString(R.string.state_brightness), progress));
     };
 
     private final OnProgressChangeListener onFilterContrastSeekBarProgressChangeListener = progress -> {
-        float f = progress / 10.0f;
-        ColorMatrix colorMatrix = new ColorMatrix();
-        colorMatrix.setScale(f, f, f, 1.0f);
-        bitmapWithFilter.setFilter(colorMatrix);
-        drawBitmapWithFilterOnView();
-    };
-
-    private final OnProgressChangeListener onFilterInvertSeekBarProgressChangeListener = progress -> {
-        float scale = progress / 10.0f - 1, shift = (1.0f - progress / 20.0f) * 255.0f;
+        float scale = progress / 10.0f, shift = 0x80 * (1.0f - scale);
         bitmapWithFilter.setFilter(new ColorMatrix(new float[]{
                 scale, 0.0f, 0.0f, 0.0f, shift,
                 0.0f, scale, 0.0f, 0.0f, shift,
@@ -1157,34 +1177,28 @@ public class MainActivity extends AppCompatActivity {
                 0.0f, 0.0f, 0.0f, 1.0f, 0.0f
         }));
         drawBitmapWithFilterOnView();
+        tvState.setText(String.format(getString(R.string.state_contrast), scale));
     };
 
-    private final OnProgressChangeListener onFilterRotateRSeekBarProgressChangeListener = progress -> {
-        ColorMatrix colorMatrix = new ColorMatrix();
-        colorMatrix.setRotate(0, progress);
-        bitmapWithFilter.setFilter(colorMatrix);
+    private final OnProgressChangeListener onFilterInvertSeekBarProgressChangeListener = progress -> {
+        float scale = progress / 10.0f - 1, shift = (1.0f - progress / 20.0f) * 0x100;
+        bitmapWithFilter.setFilter(new ColorMatrix(new float[]{
+                scale, 0.0f, 0.0f, 0.0f, shift,
+                0.0f, scale, 0.0f, 0.0f, shift,
+                0.0f, 0.0f, scale, 0.0f, shift,
+                0.0f, 0.0f, 0.0f, 1.0f, 0.0f
+        }));
         drawBitmapWithFilterOnView();
-    };
-
-    private final OnProgressChangeListener onFilterRotateGSeekBarProgressChangeListener = progress -> {
-        ColorMatrix colorMatrix = new ColorMatrix();
-        colorMatrix.setRotate(1, progress);
-        bitmapWithFilter.setFilter(colorMatrix);
-        drawBitmapWithFilterOnView();
-    };
-
-    private final OnProgressChangeListener onFilterRotateBSeekBarProgressChangeListener = progress -> {
-        ColorMatrix colorMatrix = new ColorMatrix();
-        colorMatrix.setRotate(2, progress);
-        bitmapWithFilter.setFilter(colorMatrix);
-        drawBitmapWithFilterOnView();
+        tvState.setText(String.format(getString(R.string.state_invert), scale));
     };
 
     private final OnProgressChangeListener onFilterSaturationSeekBarProgressChangeListener = progress -> {
+        float f = progress / 10.0f;
         ColorMatrix colorMatrix = new ColorMatrix();
-        colorMatrix.setSaturation(progress / 10.0f);
+        colorMatrix.setSaturation(f);
         bitmapWithFilter.setFilter(colorMatrix);
         drawBitmapWithFilterOnView();
+        tvState.setText(String.format(getString(R.string.state_saturation), f));
     };
 
     private final CellGridManager.OnUpdateListener onUpdateCellGridListener = this::drawGridOnView;
@@ -1369,7 +1383,7 @@ public class MainActivity extends AppCompatActivity {
         history.offer(bitmap);
     }
 
-    private void checkStretchingBound(float x, float y) {
+    private Position checkDragingBound(float x, float y) {
         RectF sb = new RectF( // sb - Selection Bounds
                 tab.translationX + toScaled(selection.left),
                 tab.translationY + toScaled(selection.top),
@@ -1379,23 +1393,25 @@ public class MainActivity extends AppCompatActivity {
         if (sb.left - 50.0f <= x && x < sb.left + 50.0f
                 && sb.top + 50.0f <= y && y < sb.bottom - 50.0f) {
 
-            stretchingBound = Position.LEFT;
+            dragingBound = Position.LEFT;
 
         } else if (sb.top - 50.0f <= y && y < sb.top + 50.0f
                 && sb.left + 50.0f <= x && x < sb.right - 50.0f) {
 
-            stretchingBound = Position.TOP;
+            dragingBound = Position.TOP;
 
         } else if (sb.right - 50.0f <= x && x < sb.right + 50.0f
                 && sb.top + 50.0f <= y && y < sb.bottom - 50.0f) {
 
-            stretchingBound = Position.RIGHT;
+            dragingBound = Position.RIGHT;
 
         } else if (sb.bottom - 50.0f <= y && y < sb.bottom + 50.0f
                 && sb.left + 50.0f <= x && x < sb.right - 50.0f) {
 
-            stretchingBound = Position.BOTTOM;
+            dragingBound = Position.BOTTOM;
         }
+
+        return dragingBound;
     }
 
     private void clearCanvas(Canvas canvas) {
@@ -1418,6 +1434,39 @@ public class MainActivity extends AppCompatActivity {
         bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         canvas = new Canvas(bitmap);
         addBitmap(bitmap, width, height);
+    }
+
+    private void dragBound(float viewX, float viewY) {
+        float halfScale = tab.scale / 2.0f;
+        switch (dragingBound) {
+            case LEFT: {
+                int left = toOriginal(viewX - tab.translationX + halfScale);
+                if (left != selection.left) selection.left = left;
+                else return;
+                break;
+            }
+            case TOP: {
+                int top = toOriginal(viewY - tab.translationY + halfScale);
+                if (top != selection.top) selection.top = top;
+                else return;
+                break;
+            }
+            case RIGHT: {
+                int right = toOriginal(viewX - tab.translationX + halfScale) - 1;
+                if (right != selection.right) selection.right = right;
+                else return;
+                break;
+            }
+            case BOTTOM: {
+                int bottom = toOriginal(viewY - tab.translationY + halfScale) - 1;
+                if (bottom != selection.bottom) selection.bottom = bottom;
+                else return;
+                break;
+            }
+            case NULL:
+                return;
+        }
+        hasDraged = true;
     }
 
     private void drawBitmapOnCanvas(Bitmap bm, float translX, float translY, Canvas cv) {
@@ -1464,6 +1513,7 @@ public class MainActivity extends AppCompatActivity {
         clearCanvas(viewCanvas);
         drawBitmapOnCanvas(bitmapWithFilter.getBitmap(), tab.translationX, tab.translationY, viewCanvas);
         imageView.invalidate();
+        tvState.setText("");
     }
 
     private void drawChessboardOnView() {
@@ -2299,11 +2349,12 @@ public class MainActivity extends AppCompatActivity {
 
             case R.id.i_filter_brightness:
                 createBitmapWithFilter();
-                new SeekBarDialog(this).setTitle(R.string.brightness).setMin(-255).setMax(255).setProgress(0)
+                new SeekBarDialog(this).setTitle(R.string.brightness).setMin(-0xFF).setMax(0xFF).setProgress(0)
                         .setOnProgressChangeListener(onFilterBrightnessSeekBarProgressChangeListener)
                         .setOnPositiveButtonClickListener(onFilterConfirmListener)
                         .setOnCancelListener(onFilterCancelListener)
                         .show();
+                tvState.setText("");
                 break;
 
             case R.id.i_filter_channels:
@@ -2313,6 +2364,7 @@ public class MainActivity extends AppCompatActivity {
                         .setOnMatrixChangeListener(onColorMatrixChangeListener)
                         .setOnPositiveButtonClickListener(onFilterConfirmListener)
                         .show();
+                tvState.setText("");
                 break;
 
             case R.id.i_filter_contrast:
@@ -2322,6 +2374,7 @@ public class MainActivity extends AppCompatActivity {
                         .setOnPositiveButtonClickListener(onFilterConfirmListener)
                         .setOnCancelListener(onFilterCancelListener)
                         .show();
+                tvState.setText("");
                 break;
 
             case R.id.i_filter_invert:
@@ -2331,6 +2384,7 @@ public class MainActivity extends AppCompatActivity {
                         .setOnPositiveButtonClickListener(onFilterConfirmListener)
                         .setOnCancelListener(onFilterCancelListener)
                         .show();
+                tvState.setText("");
                 break;
 
             case R.id.i_filter_matrix:
@@ -2342,33 +2396,7 @@ public class MainActivity extends AppCompatActivity {
                                 onFilterConfirmListener,
                                 onFilterCancelListener)
                         .show();
-                break;
-
-            case R.id.i_filter_rotate_r:
-                createBitmapWithFilter();
-                new SeekBarDialog(this).setTitle(R.string.rotate_around_r).setMin(-180).setMax(180).setProgress(0)
-                        .setOnProgressChangeListener(onFilterRotateRSeekBarProgressChangeListener)
-                        .setOnPositiveButtonClickListener(onFilterConfirmListener)
-                        .setOnCancelListener(onFilterCancelListener)
-                        .show();
-                break;
-
-            case R.id.i_filter_rotate_g:
-                createBitmapWithFilter();
-                new SeekBarDialog(this).setTitle(R.string.rotate_around_g).setMin(-180).setMax(180).setProgress(0)
-                        .setOnProgressChangeListener(onFilterRotateGSeekBarProgressChangeListener)
-                        .setOnPositiveButtonClickListener(onFilterConfirmListener)
-                        .setOnCancelListener(onFilterCancelListener)
-                        .show();
-                break;
-
-            case R.id.i_filter_rotate_b:
-                createBitmapWithFilter();
-                new SeekBarDialog(this).setTitle(R.string.rotate_around_b).setMin(-180).setMax(180).setProgress(0)
-                        .setOnProgressChangeListener(onFilterRotateBSeekBarProgressChangeListener)
-                        .setOnPositiveButtonClickListener(onFilterConfirmListener)
-                        .setOnCancelListener(onFilterCancelListener)
-                        .show();
+                tvState.setText("");
                 break;
 
             case R.id.i_filter_saturation:
@@ -2378,6 +2406,7 @@ public class MainActivity extends AppCompatActivity {
                         .setOnPositiveButtonClickListener(onFilterConfirmListener)
                         .setOnCancelListener(onFilterCancelListener)
                         .show();
+                tvState.setText("");
                 break;
 
             case R.id.i_flip_horizontally: {
@@ -2599,10 +2628,12 @@ public class MainActivity extends AppCompatActivity {
         drawChessboardOnView();
         drawGridOnView();
         drawSelectionOnView();
+
+        tvState.setText("");
     }
 
     private void rotate(float degrees) {
-        rotate(degrees, false);
+        rotate(degrees, true);
     }
 
     private void rotate(float degrees, boolean filter) {
@@ -2707,47 +2738,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void stretchByBound(float viewX, float viewY) {
-        float halfScale = tab.scale / 2.0f;
-        switch (stretchingBound) {
-            case LEFT: {
-                int left = toOriginal(viewX - tab.translationX + halfScale);
-                if (left != selection.left) selection.left = left;
-                else return;
-                break;
-            }
-            case TOP: {
-                int top = toOriginal(viewY - tab.translationY + halfScale);
-                if (top != selection.top) selection.top = top;
-                else return;
-                break;
-            }
-            case RIGHT: {
-                int right = toOriginal(viewX - tab.translationX + halfScale) - 1;
-                if (right != selection.right) selection.right = right;
-                else return;
-                break;
-            }
-            case BOTTOM: {
-                int bottom = toOriginal(viewY - tab.translationY + halfScale) - 1;
-                if (bottom != selection.bottom) selection.bottom = bottom;
-                else return;
-                break;
-            }
-            case NULL:
-                return;
-        }
+        dragBound(viewX, viewY);
         if (cbTransformerLar.isChecked()) {
-            if (stretchingBound == Position.LEFT || stretchingBound == Position.RIGHT) {
+            if (dragingBound == Position.LEFT || dragingBound == Position.RIGHT) {
                 double width = selection.right - selection.left + 1, height = width / transformer.getAspectRatio();
                 selection.top = (int) (transformer.getCenterY() - height / 2.0);
                 selection.bottom = (int) (transformer.getCenterY() + height / 2.0);
-            } else if (stretchingBound == Position.TOP || stretchingBound == Position.BOTTOM) {
+            } else if (dragingBound == Position.TOP || dragingBound == Position.BOTTOM) {
                 double height = selection.bottom - selection.top + 1, width = height * transformer.getAspectRatio();
                 selection.left = (int) (transformer.getCenterX() - width / 2.0);
                 selection.right = (int) (transformer.getCenterX() + width / 2.0);
             }
         }
-        hasStretched = true;
         drawSelectionOnView(true);
     }
 
@@ -2782,11 +2784,13 @@ public class MainActivity extends AppCompatActivity {
 
         optimizeSelection();
         isShapeStopped = true;
-        hasStretched = false;
+        hasDraged = false;
 
         drawChessboardOnView();
         drawBitmapOnView();
         drawGridOnView();
         drawSelectionOnView();
+
+        tvState.setText("");
     }
 }
