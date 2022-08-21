@@ -348,6 +348,7 @@ public class MainActivity extends AppCompatActivity {
 
     private final DialogInterface.OnClickListener onFilterConfirmListener = (dialog, which) -> {
         drawBitmapWithFilterOnCanvas();
+        tvState.setText("");
     };
 
     private final ActivityResultCallback<Uri> imageCallback = this::openFile;
