@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <GridLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:columnCount="2"
+        android:orientation="horizontal"
+        android:rowCount="4">
+
+        <TextView
+            android:layout_gravity="center_vertical|start"
+            android:layout_margin="8dp"
+            android:text="@string/r" />
+
+        <SeekBar
+            android:id="@+id/sb_red"
+            android:layout_gravity="fill"
+            android:max="10"
+            android:min="0"
+            android:progress="2" />
+
+        <TextView
+            android:layout_gravity="center_vertical|start"
+            android:layout_margin="8dp"
+            android:text="@string/g" />
+
+        <SeekBar
+            android:id="@+id/sb_green"
+            android:layout_gravity="fill"
+            android:max="10"
+            android:min="0"
+            android:progress="7" />
+
+        <TextView
+            android:layout_gravity="center_vertical|start"
+            android:layout_margin="8dp"
+            android:text="@string/b" />
+
+        <SeekBar
+            android:id="@+id/sb_blue"
+            android:layout_gravity="fill"
+            android:max="10"
+            android:min="0"
+            android:progress="1" />
+
+        <TextView
+            android:layout_gravity="center_vertical|start"
+            android:layout_margin="8dp"
+            android:text="@string/threshold" />
+
+        <SeekBar
+            android:id="@+id/sb_threshold"
+            android:layout_gravity="fill"
+            android:max="255"
+            android:min="0"
+            android:progress="128" />
+    </GridLayout>
+</LinearLayout>

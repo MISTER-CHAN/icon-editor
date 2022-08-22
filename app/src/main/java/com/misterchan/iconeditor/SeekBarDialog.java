@@ -32,8 +32,14 @@ public class SeekBarDialog {
     }
 
     public SeekBarDialog setOnCancelListener(DialogInterface.OnCancelListener listener) {
+        return setOnCancelListener(listener, true);
+    }
+
+    public SeekBarDialog setOnCancelListener(DialogInterface.OnCancelListener listener, boolean showButton) {
         builder.setOnCancelListener(listener);
-        builder.setNegativeButton(R.string.cancel, (dialog, which) -> listener.onCancel(dialog));
+        if (showButton) {
+            builder.setNegativeButton(R.string.cancel, (dialog, which) -> listener.onCancel(dialog));
+        }
         return this;
     }
 

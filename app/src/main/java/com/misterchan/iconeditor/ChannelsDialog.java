@@ -13,7 +13,7 @@ public class ChannelsDialog {
     private final AlertDialog.Builder builder;
     private ColorMatrixManager.OnMatrixElementsChangeListener onMatrixElementsChangeListener;
 
-    private float[] a = new float[]{
+    private final float[] a = new float[]{
             1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
             0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
             0.0f, 0.0f, 1.0f, 0.0f, 0.0f,

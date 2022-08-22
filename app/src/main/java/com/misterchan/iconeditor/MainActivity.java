@@ -89,6 +89,34 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private static final ColorMatrix COLOR_MATRIX_BLACK = new ColorMatrix(new float[]{
+            0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+            0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+            0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+            0.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+    });
+
+    private static final ColorMatrix COLOR_MATRIX_INVERT = new ColorMatrix(new float[]{
+            -1.0f, 0.0f, 0.0f, 0.0f, 0xFF,
+            0.0f, -1.0f, 0.0f, 0.0f, 0xFF,
+            0.0f, 0.0f, -1.0f, 0.0f, 0xFF,
+            0.0f, 0.0f, 0.0f, 1.0f, 0.0f
+    });
+
+    private static final ColorMatrixColorFilter COLOR_MATRIX_REPLACE_BLACK_TO_TRANSPARENT = new ColorMatrixColorFilter(new float[]{
+            1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+            0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+            0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+            0.3f, 0.4f, 0.3f, 0.0f, 0x00
+    });
+
+    private static final ColorMatrixColorFilter COLOR_MATRIX_REPLACE_WHITE_TO_TRANSPARENT = new ColorMatrixColorFilter(new float[]{
+            1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+            0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+            0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+            -0.3f, -0.4f, -0.3f, 0.0f, 0xFF
+    });
+
     private static final Pattern PATTERN_FILE_NAME = Pattern.compile("[\"*/:<>?\\\\|]");
     private static final Pattern PATTERN_TREE = Pattern.compile("^content://com\\.android\\.externalstorage\\.documents/tree/primary%3A(?<path>.*)$");
 
@@ -119,6 +147,7 @@ public class MainActivity extends AppCompatActivity {
     private Bitmap viewBitmap;
     private BitmapHistory history;
     private BitmapWithFilter bitmapWithFilter;
+    private BitmapWithFilter thresholdBitmap;
     private boolean hasNotLoaded = true;
     private boolean hasSelection = false;
     private boolean hasDraged = false;
@@ -163,6 +192,7 @@ public class MainActivity extends AppCompatActivity {
     private int selectionEndX, selectionEndY;
     private int shapeStartX, shapeStartY;
     private int textX, textY;
+    private int threshold = 0x200;
     private int viewWidth, viewHeight;
     private LinearLayout llOptionsAntialias;
     private LinearLayout llOptionsBucketFill;
@@ -177,6 +207,7 @@ public class MainActivity extends AppCompatActivity {
     private LinkedList<Integer> palette;
     private List<Tab> tabs = new ArrayList<>();
     private Position dragingBound = Position.NULL;
+    private RadioButton rbFilter;
     private RadioButton rbTransformer;
     private Rect selection = new Rect();
     private RectF transfromeeDpb = new RectF(); // DPB - Distance from point to bounds
@@ -241,7 +272,13 @@ public class MainActivity extends AppCompatActivity {
 
     private final Paint filter = new Paint() {
         {
-            setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_OUT));
+            setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
+        }
+    };
+
+    private final Paint filterClear = new Paint() {
+        {
+            setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_OUT));
         }
     };
 
@@ -253,6 +290,12 @@ public class MainActivity extends AppCompatActivity {
             setStrokeCap(Cap.ROUND);
             setStrokeWidth(2.0f);
             setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
+        }
+    };
+
+    private final Paint filterThresholdPaint = new Paint() {
+        {
+            setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_OVER));
         }
     };
 
@@ -339,18 +382,6 @@ public class MainActivity extends AppCompatActivity {
         tabLayout.getTabAt(tabLayout.getSelectedTabPosition()).setText(fileName);
     };
 
-    private final DialogInterface.OnCancelListener onFilterCancelListener = dialog -> {
-        drawBitmapOnView();
-        bitmapWithFilter.recycle();
-        bitmapWithFilter = null;
-        tvState.setText("");
-    };
-
-    private final DialogInterface.OnClickListener onFilterConfirmListener = (dialog, which) -> {
-        drawBitmapWithFilterOnCanvas();
-        tvState.setText("");
-    };
-
     private final ActivityResultCallback<Uri> imageCallback = this::openFile;
 
     private final ActivityResultCallback<Uri> treeCallback = result -> {
@@ -374,6 +405,32 @@ public class MainActivity extends AppCompatActivity {
 
         etFileName.setFilters(FILE_NAME_FILTERS);
         sFileType.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, getResources().getStringArray(R.array.file_types)));
+    };
+
+    private final ActivityResultLauncher<String> getImage =
+            registerForActivityResult(new ActivityResultContracts.GetContent(), imageCallback);
+
+    private final ActivityResultLauncher<Uri> getTree =
+            registerForActivityResult(new ActivityResultContracts.OpenDocumentTree(), treeCallback);
+
+    private final DialogInterface.OnCancelListener onFilterCancelListener = dialog -> {
+        drawBitmapOnView();
+        bitmapWithFilter.recycle();
+        bitmapWithFilter = null;
+        tvState.setText("");
+    };
+
+    private final DialogInterface.OnCancelListener onFilterThresholdCancelListener = dialog -> {
+        drawBitmapOnView();
+    };
+
+    private final DialogInterface.OnClickListener onFilterConfirmListener = (dialog, which) -> {
+        drawBitmapWithFilterOnCanvas();
+        tvState.setText("");
+    };
+
+    private final DialogInterface.OnClickListener onFilterThresholdConfirmListener = (dialog, which) -> {
+        drawBitmapOnView();
     };
 
     private final View.OnClickListener onAddSwatchViewClickListener = v ->
@@ -423,16 +480,57 @@ public class MainActivity extends AppCompatActivity {
         drawBitmapWithFilterOnView();
     };
 
+    private final OnProgressChangeListener onBucketFillThresholdChangeListener = progress -> {
+        threshold = progress;
+        tvState.setText(String.format(getString(R.string.state_threshold), progress));
+    };
+
+    private final OnProgressChangeListener onFilterThresholdChangeListener = progress -> {
+        threshold = progress;
+        if (progress == 0x200) {
+            thresholdBitmap.setFilter(COLOR_MATRIX_BLACK);
+            drawBitmapWithFilterOnView(thresholdBitmap);
+            return;
+        }
+        float inv = 1.0f / progress;
+        thresholdBitmap.setFilter(new ColorMatrix(new float[]{
+                inv, 0.0f, 0.0f, 0.0f, 0.0f,
+                0.0f, inv, 0.0f, 0.0f, 0.0f,
+                0.0f, 0.0f, inv, 0.0f, 0.0f,
+                0.0f, 0.0f, 0.0f, 1.0f, 0.0f
+        }));
+        thresholdBitmap.postFilter(new ColorMatrix(new float[]{
+                progress, 0.0f, 0.0f, 0.0f, 0.0f,
+                0.0f, progress, 0.0f, 0.0f, 0.0f,
+                0.0f, 0.0f, progress, 0.0f, 0.0f,
+                0.0f, 0.0f, 0.0f, 1.0f, 0.0f
+        }));
+        drawBitmapWithFilterOnView(thresholdBitmap);
+    };
+
     private final ColorMatrixManager.OnMatrixElementsChangeListener onPaintFilterChangeListener = matrix -> {
         colorMatrix = matrix;
         filter.setColorFilter(new ColorMatrixColorFilter(matrix));
     };
 
-    private final ActivityResultLauncher<String> getImage =
-            registerForActivityResult(new ActivityResultContracts.GetContent(), imageCallback);
+    private final View.OnClickListener onBucketFillThresholdButtonClickListener = v -> {
+        new SeekBarDialog(this).setTitle(R.string.threshold).setMin(0x0).setMax(0x100)
+                .setOnCancelListener(dialog -> tvState.setText(""), false)
+                .setOnPositiveButtonClickListener((dialog, which) -> tvState.setText(""))
+                .setOnProgressChangeListener(onBucketFillThresholdChangeListener)
+                .setProgress(threshold)
+                .show();
+    };
 
-    private final ActivityResultLauncher<Uri> getTree =
-            registerForActivityResult(new ActivityResultContracts.OpenDocumentTree(), treeCallback);
+    private final View.OnClickListener onFilterThresholdButtonClickListener = v -> {
+        new SeekBarDialog(this).setTitle(R.string.threshold).setMin(0x1).setMax(0x200)
+                .setOnCancelListener(onFilterThresholdCancelListener, false)
+                .setOnPositiveButtonClickListener(onFilterThresholdConfirmListener)
+                .setOnProgressChangeListener(onFilterThresholdChangeListener)
+                .setProgress(threshold)
+                .show();
+        onFilterThresholdChangeListener.onProgressChanged(threshold);
+    };
 
     private final TabLayout.OnTabSelectedListener onTabSelectedListener = new TabLayout.OnTabSelectedListener() {
         @Override
@@ -456,6 +554,17 @@ public class MainActivity extends AppCompatActivity {
                 transformer = null;
             }
             hasSelection = false;
+
+            if (rbFilter.isChecked()) {
+                bitmapWithoutFilter.recycle();
+                bitmapWithoutFilter = Bitmap.createBitmap(bitmap);
+                thresholdBitmap.recycle();
+                if (!hasSelection) {
+                    selectAll();
+                }
+                thresholdBitmap = new BitmapWithFilter(bitmap, selection);
+                threshold = 0x200;
+            }
 
             drawChessboardOnView();
             drawBitmapOnView();
@@ -486,7 +595,9 @@ public class MainActivity extends AppCompatActivity {
                     break;
                 }
                 if (cbBucketFillContiguous.isChecked()) {
-                    floodFill(originalX, originalY, paint.getColor());
+                    floodFill(bitmap, originalX, originalY, paint.getColor(), threshold);
+                    drawBitmapOnView();
+                    history.offer(bitmap);
                 } else {
                     bucketFill(originalX, originalY, paint.getColor());
                 }
@@ -576,25 +687,34 @@ public class MainActivity extends AppCompatActivity {
                 int originalX = toOriginal(x - tab.translationX), originalY = toOriginal(y - tab.translationY);
                 int originalPrevX = toOriginal(prevX - tab.translationX), originalPrevY = toOriginal(prevY - tab.translationY);
 
-                if (cbFilterClear.isChecked()) {
-                    canvas.drawLine(originalPrevX, originalPrevY, originalX, originalY, filterStroke);
-                }
-                int sw = (int) filterStroke.getStrokeWidth();
-                int left = Math.min(originalPrevX, originalX) - sw,
-                        top = Math.min(originalPrevY, originalY) - sw,
-                        right = Math.max(originalPrevX, originalX) + sw,
-                        bottom = Math.max(originalPrevY, originalY) + sw;
+                int rad = (int) (filterStroke.getStrokeWidth() / 2.0f);
+                int left = Math.min(originalPrevX, originalX) - rad,
+                        top = Math.min(originalPrevY, originalY) - rad,
+                        right = Math.max(originalPrevX, originalX) + rad,
+                        bottom = Math.max(originalPrevY, originalY) + rad;
                 int width = right - left, height = bottom - top;
+                int relativeX = originalX - left, relativeY = originalY - top;
+                Rect absolute = new Rect(left, top, right, bottom),
+                        relative = new Rect(0, 0, width, height);
                 Bitmap bm = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
                 Canvas cv = new Canvas(bm);
                 cv.drawColor(Color.BLACK);
                 cv.drawLine(originalPrevX - left, originalPrevY - top,
-                        originalX - left, originalY - top,
+                        relativeX, relativeY,
                         filterStroke);
-                cv.drawBitmap(bitmapWithoutFilter,
-                        new Rect(left, top, right, bottom),
-                        new Rect(0, 0, width, height),
-                        filter);
+                if (threshold < 0x200) {
+                    Bitmap ft = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+                    Canvas ftCv = new Canvas(ft);
+                    ftCv.drawBitmap(thresholdBitmap.getBitmap(), absolute, relative, opaquePaint);
+                    floodFill(ft, relativeX, relativeY, Color.TRANSPARENT, 0);
+                    cv.drawBitmap(ft, 0, 0, filterThresholdPaint);
+                    ft.recycle();
+                }
+                cv.drawColor(Color.BLACK, BlendMode.SRC_OUT);
+                if (cbFilterClear.isChecked()) {
+                    canvas.drawBitmap(bm, left, top, filterClear);
+                }
+                cv.drawBitmap(bitmapWithoutFilter, absolute, relative, filter);
                 canvas.drawBitmap(bm, left, top, paint);
                 bm.recycle();
 
@@ -1089,9 +1209,29 @@ public class MainActivity extends AppCompatActivity {
     };
 
     @SuppressLint("ClickableViewAccessibility")
+    private final CompoundButton.OnCheckedChangeListener onBucketFillRadioButtonCheckedChangeListener = (buttonView, isChecked) -> {
+        if (isChecked) {
+            threshold = 0;
+            cbZoom.setChecked(false);
+            cbZoom.setTag(onImageViewTouchWithBucketListener);
+            flImageView.setOnTouchListener(onImageViewTouchWithBucketListener);
+            hideToolOptions();
+            llOptionsBucketFill.setVisibility(View.VISIBLE);
+        }
+    };
+
+    @SuppressLint("ClickableViewAccessibility")
     private final CompoundButton.OnCheckedChangeListener onFilterRadioButtonCheckedChangeListener = (buttonView, isChecked) -> {
         if (isChecked) {
             bitmapWithoutFilter = Bitmap.createBitmap(bitmap);
+            if (thresholdBitmap != null) {
+                thresholdBitmap.recycle();
+            }
+            if (!hasSelection) {
+                selectAll();
+            }
+            thresholdBitmap = new BitmapWithFilter(bitmap, selection);
+            threshold = 0x200;
             cbZoom.setChecked(false);
             cbZoom.setTag(onImageViewTouchWithFilterListener);
             flImageView.setOnTouchListener(onImageViewTouchWithFilterListener);
@@ -1213,7 +1353,6 @@ public class MainActivity extends AppCompatActivity {
     private final View.OnClickListener onFilterButtonClickListener = v -> {
         if (bitmapWithoutFilter != null) {
             bitmapWithoutFilter.recycle();
-            bitmapWithoutFilter = null;
         }
         bitmapWithoutFilter = Bitmap.createBitmap(bitmap);
         ColorMatrixManager.make(this,
@@ -1511,6 +1650,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void drawBitmapWithFilterOnView() {
+        drawBitmapWithFilterOnView(bitmapWithFilter);
+    }
+
+    private void drawBitmapWithFilterOnView(BitmapWithFilter bitmapWithFilter) {
         clearCanvas(viewCanvas);
         drawBitmapOnCanvas(bitmapWithFilter.getBitmap(), tab.translationX, tab.translationY, viewCanvas);
         imageView.invalidate();
@@ -1528,15 +1671,6 @@ public class MainActivity extends AppCompatActivity {
                 new Rect((int) left, (int) top, (int) right, (int) bottom),
                 new RectF(left, top, right, bottom),
                 opaquePaint);
-
-        chessboardCanvas.drawLine(left, top, left - 100.0f, top, imageBound);
-        chessboardCanvas.drawLine(right, top, right + 100.0f, top, imageBound);
-        chessboardCanvas.drawLine(right, top - 100.0f, right, top, imageBound);
-        chessboardCanvas.drawLine(right, bottom, right, bottom + 100.0f, imageBound);
-        chessboardCanvas.drawLine(right + 100.0f, bottom, right, bottom, imageBound);
-        chessboardCanvas.drawLine(left, bottom, left - 100.0f, bottom, imageBound);
-        chessboardCanvas.drawLine(left, bottom + 100.0f, left, bottom, imageBound);
-        chessboardCanvas.drawLine(left, top, left, top - 100.0f, imageBound);
 
         ivChessboard.invalidate();
 
@@ -1557,6 +1691,15 @@ public class MainActivity extends AppCompatActivity {
                 gridCanvas.drawLine(startX, y, endX, y, gridPaint);
             }
         }
+
+        gridCanvas.drawLine(startX, startY, startX - 100.0f, startY, imageBound);
+        gridCanvas.drawLine(endX, startY, endX + 100.0f, startY, imageBound);
+        gridCanvas.drawLine(endX, startY - 100.0f, endX, startY, imageBound);
+        gridCanvas.drawLine(endX, endY, endX, endY + 100.0f, imageBound);
+        gridCanvas.drawLine(endX + 100.0f, endY, endX, endY, imageBound);
+        gridCanvas.drawLine(startX, endY, startX - 100.0f, endY, imageBound);
+        gridCanvas.drawLine(startX, endY + 100.0f, startX, endY, imageBound);
+        gridCanvas.drawLine(startX, startY, startX, startY - 100.0f, imageBound);
 
         if (cellGrid.enabled) {
             if (cellGrid.sizeX > 1) {
@@ -1828,8 +1971,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void floodFill(int x, int y, @ColorInt final int color) {
+        floodFill(bitmap, x, y, color, 0);
+        drawBitmapOnView();
+        history.offer(bitmap);
+    }
+
+    private void floodFill(Bitmap bitmap, int x, int y, @ColorInt final int color, int threshold) {
         final int pixel = bitmap.getPixel(x, y);
-        if (pixel == color) {
+        if (pixel == color && threshold == 0) {
             return;
         }
         int left, top, right, bottom;
@@ -1850,15 +1999,28 @@ public class MainActivity extends AppCompatActivity {
         if (!(left <= x && x <= right && top <= y && y <= bottom)) {
             return;
         }
+//        long a = System.currentTimeMillis();
         Queue<Point> pointsToBeSet = new LinkedList<>();
         boolean[] havePointsBeenSet = new boolean[area];
         pointsToBeSet.offer(new Point(x, y));
         Point point;
         while ((point = pointsToBeSet.poll()) != null) {
             int i = (point.y - top) * w + (point.x - left);
-            int px = pixels[i];
+            if (havePointsBeenSet[i]) {
+                continue;
+            }
             havePointsBeenSet[i] = true;
-            if (px == pixel) {
+            int px = pixels[i];
+            boolean b;
+            if (threshold > 0) {
+                b = px == pixel
+                        || Math.abs((px & 0xFF0000) - (pixel & 0xFF0000)) >> 0x10 <= threshold
+                        && Math.abs((px & 0x00FF00) - (pixel & 0x00FF00)) >> 0x8 <= threshold
+                        && Math.abs((px & 0x0000FF) - (pixel & 0x0000FF)) <= threshold;
+            } else {
+                b = px == pixel;
+            }
+            if (b) {
                 pixels[i] = color;
                 int xn = point.x - 1, xp = point.x + 1, yn = point.y - 1, yp = point.y + 1; // n - negative, p - positive
                 if (left <= xn && !havePointsBeenSet[i - 1])
@@ -1871,9 +2033,9 @@ public class MainActivity extends AppCompatActivity {
                     pointsToBeSet.offer(new Point(point.x, yp));
             }
         }
+//        long b = System.currentTimeMillis();
+//        Toast.makeText(this, String.valueOf(b - a), Toast.LENGTH_SHORT).show();
         bitmap.setPixels(pixels, 0, w, left, top, w, h);
-        drawBitmapOnView();
-        history.offer(bitmap);
     }
 
     private void hideSoftInputFromWindow() {
@@ -2007,6 +2169,9 @@ public class MainActivity extends AppCompatActivity {
         bitmaps_[0].getPixels(pixels[0], 0, w, 0, 0, w, h);
         bitmaps_[1].getPixels(pixels[1], 0, w, 0, 0, w, h);
 
+        bitmaps_[0].recycle();
+        bitmaps_[1].recycle();
+
         for (int i = 0; i < area; ++i) {
             float[] red = {Color.red(pixels[0][i]) / 255.0f, Color.red(pixels[1][i]) / 255.0f},
                     green = {Color.green(pixels[0][i]) / 255.0f, Color.green(pixels[1][i]) / 255.0f},
@@ -2066,6 +2231,7 @@ public class MainActivity extends AppCompatActivity {
         llOptionsText = findViewById(R.id.ll_options_text);
         llOptionsTransformer = findViewById(R.id.ll_options_transformer);
         rvSwatches = findViewById(R.id.rv_swatches);
+        rbFilter = findViewById(R.id.rb_filter);
         RadioButton rbPencil = findViewById(R.id.rb_pencil);
         rbTransformer = findViewById(R.id.rb_transformer);
         tabLayout = findViewById(R.id.tl);
@@ -2073,7 +2239,9 @@ public class MainActivity extends AppCompatActivity {
         vBackgroundColor = findViewById(R.id.v_background_color);
         vForegroundColor = findViewById(R.id.v_foreground_color);
 
+        findViewById(R.id.b_bucket_fill_threshold).setOnClickListener(onBucketFillThresholdButtonClickListener);
         findViewById(R.id.b_color_filter).setOnClickListener(onFilterButtonClickListener);
+        findViewById(R.id.b_filter_threshold).setOnClickListener(onFilterThresholdButtonClickListener);
         findViewById(R.id.b_text_draw).setOnClickListener(v -> drawTextOnCanvas());
         cbAntiAlias.setOnCheckedChangeListener((buttonView, isChecked) -> paint.setAntiAlias(isChecked));
         cbZoom.setOnCheckedChangeListener(onZoomToolCheckBoxCheckedChangeListener);
@@ -2083,11 +2251,11 @@ public class MainActivity extends AppCompatActivity {
         etText.addTextChangedListener((AfterTextChangedListener) s -> drawTextOnView());
         etTextSize.addTextChangedListener((AfterTextChangedListener) s -> scaleTextSizeAndDrawTextOnView());
         flImageView.setOnTouchListener(onImageViewTouchWithPencilListener);
-        ((RadioButton) findViewById(R.id.rb_bucket_fill)).setOnCheckedChangeListener((buttonView, isChecked) -> onToolChange(isChecked, onImageViewTouchWithBucketListener, llOptionsBucketFill));
+        ((RadioButton) findViewById(R.id.rb_bucket_fill)).setOnCheckedChangeListener(onBucketFillRadioButtonCheckedChangeListener);
         ((RadioButton) findViewById(R.id.rb_circle)).setOnCheckedChangeListener((OnCheckedListener) () -> shape = circle);
         ((RadioButton) findViewById(R.id.rb_eraser)).setOnCheckedChangeListener((buttonView, isChecked) -> onToolChange(isChecked, onImageViewTouchWithEraserListener, llOptionsEraser));
         ((RadioButton) findViewById(R.id.rb_eyedropper)).setOnCheckedChangeListener((buttonView, isChecked) -> onToolChange(isChecked, onImageViewTouchWithEyedropperListener));
-        ((RadioButton) findViewById(R.id.rb_filter)).setOnCheckedChangeListener(onFilterRadioButtonCheckedChangeListener);
+        rbFilter.setOnCheckedChangeListener(onFilterRadioButtonCheckedChangeListener);
         ((RadioButton) findViewById(R.id.rb_line)).setOnCheckedChangeListener((OnCheckedListener) () -> shape = line);
         ((RadioButton) findViewById(R.id.rb_oval)).setOnCheckedChangeListener((OnCheckedListener) () -> shape = oval);
         rbPencil.setOnCheckedChangeListener(onPencilRadioButtonCheckedChangeListener);
@@ -2201,6 +2369,8 @@ public class MainActivity extends AppCompatActivity {
         chessboardBitmap = null;
         clipboard.recycle();
         clipboard = null;
+        thresholdBitmap.recycle();
+        thresholdBitmap = null;
         gridCanvas = null;
         gridBitmap.recycle();
         gridBitmap = null;
@@ -2244,8 +2414,6 @@ public class MainActivity extends AppCompatActivity {
             cbZoom.setChecked(false);
             cbZoom.setTag(onImageViewTouchListener);
             flImageView.setOnTouchListener(onImageViewTouchListener);
-        }
-        if (isChecked) {
             hideToolOptions();
             for (View tb : toolOptions) {
                 tb.setVisibility(View.VISIBLE);
@@ -2271,6 +2439,8 @@ public class MainActivity extends AppCompatActivity {
                     transformer.recycle();
                     transformer = null;
                 }
+                bitmap.recycle();
+                history.recycle();
                 tabs.remove(currentTabIndex);
                 tabLayout.removeTabAt(currentTabIndex);
                 break;
@@ -2300,6 +2470,7 @@ public class MainActivity extends AppCompatActivity {
                 Bitmap bm = Bitmap.createBitmap(bitmap, selection.left, selection.top, width, height);
                 resizeBitmap(width, height, false);
                 canvas.drawBitmap(bm, 0.0f, 0.0f, opaquePaint);
+                bm.recycle();
                 drawBitmapOnView();
                 history.offer(bitmap);
                 break;
@@ -2396,6 +2567,16 @@ public class MainActivity extends AppCompatActivity {
                                 onColorMatrixChangeListener,
                                 onFilterConfirmListener,
                                 onFilterCancelListener)
+                        .show();
+                tvState.setText("");
+                break;
+
+            case R.id.i_filter_threshold:
+                createBitmapWithFilter();
+                new ThresholdDialog(this)
+                        .setOnCancelListener(onFilterCancelListener)
+                        .setOnMatrixChangeListener(onColorMatrixChangeListener)
+                        .setOnPositiveButtonClickListener(onFilterConfirmListener)
                         .show();
                 tvState.setText("");
                 break;

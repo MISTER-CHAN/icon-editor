@@ -166,6 +166,10 @@
                 android:title="@string/channels" />
 
             <item
+                android:id="@+id/i_filter_threshold"
+                android:title="@string/threshold" />
+
+            <item
                 android:id="@+id/i_filter_matrix"
                 android:title="@string/custom_color_filter" />
         </menu>

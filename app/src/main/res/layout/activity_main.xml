@@ -249,6 +249,14 @@
                             android:layout_marginHorizontal="2dp"
                             android:maxLines="1"
                             android:text="@string/color_filter" />
+
+                        <Button
+                            android:id="@+id/b_filter_threshold"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginHorizontal="2dp"
+                            android:maxLines="1"
+                            android:text="@string/threshold" />
                     </LinearLayout>
                 </LinearLayout>
 
@@ -320,6 +328,14 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/contiguous" />
+
+                    <Button
+                        android:id="@+id/b_bucket_fill_threshold"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginHorizontal="4dp"
+                        android:maxLines="1"
+                        android:text="@string/threshold" />
                 </LinearLayout>
 
                 <LinearLayout

@@ -53,9 +53,18 @@ class BitmapHistory {
             }
         }
         Bitmap bm = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
-        Bitmap.createBitmap(bm);
         new Canvas(bm).drawBitmap(bitmap, 0.0f, 0.0f, PAINT);
         history.offerFirst(current = new Node(bm, current));
+    }
+
+    void recycle() {
+        Node node;
+        while (!history.isEmpty()) {
+            if ((node = history.peekFirst()) != null) {
+                node.val.recycle();
+            }
+            history.removeFirst();
+        }
     }
 
     Bitmap redo() {

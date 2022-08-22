@@ -14,6 +14,7 @@ public class BitmapWithFilter {
     private final Bitmap bitmap;
     private final Bitmap bm;
     private final Canvas canvas;
+    private final Canvas cv;
     private final Rect rect;
 
     private final Paint paint = new Paint() {
@@ -26,6 +27,7 @@ public class BitmapWithFilter {
         this.bitmap = Bitmap.createBitmap(bitmap);
         this.bm = Bitmap.createBitmap(bitmap, rect.left, rect.top, rect.width() + 1, rect.height() + 1);
         canvas = new Canvas(this.bitmap);
+        cv = new Canvas(bm);
         this.rect = rect;
     }
 
@@ -35,6 +37,16 @@ public class BitmapWithFilter {
 
     public Bitmap getBitmap() {
         return bitmap;
+    }
+
+    public void override() {
+        cv.drawBitmap(bm, 0, 0, paint);
+    }
+
+    public void postFilter(ColorMatrix colorMatrix) {
+        paint.setColorFilter(new ColorMatrixColorFilter(colorMatrix));
+        Rect r = new Rect(rect.left, rect.top, rect.right, rect.bottom);
+        canvas.drawBitmap(bitmap, r, r, paint);
     }
 
     public void recycle() {

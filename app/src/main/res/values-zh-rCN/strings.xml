@@ -90,10 +90,12 @@
     <string name="state_start_end_size">始：(%d, %d)，止：(%d, %d)，尺寸：%d × %d</string>
     <string name="state_start_end_size_1">始：(%d, %d)，止：(%d, %d)，尺寸：1 × 1</string>
     <string name="state_start_stop_">始：(%d, %d)，止：(%d, %d)，</string>
+    <string name="state_threshold">阈值：%d</string>
     <string name="stretch">拉伸</string>
     <string name="stroke_width">笔划宽度</string>
     <string name="swatch">颜色</string>
     <string name="text">文本</string>
+    <string name="threshold">阈值</string>
     <string name="tool_options">工具选项</string>
     <string name="transform">变换</string>
     <string name="tutorial_merge_as_hidden">Tutorial</string>

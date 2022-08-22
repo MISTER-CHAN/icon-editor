@@ -104,10 +104,12 @@
     <string name="state_start_end_size">Start: (%d, %d), End: (%d, %d), Size: %d × %d"</string>
     <string name="state_start_end_size_1">Start: (%d, %d), End: (%d, %d), Size: 1 × 1"</string>
     <string name="state_start_stop_">Start: (%d, %d), Stop: (%d, %d), </string>
+    <string name="state_threshold">Threshold: %d</string>
     <string name="stretch">Stretch</string>
     <string name="stroke_width">Width</string>
     <string name="swatch">Swatch</string>
     <string name="text">Text</string>
+    <string name="threshold">Threshold</string>
     <string name="tool_options">Tool Options</string>
     <string name="transform">Transform</string>
     <string name="tutorial_merge_as_hidden">Tutorial</string>
