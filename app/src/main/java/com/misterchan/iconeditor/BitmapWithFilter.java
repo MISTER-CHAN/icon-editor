@@ -10,6 +10,8 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 
+import androidx.annotation.ColorInt;
+
 public class BitmapWithFilter {
     private final Bitmap bitmap;
     private final Bitmap bm;
@@ -39,6 +41,19 @@ public class BitmapWithFilter {
         return bitmap;
     }
 
+    public int getHeight() {
+        return bm.getHeight();
+    }
+
+    public void getPixels(@ColorInt int[] pixels, int offset, int stride,
+                          int x, int y, int width, int height) {
+        bm.getPixels(pixels, offset, stride, x, y, width, height);
+    }
+
+    public int getWidth() {
+        return bm.getWidth();
+    }
+
     public void override() {
         cv.drawBitmap(bm, 0, 0, paint);
     }
@@ -57,5 +72,11 @@ public class BitmapWithFilter {
     public void setFilter(ColorMatrix colorMatrix) {
         paint.setColorFilter(new ColorMatrixColorFilter(colorMatrix));
         draw();
+    }
+
+    public void setPixels(@ColorInt int[] pixels, int offset, int stride,
+                          int x, int y, int width, int height) {
+        bitmap.setPixels(pixels, offset, stride,
+                rect.left + x, rect.top + y, width, height);
     }
 }

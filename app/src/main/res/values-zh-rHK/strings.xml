@@ -2,7 +2,7 @@
 <resources>
     <string name="about">關於</string>
     <string name="add">新增</string>
-    <string name="antialias">抗鋸齒</string>
+    <string name="anti_alias">抗鋸齒</string>
     <string name="app_name">Icon Editor</string>
     <string name="around_r">繞 R 軸</string>
     <string name="around_g">繞 G 軸</string>
@@ -16,6 +16,7 @@
     <string name="channels">通道</string>
     <string name="circle">圓</string>
     <string name="clear_destination">淸除目標</string>
+    <string name="cloner">克隆筆</string>
     <string name="close">關閉</string>
     <string name="color_filter">顏色濾鏡</string>
     <string name="color_picker">拾色器</string>
@@ -40,6 +41,7 @@
     <string name="filters">濾鏡</string>
     <string name="flip">翻轉</string>
     <string name="foreground_color">畫筆顏色</string>
+    <string name="gradient">漸變</string>
     <string name="height">高度</string>
     <string name="help">幫助</string>
     <string name="homepage">主頁</string>
@@ -47,6 +49,7 @@
     <string name="image">圖像</string>
     <string name="image_size">圖像尺寸</string>
     <string name="invert">反相</string>
+    <string name="keep_color_diff">保留色差</string>
     <string name="layer">圖層</string>
     <string name="line">直線</string>
     <string name="lock_aspect_ratio">鎖定寬高比</string>
@@ -80,16 +83,20 @@
     <string name="shape">形狀</string>
     <string name="size">尺寸</string>
     <string name="spacing">間距</string>
+    <string name="state_axes">軸長：%d, %d</string>
     <string name="state_brightness">明度：%d</string>
     <string name="state_contrast">對比度：%.1f</string>
     <string name="state_invert">反相：%.1f</string>
     <string name="state_left_top">左：%d，上：%d</string>
+    <string name="state_length">長：%f</string>
     <string name="state_l_t_r_b_size">左：%d，上：%d，右：%d，下：%d，尺寸：%d × %d</string>
+    <string name="state_radius">半徑：%.1f</string>
     <string name="state_saturation">飽和度：%.1f</string>
     <string name="state_selected_bound">選定邊界：%s</string>
     <string name="state_size">尺寸：%d × %d</string>
     <string name="state_start_end_size">始：(%d, %d)，止：(%d, %d)，尺寸：%d × %d</string>
     <string name="state_start_end_size_1">始：(%d, %d)，止：(%d, %d)，尺寸：1 × 1</string>
+    <string name="state_start_stop">始：(%d, %d)，止：(%d, %d)</string>
     <string name="state_start_stop_">始：(%d, %d)，止：(%d, %d)，</string>
     <string name="state_threshold">閾値：%d</string>
     <string name="stretch">拉伸</string>

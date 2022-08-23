@@ -11,12 +11,14 @@ import java.util.LinkedList;
 
 class BitmapHistory {
 
+    private static final int MAX_SIZE = 50;
+
     private static final Paint PAINT = new Paint();
 
     private static class Node {
-        private final Bitmap val;
+        private Bitmap val;
         private Node next;
-        private final Node prev;
+        private Node prev;
 
         private Node(Bitmap val, Node prev) {
             this.val = val;
@@ -48,6 +50,10 @@ class BitmapHistory {
             while ((node = history.peekFirst()) != current) {
                 if (node != null) {
                     node.val.recycle();
+                    node.val = null;
+                    if (node.prev != null) {
+                        node.prev.next = null;
+                    }
                 }
                 history.removeFirst();
             }
@@ -55,6 +61,12 @@ class BitmapHistory {
         Bitmap bm = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
         new Canvas(bm).drawBitmap(bitmap, 0.0f, 0.0f, PAINT);
         history.offerFirst(current = new Node(bm, current));
+        while (history.size() > MAX_SIZE) {
+            Node node = history.pollLast();
+            node.val.recycle();
+            node.val = null;
+            node.next.prev = null;
+        }
     }
 
     void recycle() {
@@ -62,6 +74,10 @@ class BitmapHistory {
         while (!history.isEmpty()) {
             if ((node = history.peekFirst()) != null) {
                 node.val.recycle();
+                node.val = null;
+                if (node.prev != null) {
+                    node.prev.next = null;
+                }
             }
             history.removeFirst();
         }

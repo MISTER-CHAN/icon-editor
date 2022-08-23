@@ -116,54 +116,8 @@
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
-            <LinearLayout
-                android:id="@+id/ll_tool_options_common"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
-
-                <LinearLayout
-                    android:id="@+id/ll_options_antialias"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:visibility="gone">
-
-                    <CheckBox
-                        android:id="@+id/cb_antialias"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/antialias" />
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/ll_options_stroke_width"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:visibility="gone">
-
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:layout_width="96dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginHorizontal="2dp">
-
-                        <EditText
-                            android:id="@+id/et_pencil_stroke_width"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:background="@color/transparent"
-                            android:hint="@string/stroke_width"
-                            android:inputType="numberDecimal"
-                            android:textAlignment="textEnd" />
-                    </com.google.android.material.textfield.TextInputLayout>
-                </LinearLayout>
-            </LinearLayout>
-
             <FrameLayout
-                android:id="@+id/fl_tool_options_specific"
+                android:id="@+id/fl_tool_options"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
@@ -187,8 +141,30 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
+                    android:gravity="center_vertical"
                     android:orientation="horizontal"
                     android:visibility="invisible">
+
+                    <CheckBox
+                        android:id="@+id/cb_pencil_anti_alias"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/anti_alias" />
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="96dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginHorizontal="2dp">
+
+                        <EditText
+                            android:id="@+id/et_pencil_stroke_width"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="@color/transparent"
+                            android:hint="@string/stroke_width"
+                            android:inputType="numberDecimal"
+                            android:textAlignment="textEnd" />
+                    </com.google.android.material.textfield.TextInputLayout>
 
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="96dp"
@@ -261,6 +237,37 @@
                 </LinearLayout>
 
                 <LinearLayout
+                    android:id="@+id/ll_options_gradient"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:visibility="invisible">
+
+                    <CheckBox
+                        android:id="@+id/cb_gradient_anti_alias"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/anti_alias" />
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="96dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginHorizontal="2dp">
+
+                        <EditText
+                            android:id="@+id/et_gradient_stroke_width"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="@color/transparent"
+                            android:hint="@string/stroke_width"
+                            android:inputType="numberDecimal"
+                            android:textAlignment="textEnd" />
+                    </com.google.android.material.textfield.TextInputLayout>
+                </LinearLayout>
+
+                <LinearLayout
                     android:id="@+id/ll_options_shape"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -268,6 +275,27 @@
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
                     android:visibility="invisible">
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="96dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginHorizontal="2dp">
+
+                        <EditText
+                            android:id="@+id/et_shape_stroke_width"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="@color/transparent"
+                            android:hint="@string/stroke_width"
+                            android:inputType="numberDecimal"
+                            android:textAlignment="textEnd" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <CheckBox
+                        android:id="@+id/cb_shape_anti_alias"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/anti_alias" />
 
                     <CheckBox
                         android:id="@+id/cb_style_fill"
@@ -329,6 +357,12 @@
                         android:layout_height="wrap_content"
                         android:text="@string/contiguous" />
 
+                    <CheckBox
+                        android:id="@+id/cb_bucket_fill_keep_color_diff"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/keep_color_diff" />
+
                     <Button
                         android:id="@+id/b_bucket_fill_threshold"
                         android:layout_width="wrap_content"
@@ -343,9 +377,15 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
+                    android:gravity="center_vertical"
                     android:orientation="horizontal"
                     android:visibility="invisible">
 
+                    <CheckBox
+                        android:id="@+id/cb_eraser_anti_alias"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/anti_alias" />
 
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="96dp"
@@ -372,6 +412,12 @@
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
                     android:visibility="invisible">
+
+                    <CheckBox
+                        android:id="@+id/cb_text_anti_alias"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/anti_alias" />
 
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="0dp"
@@ -462,6 +508,18 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/pen_with_filter" />
+
+                    <RadioButton
+                        android:id="@+id/rb_gradient"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/gradient" />
+
+                    <RadioButton
+                        android:id="@+id/rb_cloner"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/cloner" />
 
                     <RadioButton
                         android:id="@+id/rb_shape"

@@ -3,7 +3,7 @@
     <string name="about">About</string>
     <string name="add">Add</string>
     <string name="add_symbol" translatable="false">+</string>
-    <string name="antialias">Anti-alias</string>
+    <string name="anti_alias">Anti-alias</string>
     <string name="app_name">Icon Editor</string>
     <string name="around_r">Around R</string>
     <string name="around_g">Around G</string>
@@ -18,6 +18,7 @@
     <string name="channels">Channels</string>
     <string name="circle">Circle</string>
     <string name="clear_destination">Clear Destination</string>
+    <string name="cloner">Cloner</string>
     <string name="close">Close</string>
     <string name="color_filter">Color Filter</string>
     <string name="color_picker">Color Picker</string>
@@ -48,6 +49,7 @@
     <string name="foreground_color">Foreground Color</string>
     <string name="forty_eight" translatable="false">48</string>
     <string name="g" translatable="false">G</string>
+    <string name="gradient">Gradient</string>
     <string name="height">Height</string>
     <string name="help">Help</string>
     <string name="homepage">Homepage</string>
@@ -55,6 +57,7 @@
     <string name="image">Image</string>
     <string name="image_size">Image Size</string>
     <string name="invert">Invert</string>
+    <string name="keep_color_diff">Keep Color Difference</string>
     <string name="layer">Layer</string>
     <string name="line">Line</string>
     <string name="lock_aspect_ratio">Lock Aspect Ratio</string>
@@ -91,18 +94,22 @@
     <string name="shape">Shape</string>
     <string name="size">Size</string>
     <string name="spacing">Spacing</string>
+    <string name="state_axes">"Axes: %d, %d"</string>
     <string name="state_brightness">Brightness: %d</string>
     <string name="state_contrast">Contrast: %.1f</string>
     <string name="state_eyedropper" translatable="false">(%d, %d) A: %02X, R: %02X, G: %02X, B: %02X</string>
     <string name="state_invert">Invert: %.1f</string>
     <string name="state_left_top">Left: %d, Top: %d</string>
+    <string name="state_length">Length: %f</string>
     <string name="state_l_t_r_b_size">L: %d, T: %d, R: %d, B: %d, Size: %d × %d"</string>
+    <string name="state_radius">Radius: %.1f</string>
     <string name="state_rotate" translatable="false">%d°</string>
     <string name="state_saturation">Saturation: %.1f</string>
     <string name="state_selected_bound">Selected bound: %s</string>
     <string name="state_size">Size: %d × %d</string>
     <string name="state_start_end_size">Start: (%d, %d), End: (%d, %d), Size: %d × %d"</string>
     <string name="state_start_end_size_1">Start: (%d, %d), End: (%d, %d), Size: 1 × 1"</string>
+    <string name="state_start_stop">Start: (%d, %d), Stop: (%d, %d)</string>
     <string name="state_start_stop_">Start: (%d, %d), Stop: (%d, %d), </string>
     <string name="state_threshold">Threshold: %d</string>
     <string name="stretch">Stretch</string>
