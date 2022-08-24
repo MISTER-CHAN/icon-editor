@@ -2389,7 +2389,7 @@ public class MainActivity extends AppCompatActivity {
                     a,
                     Math.min(Math.max(ar > 0.0f ? (red[1] / ar) : 1.0f, 0.0f), 1.0f),
                     Math.min(Math.max(ag > 0.0f ? (green[1] / ag) : 1.0f, 0.0f), 1.0f),
-                    Math.min(Math.max(ab > 0.0f ? (red[1] / ab) : 1.0f, 0.0f), 1.0f));
+                    Math.min(Math.max(ab > 0.0f ? (blue[1] / ab) : 1.0f, 0.0f), 1.0f));
         }
 
         Bitmap bm = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
