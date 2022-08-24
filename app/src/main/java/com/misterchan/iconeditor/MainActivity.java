@@ -2960,6 +2960,9 @@ public class MainActivity extends AppCompatActivity {
             case R.id.i_undo: {
                 if (transformer != null) {
                     undoOrRedo(history.getCurrent());
+                } else if (!isShapeStopped) {
+                    isShapeStopped = true;
+                    clearCanvasAndInvalidateView(previewCanvas, ivPreview);
                 } else if (history.canUndo()) {
                     undoOrRedo(history.undo());
                 }
