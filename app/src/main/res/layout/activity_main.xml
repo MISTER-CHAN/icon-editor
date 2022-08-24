@@ -172,7 +172,7 @@
                         android:layout_marginHorizontal="2dp">
 
                         <EditText
-                            android:id="@+id/et_blur_radius"
+                            android:id="@+id/et_pencil_blur_radius"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:background="@color/transparent"
@@ -262,6 +262,67 @@
                             android:layout_height="wrap_content"
                             android:background="@color/transparent"
                             android:hint="@string/stroke_width"
+                            android:inputType="numberDecimal"
+                            android:textAlignment="textEnd" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="96dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginHorizontal="2dp">
+
+                        <EditText
+                            android:id="@+id/et_gradient_blur_radius"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="@color/transparent"
+                            android:hint="@string/blur_radius"
+                            android:inputType="numberDecimal"
+                            android:textAlignment="textEnd" />
+                    </com.google.android.material.textfield.TextInputLayout>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/ll_options_cloner"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:visibility="invisible">
+
+                    <CheckBox
+                        android:id="@+id/cb_cloner_anti_alias"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/anti_alias" />
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="96dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginHorizontal="2dp">
+
+                        <EditText
+                            android:id="@+id/et_cloner_stroke_width"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="@color/transparent"
+                            android:hint="@string/stroke_width"
+                            android:inputType="numberDecimal"
+                            android:textAlignment="textEnd" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="96dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginHorizontal="2dp">
+
+                        <EditText
+                            android:id="@+id/et_cloner_blur_radius"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="@color/transparent"
+                            android:hint="@string/blur_radius"
                             android:inputType="numberDecimal"
                             android:textAlignment="textEnd" />
                     </com.google.android.material.textfield.TextInputLayout>

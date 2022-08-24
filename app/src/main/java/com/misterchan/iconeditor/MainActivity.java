@@ -166,6 +166,7 @@ public class MainActivity extends AppCompatActivity {
     private CellGrid cellGrid;
     private CheckBox cbBucketFillContiguous;
     private CheckBox cbBucketFillKeepColorDiff;
+    private CheckBox cbClonerAntiAlias;
     private CheckBox cbFilterClear;
     private CheckBox cbGradientAntiAlias;
     private CheckBox cbPencilAntiAlias;
@@ -175,15 +176,19 @@ public class MainActivity extends AppCompatActivity {
     private CheckBox cbZoom;
     private ColorAdapter colorAdapter;
     private double prevDiagonal;
+    private EditText etClonerBlurRadius;
+    private EditText etClonerStrokeWidth;
     private EditText etEraserStrokeWidth;
     private EditText etFileName;
     private EditText etFilterStrokeWidth;
+    private EditText etGradientBlurRadius;
     private EditText etGradientStrokeWidth;
     private EditText etPencilBlurRadius;
     private EditText etPencilStrokeWidth;
     private EditText etShapeStrokeWidth;
     private EditText etText;
     private EditText etTextSize;
+    private float blurRadius = 0.0f;
     private float pivotX, pivotY;
     private float prevX, prevY;
     private float strokeWidth = 1.0f;
@@ -207,6 +212,7 @@ public class MainActivity extends AppCompatActivity {
     private int threshold;
     private int viewWidth, viewHeight;
     private LinearLayout llOptionsBucketFill;
+    private LinearLayout llOptionsCloner;
     private LinearLayout llOptionsEraser;
     private LinearLayout llOptionsFilter;
     private LinearLayout llOptionsGradient;
@@ -719,7 +725,7 @@ public class MainActivity extends AppCompatActivity {
                 int originalX = toOriginal(x - tab.translationX), originalY = toOriginal(y - tab.translationY);
                 int originalPrevX = toOriginal(prevX - tab.translationX), originalPrevY = toOriginal(prevY - tab.translationY);
 
-                int rad = (int) (filterStroke.getStrokeWidth() / 2.0f);
+                int rad = (int) (strokeWidth / 2.0f);
                 int left = Math.min(originalPrevX, originalX) - rad,
                         top = Math.min(originalPrevY, originalY) - rad,
                         right = Math.max(originalPrevX, originalX) + rad,
@@ -838,19 +844,18 @@ public class MainActivity extends AppCompatActivity {
                 int originalX = toOriginal(x - tab.translationX), originalY = toOriginal(y - tab.translationY);
                 int originalPrevX = toOriginal(prevX - tab.translationX), originalPrevY = toOriginal(prevY - tab.translationY);
                 if (copy != null) {
-                    int w = selection.width() + 1, h = selection.height() + 1;
-                    int left = originalX / w * w, top = originalY / h * h;
                     Bitmap bm = Bitmap.createBitmap(
                             (int) (Math.abs(originalX - originalPrevX) + strokeWidth),
                             (int) (Math.abs(originalY - originalPrevY) + strokeWidth),
                             Bitmap.Config.ARGB_8888);
-                    float l = Math.min(originalPrevX, originalX), t = Math.min(originalPrevY, originalY);
+                    float rad = strokeWidth / 2.0f;
+                    float left = Math.min(originalPrevX, originalX) - rad, top = Math.min(originalPrevY, originalY) - rad;
                     Canvas cv = new Canvas(bm);
-                    cv.drawLine(originalPrevX - l, originalPrevY - t,
-                            originalX - l, originalY - t,
+                    cv.drawLine(originalPrevX - left, originalPrevY - top,
+                            originalX - left, originalY - top,
                             paint);
-                    cv.drawBitmap(copy, -l, -t, srcIn);
-                    canvas.drawBitmap(bm, l, t, paint);
+                    cv.drawBitmap(copy, -left, -top, srcIn);
+                    canvas.drawBitmap(bm, left, top, paint);
                     bm.recycle();
                     drawBitmapOnView();
                     tvState.setText(String.format(getString(R.string.coordinate), originalX, originalY));
@@ -874,15 +879,9 @@ public class MainActivity extends AppCompatActivity {
 
             case MotionEvent.ACTION_DOWN: {
                 float x = event.getX(), y = event.getY();
-                int originalX = toOriginal(x - tab.translationX), originalY = toOriginal(y - tab.translationY);
-                canvas.drawPoint(originalX, originalY, paint);
-                drawBitmapOnView();
-                tvState.setText(String.format(getString(R.string.coordinate), originalX, originalY));
                 prevX = x;
                 prevY = y;
-                break;
             }
-
             case MotionEvent.ACTION_MOVE: {
                 float x = event.getX(), y = event.getY();
                 int originalX = toOriginal(x - tab.translationX), originalY = toOriginal(y - tab.translationY);
@@ -898,7 +897,6 @@ public class MainActivity extends AppCompatActivity {
                 prevY = y;
                 break;
             }
-
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
                 history.offer(bitmap);
@@ -1366,6 +1364,10 @@ public class MainActivity extends AppCompatActivity {
         if (isChecked) {
             createCopy();
             onToolChange(onImageViewTouchWithClonerListener);
+            cbClonerAntiAlias.setChecked(paint.isAntiAlias());
+            etClonerStrokeWidth.setText(String.valueOf(strokeWidth));
+            etClonerBlurRadius.setText(String.valueOf(blurRadius));
+            llOptionsCloner.setVisibility(View.VISIBLE);
         } else if (copy != null) {
             copy.recycle();
             copy = null;
@@ -1384,6 +1386,7 @@ public class MainActivity extends AppCompatActivity {
             }
             thresholdBitmap = new BitmapWithFilter(bitmap, selection);
             threshold = 0x100;
+            etFilterStrokeWidth.setText(String.valueOf(strokeWidth));
             onToolChange(onImageViewTouchWithFilterListener);
             llOptionsFilter.setVisibility(View.VISIBLE);
         } else {
@@ -1395,9 +1398,10 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("ClickableViewAccessibility")
     private final CompoundButton.OnCheckedChangeListener onGradientRadioButtonCheckedChangeListener = (buttonView, isChecked) -> {
         if (isChecked) {
-            cbGradientAntiAlias.setChecked(paint.isAntiAlias());
-            etGradientStrokeWidth.setText(String.valueOf(paint.getStrokeWidth()));
             onToolChange(onImageViewTouchWithGradientListener);
+            cbGradientAntiAlias.setChecked(paint.isAntiAlias());
+            etGradientStrokeWidth.setText(String.valueOf(strokeWidth));
+            etGradientBlurRadius.setText(String.valueOf(blurRadius));
             llOptionsGradient.setVisibility(View.VISIBLE);
         }
     };
@@ -1405,13 +1409,14 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("ClickableViewAccessibility")
     private final CompoundButton.OnCheckedChangeListener onPencilRadioButtonCheckedChangeListener = (buttonView, isChecked) -> {
         if (isChecked) {
-            cbPencilAntiAlias.setChecked(paint.isAntiAlias());
-            etPencilStrokeWidth.setText(String.valueOf(paint.getStrokeWidth()));
             onToolChange(onImageViewTouchWithPencilListener);
+            cbPencilAntiAlias.setChecked(paint.isAntiAlias());
+            etPencilStrokeWidth.setText(String.valueOf(strokeWidth));
+            etPencilBlurRadius.setText(String.valueOf(blurRadius));
             llOptionsPencil.setVisibility(View.VISIBLE);
             setBlurRadius(etPencilBlurRadius.getText().toString());
         } else {
-            paint.setMaskFilter(null);
+//            paint.setMaskFilter(null);
         }
     };
 
@@ -1758,8 +1763,8 @@ public class MainActivity extends AppCompatActivity {
                     selection.width() + 1, selection.height() + 1);
             Canvas canvas = new Canvas(copy);
             final int w = bm.getWidth(), h = bm.getHeight();
-            for (int y = 0; y < height; y += h) {
-                for (int x = 0; x < width; x += w) {
+            for (int y = selection.top % h - h; y < height; y += h) {
+                for (int x = selection.left % w - w; x < width; x += w) {
                     canvas.drawBitmap(bm, x, y, opaquePaint);
                 }
             }
@@ -2400,6 +2405,7 @@ public class MainActivity extends AppCompatActivity {
 
         cbBucketFillContiguous = findViewById(R.id.cb_bucket_fill_contiguous);
         cbBucketFillKeepColorDiff = findViewById(R.id.cb_bucket_fill_keep_color_diff);
+        cbClonerAntiAlias = findViewById(R.id.cb_cloner_anti_alias);
         cbFilterClear = findViewById(R.id.cb_filter_clear);
         cbGradientAntiAlias = findViewById(R.id.cb_gradient_anti_alias);
         cbPencilAntiAlias = findViewById(R.id.cb_pencil_anti_alias);
@@ -2407,10 +2413,13 @@ public class MainActivity extends AppCompatActivity {
         cbTextAntialias = findViewById(R.id.cb_text_anti_alias);
         cbTransformerLar = findViewById(R.id.cb_transformer_lar);
         cbZoom = findViewById(R.id.cb_zoom);
+        etClonerBlurRadius = findViewById(R.id.et_cloner_blur_radius);
+        etClonerStrokeWidth = findViewById(R.id.et_cloner_stroke_width);
         etEraserStrokeWidth = findViewById(R.id.et_eraser_stroke_width);
         etFilterStrokeWidth = findViewById(R.id.et_filter_stroke_width);
+        etGradientBlurRadius = findViewById(R.id.et_gradient_blur_radius);
         etGradientStrokeWidth = findViewById(R.id.et_gradient_stroke_width);
-        etPencilBlurRadius = findViewById(R.id.et_blur_radius);
+        etPencilBlurRadius = findViewById(R.id.et_pencil_blur_radius);
         etPencilStrokeWidth = findViewById(R.id.et_pencil_stroke_width);
         etShapeStrokeWidth = findViewById(R.id.et_shape_stroke_width);
         etText = findViewById(R.id.et_text);
@@ -2426,6 +2435,7 @@ public class MainActivity extends AppCompatActivity {
         ivRulerV = findViewById(R.id.iv_ruler_vertical);
         ivSelection = findViewById(R.id.iv_selection);
         llOptionsBucketFill = findViewById(R.id.ll_options_bucket_fill);
+        llOptionsCloner = findViewById(R.id.ll_options_cloner);
         llOptionsEraser = findViewById(R.id.ll_options_eraser);
         llOptionsFilter = findViewById(R.id.ll_options_filter);
         llOptionsGradient = findViewById(R.id.ll_options_gradient);
@@ -2448,12 +2458,16 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.b_filter_threshold).setOnClickListener(onThresholdButtonClickListener);
         findViewById(R.id.b_text_draw).setOnClickListener(v -> drawTextOnCanvas());
         ((CompoundButton) findViewById(R.id.cb_eraser_anti_alias)).setOnCheckedChangeListener((buttonView, isChecked) -> eraser.setAntiAlias(isChecked));
+        cbClonerAntiAlias.setOnCheckedChangeListener((buttonView, isChecked) -> paint.setAntiAlias(isChecked));
         cbGradientAntiAlias.setOnCheckedChangeListener((buttonView, isChecked) -> paint.setAntiAlias(isChecked));
         cbPencilAntiAlias.setOnCheckedChangeListener((buttonView, isChecked) -> paint.setAntiAlias(isChecked));
         cbShapeAntiAlias.setOnCheckedChangeListener((buttonView, isChecked) -> paint.setAntiAlias(isChecked));
         cbTextAntialias.setOnCheckedChangeListener((buttonView, isChecked) -> paint.setAntiAlias(isChecked));
         cbZoom.setOnCheckedChangeListener(onZoomToolCheckBoxCheckedChangeListener);
         cbZoom.setTag(onImageViewTouchWithPencilListener);
+        etClonerBlurRadius.addTextChangedListener((AfterTextChangedListener) this::setBlurRadius);
+        etClonerStrokeWidth.addTextChangedListener((AfterTextChangedListener) this::setStrokeWidth);
+        etGradientBlurRadius.addTextChangedListener((AfterTextChangedListener) this::setBlurRadius);
         etGradientStrokeWidth.addTextChangedListener((AfterTextChangedListener) this::setStrokeWidth);
         etPencilBlurRadius.addTextChangedListener((AfterTextChangedListener) this::setBlurRadius);
         etPencilStrokeWidth.addTextChangedListener((AfterTextChangedListener) this::setStrokeWidth);
@@ -2489,6 +2503,7 @@ public class MainActivity extends AppCompatActivity {
         etFilterStrokeWidth.addTextChangedListener((AfterTextChangedListener) s -> {
             try {
                 float f = Float.parseFloat(s);
+                strokeWidth = f;
                 filterStroke.setStrokeWidth(f);
             } catch (NumberFormatException e) {
             }
@@ -2638,6 +2653,7 @@ public class MainActivity extends AppCompatActivity {
         cbZoom.setTag(onImageViewTouchListener);
         flImageView.setOnTouchListener(onImageViewTouchListener);
         hideToolOptions();
+        paint.setMaskFilter(null);
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -3140,6 +3156,7 @@ public class MainActivity extends AppCompatActivity {
     private void setBlurRadius(String s) {
         try {
             float f = Float.parseFloat(s);
+            blurRadius = f;
             paint.setMaskFilter(f > 0.0f ? new BlurMaskFilter(f, BlurMaskFilter.Blur.NORMAL) : null);
         } catch (NumberFormatException e) {
         }
