@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.BitmapShader;
 import android.graphics.BlendMode;
 import android.graphics.BlurMaskFilter;
 import android.graphics.Canvas;
@@ -273,6 +274,8 @@ public class MainActivity extends AppCompatActivity {
             setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
         }
     };
+
+    private final Paint cloner = new Paint();
 
     private final Paint colorPaint = new Paint() {
         {
@@ -935,7 +938,7 @@ public class MainActivity extends AppCompatActivity {
                     dragBound(x, y);
                     drawSelectionOnView();
                     tvState.setText(String.format(getString(R.string.state_size),
-                            selection.right - selection.left + 1, selection.bottom - selection.top + 1));
+                            selection.width() + 1, selection.height() + 1));
                 }
                 break;
             }
@@ -953,7 +956,7 @@ public class MainActivity extends AppCompatActivity {
                     dragBound(x, y);
                     drawSelectionOnView();
                     tvState.setText(String.format(getString(R.string.state_size),
-                            selection.right - selection.left + 1, selection.bottom - selection.top + 1));
+                            selection.width() + 1, selection.height() + 1));
                 }
                 break;
             }
@@ -972,11 +975,8 @@ public class MainActivity extends AppCompatActivity {
                     tvState.setText(hasSelection ?
                             String.format(getString(R.string.state_l_t_r_b_size),
                                     selection.left, selection.top, selection.right, selection.bottom,
-                                    selection.right - selection.left + 1, selection.bottom - selection.top + 1) :
+                                    selection.width() + 1, selection.height() + 1) :
                             "");
-                }
-                if (rbCloner.isChecked()) {
-                    createCopy();
                 }
                 break;
         }
@@ -1075,7 +1075,7 @@ public class MainActivity extends AppCompatActivity {
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN: {
                         float x = event.getX(), y = event.getY();
-                        int width = selection.right - selection.left + 1, height = selection.bottom - selection.top + 1;
+                        int width = selection.width() + 1, height = selection.height() + 1;
                         if (width > 0 && height > 0) {
                             if (transformer == null) {
                                 transformer = new Transformer(
@@ -1120,7 +1120,7 @@ public class MainActivity extends AppCompatActivity {
                         } else {
                             stretchByBound(x, y);
                             tvState.setText(String.format(getString(R.string.state_size),
-                                    selection.right - selection.left + 1, selection.bottom - selection.top + 1));
+                                    selection.width() + 1, selection.height() + 1));
                         }
                         prevX = x;
                         prevY = y;
@@ -1132,7 +1132,7 @@ public class MainActivity extends AppCompatActivity {
                             if (hasDraged) {
                                 dragingBound = Position.NULL;
                                 hasDraged = false;
-                                int width = selection.right - selection.left + 1, height = selection.bottom - selection.top + 1;
+                                int width = selection.width() + 1, height = selection.height() + 1;
                                 if (width > 0 && height > 0) {
                                     transformer.stretch(width, height,
                                             tab.translationX + toScaled(selection.left),
@@ -1175,7 +1175,7 @@ public class MainActivity extends AppCompatActivity {
                             if (Math.abs(dpbDiff.left) + Math.abs(dpbDiff.right) >= Math.abs(dpbDiff.top) + Math.abs(dpbDiff.bottom)) {
                                 selection.left -= toOriginal(transfromeeDpb.left - dpb.left);
                                 selection.right += toOriginal(transfromeeDpb.right - dpb.right);
-                                double width = selection.right - selection.left + 1, height = width / transformer.getAspectRatio();
+                                double width = selection.width() + 1, height = width / transformer.getAspectRatio();
                                 selection.top = (int) (transformer.getCenterY() - height / 2.0);
                                 selection.bottom = (int) (transformer.getCenterY() + height / 2.0);
                                 scaledSelection.top = tab.translationY + toScaled(selection.top);
@@ -1185,7 +1185,7 @@ public class MainActivity extends AppCompatActivity {
                             } else {
                                 selection.top -= toOriginal(transfromeeDpb.top - dpb.top);
                                 selection.bottom += toOriginal(transfromeeDpb.bottom - dpb.bottom);
-                                double height = selection.bottom - selection.top + 1, width = height * transformer.getAspectRatio();
+                                double height = selection.height() + 1, width = height * transformer.getAspectRatio();
                                 selection.left = (int) (transformer.getCenterX() - width / 2.0);
                                 selection.right = (int) (transformer.getCenterX() + width / 2.0);
                                 scaledSelection.left = tab.translationX + toScaled(selection.left);
@@ -1201,7 +1201,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                         drawSelectionOnView();
                         tvState.setText(String.format(getString(R.string.state_size),
-                                selection.right - selection.left + 1, selection.bottom - selection.top + 1));
+                                selection.width() + 1, selection.height() + 1));
                         break;
                     }
                     case MotionEvent.ACTION_POINTER_DOWN: {
@@ -1221,11 +1221,11 @@ public class MainActivity extends AppCompatActivity {
                             transformer.calculateByLocation(selection);
                         }
                         tvState.setText(String.format(getString(R.string.state_size),
-                                selection.right - selection.left + 1, selection.bottom - selection.top + 1));
+                                selection.width() + 1, selection.height() + 1));
                         break;
                     }
                     case MotionEvent.ACTION_POINTER_UP: {
-                        int width = selection.right - selection.left + 1, height = selection.bottom - selection.top + 1;
+                        int width = selection.width() + 1, height = selection.height() + 1;
                         if (width > 0 && height > 0) {
                             transformer.stretch(width, height,
                                     tab.translationX + toScaled(selection.left),
@@ -1757,18 +1757,23 @@ public class MainActivity extends AppCompatActivity {
             copy.recycle();
         }
         if (hasSelection) {
-            final int width = bitmap.getWidth(), height = bitmap.getHeight();
+            final int w = selection.width() + 1, h = selection.height() + 1;
+            final int ww = w * 2, hh = h * 2;
+            final int offsetX = ww - selection.left % ww, offsetY = hh - selection.top % hh;
+            int width = bitmap.getWidth(), height = bitmap.getHeight();
+            int widthPlus = width + offsetX, heightPlus = height + offsetY;
+            Bitmap copyPlus = Bitmap.createBitmap(widthPlus, heightPlus, Bitmap.Config.ARGB_8888);
+            Bitmap sel = Bitmap.createBitmap(bitmap, selection.left, selection.top, w, h);
+            cloner.setShader(new BitmapShader(sel, Shader.TileMode.MIRROR, Shader.TileMode.MIRROR));
+            new Canvas(copyPlus).drawRect(0.0f, 0.0f,
+                    copyPlus.getWidth(), copyPlus.getHeight(), cloner);
+            sel.recycle();
             copy = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-            Bitmap bm = Bitmap.createBitmap(bitmap, selection.left, selection.top,
-                    selection.width() + 1, selection.height() + 1);
-            Canvas canvas = new Canvas(copy);
-            final int w = bm.getWidth(), h = bm.getHeight();
-            for (int y = selection.top % h - h; y < height; y += h) {
-                for (int x = selection.left % w - w; x < width; x += w) {
-                    canvas.drawBitmap(bm, x, y, opaquePaint);
-                }
-            }
-            bm.recycle();
+            new Canvas(copy).drawBitmap(copyPlus,
+                    new Rect(offsetX, offsetY, widthPlus, heightPlus),
+                    new Rect(0, 0, width, height),
+                    opaquePaint);
+            copyPlus.recycle();
         }
     }
 
@@ -2704,7 +2709,7 @@ public class MainActivity extends AppCompatActivity {
                         clipboard.recycle();
                     }
                     clipboard = Bitmap.createBitmap(bitmap, selection.left, selection.top,
-                            selection.right - selection.left + 1, selection.bottom - selection.top + 1);
+                            selection.width() + 1, selection.height() + 1);
                 } else {
                     clipboard = Bitmap.createBitmap(transformer.getBitmap());
                 }
@@ -2716,7 +2721,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 drawTransformeeOnCanvas();
                 drawTextOnCanvas();
-                int width = selection.right - selection.left + 1, height = selection.bottom - selection.top + 1;
+                int width = selection.width() + 1, height = selection.height() + 1;
                 Bitmap bm = Bitmap.createBitmap(bitmap, selection.left, selection.top, width, height);
                 resizeBitmap(width, height, false);
                 canvas.drawBitmap(bm, 0.0f, 0.0f, opaquePaint);
@@ -2734,7 +2739,7 @@ public class MainActivity extends AppCompatActivity {
                         clipboard.recycle();
                     }
                     clipboard = Bitmap.createBitmap(bitmap, selection.left, selection.top,
-                            selection.right - selection.left + 1, selection.bottom - selection.top + 1);
+                            selection.width() + 1, selection.height() + 1);
                     canvas.drawRect(selection.left, selection.top, selection.right + 1, selection.bottom + 1, eraser);
                     drawBitmapOnView();
                     history.offer(bitmap);
@@ -3073,8 +3078,8 @@ public class MainActivity extends AppCompatActivity {
         if (hasSelection) {
             left = selection.left;
             top = selection.top;
-            width = selection.right - selection.left + 1;
-            height = selection.bottom - selection.top + 1;
+            width = selection.width() + 1;
+            height = selection.height() + 1;
         }
         Matrix matrix = new Matrix();
         matrix.setRotate(degrees, width / 2.0f, height / 2.0f);
@@ -3126,8 +3131,8 @@ public class MainActivity extends AppCompatActivity {
         if (hasSelection) {
             left = selection.left;
             top = selection.top;
-            width = selection.right - selection.left + 1;
-            height = selection.bottom - selection.top + 1;
+            width = selection.width() + 1;
+            height = selection.height() + 1;
         }
         Matrix matrix = new Matrix();
         matrix.setScale(x, y, 0.0f, 0.0f);
@@ -3175,11 +3180,11 @@ public class MainActivity extends AppCompatActivity {
         dragBound(viewX, viewY);
         if (cbTransformerLar.isChecked()) {
             if (dragingBound == Position.LEFT || dragingBound == Position.RIGHT) {
-                double width = selection.right - selection.left + 1, height = width / transformer.getAspectRatio();
+                double width = selection.width() + 1, height = width / transformer.getAspectRatio();
                 selection.top = (int) (transformer.getCenterY() - height / 2.0);
                 selection.bottom = (int) (transformer.getCenterY() + height / 2.0);
             } else if (dragingBound == Position.TOP || dragingBound == Position.BOTTOM) {
-                double height = selection.bottom - selection.top + 1, width = height * transformer.getAspectRatio();
+                double height = selection.height() + 1, width = height * transformer.getAspectRatio();
                 selection.left = (int) (transformer.getCenterX() - width / 2.0);
                 selection.right = (int) (transformer.getCenterX() + width / 2.0);
             }
