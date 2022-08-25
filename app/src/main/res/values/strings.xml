@@ -22,6 +22,7 @@
     <string name="close">Close</string>
     <string name="color_filter">Color Filter</string>
     <string name="color_picker">Color Picker</string>
+    <string name="color_range">Color Range</string>
     <string name="contiguous">Contiguous</string>
     <string name="contrast">Contrast</string>
     <string name="coordinate" translatable="false">(%d, %d)</string>

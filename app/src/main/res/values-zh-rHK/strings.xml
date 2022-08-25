@@ -20,6 +20,7 @@
     <string name="close">關閉</string>
     <string name="color_filter">顏色濾鏡</string>
     <string name="color_picker">拾色器</string>
+    <string name="color_range">顏色範圍</string>
     <string name="contiguous">連續</string>
     <string name="contrast">對比度</string>
     <string name="copy">複製</string>

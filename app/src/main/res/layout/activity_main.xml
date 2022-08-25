@@ -182,19 +182,21 @@
                     </com.google.android.material.textfield.TextInputLayout>
                 </LinearLayout>
 
-                <LinearLayout
-                    android:id="@+id/ll_options_filter"
+                <HorizontalScrollView
+                    android:id="@+id/hsv_options_filter"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
+                    android:fadingEdgeLength="16dp"
+                    android:requiresFadingEdge="horizontal"
+                    android:scrollbars="none"
                     android:visibility="invisible">
 
                     <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:gravity="center_vertical">
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
 
                         <CheckBox
                             android:id="@+id/cb_filter_clear"
@@ -233,8 +235,16 @@
                             android:layout_marginHorizontal="2dp"
                             android:maxLines="1"
                             android:text="@string/threshold" />
+
+                        <Button
+                            android:id="@+id/b_filter_color_range"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginHorizontal="2dp"
+                            android:maxLines="1"
+                            android:text="@string/color_range" />
                     </LinearLayout>
-                </LinearLayout>
+                </HorizontalScrollView>
 
                 <LinearLayout
                     android:id="@+id/ll_options_gradient"
@@ -404,34 +414,51 @@
                     </HorizontalScrollView>
                 </LinearLayout>
 
-                <LinearLayout
-                    android:id="@+id/ll_options_bucket_fill"
+                <HorizontalScrollView
+                    android:id="@+id/hsv_options_bucket_fill"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
-                    android:orientation="horizontal"
+                    android:fadingEdgeLength="16dp"
+                    android:requiresFadingEdge="horizontal"
+                    android:scrollbars="none"
                     android:visibility="invisible">
 
-                    <CheckBox
-                        android:id="@+id/cb_bucket_fill_contiguous"
+                    <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/contiguous" />
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
 
-                    <CheckBox
-                        android:id="@+id/cb_bucket_fill_keep_color_diff"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/keep_color_diff" />
+                        <CheckBox
+                            android:id="@+id/cb_bucket_fill_contiguous"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/contiguous" />
 
-                    <Button
-                        android:id="@+id/b_bucket_fill_threshold"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginHorizontal="4dp"
-                        android:maxLines="1"
-                        android:text="@string/threshold" />
-                </LinearLayout>
+                        <CheckBox
+                            android:id="@+id/cb_bucket_fill_keep_color_diff"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/keep_color_diff" />
+
+                        <Button
+                            android:id="@+id/b_bucket_fill_threshold"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginHorizontal="4dp"
+                            android:maxLines="1"
+                            android:text="@string/threshold" />
+
+                        <Button
+                            android:id="@+id/b_bucket_fill_color_range"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginHorizontal="4dp"
+                            android:maxLines="1"
+                            android:text="@string/color_range" />
+                    </LinearLayout>
+                </HorizontalScrollView>
 
                 <LinearLayout
                     android:id="@+id/ll_options_eraser"
