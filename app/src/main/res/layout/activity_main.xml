@@ -225,7 +225,6 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginHorizontal="2dp"
-                            android:maxLines="1"
                             android:text="@string/color_filter" />
 
                         <Button
@@ -233,7 +232,6 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginHorizontal="2dp"
-                            android:maxLines="1"
                             android:text="@string/threshold" />
 
                         <Button
@@ -241,7 +239,6 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginHorizontal="2dp"
-                            android:maxLines="1"
                             android:text="@string/color_range" />
                     </LinearLayout>
                 </HorizontalScrollView>
@@ -447,7 +444,6 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginHorizontal="2dp"
-                            android:maxLines="1"
                             android:text="@string/threshold" />
 
                         <Button
@@ -455,7 +451,6 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginHorizontal="2dp"
-                            android:maxLines="1"
                             android:text="@string/color_range" />
                     </LinearLayout>
                 </HorizontalScrollView>

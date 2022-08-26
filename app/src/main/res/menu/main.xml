@@ -146,8 +146,8 @@
         <menu>
 
             <item
-                android:id="@+id/i_filter_brightness"
-                android:title="@string/brightness" />
+                android:id="@+id/i_filter_lightness"
+                android:title="@string/lightness" />
 
             <item
                 android:id="@+id/i_filter_contrast"

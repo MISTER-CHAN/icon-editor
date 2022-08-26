@@ -1448,17 +1448,6 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    private final OnProgressChangeListener onFilterBrightnessSeekBarProgressChangeListener = progress -> {
-        bitmapWithFilter.setFilter(new ColorMatrix(new float[]{
-                1.0f, 0.0f, 0.0f, 0.0f, progress,
-                0.0f, 1.0f, 0.0f, 0.0f, progress,
-                0.0f, 0.0f, 1.0f, 0.0f, progress,
-                0.0f, 0.0f, 0.0f, 1.0f, 0.0f
-        }));
-        drawBitmapWithFilterOnView();
-        tvState.setText(String.format(getString(R.string.state_brightness), progress));
-    };
-
     private final OnProgressChangeListener onFilterContrastSeekBarProgressChangeListener = progress -> {
         float scale = progress / 10.0f, shift = 0x80 * (1.0f - scale);
         bitmapWithFilter.setFilter(new ColorMatrix(new float[]{
@@ -1481,6 +1470,17 @@ public class MainActivity extends AppCompatActivity {
         }));
         drawBitmapWithFilterOnView();
         tvState.setText(String.format(getString(R.string.state_invert), scale));
+    };
+
+    private final OnProgressChangeListener onFilterLightnessSeekBarProgressChangeListener = progress -> {
+        bitmapWithFilter.setFilter(new ColorMatrix(new float[]{
+                1.0f, 0.0f, 0.0f, 0.0f, progress,
+                0.0f, 1.0f, 0.0f, 0.0f, progress,
+                0.0f, 0.0f, 1.0f, 0.0f, progress,
+                0.0f, 0.0f, 0.0f, 1.0f, 0.0f
+        }));
+        drawBitmapWithFilterOnView();
+        tvState.setText(String.format(getString(R.string.state_lightness), progress));
     };
 
     private final OnProgressChangeListener onFilterSaturationSeekBarProgressChangeListener = progress -> {
@@ -2798,16 +2798,6 @@ public class MainActivity extends AppCompatActivity {
                 tvState.setText("");
                 break;
 
-            case R.id.i_filter_brightness:
-                createBitmapWithFilter();
-                new SeekBarDialog(this).setTitle(R.string.brightness).setMin(-0xFF).setMax(0xFF).setProgress(0)
-                        .setOnProgressChangeListener(onFilterBrightnessSeekBarProgressChangeListener)
-                        .setOnPositiveButtonClickListener(onFilterConfirmListener)
-                        .setOnCancelListener(onFilterCancelListener)
-                        .show();
-                tvState.setText("");
-                break;
-
             case R.id.i_filter_channels:
                 createBitmapWithFilter();
                 new ChannelsDialog(this)
@@ -2832,6 +2822,16 @@ public class MainActivity extends AppCompatActivity {
                 createBitmapWithFilter();
                 new SeekBarDialog(this).setTitle(R.string.invert).setMin(0).setMax(20).setProgress(20)
                         .setOnProgressChangeListener(onFilterInvertSeekBarProgressChangeListener)
+                        .setOnPositiveButtonClickListener(onFilterConfirmListener)
+                        .setOnCancelListener(onFilterCancelListener)
+                        .show();
+                tvState.setText("");
+                break;
+
+            case R.id.i_filter_lightness:
+                createBitmapWithFilter();
+                new SeekBarDialog(this).setTitle(R.string.lightness).setMin(-0xFF).setMax(0xFF).setProgress(0)
+                        .setOnProgressChangeListener(onFilterLightnessSeekBarProgressChangeListener)
                         .setOnPositiveButtonClickListener(onFilterConfirmListener)
                         .setOnCancelListener(onFilterCancelListener)
                         .show();
