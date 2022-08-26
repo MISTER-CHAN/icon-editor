@@ -2249,11 +2249,7 @@ public class MainActivity extends AppCompatActivity {
         }
 //        long b = System.currentTimeMillis();
 //        Toast.makeText(this, String.valueOf(b - a), Toast.LENGTH_SHORT).show();
-        if (src == dst) {
-            src.setPixels(srcPixels, 0, w, left, top, w, h);
-        } else {
-            dst.setPixels(dstPixels, 0, w, left, top, w, h);
-        }
+        dst.setPixels(dstPixels, 0, w, left, top, w, h);
     }
 
     private int getColorRangeOf(@ColorInt int color) {
@@ -2700,6 +2696,14 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("NonConstantResourceId")
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
+            case R.id.i_about:
+                new AlertDialog.Builder(this)
+                        .setTitle(R.string.about)
+                        .setMessage(R.string.author)
+                        .setPositiveButton(R.string.ok, null)
+                        .show();
+                break;
+
             case R.id.i_cell_grid: {
                 CellGridManager.make(this, cellGrid,
                                 onUpdateCellGridListener)
@@ -2878,6 +2882,14 @@ public class MainActivity extends AppCompatActivity {
                 scale(1.0f, -1.0f, false);
                 break;
             }
+            case R.id.i_homepage:
+                new AlertDialog.Builder(this)
+                        .setTitle(R.string.homepage)
+                        .setMessage(R.string.homepage_address)
+                        .setPositiveButton(R.string.ok, null)
+                        .show();
+                break;
+
             case R.id.i_merge_with_gray: {
                 if (currentTabIndex + 1 >= tabs.size()) {
                     new AlertDialog.Builder(this)

@@ -446,7 +446,7 @@
                             android:id="@+id/b_bucket_fill_threshold"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginHorizontal="4dp"
+                            android:layout_marginHorizontal="2dp"
                             android:maxLines="1"
                             android:text="@string/threshold" />
 
@@ -454,7 +454,7 @@
                             android:id="@+id/b_bucket_fill_color_range"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginHorizontal="4dp"
+                            android:layout_marginHorizontal="2dp"
                             android:maxLines="1"
                             android:text="@string/color_range" />
                     </LinearLayout>

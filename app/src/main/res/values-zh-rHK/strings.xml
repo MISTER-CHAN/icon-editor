@@ -7,6 +7,7 @@
     <string name="around_r">繞 R 軸</string>
     <string name="around_g">繞 G 軸</string>
     <string name="around_b">繞 B 軸</string>
+    <string name="author">作者：MISTER_CHAN</string>
     <string name="background_color">底色</string>
     <string name="blur_radius">模糊半徑</string>
     <string name="brightness">明度</string>

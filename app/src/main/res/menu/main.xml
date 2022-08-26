@@ -187,11 +187,11 @@
         <menu>
 
             <item
-                android:id="@+id/homepage"
+                android:id="@+id/i_homepage"
                 android:title="@string/homepage" />
 
             <item
-                android:id="@+id/about"
+                android:id="@+id/i_about"
                 android:title="@string/about" />
         </menu>
     </item>

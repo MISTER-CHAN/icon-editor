@@ -8,6 +8,7 @@
     <string name="around_r">Around R</string>
     <string name="around_g">Around G</string>
     <string name="around_b">Around B</string>
+    <string name="author">Author: MISTER_CHAN</string>
     <string name="b" translatable="false">B</string>
     <string name="background_color">Background Color</string>
     <string name="blur_radius">Blur</string>
@@ -54,6 +55,7 @@
     <string name="height">Height</string>
     <string name="help">Help</string>
     <string name="homepage">Homepage</string>
+    <string name="homepage_address" translatable="false">https://github.com/MISTER-CHAN/IconEditor</string>
     <string name="horizontally">Horizontally</string>
     <string name="image">Image</string>
     <string name="image_size">Image Size</string>
