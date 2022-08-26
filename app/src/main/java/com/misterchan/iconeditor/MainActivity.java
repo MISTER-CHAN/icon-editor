@@ -1642,10 +1642,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void bucketFill(Bitmap bitmap, int x, int y, @ColorInt final int color,
                             final int threshold, final int colorRange, final boolean keepColorDiff) {
-        final int pixel = bitmap.getPixel(x, y);
-        if (pixel == color && threshold == 0) {
-            return;
-        }
         int left, top, right, bottom;
         if (hasSelection) {
             left = selection.left;
@@ -1658,32 +1654,49 @@ public class MainActivity extends AppCompatActivity {
             right = bitmap.getWidth() - 1;
             bottom = bitmap.getHeight() - 1;
         }
+        if (!(left <= x && x <= right && top <= y && y <= bottom)) {
+            return;
+        }
+        final int pixel = bitmap.getPixel(x, y);
+        if (pixel == color && threshold == 0) {
+            return;
+        }
         final int w = right - left + 1, h = bottom - top + 1;
         final int[] pixels = new int[w * h];
         bitmap.getPixels(pixels, 0, w, left, top, w, h);
+        final float[] hsv0 = new float[3], hsv0_ = new float[3];
+        int hi = 0;
+        float f = 0.0f;
+        float alpha = 0.0f;
+        if (keepColorDiff) {
+            Color.colorToHSV(pixel, hsv0);
+            Color.colorToHSV(color, hsv0_);
+            hi = (int) (hsv0_[0] / 60.0f);
+            f = hsv0_[0] / 60.0f - hi;
+            alpha = Color.alpha(color) / 255.0f;
+        }
         int i = 0;
         for (y = top; y <= bottom; ++y) {
             for (x = left; x <= right; ++i, ++x) {
                 int px = pixels[i];
-                boolean b = false;
+                boolean match = false;
                 int c = color;
                 if (threshold > 0) {
-                    if (colorRange == 0b111111 || (getColorRangeOf(px) | colorRange) == colorRange) {
-                        int dr = Color.red(px) - Color.red(pixel),
-                                dg = Color.green(px) - Color.green(pixel),
-                                db = Color.blue(px) - Color.blue(pixel);
-                        b = Math.abs(dr) <= threshold && Math.abs(dg) <= threshold && Math.abs(db) <= threshold;
-                        if (b && keepColorDiff) {
-                            c = Color.argb(Color.alpha(color),
-                                    inRange(Color.red(color) + dr, 0x0, 0xFF),
-                                    inRange(Color.green(color) + dg, 0x0, 0xFF),
-                                    inRange(Color.blue(color) + db, 0x0, 0xFF));
+                    if ((colorRange == 0b111111 || (getColorRangeOf(px) | colorRange) == colorRange)) {
+                        int r = Color.red(px), g = Color.green(px), b = Color.blue(px);
+                        match = checkColorIsWithinThreshold(
+                                Color.red(pixel), Color.green(pixel), Color.blue(pixel),
+                                r, g, b);
+                        if (match && keepColorDiff) {
+                            c = fillButKeepColorDiff(r / 255.0f, g / 255.0f, b / 255.0f,
+                                    hsv0[1], hsv0[2], hsv0_[1], hsv0_[2],
+                                    f, hi, alpha);
                         }
                     }
                 } else {
-                    b = px == pixel;
+                    match = px == pixel;
                 }
-                if (b) {
+                if (match) {
                     pixels[i] = c;
                 }
             }
@@ -1720,6 +1733,12 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return dragingBound;
+    }
+
+    private boolean checkColorIsWithinThreshold(int r0, int g0, int b0, int r, int g, int b) {
+        return Math.abs(r - r0) <= threshold
+                && Math.abs(g - g0) <= threshold
+                && Math.abs(b - b0) <= threshold;
     }
 
     private void clearCanvas(Canvas canvas) {
@@ -2173,16 +2192,44 @@ public class MainActivity extends AppCompatActivity {
         ivPreview.invalidate();
     }
 
+    private int fillButKeepColorDiff(float r, float g, float b, float s0, float v0, float s0_, float v0_, float f, int hi, float alpha) {
+        int color = 0;
+        final float max = Math.max(Math.max(r, g), b), min = Math.min(Math.min(r, g), b);
+        final float s = max == 0.0f ? 0.0f : 1.0f - min / max, v = max;
+        final float s_ = inRange(s0_ + s - s0, 0.0f, 1.0f),
+                v_ = inRange(v0_ + v - v0, 0.0f, 1.0f);
+        final float p = v_ * (1.0f - s_),
+                q = v_ * (1.0f - f * s_),
+                t = v_ * (1.0f - (1.0f - f) * s_);
+        switch (hi) {
+            case 0:
+                color = Color.argb(alpha, v_, t, p);
+                break;
+            case 1:
+                color = Color.argb(alpha, q, v_, p);
+                break;
+            case 2:
+                color = Color.argb(alpha, p, v_, t);
+                break;
+            case 3:
+                color = Color.argb(alpha, p, q, v_);
+                break;
+            case 4:
+                color = Color.argb(alpha, t, p, v_);
+                break;
+            case 5:
+                color = Color.argb(alpha, v_, p, q);
+                break;
+        }
+        return color;
+    }
+
     private void floodFill(Bitmap bitmap, int x, int y, @ColorInt final int color) {
         floodFill(bitmap, bitmap, x, y, color, 0, 0b111111, false);
     }
 
     private void floodFill(final Bitmap src, final Bitmap dst, int x, int y, @ColorInt final int color,
                            final int threshold, final int colorRange, final boolean keepColorDiff) {
-        final int pixel = src.getPixel(x, y);
-        if (pixel == color && threshold == 0) {
-            return;
-        }
         int left, top, right, bottom;
         if (hasSelection) {
             left = selection.left;
@@ -2195,11 +2242,26 @@ public class MainActivity extends AppCompatActivity {
             right = src.getWidth() - 1;
             bottom = src.getHeight() - 1;
         }
+        if (!(left <= x && x <= right && top <= y && y <= bottom)) {
+            return;
+        }
+        final int pixel = src.getPixel(x, y);
+        if (pixel == color && threshold == 0) {
+            return;
+        }
         final int w = right - left + 1, h = bottom - top + 1, area = w * h;
         final int[] srcPixels = new int[area], dstPixels = src == dst ? srcPixels : new int[area];
         src.getPixels(srcPixels, 0, w, left, top, w, h);
-        if (!(left <= x && x <= right && top <= y && y <= bottom)) {
-            return;
+        final float[] hsv0 = new float[3], hsv0_ = new float[3];
+        int hi = 0;
+        float f = 0.0f;
+        float alpha = 0.0f;
+        if (keepColorDiff) {
+            Color.colorToHSV(pixel, hsv0);
+            Color.colorToHSV(color, hsv0_);
+            hi = (int) (hsv0_[0] / 60.0f);
+            f = hsv0_[0] / 60.0f - hi;
+            alpha = Color.alpha(color) / 255.0f;
         }
 //        long a = System.currentTimeMillis();
         Queue<Point> pointsToBeSet = new LinkedList<>();
@@ -2213,25 +2275,24 @@ public class MainActivity extends AppCompatActivity {
             }
             havePointsBeenSet[i] = true;
             int px = srcPixels[i];
-            boolean b = false;
+            boolean match = false;
             int c = color;
             if (threshold > 0) {
                 if ((colorRange == 0b111111 || (getColorRangeOf(px) | colorRange) == colorRange)) {
-                    int dr = Color.red(px) - Color.red(pixel),
-                            dg = Color.green(px) - Color.green(pixel),
-                            db = Color.blue(px) - Color.blue(pixel);
-                    b = Math.abs(dr) <= threshold && Math.abs(dg) <= threshold && Math.abs(db) <= threshold;
-                    if (b && keepColorDiff) {
-                        c = Color.argb(Color.alpha(color),
-                                inRange(Color.red(color) + dr, 0x0, 0xFF),
-                                inRange(Color.green(color) + dg, 0x0, 0xFF),
-                                inRange(Color.blue(color) + db, 0x0, 0xFF));
+                    int r = Color.red(px), g = Color.green(px), b = Color.blue(px);
+                    match = checkColorIsWithinThreshold(
+                            Color.red(pixel), Color.green(pixel), Color.blue(pixel),
+                            r, g, b);
+                    if (match && keepColorDiff) {
+                        c = fillButKeepColorDiff(r / 255.0f, g / 255.0f, b / 255.0f,
+                                hsv0[1], hsv0[2], hsv0_[1], hsv0_[2],
+                                f, hi, alpha);
                     }
                 }
             } else {
-                b = px == pixel;
+                match = px == pixel;
             }
-            if (b) {
+            if (match) {
                 srcPixels[i] = c;
                 if (src != dst) {
                     dstPixels[i] = c;
