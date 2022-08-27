@@ -742,7 +742,7 @@ public class MainActivity extends AppCompatActivity {
                 cv.drawLine(originalPrevX - left, originalPrevY - top,
                         relativeX, relativeY,
                         paint);
-                if (threshold < 0x100 || colorRange != 0x111111) {
+                if (threshold < 0x100 || colorRange != 0b111111) {
                     cv.drawBitmap(bitmapWithoutFilter, absolute, relative, srcIn);
                     Bitmap ft = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
                     floodFill(bm, ft, relativeX, relativeY, Color.BLACK,
