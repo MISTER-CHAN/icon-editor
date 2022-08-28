@@ -37,6 +37,10 @@ public class BitmapWithFilter {
         canvas.drawBitmap(bm, rect.left, rect.top, paint);
     }
 
+    public void drawColor(@ColorInt int color) {
+        canvas.drawColor(color, PorterDuff.Mode.SRC);
+    }
+
     public Bitmap getBitmap() {
         return bitmap;
     }

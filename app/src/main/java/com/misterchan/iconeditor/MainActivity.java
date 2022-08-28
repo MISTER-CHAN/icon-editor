@@ -508,14 +508,37 @@ public class MainActivity extends AppCompatActivity {
                             paint.getColor())
                     .show();
 
-    private final ColorRangeDialog.OnColorRangeChangeListener onColorRangeChangeListener = range ->
-            colorRange = range;
+    private final ColorRangeDialog.OnColorRangeChangeListener onColorRangeChangeListener = range -> {
+        colorRange = range;
+        if (range == 0b000000) {
+            thresholdBitmap.drawColor(Color.TRANSPARENT);
+            drawBitmapWithFilterOnView(thresholdBitmap);
+            return;
+        } else if (range == 0b111111) {
+            drawBitmapOnView();
+            return;
+        }
+        final int w = thresholdBitmap.getWidth(), h = thresholdBitmap.getHeight(), area = w * h;
+        final int[] pixels = new int[area];
+        thresholdBitmap.getPixels(pixels, 0, w, 0, 0, w, h);
+        for (int i = 0; i < area; ++i) {
+            if ((getColorRangeOf(pixels[i]) | range) != range) {
+                pixels[i] = Color.TRANSPARENT;
+            }
+        }
+        thresholdBitmap.setPixels(pixels, 0, w, 0, 0, w, h);
+        drawBitmapWithFilterOnView(thresholdBitmap);
+    };
 
     private final View.OnClickListener onColorRangeButtonClickListener = v -> {
         new ColorRangeDialog(this)
                 .setDefaultRange(colorRange)
+                .setOnCancelListener(dialog -> drawBitmapOnView())
                 .setOnColorRangeChangeListener(onColorRangeChangeListener)
+                .setOnPositiveButtonClickListener((dialog, which) -> drawBitmapOnView())
                 .show();
+        onColorRangeChangeListener.onChange(colorRange);
+        tvState.setText("");
     };
 
     private final MergeAsHiddenDialog.OnFinishSettingListener onFinishSettingHiddenImageListener = scale -> {
@@ -536,11 +559,11 @@ public class MainActivity extends AppCompatActivity {
     private final OnProgressChangeListener onThresholdChangeListener = progress -> {
         threshold = progress;
         if (progress == 0x100) {
-            thresholdBitmap.setFilter(COLOR_MATRIX_BLACK);
+            thresholdBitmap.drawColor(Color.BLACK);
             drawBitmapWithFilterOnView(thresholdBitmap);
             return;
         } else if (progress == 0x0) {
-            drawBitmapWithFilterOnView(thresholdBitmap);
+            drawBitmapOnView();
             return;
         }
         final int w = thresholdBitmap.getWidth(), h = thresholdBitmap.getHeight(), area = w * h;

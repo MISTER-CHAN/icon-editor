@@ -39,8 +39,6 @@ public class ColorRangeDialog {
 
     public ColorRangeDialog setOnCancelListener(DialogInterface.OnCancelListener listener) {
         builder.setOnCancelListener(listener);
-        builder.setNegativeButton(R.string.cancel,
-                (dialog, which) -> listener.onCancel(dialog));
         return this;
     }
 
