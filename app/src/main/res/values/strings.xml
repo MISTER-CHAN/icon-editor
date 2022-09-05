@@ -97,6 +97,7 @@
     <string name="shape">Shape</string>
     <string name="size">Size</string>
     <string name="spacing">Spacing</string>
+    <string name="stamp">Stamp</string>
     <string name="state_axes">"Axes: %d, %d"</string>
     <string name="state_lightness">Brightness: %d</string>
     <string name="state_contrast">Contrast: %.1f</string>

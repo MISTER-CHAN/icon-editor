@@ -290,7 +290,7 @@
                 </LinearLayout>
 
                 <LinearLayout
-                    android:id="@+id/ll_options_cloner"
+                    android:id="@+id/ll_options_clone_stamp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
@@ -299,7 +299,7 @@
                     android:visibility="invisible">
 
                     <CheckBox
-                        android:id="@+id/cb_cloner_anti_alias"
+                        android:id="@+id/cb_clone_stamp_anti_alias"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/anti_alias" />
@@ -310,7 +310,7 @@
                         android:layout_marginHorizontal="2dp">
 
                         <EditText
-                            android:id="@+id/et_cloner_stroke_width"
+                            android:id="@+id/et_clone_stamp_stroke_width"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:background="@color/transparent"
@@ -325,7 +325,7 @@
                         android:layout_marginHorizontal="2dp">
 
                         <EditText
-                            android:id="@+id/et_cloner_blur_radius"
+                            android:id="@+id/et_clone_stamp_blur_radius"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:background="@color/transparent"
@@ -599,10 +599,10 @@
                         android:text="@string/gradient" />
 
                     <RadioButton
-                        android:id="@+id/rb_cloner"
+                        android:id="@+id/rb_clone_stamp"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/cloner" />
+                        android:text="@string/stamp" />
 
                     <RadioButton
                         android:id="@+id/rb_shape"

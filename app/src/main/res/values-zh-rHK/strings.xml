@@ -85,6 +85,7 @@
     <string name="shape">形狀</string>
     <string name="size">尺寸</string>
     <string name="spacing">間距</string>
+    <string name="stamp">印章</string>
     <string name="state_axes">軸長：%d, %d</string>
     <string name="state_lightness">明度：%d</string>
     <string name="state_contrast">對比度：%.1f</string>
