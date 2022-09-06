@@ -702,15 +702,18 @@ public class MainActivity extends AppCompatActivity {
                 Bitmap bm = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
                 float rad = strokeWidth / 2.0f;
                 float left = Math.min(originalPrevX, originalX) - rad, top = Math.min(originalPrevY, originalY) - rad;
-                int l = (int) (left + cloneStampSrcDist.x), t = (int) (top + cloneStampSrcDist.y),
-                        r = l + width, b = t + height;
+                int l = (int) (left + cloneStampSrcDist.x), t = (int) (top + cloneStampSrcDist.y);
                 Canvas cv = new Canvas(bm);
                 cv.drawLine(originalPrevX - left, originalPrevY - top,
                         originalX - left, originalY - top,
                         paint);
+                cv.drawRect(0.0f, 0.0f, -l, height, clear);
+                cv.drawRect(0.0f, 0.0f, width, -t, clear);
+                cv.drawRect(bitmap.getWidth() - l, 0.0f, width, height, clear);
+                cv.drawRect(0.0f, bitmap.getHeight() - t, width, height, clear);
                 cv.drawBitmap(bitmap,
-                        new Rect(l, t, r, b),
-                        new RectF(0, 0, width, height),
+                        new Rect(l, t, l + width, t + height),
+                        new RectF(0.0f, 0.0f, width, height),
                         srcIn);
                 canvas.drawBitmap(bm, left, top, paint);
                 bm.recycle();
@@ -984,7 +987,8 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     dragBound(x, y);
                     drawSelectionOnView();
-                    tvState.setText(String.format(getString(R.string.state_size),
+                    tvState.setText(String.format(getString(R.string.state_l_t_r_b_size),
+                            selection.left, selection.top, selection.right, selection.bottom,
                             selection.width() + 1, selection.height() + 1));
                 }
                 break;
@@ -1002,7 +1006,8 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     dragBound(x, y);
                     drawSelectionOnView();
-                    tvState.setText(String.format(getString(R.string.state_size),
+                    tvState.setText(String.format(getString(R.string.state_l_t_r_b_size),
+                            selection.left, selection.top, selection.right, selection.bottom,
                             selection.width() + 1, selection.height() + 1));
                 }
                 break;
@@ -1016,7 +1021,11 @@ public class MainActivity extends AppCompatActivity {
                     if (hasDragged) {
                         draggingBound = Position.NULL;
                         hasDragged = false;
-                        tvState.setText("");
+                        tvState.setText(hasSelection ?
+                                String.format(getString(R.string.state_l_t_r_b_size),
+                                        selection.left, selection.top, selection.right, selection.bottom,
+                                        selection.width() + 1, selection.height() + 1) :
+                                "");
                     }
                 } else {
                     tvState.setText(hasSelection ?
