@@ -151,6 +151,7 @@ public class MainActivity extends AppCompatActivity {
     private BitmapHistory history;
     private BitmapWithFilter bitmapWithFilter;
     private BitmapWithFilter thresholdBitmap;
+    private boolean antiAlias = false;
     private boolean hasNotLoaded = true;
     private boolean hasSelection = false;
     private boolean hasDragged = false;
@@ -171,7 +172,9 @@ public class MainActivity extends AppCompatActivity {
     private CheckBox cbGradientAntiAlias;
     private CheckBox cbPencilAntiAlias;
     private CheckBox cbShapeAntiAlias;
-    private CheckBox cbTextAntialias;
+    private CheckBox cbShapeFill;
+    private CheckBox cbTextAntiAlias;
+    private CheckBox cbTextFill;
     private CheckBox cbTransformerLar;
     private CheckBox cbZoom;
     private ColorAdapter colorAdapter;
@@ -505,7 +508,7 @@ public class MainActivity extends AppCompatActivity {
                             (oldColor, newColor) -> {
                                 paint.setColor(newColor);
                                 vForegroundColor.setBackgroundColor(newColor);
-                                if (llOptionsText.getVisibility() == View.VISIBLE) {
+                                if (isEditingText) {
                                     drawTextOnView();
                                 }
                             },
@@ -1109,8 +1112,8 @@ public class MainActivity extends AppCompatActivity {
                     textX = toOriginal(event.getX() - tab.translationX);
                     textY = toOriginal(event.getY() - tab.translationY);
                     llOptionsText.setVisibility(View.VISIBLE);
-                    scaleTextSizeAndDrawTextOnView();
                     isEditingText = true;
+                    scaleTextSizeAndDrawTextOnView();
                     prevX = tab.translationX;
                     prevY = tab.translationY;
                     break;
@@ -1328,7 +1331,7 @@ public class MainActivity extends AppCompatActivity {
                         drawGridOnView();
                         if (transformer != null) {
                             drawTransformeeOnViewBySelection();
-                        } else if (llOptionsText.getVisibility() == View.VISIBLE) {
+                        } else if (isEditingText) {
                             drawTextOnView();
                         } else if (!isShapeStopped) {
                             drawPointOnView(shapeStartX, shapeStartY);
@@ -1367,7 +1370,7 @@ public class MainActivity extends AppCompatActivity {
                         drawGridOnView();
                         if (transformer != null) {
                             drawTransformeeOnViewBySelection();
-                        } else if (llOptionsText.getVisibility() == View.VISIBLE) {
+                        } else if (isEditingText) {
                             scaleTextSizeAndDrawTextOnView();
                         } else if (!isShapeStopped) {
                             drawPointOnView(shapeStartX, shapeStartY);
@@ -1435,8 +1438,8 @@ public class MainActivity extends AppCompatActivity {
             drawTransformeeOnCanvas();
             drawTextOnCanvas();
             createThresholdBitmap(0x100);
-            etFilterStrokeWidth.setText(String.valueOf(strokeWidth));
             onToolChange(onImageViewTouchWithFilterListener);
+            etFilterStrokeWidth.setText(String.valueOf(strokeWidth));
             hsvOptionsFilter.setVisibility(View.VISIBLE);
         } else {
             bitmapWithoutFilter.recycle();
@@ -1448,9 +1451,11 @@ public class MainActivity extends AppCompatActivity {
     private final CompoundButton.OnCheckedChangeListener onGradientRadioButtonCheckedChangeListener = (buttonView, isChecked) -> {
         if (isChecked) {
             onToolChange(onImageViewTouchWithGradientListener);
-            cbGradientAntiAlias.setChecked(paint.isAntiAlias());
+            cbGradientAntiAlias.setChecked(antiAlias);
+            paint.setAntiAlias(antiAlias);
             etGradientStrokeWidth.setText(String.valueOf(strokeWidth));
             etGradientBlurRadius.setText(String.valueOf(blurRadius));
+            setBlurRadius(blurRadius);
             llOptionsGradient.setVisibility(View.VISIBLE);
         }
     };
@@ -1459,11 +1464,12 @@ public class MainActivity extends AppCompatActivity {
     private final CompoundButton.OnCheckedChangeListener onPencilRadioButtonCheckedChangeListener = (buttonView, isChecked) -> {
         if (isChecked) {
             onToolChange(onImageViewTouchWithPencilListener);
-            cbPencilAntiAlias.setChecked(paint.isAntiAlias());
+            cbPencilAntiAlias.setChecked(antiAlias);
+            paint.setAntiAlias(antiAlias);
             etPencilStrokeWidth.setText(String.valueOf(strokeWidth));
             etPencilBlurRadius.setText(String.valueOf(blurRadius));
+            setBlurRadius(blurRadius);
             llOptionsPencil.setVisibility(View.VISIBLE);
-            setBlurRadius(etPencilBlurRadius.getText().toString());
         } else {
 //            paint.setMaskFilter(null);
         }
@@ -1472,9 +1478,11 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("ClickableViewAccessibility")
     private final CompoundButton.OnCheckedChangeListener onShapeRadioButtonCheckedChangeListener = (buttonView, isChecked) -> {
         if (isChecked) {
-            cbShapeAntiAlias.setChecked(paint.isAntiAlias());
-            etShapeStrokeWidth.setText(String.valueOf(paint.getStrokeWidth()));
             onToolChange(onImageViewTouchWithShapeListener);
+            cbShapeAntiAlias.setChecked(antiAlias);
+            paint.setAntiAlias(antiAlias);
+            cbShapeFill.setChecked(isPaintStyleFill());
+            etShapeStrokeWidth.setText(String.valueOf(paint.getStrokeWidth()));
             llOptionsShape.setVisibility(View.VISIBLE);
         }
     };
@@ -1498,8 +1506,10 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("ClickableViewAccessibility")
     private final CompoundButton.OnCheckedChangeListener onTextRadioButtonCheckedChangeListener = (buttonView, isChecked) -> {
         if (isChecked) {
-            cbTextAntialias.setChecked(paint.isAntiAlias());
             onToolChange(onImageViewTouchWithTextListener);
+            cbTextAntiAlias.setChecked(antiAlias);
+            paint.setAntiAlias(antiAlias);
+            cbTextFill.setChecked(isPaintStyleFill());
         } else {
             drawTextOnCanvas(false);
         }
@@ -2195,6 +2205,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void drawTextOnView() {
+        if (!isEditingText) {
+            return;
+        }
         clearCanvas(previewCanvas);
         float x = tab.translationX + toScaled(textX), y = tab.translationY + toScaled(textY);
         Paint.FontMetrics fontMetrics = paint.getFontMetrics();
@@ -2401,6 +2414,10 @@ public class MainActivity extends AppCompatActivity {
         return Math.max(Math.min(a, max), min);
     }
 
+    private boolean isPaintStyleFill() {
+        return paint.getStyle() != Paint.Style.STROKE;
+    }
+
     private int inRange(int a, int min, int max) {
         return Math.max(Math.min(a, max), min);
     }
@@ -2559,7 +2576,9 @@ public class MainActivity extends AppCompatActivity {
         cbGradientAntiAlias = findViewById(R.id.cb_gradient_anti_alias);
         cbPencilAntiAlias = findViewById(R.id.cb_pencil_anti_alias);
         cbShapeAntiAlias = findViewById(R.id.cb_shape_anti_alias);
-        cbTextAntialias = findViewById(R.id.cb_text_anti_alias);
+        cbShapeFill = findViewById(R.id.cb_shape_fill);
+        cbTextAntiAlias = findViewById(R.id.cb_text_anti_alias);
+        cbTextFill = findViewById(R.id.cb_text_fill);
         cbTransformerLar = findViewById(R.id.cb_transformer_lar);
         cbZoom = findViewById(R.id.cb_zoom);
         etCloneStampStrokeWidth = findViewById(R.id.et_clone_stamp_stroke_width);
@@ -2610,10 +2629,11 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.b_filter_threshold).setOnClickListener(onThresholdButtonClickListener);
         findViewById(R.id.b_text_draw).setOnClickListener(v -> drawTextOnCanvas());
         ((CompoundButton) findViewById(R.id.cb_eraser_anti_alias)).setOnCheckedChangeListener((buttonView, isChecked) -> eraser.setAntiAlias(isChecked));
-        cbGradientAntiAlias.setOnCheckedChangeListener((buttonView, isChecked) -> paint.setAntiAlias(isChecked));
-        cbPencilAntiAlias.setOnCheckedChangeListener((buttonView, isChecked) -> paint.setAntiAlias(isChecked));
-        cbShapeAntiAlias.setOnCheckedChangeListener((buttonView, isChecked) -> paint.setAntiAlias(isChecked));
-        cbTextAntialias.setOnCheckedChangeListener((buttonView, isChecked) -> paint.setAntiAlias(isChecked));
+        cbGradientAntiAlias.setOnCheckedChangeListener((buttonView, isChecked) -> setAntiAlias(isChecked));
+        cbPencilAntiAlias.setOnCheckedChangeListener((buttonView, isChecked) -> setAntiAlias(isChecked));
+        cbShapeAntiAlias.setOnCheckedChangeListener((buttonView, isChecked) -> setAntiAlias(isChecked));
+        cbShapeFill.setOnCheckedChangeListener((buttonView, isChecked) -> paint.setStyle(isChecked ? Paint.Style.FILL_AND_STROKE : Paint.Style.STROKE));
+        cbTextAntiAlias.setOnCheckedChangeListener((buttonView, isChecked) -> setAntiAlias(isChecked));
         cbZoom.setOnCheckedChangeListener(onZoomToolCheckBoxCheckedChangeListener);
         cbZoom.setTag(onImageViewTouchWithPencilListener);
         etCloneStampStrokeWidth.addTextChangedListener((AfterTextChangedListener) this::setStrokeWidth);
@@ -2646,9 +2666,9 @@ public class MainActivity extends AppCompatActivity {
         vBackgroundColor.setOnClickListener(onBackgroundColorClickListener);
         vForegroundColor.setOnClickListener(onForegroundColorClickListener);
 
-        ((CompoundButton) findViewById(R.id.cb_style_fill)).setOnCheckedChangeListener((buttonView, isChecked) -> {
-            Paint.Style style = isChecked ? Paint.Style.FILL_AND_STROKE : Paint.Style.STROKE;
-            paint.setStyle(style);
+        cbTextFill.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            paint.setStyle(isChecked ? Paint.Style.FILL : Paint.Style.STROKE);
+            drawTextOnView();
         });
 
         etEraserStrokeWidth.addTextChangedListener((AfterTextChangedListener) s -> {
@@ -2680,7 +2700,7 @@ public class MainActivity extends AppCompatActivity {
                     int color = ((ColorDrawable) view.getBackground()).getColor();
                     paint.setColor(color);
                     vForegroundColor.setBackgroundColor(color);
-                    if (llOptionsText.getVisibility() == View.VISIBLE) {
+                    if (isEditingText) {
                         drawTextOnView();
                     }
                 });
@@ -2790,6 +2810,7 @@ public class MainActivity extends AppCompatActivity {
         cbZoom.setTag(onImageViewTouchListener);
         flImageView.setOnTouchListener(onImageViewTouchListener);
         hideToolOptions();
+        paint.setAntiAlias(false);
         paint.setMaskFilter(null);
     }
 
@@ -3333,13 +3354,22 @@ public class MainActivity extends AppCompatActivity {
         selection.bottom = bitmap.getHeight() - 1;
     }
 
+    private void setAntiAlias(boolean b) {
+        antiAlias = b;
+        paint.setAntiAlias(b);
+    }
+
     private void setBlurRadius(String s) {
         try {
             float f = Float.parseFloat(s);
             blurRadius = f;
-            paint.setMaskFilter(f > 0.0f ? new BlurMaskFilter(f, BlurMaskFilter.Blur.NORMAL) : null);
+            setBlurRadius(f);
         } catch (NumberFormatException e) {
         }
+    }
+
+    private void setBlurRadius(float f) {
+        paint.setMaskFilter(f > 0.0f ? new BlurMaskFilter(f, BlurMaskFilter.Blur.NORMAL) : null);
     }
 
     private void setStrokeWidth(String s) {

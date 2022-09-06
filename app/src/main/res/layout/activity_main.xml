@@ -352,7 +352,7 @@
                         android:text="@string/anti_alias" />
 
                     <CheckBox
-                        android:id="@+id/cb_style_fill"
+                        android:id="@+id/cb_shape_fill"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:checked="true"
@@ -487,6 +487,12 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/anti_alias" />
+
+                    <CheckBox
+                        android:id="@+id/cb_text_fill"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/fill" />
 
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="0dp"
