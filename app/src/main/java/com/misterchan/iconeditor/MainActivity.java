@@ -564,23 +564,21 @@ public class MainActivity extends AppCompatActivity {
         threshold = progress;
         if (progress == 0x100) {
             thresholdBitmap.drawColor(Color.BLACK);
-            drawBitmapWithFilterOnView(thresholdBitmap);
-            return;
         } else if (progress == 0x0) {
-            drawBitmapOnView();
-            return;
+            thresholdBitmap.draw();
+        } else {
+            final int w = thresholdBitmap.getWidth(), h = thresholdBitmap.getHeight(), area = w * h;
+            final int[] pixels = new int[area];
+            thresholdBitmap.getPixels(pixels, 0, w, 0, 0, w, h);
+            for (int i = 0; i < area; ++i) {
+                final int pixel = pixels[i];
+                pixels[i] = Color.argb(Color.alpha(pixel),
+                        Color.red(pixel) / progress * progress,
+                        Color.green(pixel) / progress * progress,
+                        Color.blue(pixel) / progress * progress);
+            }
+            thresholdBitmap.setPixels(pixels, 0, w, 0, 0, w, h);
         }
-        final int w = thresholdBitmap.getWidth(), h = thresholdBitmap.getHeight(), area = w * h;
-        final int[] pixels = new int[area];
-        thresholdBitmap.getPixels(pixels, 0, w, 0, 0, w, h);
-        for (int i = 0; i < area; ++i) {
-            final int pixel = pixels[i];
-            pixels[i] = Color.argb(Color.alpha(pixel),
-                    Color.red(pixel) / progress * progress,
-                    Color.green(pixel) / progress * progress,
-                    Color.blue(pixel) / progress * progress);
-        }
-        thresholdBitmap.setPixels(pixels, 0, w, 0, 0, w, h);
         drawBitmapWithFilterOnView(thresholdBitmap);
         tvState.setText(String.format(getString(R.string.state_threshold), progress));
     };
@@ -591,7 +589,7 @@ public class MainActivity extends AppCompatActivity {
     };
 
     private final View.OnClickListener onThresholdButtonClickListener = v -> {
-        new SeekBarDialog(this).setTitle(R.string.threshold).setMin(0x1).setMax(0x100)
+        new SeekBarDialog(this).setTitle(R.string.threshold).setMin(0x0).setMax(0x100)
                 .setOnCancelListener(onThresholdCancelListener, false)
                 .setOnPositiveButtonClickListener(onThresholdConfirmListener)
                 .setOnProgressChangeListener(onThresholdChangeListener)
