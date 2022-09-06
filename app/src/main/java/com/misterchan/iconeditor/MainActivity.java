@@ -3181,6 +3181,16 @@ public class MainActivity extends AppCompatActivity {
             selection.top = Math.max(0, selection.top);
             selection.right = Math.min(bitmapWidth - 1, selection.right);
             selection.bottom = Math.min(bitmapHeight - 1, selection.bottom);
+            if (selection.left > selection.right) {
+                int i = selection.left;
+                selection.left = selection.right;
+                selection.right = i;
+            }
+            if (selection.top > selection.bottom) {
+                int i = selection.top;
+                selection.top = selection.bottom;
+                selection.bottom = i;
+            }
         } else {
             hasSelection = false;
         }
