@@ -83,6 +83,7 @@
     <string name="r" translatable="false">R</string>
     <string name="rectangle">Rectangle</string>
     <string name="redo" translatable="false">↷</string>
+    <string name="reset_source">Reset Source</string>
     <string name="rotate">Rotate</string>
     <string name="rotate_around_r">Rotate Around R</string>
     <string name="rotate_around_g">Rotate Around G</string>
@@ -96,6 +97,7 @@
     <string name="select_all">Select All</string>
     <string name="shape">Shape</string>
     <string name="size">Size</string>
+    <string name="source">Source</string>
     <string name="spacing">Spacing</string>
     <string name="stamp">Stamp</string>
     <string name="state_axes">"Axes: %d, %d"</string>

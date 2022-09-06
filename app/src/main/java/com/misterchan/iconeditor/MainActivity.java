@@ -167,7 +167,6 @@ public class MainActivity extends AppCompatActivity {
     private CellGrid cellGrid;
     private CheckBox cbBucketFillContiguous;
     private CheckBox cbBucketFillKeepColorDiff;
-    private CheckBox cbCloneStampAntiAlias;
     private CheckBox cbFilterClear;
     private CheckBox cbGradientAntiAlias;
     private CheckBox cbPencilAntiAlias;
@@ -177,7 +176,6 @@ public class MainActivity extends AppCompatActivity {
     private CheckBox cbZoom;
     private ColorAdapter colorAdapter;
     private double prevDiagonal;
-    private EditText etCloneStampBlurRadius;
     private EditText etCloneStampStrokeWidth;
     private EditText etEraserStrokeWidth;
     private EditText etFileName;
@@ -224,8 +222,8 @@ public class MainActivity extends AppCompatActivity {
     private LinearLayout llOptionsTransformer;
     private LinkedList<Integer> palette;
     private List<Tab> tabs = new ArrayList<>();
-    private Point cloneStampSel; // Sel. - Selection
-    private Point cloneStampSelDist = new Point(0, 0); // Dist. - Distance
+    private Point cloneStampSrc; // Sel. - Selection
+    private Point cloneStampSrcDist = new Point(0, 0); // Dist. - Distance
     private Position draggingBound = Position.NULL;
     private RadioButton rbBucketFill;
     private RadioButton rbCloneStamp;
@@ -496,6 +494,11 @@ public class MainActivity extends AppCompatActivity {
                             eraser.getColor())
                     .show();
 
+    private final View.OnClickListener onCloneStampSrcButtonClickListener = v -> {
+        cloneStampSrc = null;
+        clearCanvasAndInvalidateView(previewCanvas, ivPreview);
+    };
+
     private final View.OnClickListener onForegroundColorClickListener = v ->
             ColorPicker.make(MainActivity.this,
                             R.string.foreground_color,
@@ -627,7 +630,7 @@ public class MainActivity extends AppCompatActivity {
             } else if (rbBucketFill.isChecked()) {
                 createThresholdBitmap(0x0);
             } else if (rbCloneStamp.isChecked()) {
-                cloneStampSel = null;
+                cloneStampSrc = null;
             }
 
             drawChessboardOnView();
@@ -670,6 +673,69 @@ public class MainActivity extends AppCompatActivity {
                 tvState.setText("");
                 break;
             }
+        }
+        return true;
+    };
+
+    @SuppressLint({"ClickableViewAccessibility", "SetTextI18n"})
+    private final View.OnTouchListener onImageViewTouchWithCloneStampListener = (v, event) -> {
+        float x = event.getX(), y = event.getY();
+        int originalX = toOriginal(x - tab.translationX), originalY = toOriginal(y - tab.translationY);
+        switch (event.getAction()) {
+
+            case MotionEvent.ACTION_DOWN:
+                if (cloneStampSrc == null) {
+                    break;
+                }
+                cloneStampSrcDist.x = cloneStampSrc.x - originalX;
+                cloneStampSrcDist.y = cloneStampSrc.y - originalY;
+                prevX = x;
+                prevY = y;
+
+            case MotionEvent.ACTION_MOVE: {
+                if (cloneStampSrc == null) {
+                    break;
+                }
+                int originalPrevX = toOriginal(prevX - tab.translationX),
+                        originalPrevY = toOriginal(prevY - tab.translationY);
+
+                int width = (int) (Math.abs(originalX - originalPrevX) + strokeWidth),
+                        height = (int) (Math.abs(originalY - originalPrevY) + strokeWidth);
+                Bitmap bm = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+                float rad = strokeWidth / 2.0f;
+                float left = Math.min(originalPrevX, originalX) - rad, top = Math.min(originalPrevY, originalY) - rad;
+                int l = (int) (left + cloneStampSrcDist.x), t = (int) (top + cloneStampSrcDist.y),
+                        r = l + width, b = t + height;
+                Canvas cv = new Canvas(bm);
+                cv.drawLine(originalPrevX - left, originalPrevY - top,
+                        originalX - left, originalY - top,
+                        paint);
+                cv.drawBitmap(bitmap,
+                        new Rect(l, t, r, b),
+                        new RectF(0, 0, width, height),
+                        srcIn);
+                canvas.drawBitmap(bm, left, top, paint);
+                bm.recycle();
+                drawBitmapOnView();
+                drawCloneStampSrcOnView(originalX + cloneStampSrcDist.x, originalY + cloneStampSrcDist.y);
+                tvState.setText(String.format(getString(R.string.coordinate), originalX, originalY));
+
+                prevX = x;
+                prevY = y;
+                break;
+            }
+            case MotionEvent.ACTION_CANCEL:
+            case MotionEvent.ACTION_UP:
+                if (cloneStampSrc == null) {
+                    cloneStampSrc = new Point(originalX, originalY);
+                    drawCloneStampSrcOnView(originalX, originalY);
+                    tvState.setText(String.format(getString(R.string.coordinate), originalX, originalY));
+                } else {
+                    drawCloneStampSrcOnView(cloneStampSrc.x, cloneStampSrc.y);
+                    history.offer(bitmap);
+                    tvState.setText("");
+                }
+                break;
         }
         return true;
     };
@@ -761,8 +827,8 @@ public class MainActivity extends AppCompatActivity {
                         bottom = Math.max(originalPrevY, originalY) + rad + 1;
                 int width = right - left + 1, height = bottom - top + 1;
                 int relativeX = originalX - left, relativeY = originalY - top;
-                Rect absolute = new Rect(left, top, right, bottom),
-                        relative = new Rect(0, 0, width - 1, height - 1);
+                Rect absolute = new Rect(left, top, right + 1, bottom + 1),
+                        relative = new Rect(0, 0, width, height);
                 Bitmap bm = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
                 Canvas cv = new Canvas(bm);
                 cv.drawLine(originalPrevX - left, originalPrevY - top,
@@ -854,68 +920,6 @@ public class MainActivity extends AppCompatActivity {
                     tvState.setText("");
                 }
                 paint.setShader(null);
-                break;
-        }
-        return true;
-    };
-
-    @SuppressLint({"ClickableViewAccessibility", "SetTextI18n"})
-    private final View.OnTouchListener onImageViewTouchWithCloneStampListener = (v, event) -> {
-        float x = event.getX(), y = event.getY();
-        int originalX = toOriginal(x - tab.translationX), originalY = toOriginal(y - tab.translationY);
-        switch (event.getAction()) {
-
-            case MotionEvent.ACTION_DOWN:
-                if (cloneStampSel == null) {
-                    break;
-                }
-                cloneStampSelDist.x = cloneStampSel.x - originalX;
-                cloneStampSelDist.y = cloneStampSel.y - originalY;
-                prevX = x;
-                prevY = y;
-
-            case MotionEvent.ACTION_MOVE: {
-                if (cloneStampSel == null) {
-                    break;
-                }
-                int originalPrevX = toOriginal(prevX - tab.translationX),
-                        originalPrevY = toOriginal(prevY - tab.translationY);
-
-                int width = (int) (Math.abs(originalX - originalPrevX) + strokeWidth),
-                        height = (int) (Math.abs(originalY - originalPrevY) + strokeWidth);
-                Bitmap bm = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-                float rad = strokeWidth / 2.0f;
-                float left = Math.min(originalPrevX, originalX) - rad, top = Math.min(originalPrevY, originalY) - rad;
-                int l = (int) (left + cloneStampSelDist.x), t = (int) (top + cloneStampSelDist.y),
-                        r = l + width, b = t + height;
-                Canvas cv = new Canvas(bm);
-                cv.drawLine(originalPrevX - left, originalPrevY - top,
-                        originalX - left, originalY - top,
-                        paint);
-                cv.drawBitmap(bitmap,
-                        new Rect(l, t, r, b),
-                        new RectF(0, 0, width, height),
-                        srcIn);
-                canvas.drawBitmap(bm, left, top, paint);
-                bm.recycle();
-                drawBitmapOnView();
-                drawCloneStampSelOnView(originalX + cloneStampSelDist.x, originalY + cloneStampSelDist.y);
-                tvState.setText(String.format(getString(R.string.coordinate), originalX, originalY));
-
-                prevX = x;
-                prevY = y;
-                break;
-            }
-            case MotionEvent.ACTION_CANCEL:
-            case MotionEvent.ACTION_UP:
-                if (cloneStampSel == null) {
-                    cloneStampSel = new Point(originalX, originalY);
-                    drawCloneStampSelOnView(originalX, originalY);
-                    tvState.setText(String.format(getString(R.string.coordinate), originalX, originalY));
-                } else {
-                    history.offer(bitmap);
-                    tvState.setText("");
-                }
                 break;
         }
         return true;
@@ -1321,6 +1325,8 @@ public class MainActivity extends AppCompatActivity {
                             drawTextOnView();
                         } else if (!isShapeStopped) {
                             drawPointOnView(shapeStartX, shapeStartY);
+                        } else if (cloneStampSrc != null) {
+                            drawCloneStampSrcOnView(cloneStampSrc.x, cloneStampSrc.y);
                         }
                         drawSelectionOnView();
                         prevX = x;
@@ -1358,6 +1364,8 @@ public class MainActivity extends AppCompatActivity {
                             scaleTextSizeAndDrawTextOnView();
                         } else if (!isShapeStopped) {
                             drawPointOnView(shapeStartX, shapeStartY);
+                        } else if (cloneStampSrc != null) {
+                            drawCloneStampSrcOnView(cloneStampSrc.x, cloneStampSrc.y);
                         }
                         drawSelectionOnView();
                         this.pivotX = pivotX;
@@ -1405,12 +1413,10 @@ public class MainActivity extends AppCompatActivity {
     private final CompoundButton.OnCheckedChangeListener onCloneStampRadioButtonCheckedChangeListener = (buttonView, isChecked) -> {
         if (isChecked) {
             onToolChange(onImageViewTouchWithCloneStampListener);
-            cbCloneStampAntiAlias.setChecked(paint.isAntiAlias());
             etCloneStampStrokeWidth.setText(String.valueOf(strokeWidth));
-            etCloneStampBlurRadius.setText(String.valueOf(blurRadius));
             llOptionsCloneStamp.setVisibility(View.VISIBLE);
         } else {
-            cloneStampSel = null;
+            cloneStampSrc = null;
             clearCanvasAndInvalidateView(previewCanvas, ivPreview);
         }
     };
@@ -1874,11 +1880,14 @@ public class MainActivity extends AppCompatActivity {
         float left = translX >= 0.0f ? translX : translX % tab.scale;
         float top = translY >= 0.0f ? translY : translY % tab.scale;
         if (isScaledMuch()) {
+            int w = endX - startX, h = endY - startY;
+            int[] pixels = new int[w * h];
+            bm.getPixels(pixels, 0, w, startX, startY, w, h);
             float t = top, b = t + tab.scale;
-            for (int y = startY; y < endY; ++y, t += tab.scale, b += tab.scale) {
+            for (int i = 0, y = startY; y < endY; ++y, t += tab.scale, b += tab.scale) {
                 float l = left;
-                for (int x = startX; x < endX; ++x) {
-                    colorPaint.setColor(bm.getPixel(x, y));
+                for (int x = startX; x < endX; ++x, ++i) {
+                    colorPaint.setColor(pixels[i]);
                     cv.drawRect(l, t, l += tab.scale, b, colorPaint);
                 }
             }
@@ -1932,11 +1941,11 @@ public class MainActivity extends AppCompatActivity {
         drawRuler();
     }
 
-    private void drawCloneStampSelOnView(int x, int y) {
+    private void drawCloneStampSrcOnView(int x, int y) {
         clearCanvas(previewCanvas);
-        float scaledX = toScaled(x), scaledY = toScaled(y);
-        previewCanvas.drawLine(scaledX - 100.0f, scaledY, scaledX + 100.0f, scaledY, selector);
-        previewCanvas.drawLine(scaledX, scaledY - 100.0f, scaledX, scaledY + 100.0f, selector);
+        float scaledX = tab.translationX + toScaled(x), scaledY = tab.translationY + toScaled(y);
+        previewCanvas.drawLine(scaledX - 50.0f, scaledY, scaledX + 50.0f, scaledY, selector);
+        previewCanvas.drawLine(scaledX, scaledY - 50.0f, scaledX, scaledY + 50.0f, selector);
         ivPreview.invalidate();
     }
 
@@ -2539,7 +2548,6 @@ public class MainActivity extends AppCompatActivity {
 
         cbBucketFillContiguous = findViewById(R.id.cb_bucket_fill_contiguous);
         cbBucketFillKeepColorDiff = findViewById(R.id.cb_bucket_fill_keep_color_diff);
-        cbCloneStampAntiAlias = findViewById(R.id.cb_clone_stamp_anti_alias);
         cbFilterClear = findViewById(R.id.cb_filter_clear);
         cbGradientAntiAlias = findViewById(R.id.cb_gradient_anti_alias);
         cbPencilAntiAlias = findViewById(R.id.cb_pencil_anti_alias);
@@ -2547,7 +2555,6 @@ public class MainActivity extends AppCompatActivity {
         cbTextAntialias = findViewById(R.id.cb_text_anti_alias);
         cbTransformerLar = findViewById(R.id.cb_transformer_lar);
         cbZoom = findViewById(R.id.cb_zoom);
-        etCloneStampBlurRadius = findViewById(R.id.et_clone_stamp_blur_radius);
         etCloneStampStrokeWidth = findViewById(R.id.et_clone_stamp_stroke_width);
         etEraserStrokeWidth = findViewById(R.id.et_eraser_stroke_width);
         etFilterStrokeWidth = findViewById(R.id.et_filter_stroke_width);
@@ -2590,19 +2597,18 @@ public class MainActivity extends AppCompatActivity {
 
         findViewById(R.id.b_bucket_fill_color_range).setOnClickListener(onColorRangeButtonClickListener);
         findViewById(R.id.b_bucket_fill_threshold).setOnClickListener(onThresholdButtonClickListener);
+        findViewById(R.id.b_clone_stamp_src).setOnClickListener(onCloneStampSrcButtonClickListener);
         findViewById(R.id.b_color_filter).setOnClickListener(onFilterButtonClickListener);
         findViewById(R.id.b_filter_color_range).setOnClickListener(onColorRangeButtonClickListener);
         findViewById(R.id.b_filter_threshold).setOnClickListener(onThresholdButtonClickListener);
         findViewById(R.id.b_text_draw).setOnClickListener(v -> drawTextOnCanvas());
         ((CompoundButton) findViewById(R.id.cb_eraser_anti_alias)).setOnCheckedChangeListener((buttonView, isChecked) -> eraser.setAntiAlias(isChecked));
-        cbCloneStampAntiAlias.setOnCheckedChangeListener((buttonView, isChecked) -> paint.setAntiAlias(isChecked));
         cbGradientAntiAlias.setOnCheckedChangeListener((buttonView, isChecked) -> paint.setAntiAlias(isChecked));
         cbPencilAntiAlias.setOnCheckedChangeListener((buttonView, isChecked) -> paint.setAntiAlias(isChecked));
         cbShapeAntiAlias.setOnCheckedChangeListener((buttonView, isChecked) -> paint.setAntiAlias(isChecked));
         cbTextAntialias.setOnCheckedChangeListener((buttonView, isChecked) -> paint.setAntiAlias(isChecked));
         cbZoom.setOnCheckedChangeListener(onZoomToolCheckBoxCheckedChangeListener);
         cbZoom.setTag(onImageViewTouchWithPencilListener);
-        etCloneStampBlurRadius.addTextChangedListener((AfterTextChangedListener) this::setBlurRadius);
         etCloneStampStrokeWidth.addTextChangedListener((AfterTextChangedListener) this::setStrokeWidth);
         etFilterStrokeWidth.addTextChangedListener((AfterTextChangedListener) this::setStrokeWidth);
         etGradientBlurRadius.addTextChangedListener((AfterTextChangedListener) this::setBlurRadius);
@@ -3381,6 +3387,10 @@ public class MainActivity extends AppCompatActivity {
         drawBitmapOnView();
         drawGridOnView();
         drawSelectionOnView();
+
+        if (cloneStampSrc != null) {
+            drawCloneStampSrcOnView(cloneStampSrc.x, cloneStampSrc.y);
+        }
 
         tvState.setText("");
     }

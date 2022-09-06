@@ -71,6 +71,7 @@
     <string name="pen_with_filter">滤光笔</string>
     <string name="properties">属性</string>
     <string name="rectangle">矩形</string>
+    <string name="reset_source">重设来源</string>
     <string name="rotate">旋转</string>
     <string name="rotate_around_r">绕 R 轴旋转</string>
     <string name="rotate_around_g">绕 G 轴旋转</string>
@@ -83,6 +84,7 @@
     <string name="select_all">全选</string>
     <string name="shape">形状</string>
     <string name="size">尺寸</string>
+    <string name="source">来源</string>
     <string name="spacing">间距</string>
     <string name="stamp">图章</string>
     <string name="state_axes">轴长：%d, %d</string>
