@@ -33,7 +33,12 @@ public class BitmapWithFilter {
         this.rect = rect;
     }
 
-    public void draw() {
+    public void clearFilter() {
+        paint.setColorFilter(null);
+        draw();
+    }
+
+    private void draw() {
         canvas.drawBitmap(bm, rect.left, rect.top, paint);
     }
 

@@ -519,21 +519,19 @@ public class MainActivity extends AppCompatActivity {
         colorRange = range;
         if (range == 0b000000) {
             thresholdBitmap.drawColor(Color.TRANSPARENT);
-            drawBitmapWithFilterOnView(thresholdBitmap);
-            return;
         } else if (range == 0b111111) {
-            drawBitmapOnView();
-            return;
-        }
-        final int w = thresholdBitmap.getWidth(), h = thresholdBitmap.getHeight(), area = w * h;
-        final int[] pixels = new int[area];
-        thresholdBitmap.getPixels(pixels, 0, w, 0, 0, w, h);
-        for (int i = 0; i < area; ++i) {
-            if ((getColorRangeOf(pixels[i]) | range) != range) {
-                pixels[i] = Color.TRANSPARENT;
+            thresholdBitmap.clearFilter();
+        } else {
+            final int w = thresholdBitmap.getWidth(), h = thresholdBitmap.getHeight(), area = w * h;
+            final int[] pixels = new int[area];
+            thresholdBitmap.getPixels(pixels, 0, w, 0, 0, w, h);
+            for (int i = 0; i < area; ++i) {
+                if ((getColorRangeOf(pixels[i]) | range) != range) {
+                    pixels[i] = Color.TRANSPARENT;
+                }
             }
+            thresholdBitmap.setPixels(pixels, 0, w, 0, 0, w, h);
         }
-        thresholdBitmap.setPixels(pixels, 0, w, 0, 0, w, h);
         drawBitmapWithFilterOnView(thresholdBitmap);
     };
 
@@ -568,7 +566,7 @@ public class MainActivity extends AppCompatActivity {
         if (progress == 0x100) {
             thresholdBitmap.drawColor(Color.BLACK);
         } else if (progress == 0x0) {
-            thresholdBitmap.draw();
+            thresholdBitmap.clearFilter();
         } else {
             final int w = thresholdBitmap.getWidth(), h = thresholdBitmap.getHeight(), area = w * h;
             final int[] pixels = new int[area];
