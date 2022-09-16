@@ -484,7 +484,8 @@ public class MainActivity extends AppCompatActivity {
                             (oldColor, newColor) -> {
                                 palette.offerFirst(newColor);
                                 colorAdapter.notifyDataSetChanged();
-                            })
+                            },
+                            paint.getColor())
                     .show();
 
     private final View.OnClickListener onBackgroundColorClickListener = v ->
