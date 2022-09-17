@@ -28,6 +28,7 @@
     <string name="custom">自定义</string>
     <string name="custom_color_filter">自定义颜色滤镜</string>
     <string name="cut">剪切</string>
+    <string name="dec">十进制</string>
     <string name="delete">删除</string>
     <string name="deselect">不选择</string>
     <string name="draw">绘画</string>
@@ -45,6 +46,7 @@
     <string name="gradient">渐变</string>
     <string name="height">高度</string>
     <string name="help">帮助</string>
+    <string name="hex">十六进制</string>
     <string name="homepage">主页</string>
     <string name="horizontally">水平</string>
     <string name="image">图像</string>

@@ -1,9 +1,9 @@
 package com.misterchan.iconeditor;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.graphics.Color;
 import android.view.View;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.SeekBar;
 
@@ -17,9 +17,12 @@ public class ColorPicker {
     }
 
     private static final String FORMAT_02X = "%02X";
+    private static final String FORMAT_D = "%d";
 
     @ColorInt
     private int newColor, oldColor;
+    private int radix = 16;
+    private String format = FORMAT_02X;
 
     private AlertDialog.Builder dialogBuilder;
     private EditText etAlpha;
@@ -31,19 +34,6 @@ public class ColorPicker {
     private SeekBar sbGreen;
     private SeekBar sbRed;
     private View vPreview;
-
-    private void onChannelChanged(String hex, SeekBar seekBar) {
-        try {
-            seekBar.setProgress(Integer.parseUnsignedInt(hex, 16));
-        } catch (NumberFormatException e) {
-        }
-        newColor = Color.argb(
-                sbAlpha.getProgress(),
-                sbRed.getProgress(),
-                sbGreen.getProgress(),
-                sbBlue.getProgress());
-        vPreview.setBackgroundColor(newColor);
-    }
 
     public static ColorPicker make(Context context, int titleId, final OnColorPickListener onColorPickListener) {
         return make(context, titleId, onColorPickListener, null, false);
@@ -73,6 +63,31 @@ public class ColorPicker {
         return picker;
     }
 
+    private void onChannelChanged(String s, SeekBar seekBar) {
+        try {
+            seekBar.setProgress(Integer.parseUnsignedInt(s, radix));
+        } catch (NumberFormatException e) {
+        }
+        newColor = Color.argb(
+                sbAlpha.getProgress(),
+                sbRed.getProgress(),
+                sbGreen.getProgress(),
+                sbBlue.getProgress());
+        vPreview.setBackgroundColor(newColor);
+    }
+
+    private void setRadix(boolean isChecked, int radix) {
+        if (isChecked) {
+            this.radix = radix;
+            format = radix == 16 ? FORMAT_02X : FORMAT_D;
+
+            etAlpha.setText(String.format(format, sbAlpha.getProgress()));
+            etRed.setText(String.format(format, sbRed.getProgress()));
+            etGreen.setText(String.format(format, sbGreen.getProgress()));
+            etBlue.setText(String.format(format, sbBlue.getProgress()));
+        }
+    }
+
     public void show() {
 
         AlertDialog dialog = dialogBuilder.show();
@@ -87,18 +102,19 @@ public class ColorPicker {
         sbRed = dialog.findViewById(R.id.sb_red);
         vPreview = dialog.findViewById(R.id.v_color_preview);
 
-        sbAlpha.setOnSeekBarChangeListener((OnProgressChangeListener) progress -> etAlpha.setText(String.format(FORMAT_02X, progress)));
-        sbBlue.setOnSeekBarChangeListener((OnProgressChangeListener) progress -> etBlue.setText(String.format(FORMAT_02X, progress)));
-        sbGreen.setOnSeekBarChangeListener((OnProgressChangeListener) progress -> etGreen.setText(String.format(FORMAT_02X, progress)));
-        sbRed.setOnSeekBarChangeListener((OnProgressChangeListener) progress -> etRed.setText(String.format(FORMAT_02X, progress)));
+        sbAlpha.setOnSeekBarChangeListener((OnProgressChangeListener) progress -> etAlpha.setText(String.format(format, progress)));
+        sbBlue.setOnSeekBarChangeListener((OnProgressChangeListener) progress -> etBlue.setText(String.format(format, progress)));
+        sbGreen.setOnSeekBarChangeListener((OnProgressChangeListener) progress -> etGreen.setText(String.format(format, progress)));
+        sbRed.setOnSeekBarChangeListener((OnProgressChangeListener) progress -> etRed.setText(String.format(format, progress)));
         etAlpha.addTextChangedListener((AfterTextChangedListener) s -> onChannelChanged(s, sbAlpha));
         etBlue.addTextChangedListener((AfterTextChangedListener) s -> onChannelChanged(s, sbBlue));
         etGreen.addTextChangedListener((AfterTextChangedListener) s -> onChannelChanged(s, sbGreen));
         etRed.addTextChangedListener((AfterTextChangedListener) s -> onChannelChanged(s, sbRed));
-
         etAlpha.setText(String.format(FORMAT_02X, Color.alpha(oldColor)));
         etRed.setText(String.format(FORMAT_02X, Color.red(oldColor)));
         etGreen.setText(String.format(FORMAT_02X, Color.green(oldColor)));
         etBlue.setText(String.format(FORMAT_02X, Color.blue(oldColor)));
+        ((CompoundButton) dialog.findViewById(R.id.rb_dec)).setOnCheckedChangeListener((buttonView, isChecked) -> setRadix(isChecked, 10));
+        ((CompoundButton) dialog.findViewById(R.id.rb_hex)).setOnCheckedChangeListener((buttonView, isChecked) -> setRadix(isChecked, 16));
     }
 }

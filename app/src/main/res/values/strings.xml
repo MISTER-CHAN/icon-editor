@@ -31,6 +31,8 @@
     <string name="custom">Custom</string>
     <string name="custom_color_filter">Custom Color Filter</string>
     <string name="cut">Cut</string>
+    <string name="dec">Dec</string>
+    <string name="degree" translatable="false">°</string>
     <string name="delete">Delete</string>
     <string name="deselect">Deselect</string>
     <string name="double_zero" translatable="false">00</string>
@@ -51,8 +53,10 @@
     <string name="forty_eight" translatable="false">48</string>
     <string name="g" translatable="false">G</string>
     <string name="gradient">Gradient</string>
+    <string name="h" translatable="false">H</string>
     <string name="height">Height</string>
     <string name="help">Help</string>
+    <string name="hex">Hex</string>
     <string name="homepage">Homepage</string>
     <string name="homepage_address" translatable="false">https://github.com/MISTER-CHAN/IconEditor</string>
     <string name="horizontally">Horizontally</string>
@@ -79,6 +83,7 @@
     <string name="paste">Paste</string>
     <string name="pencil">Pencil</string>
     <string name="pen_with_filter">Filter</string>
+    <string name="percent" translatable="false">%</string>
     <string name="properties">Properties</string>
     <string name="r" translatable="false">R</string>
     <string name="rectangle">Rectangle</string>
@@ -88,6 +93,7 @@
     <string name="rotate_around_r">Rotate Around R</string>
     <string name="rotate_around_g">Rotate Around G</string>
     <string name="rotate_around_b">Rotate Around B</string>
+    <string name="s" translatable="false">S</string>
     <string name="saturation">Saturation</string>
     <string name="save">Save</string>
     <string name="save_as">Save As</string>
@@ -129,6 +135,7 @@
     <string name="two_seventy_degrees">270°</string>
     <string name="undo" translatable="false">↶</string>
     <string name="untitled">Untitled</string>
+    <string name="v" translatable="false">V</string>
     <string name="vertically">Vertically</string>
     <string name="when_resizing">When resizing</string>
     <string name="width">Width</string>

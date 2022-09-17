@@ -749,15 +749,9 @@ public class MainActivity extends AppCompatActivity {
 
             case MotionEvent.ACTION_DOWN: {
                 float x = event.getX(), y = event.getY();
-                int originalX = toOriginal(x - tab.translationX), originalY = toOriginal(y - tab.translationY);
-                canvas.drawPoint(originalX, originalY, eraser);
-                drawBitmapOnView();
-                tvState.setText(String.format(getString(R.string.coordinate), originalX, originalY));
                 prevX = x;
                 prevY = y;
-                break;
             }
-
             case MotionEvent.ACTION_MOVE: {
                 float x = event.getX(), y = event.getY();
                 int originalX = toOriginal(x - tab.translationX), originalY = toOriginal(y - tab.translationY);
@@ -773,7 +767,6 @@ public class MainActivity extends AppCompatActivity {
                 prevY = y;
                 break;
             }
-
             case MotionEvent.ACTION_CANCEL:
             case MotionEvent.ACTION_UP:
                 history.offer(bitmap);
