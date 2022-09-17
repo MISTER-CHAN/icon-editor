@@ -50,10 +50,10 @@
     <string name="hex">十六進制</string>
     <string name="homepage">主頁</string>
     <string name="horizontally">水平</string>
+    <string name="hue_only">僅色相</string>
     <string name="image">圖像</string>
     <string name="image_size">圖像尺寸</string>
     <string name="invert">反相</string>
-    <string name="hue_only">僅色相</string>
     <string name="layer">圖層</string>
     <string name="lightness">明度</string>
     <string name="line">直線</string>
