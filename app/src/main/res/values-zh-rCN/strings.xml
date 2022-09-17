@@ -83,10 +83,13 @@
     <string name="saturation">饱和度</string>
     <string name="save">保存</string>
     <string name="save_as">另存为</string>
+    <string name="scale">缩放</string>
     <string name="scale_to_black">压缩至黑色</string>
+    <string name="scale_to_white">压缩至白色</string>
     <string name="select">选择</string>
     <string name="select_all">全选</string>
     <string name="shape">形状</string>
+    <string name="shift">偏移</string>
     <string name="size">尺寸</string>
     <string name="source">来源</string>
     <string name="spacing">间距</string>
@@ -121,5 +124,4 @@
     <string name="when_resizing">当重设尺寸时</string>
     <string name="width">宽度</string>
     <string name="zoom">缩放</string>
-    <string name="scale_to_white">压缩至白色</string>
 </resources>

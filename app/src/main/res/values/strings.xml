@@ -99,11 +99,13 @@
     <string name="saturation">Saturation</string>
     <string name="save">Save</string>
     <string name="save_as">Save As</string>
+    <string name="scale">Scale</string>
     <string name="scale_to_white">Scale to White</string>
     <string name="scale_to_black">Scale to Black</string>
     <string name="select">Select</string>
     <string name="select_all">Select All</string>
     <string name="shape">Shape</string>
+    <string name="shift">Shift</string>
     <string name="size">Size</string>
     <string name="source">Source</string>
     <string name="spacing">Spacing</string>

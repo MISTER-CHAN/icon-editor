@@ -21,7 +21,6 @@ import android.graphics.RectF;
 import android.graphics.Shader;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.text.InputFilter;
@@ -49,7 +48,6 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 import androidx.annotation.Size;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -2856,7 +2854,7 @@ public class MainActivity extends AppCompatActivity {
 
             case R.id.i_filter_channels:
                 createBitmapWithFilter();
-                new ChannelsDialog(this)
+                new ChannelMixer(this)
                         .setOnCancelListener(onFilterCancelListener)
                         .setOnMatrixChangeListener(onColorMatrixChangeListener)
                         .setOnPositiveButtonClickListener(onFilterConfirmListener)
