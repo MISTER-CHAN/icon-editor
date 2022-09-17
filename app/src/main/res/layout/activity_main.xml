@@ -420,10 +420,10 @@
                             android:text="@string/contiguous" />
 
                         <CheckBox
-                            android:id="@+id/cb_bucket_fill_keep_color_diff"
+                            android:id="@+id/cb_bucket_fill_hue_only"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@string/keep_color_diff" />
+                            android:text="@string/hue_only" />
 
                         <Button
                             android:id="@+id/b_bucket_fill_threshold"

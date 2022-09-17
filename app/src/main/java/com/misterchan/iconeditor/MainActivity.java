@@ -163,7 +163,7 @@ public class MainActivity extends AppCompatActivity {
     private Canvas viewCanvas;
     private CellGrid cellGrid;
     private CheckBox cbBucketFillContiguous;
-    private CheckBox cbBucketFillKeepColorDiff;
+    private CheckBox cbBucketFillHueOnly;
     private CheckBox cbFilterClear;
     private CheckBox cbGradientAntiAlias;
     private CheckBox cbPencilAntiAlias;
@@ -662,10 +662,10 @@ public class MainActivity extends AppCompatActivity {
                 }
                 if (cbBucketFillContiguous.isChecked()) {
                     floodFill(bitmap, bitmap, originalX, originalY, paint.getColor(),
-                            threshold, colorRange, cbBucketFillKeepColorDiff.isChecked());
+                            threshold, colorRange, cbBucketFillHueOnly.isChecked());
                 } else {
                     bucketFill(bitmap, originalX, originalY, paint.getColor(),
-                            threshold, colorRange, cbBucketFillKeepColorDiff.isChecked());
+                            threshold, colorRange, cbBucketFillHueOnly.isChecked());
                 }
                 drawBitmapOnView();
                 history.offer(bitmap);
@@ -1697,7 +1697,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void bucketFill(Bitmap bitmap, int x, int y, @ColorInt final int color,
-                            final int threshold, final int colorRange, final boolean keepColorDiff) {
+                            final int threshold, final int colorRange, final boolean hueOnly) {
         int left, top, right, bottom;
         if (hasSelection) {
             left = selection.left;
@@ -1724,7 +1724,7 @@ public class MainActivity extends AppCompatActivity {
         int hi = 0;
         float f = 0.0f;
         float alpha = 0.0f;
-        if (keepColorDiff) {
+        if (hueOnly) {
             Color.colorToHSV(pixel, hsv0);
             Color.colorToHSV(color, hsv0_);
             hi = (int) (hsv0_[0] / 60.0f);
@@ -1743,8 +1743,8 @@ public class MainActivity extends AppCompatActivity {
                         match = checkColorIsWithinThreshold(
                                 Color.red(pixel), Color.green(pixel), Color.blue(pixel),
                                 r, g, b);
-                        if (match && keepColorDiff) {
-                            c = fillButKeepColorDiff(r / 255.0f, g / 255.0f, b / 255.0f,
+                        if (match && hueOnly) {
+                            c = fillButOnlyHue(r / 255.0f, g / 255.0f, b / 255.0f,
                                     hsv0[1], hsv0[2], hsv0_[1], hsv0_[2],
                                     f, hi, alpha);
                         }
@@ -2248,8 +2248,8 @@ public class MainActivity extends AppCompatActivity {
         ivPreview.invalidate();
     }
 
-    private int fillButKeepColorDiff(float r, float g, float b, float s0, float v0, float s0_,
-                                     float v0_, float f, int hi, float alpha) {
+    private int fillButOnlyHue(float r, float g, float b, float s0, float v0, float s0_,
+                               float v0_, float f, int hi, float alpha) {
         int color = 0;
         final float max = Math.max(Math.max(r, g), b), min = Math.min(Math.min(r, g), b);
         final float s = max == 0.0f ? 0.0f : 1.0f - min / max, v = max;
@@ -2287,7 +2287,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void floodFill(final Bitmap src, final Bitmap dst, int x, int y,
                            @ColorInt final int color,
-                           final int threshold, final int colorRange, final boolean keepColorDiff) {
+                           final int threshold, final int colorRange, final boolean hueOnly) {
         int left, top, right, bottom;
         if (hasSelection) {
             left = selection.left;
@@ -2314,7 +2314,7 @@ public class MainActivity extends AppCompatActivity {
         int hi = 0;
         float f = 0.0f;
         float alpha = 0.0f;
-        if (keepColorDiff) {
+        if (hueOnly) {
             Color.colorToHSV(pixel, hsv0);
             Color.colorToHSV(color, hsv0_);
             hi = (int) (hsv0_[0] / 60.0f);
@@ -2341,8 +2341,8 @@ public class MainActivity extends AppCompatActivity {
                     match = checkColorIsWithinThreshold(
                             Color.red(pixel), Color.green(pixel), Color.blue(pixel),
                             r, g, b);
-                    if (match && keepColorDiff) {
-                        c = fillButKeepColorDiff(r / 255.0f, g / 255.0f, b / 255.0f,
+                    if (match && hueOnly) {
+                        c = fillButOnlyHue(r / 255.0f, g / 255.0f, b / 255.0f,
                                 hsv0[1], hsv0[2], hsv0_[1], hsv0_[2],
                                 f, hi, alpha);
                     }
@@ -2485,7 +2485,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         cbBucketFillContiguous = findViewById(R.id.cb_bucket_fill_contiguous);
-        cbBucketFillKeepColorDiff = findViewById(R.id.cb_bucket_fill_keep_color_diff);
+        cbBucketFillHueOnly = findViewById(R.id.cb_bucket_fill_hue_only);
         cbFilterClear = findViewById(R.id.cb_filter_clear);
         cbGradientAntiAlias = findViewById(R.id.cb_gradient_anti_alias);
         cbPencilAntiAlias = findViewById(R.id.cb_pencil_anti_alias);

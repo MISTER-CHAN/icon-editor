@@ -61,10 +61,10 @@
     <string name="homepage">Homepage</string>
     <string name="homepage_address" translatable="false">https://github.com/MISTER-CHAN/IconEditor</string>
     <string name="horizontally">Horizontally</string>
+    <string name="hue_only">Hue Only</string>
     <string name="image">Image</string>
     <string name="image_size">Image Size</string>
     <string name="invert">Invert</string>
-    <string name="keep_color_diff">Keep Color Difference</string>
     <string name="layer">Layer</string>
     <string name="lightness">Lightness</string>
     <string name="line">Line</string>
