@@ -71,7 +71,6 @@ import java.util.Queue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-@RequiresApi(api = Build.VERSION_CODES.Q)
 public class MainActivity extends AppCompatActivity {
 
     private enum Position {
@@ -227,6 +226,7 @@ public class MainActivity extends AppCompatActivity {
     private Point cloneStampSrc; // Sel. - Selection
     private Point cloneStampSrcDist = new Point(0, 0); // Dist. - Distance
     private Position draggingBound = Position.NULL;
+    private Preferences preferences = new Preferences();
     private RadioButton rbBucketFill;
     private RadioButton rbCloneStamp;
     private RadioButton rbFilter;
@@ -480,6 +480,7 @@ public class MainActivity extends AppCompatActivity {
     private final View.OnClickListener onAddSwatchViewClickListener = v ->
             ColorPicker.make(MainActivity.this,
                             R.string.add,
+                            preferences,
                             (oldColor, newColor) -> {
                                 palette.offerFirst(newColor);
                                 colorAdapter.notifyDataSetChanged();
@@ -490,6 +491,7 @@ public class MainActivity extends AppCompatActivity {
     private final View.OnClickListener onBackgroundColorClickListener = v ->
             ColorPicker.make(MainActivity.this,
                             R.string.background_color,
+                            preferences,
                             (oldColor, newColor) -> {
                                 eraser.setColor(newColor);
                                 vBackgroundColor.setBackgroundColor(newColor);
@@ -505,6 +507,7 @@ public class MainActivity extends AppCompatActivity {
     private final View.OnClickListener onForegroundColorClickListener = v ->
             ColorPicker.make(MainActivity.this,
                             R.string.foreground_color,
+                            preferences,
                             (oldColor, newColor) -> {
                                 paint.setColor(newColor);
                                 vForegroundColor.setBackgroundColor(newColor);
@@ -786,7 +789,8 @@ public class MainActivity extends AppCompatActivity {
                 int color = bitmap.getPixel(originalX, originalY);
                 paint.setColor(color);
                 vForegroundColor.setBackgroundColor(color);
-                tvState.setText(String.format(getString(R.string.state_eyedropper),
+                tvState.setText(String.format(
+                        String.format(getString(R.string.state_eyedropper), preferences.getArgbChannelsFormat()),
                         originalX, originalY,
                         Color.alpha(color), Color.red(color), Color.green(color), Color.blue(color)));
                 break;
@@ -1515,7 +1519,7 @@ public class MainActivity extends AppCompatActivity {
     };
 
     private final OnProgressChangeListener onFilterContrastSeekBarProgressChangeListener = progress -> {
-        float scale = progress / 10.0f, shift = 0x80 * (1.0f - scale);
+        float scale = progress / 10.0f, shift = 0xFF / 2.0f * (1.0f - scale);
         bitmapWithFilter.setFilter(new ColorMatrix(new float[]{
                 scale, 0.0f, 0.0f, 0.0f, shift,
                 0.0f, scale, 0.0f, 0.0f, shift,
@@ -1524,18 +1528,6 @@ public class MainActivity extends AppCompatActivity {
         }));
         drawBitmapWithFilterOnView();
         tvState.setText(String.format(getString(R.string.state_contrast), scale));
-    };
-
-    private final OnProgressChangeListener onFilterInvertSeekBarProgressChangeListener = progress -> {
-        float scale = progress / 10.0f - 1, shift = (1.0f - progress / 20.0f) * 0xFF;
-        bitmapWithFilter.setFilter(new ColorMatrix(new float[]{
-                scale, 0.0f, 0.0f, 0.0f, shift,
-                0.0f, scale, 0.0f, 0.0f, shift,
-                0.0f, 0.0f, scale, 0.0f, shift,
-                0.0f, 0.0f, 0.0f, 1.0f, 0.0f
-        }));
-        drawBitmapWithFilterOnView();
-        tvState.setText(String.format(getString(R.string.state_invert), scale));
     };
 
     private final OnProgressChangeListener onFilterLightnessSeekBarProgressChangeListener = progress -> {
@@ -2631,6 +2623,7 @@ public class MainActivity extends AppCompatActivity {
                 setOnItemLongClickListener(view -> {
                     ColorPicker.make(MainActivity.this,
                                     R.string.swatch,
+                                    preferences,
                                     (oldColor, newColor) -> {
                                         if (newColor != null) {
                                             palette.set(palette.indexOf(oldColor), newColor);
@@ -2873,18 +2866,8 @@ public class MainActivity extends AppCompatActivity {
 
             case R.id.i_filter_contrast:
                 createBitmapWithFilter();
-                new SeekBarDialog(this).setTitle(R.string.contrast).setMin(0).setMax(100).setProgress(10)
+                new SeekBarDialog(this).setTitle(R.string.contrast).setMin(-10).setMax(100).setProgress(10)
                         .setOnProgressChangeListener(onFilterContrastSeekBarProgressChangeListener)
-                        .setOnPositiveButtonClickListener(onFilterConfirmListener)
-                        .setOnCancelListener(onFilterCancelListener)
-                        .show();
-                tvState.setText("");
-                break;
-
-            case R.id.i_filter_invert:
-                createBitmapWithFilter();
-                new SeekBarDialog(this).setTitle(R.string.invert).setMin(0).setMax(20).setProgress(20)
-                        .setOnProgressChangeListener(onFilterInvertSeekBarProgressChangeListener)
                         .setOnPositiveButtonClickListener(onFilterConfirmListener)
                         .setOnCancelListener(onFilterCancelListener)
                         .show();
@@ -2999,6 +2982,10 @@ public class MainActivity extends AppCompatActivity {
                 hasSelection = true;
                 rbTransformer.setChecked(true);
                 drawTransformeeAndSelectionOnViewByTranslation();
+                break;
+
+            case R.id.i_preferences:
+                preferences.show(this);
                 break;
 
             case R.id.i_redo:

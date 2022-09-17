@@ -5,6 +5,7 @@
     <string name="add_symbol" translatable="false">+</string>
     <string name="anti_alias">Anti-alias</string>
     <string name="app_name">Icon Editor</string>
+    <string name="argb_channels_radix">ARGB Channels Radix</string>
     <string name="around_r">Around R</string>
     <string name="around_g">Around G</string>
     <string name="around_b">Around B</string>
@@ -84,6 +85,7 @@
     <string name="pencil">Pencil</string>
     <string name="pen_with_filter">Filter</string>
     <string name="percent" translatable="false">%</string>
+    <string name="preferences">Preferences</string>
     <string name="properties">Properties</string>
     <string name="r" translatable="false">R</string>
     <string name="rectangle">Rectangle</string>
@@ -109,7 +111,7 @@
     <string name="state_axes">"Axes: %d, %d"</string>
     <string name="state_lightness">Brightness: %d</string>
     <string name="state_contrast">Contrast: %.1f</string>
-    <string name="state_eyedropper" translatable="false">(%d, %d) A: %02X, R: %02X, G: %02X, B: %02X</string>
+    <string name="state_eyedropper" translatable="false">(%%d, %%d) A: %1$s, R: %1$s, G: %1$s, B: %1$s</string>
     <string name="state_invert">Invert: %.1f</string>
     <string name="state_left_top">Left: %d, Top: %d</string>
     <string name="state_length">Length: %f</string>

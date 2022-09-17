@@ -3,7 +3,6 @@ package com.misterchan.iconeditor;
 import android.content.Context;
 import android.graphics.Color;
 import android.view.View;
-import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.SeekBar;
 
@@ -17,7 +16,6 @@ public class ColorPicker {
     }
 
     private static final String FORMAT_02X = "%02X";
-    private static final String FORMAT_D = "%d";
 
     @ColorInt
     private int newColor, oldColor;
@@ -35,16 +33,18 @@ public class ColorPicker {
     private SeekBar sbRed;
     private View vPreview;
 
-    public static ColorPicker make(Context context, int titleId, final OnColorPickListener onColorPickListener) {
-        return make(context, titleId, onColorPickListener, null, false);
+    public static ColorPicker make(Context context, int titleId, Preferences preferences, final OnColorPickListener onColorPickListener) {
+        return make(context, titleId, preferences, onColorPickListener, null, false);
     }
 
-    public static ColorPicker make(Context context, int titleId, final OnColorPickListener onColorPickListener, @ColorInt final Integer oldColor) {
-        return make(context, titleId, onColorPickListener, oldColor, false);
+    public static ColorPicker make(Context context, int titleId, Preferences preferences, final OnColorPickListener onColorPickListener, @ColorInt final Integer oldColor) {
+        return make(context, titleId, preferences, onColorPickListener, oldColor, false);
     }
 
-    public static ColorPicker make(Context context, int titleId, final OnColorPickListener onColorPickListener, @ColorInt final Integer oldColor, boolean canDeleteOld) {
+    public static ColorPicker make(Context context, int titleId, Preferences preferences, final OnColorPickListener onColorPickListener, @ColorInt final Integer oldColor, boolean canDeleteOld) {
         ColorPicker picker = new ColorPicker();
+        picker.radix = preferences.getArgbChannelsRadix();
+        picker.format = preferences.getArgbChannelsFormat();
         picker.dialogBuilder = new AlertDialog.Builder(context)
                 .setNegativeButton(R.string.cancel, null)
                 .setPositiveButton(R.string.ok, (dialog, which) -> onColorPickListener.onPick(oldColor, picker.newColor))
@@ -76,18 +76,6 @@ public class ColorPicker {
         vPreview.setBackgroundColor(newColor);
     }
 
-    private void setRadix(boolean isChecked, int radix) {
-        if (isChecked) {
-            this.radix = radix;
-            format = radix == 16 ? FORMAT_02X : FORMAT_D;
-
-            etAlpha.setText(String.format(format, sbAlpha.getProgress()));
-            etRed.setText(String.format(format, sbRed.getProgress()));
-            etGreen.setText(String.format(format, sbGreen.getProgress()));
-            etBlue.setText(String.format(format, sbBlue.getProgress()));
-        }
-    }
-
     public void show() {
 
         AlertDialog dialog = dialogBuilder.show();
@@ -110,11 +98,9 @@ public class ColorPicker {
         etBlue.addTextChangedListener((AfterTextChangedListener) s -> onChannelChanged(s, sbBlue));
         etGreen.addTextChangedListener((AfterTextChangedListener) s -> onChannelChanged(s, sbGreen));
         etRed.addTextChangedListener((AfterTextChangedListener) s -> onChannelChanged(s, sbRed));
-        etAlpha.setText(String.format(FORMAT_02X, Color.alpha(oldColor)));
-        etRed.setText(String.format(FORMAT_02X, Color.red(oldColor)));
-        etGreen.setText(String.format(FORMAT_02X, Color.green(oldColor)));
-        etBlue.setText(String.format(FORMAT_02X, Color.blue(oldColor)));
-        ((CompoundButton) dialog.findViewById(R.id.rb_dec)).setOnCheckedChangeListener((buttonView, isChecked) -> setRadix(isChecked, 10));
-        ((CompoundButton) dialog.findViewById(R.id.rb_hex)).setOnCheckedChangeListener((buttonView, isChecked) -> setRadix(isChecked, 16));
+        etAlpha.setText(String.format(format, Color.alpha(oldColor)));
+        etRed.setText(String.format(format, Color.red(oldColor)));
+        etGreen.setText(String.format(format, Color.green(oldColor)));
+        etBlue.setText(String.format(format, Color.blue(oldColor)));
     }
 }

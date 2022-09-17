@@ -4,6 +4,7 @@
     <string name="add">新增</string>
     <string name="anti_alias">抗鋸齒</string>
     <string name="app_name">Icon Editor</string>
+    <string name="argb_channels_radix">ARGB 通道進位制</string>
     <string name="around_r">繞 R 軸</string>
     <string name="around_g">繞 G 軸</string>
     <string name="around_b">繞 B 軸</string>
@@ -71,6 +72,7 @@
     <string name="paste">貼上</string>
     <string name="pencil">鉛筆</string>
     <string name="pen_with_filter">濾光筆</string>
+    <string name="preferences">偏好</string>
     <string name="properties">屬性</string>
     <string name="rectangle">矩形</string>
     <string name="reset_source">重設來源</string>
