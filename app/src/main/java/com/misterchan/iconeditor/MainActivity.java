@@ -5,7 +5,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.BlendMode;
 import android.graphics.BlurMaskFilter;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -547,8 +546,7 @@ public class MainActivity extends AppCompatActivity {
         tvState.setText("");
     };
 
-    private final MergeAsHiddenDialog.OnFinishSettingListener onFinishSettingHiddenImageListener = scale -> {
-        Bitmap bm = mergeAsHidden(new Bitmap[]{bitmap, tabs.get(currentTabIndex + 1).bitmap}, scale);
+    private final HiddenImageMaker.OnFinishSettingListener onFinishMakingHiddenImageListener = bm -> {
         createGraphic(bm.getWidth(), bm.getHeight());
         canvas.drawBitmap(bm, 0.0f, 0.0f, opaquePaint);
         drawBitmapOnView();
@@ -1880,12 +1878,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void drawBitmapOnCanvas(Bitmap bm, float translX, float translY, Canvas cv) {
+        int bitmapWidth = bm.getWidth(), bitmapHeight = bm.getHeight();
+        int scaledBitmapW = (int) toScaled(bitmapWidth), scaledBitmapH = (int) toScaled(bitmapHeight);
         int startX = translX >= 0.0f ? 0 : toOriginal(-translX);
         int startY = translY >= 0.0f ? 0 : toOriginal(-translY);
-        int bitmapWidth = bm.getWidth(), bitmapHeight = bm.getHeight();
-        int scaledBmpWidth = (int) toScaled(bitmapWidth), scaledBmpHeight = (int) toScaled(bitmapHeight);
-        int endX = Math.min(toOriginal(translX + scaledBmpWidth <= viewWidth ? scaledBmpWidth : viewWidth - translX) + 1, bitmapWidth);
-        int endY = Math.min(toOriginal(translY + scaledBmpHeight <= viewHeight ? scaledBmpHeight : viewHeight - translY) + 1, bitmapHeight);
+        int endX = Math.min(toOriginal(translX + scaledBitmapW <= viewWidth ? scaledBitmapW : viewWidth - translX) + 1, bitmapWidth);
+        int endY = Math.min(toOriginal(translY + scaledBitmapH <= viewHeight ? scaledBitmapH : viewHeight - translY) + 1, bitmapHeight);
+        if (startX >= endX || startY >= endY) {
+            return;
+        }
         float left = translX >= 0.0f ? translX : translX % tab.scale;
         float top = translY >= 0.0f ? translY : translY % tab.scale;
         if (isScaledMuch()) {
@@ -1901,8 +1902,8 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         } else {
-            float right = Math.min(translX + scaledBmpWidth, viewWidth);
-            float bottom = Math.min(translY + scaledBmpHeight, viewHeight);
+            float right = Math.min(translX + scaledBitmapW, viewWidth);
+            float bottom = Math.min(translY + scaledBitmapH, viewHeight);
             cv.drawBitmap(bm,
                     new Rect(startX, startY, endX, endY),
                     new RectF(left, top, right, bottom),
@@ -2402,15 +2403,15 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private float inRange(float a, float min, float max) {
-        return Math.max(Math.min(a, max), min);
-    }
-
     private boolean isPaintStyleFill() {
         return paint.getStyle() != Paint.Style.STROKE;
     }
 
-    private int inRange(int a, int min, int max) {
+    private static float inRange(float a, float min, float max) {
+        return Math.max(Math.min(a, max), min);
+    }
+
+    private static int inRange(int a, int min, int max) {
         return Math.max(Math.min(a, max), min);
     }
 
@@ -2485,75 +2486,6 @@ public class MainActivity extends AppCompatActivity {
             tabs.remove(0);
             tabLayout.removeTabAt(0);
         }
-    }
-
-    private Bitmap mergeAsHidden(@Size(value = 2) Bitmap[] bitmaps,
-                                 @Size(value = 2) float[] scale) {
-        final int[] width = {bitmaps[0].getWidth(), bitmaps[1].getWidth()},
-                height = {bitmaps[0].getHeight(), bitmaps[1].getHeight()};
-        final int w = Math.max(width[0], width[1]), h = Math.max(height[0], height[1]), area = w * h;
-        final int[] left = {0, 0}, top = {0, 0};
-        {
-            final int iaw = width[0] >= width[1] ? 0 : 1, iiw = 1 - iaw, // iaw - Index of max width; iiw - Min.
-                    iah = height[0] >= width[1] ? 0 : 1, iih = 1 - iah;
-            left[iiw] = (width[iaw] - width[iiw]) >> 1;
-            top[iih] = (height[iah] - height[iih]) >> 1;
-        }
-        final Bitmap[] bitmaps_ = {
-                Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888),
-                Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
-        };
-        {
-            final Canvas[] canvases = {new Canvas(bitmaps_[0]), new Canvas(bitmaps_[1])};
-            final Paint paint = new Paint();
-            float shift;
-
-            canvases[0].drawColor(Color.WHITE, BlendMode.DST_OVER);
-            shift = (1.0f - scale[0]) * 0xFF;
-            paint.setColorFilter(new ColorMatrixColorFilter(new float[]{
-                    scale[0], 0.0f, 0.0f, 0.0f, shift,
-                    0.0f, scale[0], 0.0f, 0.0f, shift,
-                    0.0f, 0.0f, scale[0], 0.0f, shift,
-                    0.0f, 0.0f, 0.0f, 1.0f, 0.0f
-            }));
-            canvases[0].drawBitmap(bitmaps[0], left[0], top[0], paint);
-
-            canvases[1].drawColor(Color.BLACK, BlendMode.DST_OVER);
-            paint.setColorFilter(new ColorMatrixColorFilter(new float[]{
-                    scale[1], 0.0f, 0.0f, 0.0f, 0.0f,
-                    0.0f, scale[1], 0.0f, 0.0f, 0.0f,
-                    0.0f, 0.0f, scale[1], 0.0f, 0.0f,
-                    0.0f, 0.0f, 0.0f, 1.0f, 0.0f
-            }));
-            canvases[1].drawBitmap(bitmaps[1], left[1], top[1], paint);
-        }
-        int[][] pixels = {new int[area], new int[area]};
-        int[] pixels_ = new int[area];
-        bitmaps_[0].getPixels(pixels[0], 0, w, 0, 0, w, h);
-        bitmaps_[1].getPixels(pixels[1], 0, w, 0, 0, w, h);
-
-        bitmaps_[0].recycle();
-        bitmaps_[1].recycle();
-
-        for (int i = 0; i < area; ++i) {
-            float[] red = {Color.red(pixels[0][i]) / 255.0f, Color.red(pixels[1][i]) / 255.0f},
-                    green = {Color.green(pixels[0][i]) / 255.0f, Color.green(pixels[1][i]) / 255.0f},
-                    blue = {Color.blue(pixels[0][i]) / 255.0f, Color.blue(pixels[1][i]) / 255.0f};
-            float[] average = {(red[0] + green[0] + blue[0]) / 3.0f, (red[1] + green[1] + blue[1]) / 3.0f};
-            float a = inRange(1 + (average[1] - average[0]), 0.0f, 1.0f);
-            float ar = inRange(1 + (red[1] - red[0]), 0.0f, 1.0f),
-                    ag = inRange(1 + (green[1] - green[0]), 0.0f, 1.0f),
-                    ab = inRange(1 + (blue[1] - blue[0]), 0.0f, 1.0f);
-            pixels_[i] = Color.argb(
-                    a,
-                    inRange(ar > 0.0f ? (red[1] / ar) : 1.0f, 0.0f, 1.0f),
-                    inRange(ag > 0.0f ? (green[1] / ag) : 1.0f, 0.0f, 1.0f),
-                    inRange(ab > 0.0f ? (blue[1] / ab) : 1.0f, 0.0f, 1.0f));
-        }
-
-        Bitmap bm = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
-        bm.setPixels(pixels_, 0, w, 0, 0, w, h);
-        return bm;
     }
 
     @Override
@@ -3030,9 +2962,9 @@ public class MainActivity extends AppCompatActivity {
                             .show();
                     break;
                 }
-                new MergeAsHiddenDialog(this)
-                        .setOnFinishSettingListener(onFinishSettingHiddenImageListener)
-                        .show();
+                HiddenImageMaker.merge(this,
+                        new Bitmap[]{bitmap, tabs.get(currentTabIndex + 1).bitmap},
+                        onFinishMakingHiddenImageListener);
                 break;
             }
             case R.id.i_new: {
