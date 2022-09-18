@@ -1,0 +1,27 @@
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory app:title="@string/general">
+
+        <ListPreference
+            app:defaultValue="hex"
+            app:entries="@array/radix_entries"
+            app:entryValues="@array/radix_values"
+            app:key="acr"
+            app:title="@string/argb_channels_radix"
+            app:useSimpleSummaryProvider="true" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/about">
+
+        <Preference
+            app:summary="@string/mister_chan"
+            app:title="@string/author" />
+
+        <Preference
+            app:summary="@string/homepage_address"
+            app:title="@string/check_for_updates" />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

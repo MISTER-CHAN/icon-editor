@@ -3,6 +3,7 @@ package com.misterchan.iconeditor;
 import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.BlurMaskFilter;
@@ -52,6 +53,7 @@ import androidx.annotation.Size;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.documentfile.provider.DocumentFile;
+import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -224,7 +226,6 @@ public class MainActivity extends AppCompatActivity {
     private Point cloneStampSrc; // Sel. - Selection
     private Point cloneStampSrcDist = new Point(0, 0); // Dist. - Distance
     private Position draggingBound = Position.NULL;
-    private Preferences preferences = new Preferences();
     private RadioButton rbBucketFill;
     private RadioButton rbCloneStamp;
     private RadioButton rbFilter;
@@ -232,6 +233,7 @@ public class MainActivity extends AppCompatActivity {
     private Rect selection = new Rect();
     private RectF transfromeeDpb = new RectF(); // DPB - Distance from point to bounds
     private RecyclerView rvSwatches;
+    private Settings settings;
     private Spinner sFileType;
     private String tree = "";
     private Tab tab;
@@ -478,7 +480,7 @@ public class MainActivity extends AppCompatActivity {
     private final View.OnClickListener onAddSwatchViewClickListener = v ->
             ColorPicker.make(MainActivity.this,
                             R.string.add,
-                            preferences,
+                            settings,
                             (oldColor, newColor) -> {
                                 palette.offerFirst(newColor);
                                 colorAdapter.notifyDataSetChanged();
@@ -489,7 +491,7 @@ public class MainActivity extends AppCompatActivity {
     private final View.OnClickListener onBackgroundColorClickListener = v ->
             ColorPicker.make(MainActivity.this,
                             R.string.background_color,
-                            preferences,
+                            settings,
                             (oldColor, newColor) -> {
                                 eraser.setColor(newColor);
                                 vBackgroundColor.setBackgroundColor(newColor);
@@ -505,7 +507,7 @@ public class MainActivity extends AppCompatActivity {
     private final View.OnClickListener onForegroundColorClickListener = v ->
             ColorPicker.make(MainActivity.this,
                             R.string.foreground_color,
-                            preferences,
+                            settings,
                             (oldColor, newColor) -> {
                                 paint.setColor(newColor);
                                 vForegroundColor.setBackgroundColor(newColor);
@@ -788,7 +790,7 @@ public class MainActivity extends AppCompatActivity {
                 paint.setColor(color);
                 vForegroundColor.setBackgroundColor(color);
                 tvState.setText(String.format(
-                        String.format(getString(R.string.state_eyedropper), preferences.getArgbChannelsFormat()),
+                        String.format(getString(R.string.state_eyedropper), settings.getArgbChannelsFormat()),
                         originalX, originalY,
                         Color.alpha(color), Color.red(color), Color.green(color), Color.blue(color)));
                 break;
@@ -2479,10 +2481,19 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    public void onBackPressed() {
+        moveTaskToBack(true);
+    }
+
+    @Override
     @SuppressLint("ClickableViewAccessibility")
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        settings = ((MainApplication) getApplicationContext()).getSettings();
+        settings.update(preferences);
 
         cbBucketFillContiguous = findViewById(R.id.cb_bucket_fill_contiguous);
         cbBucketFillHueOnly = findViewById(R.id.cb_bucket_fill_hue_only);
@@ -2621,7 +2632,7 @@ public class MainActivity extends AppCompatActivity {
                 setOnItemLongClickListener(view -> {
                     ColorPicker.make(MainActivity.this,
                                     R.string.swatch,
-                                    preferences,
+                                    settings,
                                     (oldColor, newColor) -> {
                                         if (newColor != null) {
                                             palette.set(palette.indexOf(oldColor), newColor);
@@ -2715,48 +2726,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onBackPressed() {
-        moveTaskToBack(true);
-    }
-
-    @SuppressLint("ClickableViewAccessibility")
-    private void onToolChange(View.OnTouchListener onImageViewTouchListener) {
-        cbZoom.setChecked(false);
-        cbZoom.setTag(onImageViewTouchListener);
-        flImageView.setOnTouchListener(onImageViewTouchListener);
-        hideToolOptions();
-        paint.setAntiAlias(false);
-        paint.setMaskFilter(null);
-    }
-
-    @SuppressLint("ClickableViewAccessibility")
-    private void onToolChange(boolean isChecked, View.OnTouchListener onImageViewTouchListener) {
-        onToolChange(isChecked, onImageViewTouchListener, null);
-    }
-
-    @SuppressLint("ClickableViewAccessibility")
-    private void onToolChange(boolean isChecked, View.
-            OnTouchListener onImageViewTouchListener, View toolOption) {
-        if (isChecked) {
-            onToolChange(onImageViewTouchListener);
-            if (toolOption != null) {
-                toolOption.setVisibility(View.VISIBLE);
-            }
-        }
-    }
-
-    @Override
     @SuppressLint("NonConstantResourceId")
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.i_about:
-                new AlertDialog.Builder(this)
-                        .setTitle(R.string.about)
-                        .setMessage(R.string.author)
-                        .setPositiveButton(R.string.ok, null)
-                        .show();
-                break;
-
             case R.id.i_cell_grid: {
                 CellGridManager.make(this, cellGrid,
                                 onUpdateCellGridListener)
@@ -2926,14 +2898,6 @@ public class MainActivity extends AppCompatActivity {
                 scale(1.0f, -1.0f, false);
                 break;
             }
-            case R.id.i_homepage:
-                new AlertDialog.Builder(this)
-                        .setTitle(R.string.homepage)
-                        .setMessage(R.string.homepage_address)
-                        .setPositiveButton(R.string.ok, null)
-                        .show();
-                break;
-
             case R.id.i_merge_with_gray: {
                 if (currentTabIndex + 1 >= tabs.size()) {
                     new AlertDialog.Builder(this)
@@ -2982,10 +2946,6 @@ public class MainActivity extends AppCompatActivity {
                 drawTransformeeAndSelectionOnViewByTranslation();
                 break;
 
-            case R.id.i_preferences:
-                preferences.show(this);
-                break;
-
             case R.id.i_redo:
                 if (history.canRedo()) {
                     undoOrRedo(history.redo());
@@ -3030,6 +2990,10 @@ public class MainActivity extends AppCompatActivity {
                 tvState.setText("");
                 break;
 
+            case R.id.i_settings:
+                startActivity(new Intent(this, SettingsActivity.class));
+                break;
+
             case R.id.i_size: {
                 drawTransformeeOnCanvas();
                 drawTextOnCanvas();
@@ -3052,6 +3016,32 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    private void onToolChange(View.OnTouchListener onImageViewTouchListener) {
+        cbZoom.setChecked(false);
+        cbZoom.setTag(onImageViewTouchListener);
+        flImageView.setOnTouchListener(onImageViewTouchListener);
+        hideToolOptions();
+        paint.setAntiAlias(false);
+        paint.setMaskFilter(null);
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    private void onToolChange(boolean isChecked, View.OnTouchListener onImageViewTouchListener) {
+        onToolChange(isChecked, onImageViewTouchListener, null);
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    private void onToolChange(boolean isChecked, View.
+            OnTouchListener onImageViewTouchListener, View toolOption) {
+        if (isChecked) {
+            onToolChange(onImageViewTouchListener);
+            if (toolOption != null) {
+                toolOption.setVisibility(View.VISIBLE);
+            }
+        }
     }
 
     @Override

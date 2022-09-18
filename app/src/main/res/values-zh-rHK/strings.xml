@@ -8,13 +8,14 @@
     <string name="around_r">繞 R 軸</string>
     <string name="around_g">繞 G 軸</string>
     <string name="around_b">繞 B 軸</string>
-    <string name="author">作者：MISTER_CHAN</string>
+    <string name="author">作者</string>
     <string name="background_color">底色</string>
     <string name="blur_radius">模糊半徑</string>
     <string name="bucket_fill">油漆桶</string>
     <string name="cancel">取消</string>
     <string name="cell_grid">網格</string>
     <string name="channels">通道</string>
+    <string name="check_for_updates">檢査更新</string>
     <string name="circle">圓</string>
     <string name="clear_destination">淸除目標</string>
     <string name="cloner">克隆筆</string>
@@ -44,6 +45,7 @@
     <string name="filters">濾鏡</string>
     <string name="flip">翻轉</string>
     <string name="foreground_color">畫筆顏色</string>
+    <string name="general">一般</string>
     <string name="gradient">漸變</string>
     <string name="height">高度</string>
     <string name="help">幫助</string>
@@ -88,6 +90,7 @@
     <string name="scale_to_black">壓縮至黑色</string>
     <string name="select">選取</string>
     <string name="select_all">全選</string>
+    <string name="settings">設定</string>
     <string name="shape">形狀</string>
     <string name="shift">偏移</string>
     <string name="size">尺寸</string>

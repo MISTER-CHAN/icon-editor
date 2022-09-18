@@ -1,0 +1,19 @@
+<resources>
+
+    <!-- File Types -->
+    <string-array name="file_types">
+        <item>.png</item>
+        <item>.jpg</item>
+    </string-array>
+
+    <!-- ARGB Channels Radix Preference -->
+    <string-array name="radix_entries">
+        <item>@string/hex</item>
+        <item>@string/dec</item>
+    </string-array>
+
+    <string-array name="radix_values">
+        <item>16</item>
+        <item>10</item>
+    </string-array>
+</resources>

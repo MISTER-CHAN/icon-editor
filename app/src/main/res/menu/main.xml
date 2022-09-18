@@ -177,23 +177,7 @@
         app:showAsAction="collapseActionView" />
 
     <item
-        android:id="@+id/i_preferences"
-        android:title="@string/preferences"
+        android:id="@+id/i_settings"
+        android:title="@string/settings"
         app:showAsAction="collapseActionView" />
-
-    <item
-        android:title="@string/help"
-        app:showAsAction="collapseActionView">
-
-        <menu>
-
-            <item
-                android:id="@+id/i_homepage"
-                android:title="@string/homepage" />
-
-            <item
-                android:id="@+id/i_about"
-                android:title="@string/about" />
-        </menu>
-    </item>
 </menu>

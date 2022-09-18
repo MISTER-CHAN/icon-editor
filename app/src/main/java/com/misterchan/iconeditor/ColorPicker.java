@@ -1,6 +1,7 @@
 package com.misterchan.iconeditor;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.view.View;
 import android.widget.EditText;
@@ -33,18 +34,18 @@ public class ColorPicker {
     private SeekBar sbRed;
     private View vPreview;
 
-    public static ColorPicker make(Context context, int titleId, Preferences preferences, final OnColorPickListener onColorPickListener) {
-        return make(context, titleId, preferences, onColorPickListener, null, false);
+    public static ColorPicker make(Context context, int titleId, Settings settings, final OnColorPickListener onColorPickListener) {
+        return make(context, titleId, settings, onColorPickListener, null, false);
     }
 
-    public static ColorPicker make(Context context, int titleId, Preferences preferences, final OnColorPickListener onColorPickListener, @ColorInt final Integer oldColor) {
-        return make(context, titleId, preferences, onColorPickListener, oldColor, false);
+    public static ColorPicker make(Context context, int titleId, Settings settings, final OnColorPickListener onColorPickListener, @ColorInt final Integer oldColor) {
+        return make(context, titleId, settings, onColorPickListener, oldColor, false);
     }
 
-    public static ColorPicker make(Context context, int titleId, Preferences preferences, final OnColorPickListener onColorPickListener, @ColorInt final Integer oldColor, boolean canDeleteOld) {
+    public static ColorPicker make(Context context, int titleId, Settings settings, final OnColorPickListener onColorPickListener, @ColorInt final Integer oldColor, boolean canDeleteOld) {
         ColorPicker picker = new ColorPicker();
-        picker.radix = preferences.getArgbChannelsRadix();
-        picker.format = preferences.getArgbChannelsFormat();
+        picker.radix = settings.getArgbChannelsRadix();
+        picker.format = settings.getArgbChannelsFormat();
         picker.dialogBuilder = new AlertDialog.Builder(context)
                 .setNegativeButton(R.string.cancel, null)
                 .setPositiveButton(R.string.ok, (dialog, which) -> onColorPickListener.onPick(oldColor, picker.newColor))
