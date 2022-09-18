@@ -138,6 +138,8 @@ public class MainActivity extends AppCompatActivity {
     };
 
     private Bitmap bitmap;
+    private Bitmap bitmapB;
+    private Bitmap bitmapF;
     private Bitmap bitmapWithoutFilter;
     private Bitmap chessboard;
     private Bitmap chessboardBitmap;
@@ -147,6 +149,8 @@ public class MainActivity extends AppCompatActivity {
     private Bitmap rulerHBitmap, rulerVBitmap;
     private Bitmap selectionBitmap;
     private Bitmap viewBitmap;
+    private Bitmap viewBitmapB;
+    private Bitmap viewBitmapF;
     private BitmapHistory history;
     private BitmapWithFilter bitmapWithFilter;
     private BitmapWithFilter thresholdBitmap;
@@ -164,6 +168,8 @@ public class MainActivity extends AppCompatActivity {
     private Canvas rulerHCanvas, rulerVCanvas;
     private Canvas selectionCanvas;
     private Canvas viewCanvas;
+    private Canvas viewCanvasB;
+    private Canvas viewCanvasF;
     private CellGrid cellGrid;
     private CheckBox cbBucketFillContiguous;
     private CheckBox cbBucketFillHueOnly;
@@ -198,7 +204,9 @@ public class MainActivity extends AppCompatActivity {
     private HorizontalScrollView hsvOptionsBucketFill;
     private HorizontalScrollView hsvOptionsFilter;
     private ImageView imageView;
+    private ImageView ivBackground;
     private ImageView ivChessboard;
+    private ImageView ivForeground;
     private ImageView ivGrid;
     private ImageView ivPreview;
     private ImageView ivRulerH, ivRulerV;
@@ -551,7 +559,7 @@ public class MainActivity extends AppCompatActivity {
     };
 
     private final HiddenImageMaker.OnFinishSettingListener onFinishMakingHiddenImageListener = bm -> {
-        createGraphic(bm.getWidth(), bm.getHeight());
+        createGraphic(bm.getWidth(), bm.getHeight(), currentTabIndex + 2);
         canvas.drawBitmap(bm, 0.0f, 0.0f, opaquePaint);
         drawBitmapOnView();
         bm.recycle();
@@ -637,6 +645,8 @@ public class MainActivity extends AppCompatActivity {
 
             drawChessboardOnView();
             drawBitmapOnView();
+            drawOtherLayersMerged();
+            drawOtherLayersOnView();
             drawGridOnView();
             drawSelectionOnView();
             clearCanvasAndInvalidateView(previewCanvas, ivPreview);
@@ -1323,6 +1333,7 @@ public class MainActivity extends AppCompatActivity {
                         tab.translationY += deltaY;
                         drawChessboardOnView();
                         drawBitmapOnView();
+                        drawOtherLayersOnView();
                         drawGridOnView();
                         if (transformer != null) {
                             drawTransformeeOnViewBySelection();
@@ -1362,6 +1373,7 @@ public class MainActivity extends AppCompatActivity {
                         tab.translationY = tab.translationY - pivotY + this.pivotY;
                         drawChessboardOnView();
                         drawBitmapOnView();
+                        drawOtherLayersOnView();
                         drawGridOnView();
                         if (transformer != null) {
                             drawTransformeeOnViewBySelection();
@@ -1653,19 +1665,27 @@ public class MainActivity extends AppCompatActivity {
 
     private Shape shape = rect;
 
-    private void addBitmap(Bitmap bitmap, int width, int height) {
+    private void addBitmap(Bitmap bitmap, int width, int height, int position) {
         addBitmap(bitmap,
-                width, height,
+                width, height, position,
                 null, getString(R.string.untitled), null);
     }
 
     private void addBitmap(Bitmap bitmap,
                            int width, int height,
                            String path, String title, Bitmap.CompressFormat compressFormat) {
+        addBitmap(bitmap,
+                width, height, tabs.size(),
+                path, title, compressFormat);
+    }
+
+    private void addBitmap(Bitmap bitmap,
+                           int width, int height, int position,
+                           String path, String title, Bitmap.CompressFormat compressFormat) {
         tab = new Tab();
-        tabs.add(tab);
+        tabs.add(position, tab);
         tab.bitmap = bitmap;
-        currentTabIndex = tabs.size() - 1;
+        currentTabIndex = position;
         history = new BitmapHistory();
         tab.history = history;
         history.offer(bitmap);
@@ -1686,13 +1706,7 @@ public class MainActivity extends AppCompatActivity {
         }
         hasSelection = false;
 
-        drawChessboardOnView();
-        drawBitmapOnView();
-        drawGridOnView();
-        drawSelectionOnView();
-
-        tabLayout.addTab(tabLayout.newTab().setText(title).setTag(bitmap));
-        tabLayout.getTabAt(currentTabIndex).select();
+        tabLayout.addTab(tabLayout.newTab().setText(title).setTag(bitmap), position, true);
     }
 
     private void bucketFill(Bitmap bitmap, int x, int y, @ColorInt final int color) {
@@ -1821,9 +1835,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void createGraphic(int width, int height) {
+        createGraphic(width, height, -1);
+    }
+
+    private void createGraphic(int width, int height, int position) {
         bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         canvas = new Canvas(bitmap);
-        addBitmap(bitmap, width, height);
+        if (position == -1) {
+            position = tabs.size();
+        }
+        addBitmap(bitmap, width, height, position);
     }
 
     private void createThresholdBitmap(int threshold) {
@@ -2038,6 +2059,36 @@ public class MainActivity extends AppCompatActivity {
         else ++startY;
 
         canvas.drawLine(startX, startY, stopX, stopY, paint);
+    }
+
+    private void drawOtherLayersMerged() {
+        recycleBitmap(bitmapB);
+        recycleBitmap(bitmapF);
+        int width = bitmap.getWidth(), height = bitmap.getHeight();
+        bitmapB = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        bitmapF = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        Canvas canvasB = new Canvas(bitmapB), canvasF = new Canvas(bitmapF);
+        for (int i = tabs.size() - 1; i > currentTabIndex; --i) {
+            Tab tab = tabs.get(i);
+            if (tab.visible) {
+                canvasB.drawBitmap(tab.bitmap, 0.0f, 0.0f, opaquePaint);
+            }
+        }
+        for (int i = currentTabIndex - 1; i >= 0; --i) {
+            Tab tab = tabs.get(i);
+            if (tab.visible) {
+                canvasF.drawBitmap(tab.bitmap, 0.0f, 0.0f, opaquePaint);
+            }
+        }
+    }
+
+    private void drawOtherLayersOnView() {
+        clearCanvas(viewCanvasB);
+        drawBitmapOnCanvas(bitmapB, tab.translationX, tab.translationY, viewCanvasB);
+        ivBackground.invalidate();
+        clearCanvas(viewCanvasF);
+        drawBitmapOnCanvas(bitmapF, tab.translationX, tab.translationY, viewCanvasF);
+        ivForeground.invalidate();
     }
 
     private void drawPoint(Canvas canvas, float x, float y, String text) {
@@ -2439,6 +2490,16 @@ public class MainActivity extends AppCompatActivity {
         viewCanvas = new Canvas(viewBitmap);
         imageView.setImageBitmap(viewBitmap);
 
+        viewBitmapB = Bitmap.createBitmap(viewWidth, viewHeight, Bitmap.Config.ARGB_8888);
+        viewCanvasB = new Canvas(viewBitmapB);
+        ivBackground.setImageBitmap(viewBitmapB);
+
+        viewBitmapF = Bitmap.createBitmap(viewWidth, viewHeight, Bitmap.Config.ARGB_8888);
+        viewCanvasF = new Canvas(viewBitmapF);
+        ivForeground.setImageBitmap(viewBitmapF);
+
+        drawOtherLayersMerged();
+
         gridBitmap = Bitmap.createBitmap(viewWidth, viewHeight, Bitmap.Config.ARGB_4444);
         gridCanvas = new Canvas(gridBitmap);
         ivGrid.setImageBitmap(gridBitmap);
@@ -2530,7 +2591,9 @@ public class MainActivity extends AppCompatActivity {
         hsvOptionsFilter = findViewById(R.id.hsv_options_filter);
         imageView = findViewById(R.id.iv);
         inputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+        ivBackground = findViewById(R.id.iv_background);
         ivChessboard = findViewById(R.id.iv_chessboard);
+        ivForeground = findViewById(R.id.iv_foreground);
         ivGrid = findViewById(R.id.iv_grid);
         ivPreview = findViewById(R.id.iv_preview);
         ivRulerH = findViewById(R.id.iv_ruler_horizontal);
@@ -2730,6 +2793,14 @@ public class MainActivity extends AppCompatActivity {
         viewBitmap.recycle();
         viewBitmap = null;
 
+        viewCanvasB = null;
+        viewBitmapB.recycle();
+        viewBitmapB = null;
+
+        viewCanvasF = null;
+        viewBitmapF.recycle();
+        viewBitmapF = null;
+
         super.onDestroy();
     }
 
@@ -2906,7 +2977,19 @@ public class MainActivity extends AppCompatActivity {
                 scale(1.0f, -1.0f, false);
                 break;
             }
-            case R.id.i_merge_with_gray: {
+            case R.id.i_layer_duplicate:
+                drawTransformeeOnCanvas();
+                drawTextOnCanvas();
+                Bitmap bm = bitmap;
+                createGraphic(bitmap.getWidth(), bitmap.getHeight());
+                canvas.drawBitmap(bm, 0.0f, 0.0f, opaquePaint);
+                tab.visible = true;
+                break;
+
+            case R.id.i_layer_merge:
+                break;
+
+            case R.id.i_layer_merge_as_hidden: {
                 if (currentTabIndex + 1 >= tabs.size()) {
                     new AlertDialog.Builder(this)
                             .setMessage(R.string.exception_merge_as_hidden)
@@ -2920,6 +3003,18 @@ public class MainActivity extends AppCompatActivity {
                         onFinishMakingHiddenImageListener);
                 break;
             }
+            case R.id.i_layer_new:
+                drawTransformeeOnCanvas();
+                drawTextOnCanvas();
+                createGraphic(bitmap.getWidth(), bitmap.getHeight());
+                tab.visible = true;
+                break;
+
+            case R.id.i_layer_visible:
+                item.setChecked(!item.isChecked());
+                tab.visible = item.isChecked();
+                break;
+
             case R.id.i_new: {
                 drawTransformeeOnCanvas();
                 drawTextOnCanvas();

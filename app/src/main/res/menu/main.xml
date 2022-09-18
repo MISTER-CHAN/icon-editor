@@ -134,7 +134,24 @@
         <menu>
 
             <item
-                android:id="@+id/i_merge_with_gray"
+                android:id="@+id/i_layer_visible"
+                android:checkable="true"
+                android:title="@string/visible" />
+
+            <item
+                android:id="@+id/i_layer_new"
+                android:title="@string/new_" />
+
+            <item
+                android:id="@+id/i_layer_duplicate"
+                android:title="@string/duplicate" />
+
+            <item
+                android:id="@+id/i_layer_merge"
+                android:title="@string/merge" />
+
+            <item
+                android:id="@+id/i_layer_merge_as_hidden"
                 android:title="@string/merge_as_hidden" />
         </menu>
     </item>

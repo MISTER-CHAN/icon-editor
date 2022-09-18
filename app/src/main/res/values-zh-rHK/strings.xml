@@ -34,6 +34,7 @@
     <string name="delete">刪除</string>
     <string name="deselect">不選取</string>
     <string name="draw">繪畫</string>
+    <string name="duplicate">複製</string>
     <string name="enabled">啟用</string>
     <string name="eraser">擦膠</string>
     <string name="exception_merge_as_hidden">異常：請選中兩張圖像中第一個分頁。</string>
@@ -61,6 +62,7 @@
     <string name="line">直線</string>
     <string name="lock_aspect_ratio">鎖定寬高比</string>
     <string name="mask_filter">遮罩濾鏡</string>
+    <string name="merge">合併</string>
     <string name="merge_as_hidden">Merge as Hidden（實驗性功能）</string>
     <string name="new_">新建</string>
     <string name="ninety_degrees">90°</string>
@@ -124,6 +126,7 @@
     <string name="two_seventy_degrees">270°</string>
     <string name="untitled">無標題</string>
     <string name="vertically">垂直</string>
+    <string name="visible">可見</string>
     <string name="when_resizing">當重設尺寸時</string>
     <string name="width">寬度</string>
     <string name="zoom">縮放</string>
