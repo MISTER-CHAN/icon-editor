@@ -66,6 +66,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -232,6 +233,7 @@ public class MainActivity extends AppCompatActivity {
     private LinearLayout llOptionsTransformer;
     private LinkedList<Integer> palette;
     private List<Tab> tabs = new ArrayList<>();
+    private MenuItem miLayerVisible;
     private Point cloneStampSrc; // Sel. - Selection
     private Point cloneStampSrcDist = new Point(0, 0); // Dist. - Distance
     private Position draggingBound = Position.NULL;
@@ -346,6 +348,8 @@ public class MainActivity extends AppCompatActivity {
             setColor(Color.DKGRAY);
         }
     };
+
+    private final Paint layerPaint = new Paint();
 
     private final Paint marginPaint = new Paint() {
         {
@@ -613,8 +617,7 @@ public class MainActivity extends AppCompatActivity {
     private final TabLayout.OnTabSelectedListener onTabSelectedListener = new TabLayout.OnTabSelectedListener() {
         @Override
         public void onTabSelected(TabLayout.Tab tab) {
-            drawTransformeeOnCanvas();
-            drawTextOnCanvas();
+            drawFloatingLayers();
 
             currentTabIndex = tab.getPosition();
             MainActivity.this.tab = tabs.get(currentTabIndex);
@@ -642,6 +645,8 @@ public class MainActivity extends AppCompatActivity {
             } else if (rbCloneStamp.isChecked()) {
                 cloneStampSrc = null;
             }
+
+            miLayerVisible.setChecked(MainActivity.this.tab.visible);
 
             drawChessboardOnView();
             drawBitmapOnView();
@@ -1418,8 +1423,7 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("ClickableViewAccessibility")
     private final CompoundButton.OnCheckedChangeListener onBucketFillRadioButtonCheckedChangeListener = (buttonView, isChecked) -> {
         if (isChecked) {
-            drawTransformeeOnCanvas();
-            drawTextOnCanvas();
+            drawFloatingLayers();
             createThresholdBitmap(0x0);
             onToolChange(onImageViewTouchWithBucketListener);
             hsvOptionsBucketFill.setVisibility(View.VISIBLE);
@@ -1442,8 +1446,7 @@ public class MainActivity extends AppCompatActivity {
     private final CompoundButton.OnCheckedChangeListener onFilterRadioButtonCheckedChangeListener = (buttonView, isChecked) -> {
         if (isChecked) {
             bitmapWithoutFilter = Bitmap.createBitmap(bitmap);
-            drawTransformeeOnCanvas();
-            drawTextOnCanvas();
+            drawFloatingLayers();
             createThresholdBitmap(0x100);
             onToolChange(onImageViewTouchWithFilterListener);
             etFilterStrokeWidth.setText(String.valueOf(strokeWidth));
@@ -1665,22 +1668,17 @@ public class MainActivity extends AppCompatActivity {
 
     private Shape shape = rect;
 
-    private void addBitmap(Bitmap bitmap, int width, int height, int position) {
-        addBitmap(bitmap,
-                width, height, position,
+    private void addBitmap(Bitmap bitmap, int position) {
+        addBitmap(bitmap, position,
                 null, getString(R.string.untitled), null);
     }
 
     private void addBitmap(Bitmap bitmap,
-                           int width, int height,
                            String path, String title, Bitmap.CompressFormat compressFormat) {
-        addBitmap(bitmap,
-                width, height, tabs.size(),
-                path, title, compressFormat);
+        addBitmap(bitmap, tabs.size(), path, title, compressFormat);
     }
 
-    private void addBitmap(Bitmap bitmap,
-                           int width, int height, int position,
+    private void addBitmap(Bitmap bitmap, int position,
                            String path, String title, Bitmap.CompressFormat compressFormat) {
         tab = new Tab();
         tabs.add(position, tab);
@@ -1694,6 +1692,7 @@ public class MainActivity extends AppCompatActivity {
         cellGrid = new CellGrid();
         tab.cellGrid = cellGrid;
 
+        int width = bitmap.getWidth(), height = bitmap.getHeight();
         tab.scale = (float) ((double) viewWidth / (double) width);
         imageWidth = (int) toScaled(width);
         imageHeight = (int) toScaled(height);
@@ -1827,6 +1826,13 @@ public class MainActivity extends AppCompatActivity {
         imageView.invalidate();
     }
 
+    private void closeTab() {
+        bitmap.recycle();
+        history.recycle();
+        tabs.remove(currentTabIndex);
+        tabLayout.removeTabAt(currentTabIndex);
+    }
+
     private void createBitmapWithFilter() {
         if (!hasSelection) {
             selectAll();
@@ -1844,7 +1850,7 @@ public class MainActivity extends AppCompatActivity {
         if (position == -1) {
             position = tabs.size();
         }
-        addBitmap(bitmap, width, height, position);
+        addBitmap(bitmap, position);
     }
 
     private void createThresholdBitmap(int threshold) {
@@ -1973,6 +1979,11 @@ public class MainActivity extends AppCompatActivity {
         ivPreview.invalidate();
     }
 
+    private void drawFloatingLayers() {
+        drawTransformeeOnCanvas();
+        drawTextOnCanvas();
+    }
+
     private void drawGridOnView() {
         clearCanvas(gridCanvas);
         float startX = tab.translationX >= 0.0f ? tab.translationX : tab.translationX % tab.scale,
@@ -2068,26 +2079,41 @@ public class MainActivity extends AppCompatActivity {
         bitmapB = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         bitmapF = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         Canvas canvasB = new Canvas(bitmapB), canvasF = new Canvas(bitmapF);
+        boolean visibleB = false, visibleF = false;
         for (int i = tabs.size() - 1; i > currentTabIndex; --i) {
             Tab tab = tabs.get(i);
             if (tab.visible) {
-                canvasB.drawBitmap(tab.bitmap, 0.0f, 0.0f, opaquePaint);
+                visibleB = true;
+                canvasB.drawBitmap(tab.bitmap, 0.0f, 0.0f, layerPaint);
             }
+        }
+        if (!visibleB) {
+            bitmapB.recycle();
+            bitmapB = null;
         }
         for (int i = currentTabIndex - 1; i >= 0; --i) {
             Tab tab = tabs.get(i);
             if (tab.visible) {
-                canvasF.drawBitmap(tab.bitmap, 0.0f, 0.0f, opaquePaint);
+                visibleF = true;
+                canvasF.drawBitmap(tab.bitmap, 0.0f, 0.0f, layerPaint);
             }
+        }
+        if (!visibleF) {
+            bitmapF.recycle();
+            bitmapF = null;
         }
     }
 
     private void drawOtherLayersOnView() {
         clearCanvas(viewCanvasB);
-        drawBitmapOnCanvas(bitmapB, tab.translationX, tab.translationY, viewCanvasB);
+        if (bitmapB != null) {
+            drawBitmapOnCanvas(bitmapB, tab.translationX, tab.translationY, viewCanvasB);
+        }
         ivBackground.invalidate();
         clearCanvas(viewCanvasF);
-        drawBitmapOnCanvas(bitmapF, tab.translationX, tab.translationY, viewCanvasF);
+        if (bitmapF != null) {
+            drawBitmapOnCanvas(bitmapF, tab.translationX, tab.translationY, viewCanvasF);
+        }
         ivForeground.invalidate();
     }
 
@@ -2498,8 +2524,6 @@ public class MainActivity extends AppCompatActivity {
         viewCanvasF = new Canvas(viewBitmapF);
         ivForeground.setImageBitmap(viewBitmapF);
 
-        drawOtherLayersMerged();
-
         gridBitmap = Bitmap.createBitmap(viewWidth, viewHeight, Bitmap.Config.ARGB_4444);
         gridCanvas = new Canvas(gridBitmap);
         ivGrid.setImageBitmap(gridBitmap);
@@ -2732,6 +2756,7 @@ public class MainActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater menuInflater = getMenuInflater();
         menuInflater.inflate(R.menu.main, menu);
+        miLayerVisible = menu.findItem(R.id.i_layer_visible);
         return true;
     }
 
@@ -2815,6 +2840,7 @@ public class MainActivity extends AppCompatActivity {
                 break;
             }
             case R.id.i_close:
+            case R.id.i_layer_delete:
                 if (tabs.size() == 1) {
                     break;
                 }
@@ -2822,10 +2848,7 @@ public class MainActivity extends AppCompatActivity {
                     transformer.recycle();
                     transformer = null;
                 }
-                bitmap.recycle();
-                history.recycle();
-                tabs.remove(currentTabIndex);
-                tabLayout.removeTabAt(currentTabIndex);
+                closeTab();
                 break;
 
             case R.id.i_copy:
@@ -2847,8 +2870,7 @@ public class MainActivity extends AppCompatActivity {
                 if (!hasSelection) {
                     break;
                 }
-                drawTransformeeOnCanvas();
-                drawTextOnCanvas();
+                drawFloatingLayers();
                 int width = selection.width() + 1, height = selection.height() + 1;
                 Bitmap bm = Bitmap.createBitmap(bitmap, selection.left, selection.top, width, height);
                 resizeBitmap(width, height, false);
@@ -2895,8 +2917,7 @@ public class MainActivity extends AppCompatActivity {
                 break;
 
             case R.id.i_deselect:
-                drawTransformeeOnCanvas();
-                drawTextOnCanvas();
+                drawFloatingLayers();
                 hasSelection = false;
                 clearCanvasAndInvalidateView(selectionCanvas, ivSelection);
                 recreateThresholdBitmap();
@@ -2966,35 +2987,42 @@ public class MainActivity extends AppCompatActivity {
                 break;
 
             case R.id.i_flip_horizontally: {
-                drawTransformeeOnCanvas();
-                drawTextOnCanvas();
+                drawFloatingLayers();
                 scale(-1.0f, 1.0f, false);
                 break;
             }
             case R.id.i_flip_vertically: {
-                drawTransformeeOnCanvas();
-                drawTextOnCanvas();
+                drawFloatingLayers();
                 scale(1.0f, -1.0f, false);
                 break;
             }
-            case R.id.i_layer_duplicate:
-                drawTransformeeOnCanvas();
-                drawTextOnCanvas();
-                Bitmap bm = bitmap;
-                createGraphic(bitmap.getWidth(), bitmap.getHeight());
-                canvas.drawBitmap(bm, 0.0f, 0.0f, opaquePaint);
+
+            case R.id.i_layer_duplicate: {
+                drawFloatingLayers();
+                Bitmap bm = Bitmap.createBitmap(bitmap);
+                addBitmap(bm, currentTabIndex);
                 tab.visible = true;
                 break;
-
-            case R.id.i_layer_merge:
+            }
+            case R.id.i_layer_merge: {
+                drawFloatingLayers();
+                if (currentTabIndex + 1 >= tabs.size()) {
+                    break;
+                }
+                Bitmap bm = Bitmap.createBitmap(bitmap);
+                closeTab();
+                canvas.drawBitmap(bm, 0.0f, 0.0f, layerPaint);
+                bm.recycle();
+                drawBitmapOnView();
                 break;
-
+            }
             case R.id.i_layer_merge_as_hidden: {
+                drawFloatingLayers();
                 if (currentTabIndex + 1 >= tabs.size()) {
                     new AlertDialog.Builder(this)
                             .setMessage(R.string.exception_merge_as_hidden)
                             .setPositiveButton(R.string.ok, null)
-                            .setTitle(R.string.merge_as_hidden)
+                            .setTitle(R.string.merge_as_an_hidden_image)
                             .show();
                     break;
                 }
@@ -3003,11 +3031,35 @@ public class MainActivity extends AppCompatActivity {
                         onFinishMakingHiddenImageListener);
                 break;
             }
+            case R.id.i_layer_merge_as_new: {
+                drawFloatingLayers();
+                if (currentTabIndex + 1 >= tabs.size()) {
+                    break;
+                }
+                Bitmap bm = Bitmap.createBitmap(tabs.get(currentTabIndex + 1).bitmap);
+                Canvas cv = new Canvas(bm);
+                cv.drawBitmap(bm, 0.0f, 0.0f, layerPaint);
+                addBitmap(bm, currentTabIndex);
+                break;
+            }
             case R.id.i_layer_new:
-                drawTransformeeOnCanvas();
-                drawTextOnCanvas();
-                createGraphic(bitmap.getWidth(), bitmap.getHeight());
+                drawFloatingLayers();
+                createGraphic(bitmap.getWidth(), bitmap.getHeight(), currentTabIndex);
                 tab.visible = true;
+                break;
+
+            case R.id.i_layer_send_to_back:
+                drawFloatingLayers();
+                if (currentTabIndex + 1 >= tabs.size()) {
+                    break;
+                }
+                int i = currentTabIndex, j = i + 1;
+                Collections.swap(tabs, i, j);
+                TabLayout.Tab ti = tabLayout.getTabAt(i), tj = tabLayout.getTabAt(j);
+                CharSequence csi = ti.getText(), csj = tj.getText();
+                ti.setText(csj);
+                tj.setText(csi);
+                onTabSelectedListener.onTabSelected(ti);
                 break;
 
             case R.id.i_layer_visible:
@@ -3016,16 +3068,14 @@ public class MainActivity extends AppCompatActivity {
                 break;
 
             case R.id.i_new: {
-                drawTransformeeOnCanvas();
-                drawTextOnCanvas();
+                drawFloatingLayers();
                 new NewGraphicPropertiesDialog(this)
                         .setOnFinishSettingListener(onFinishSettingNewGraphicPropertiesListener)
                         .show();
                 break;
             }
             case R.id.i_open:
-                drawTransformeeOnCanvas();
-                drawTextOnCanvas();
+                drawFloatingLayers();
 
                 getImage.launch("image/*");
                 break;
@@ -3034,8 +3084,7 @@ public class MainActivity extends AppCompatActivity {
                 if (clipboard == null) {
                     break;
                 }
-                drawTransformeeOnCanvas();
-                drawTextOnCanvas();
+                drawFloatingLayers();
 
                 selection.left = tab.translationX >= 0.0f ? 0 : toOriginal(-tab.translationX) + 1;
                 selection.top = tab.translationY >= 0.0f ? 0 : toOriginal(-tab.translationY) + 1;
@@ -3056,20 +3105,17 @@ public class MainActivity extends AppCompatActivity {
                 break;
 
             case R.id.i_rotate_90:
-                drawTransformeeOnCanvas();
-                drawTextOnCanvas();
+                drawFloatingLayers();
                 rotate(90.0f, false);
                 break;
 
             case R.id.i_rotate_180:
-                drawTransformeeOnCanvas();
-                drawTextOnCanvas();
+                drawFloatingLayers();
                 rotate(180.0f, false);
                 break;
 
             case R.id.i_rotate_270:
-                drawTransformeeOnCanvas();
-                drawTextOnCanvas();
+                drawFloatingLayers();
                 rotate(270.0f, false);
                 break;
 
@@ -3098,8 +3144,7 @@ public class MainActivity extends AppCompatActivity {
                 break;
 
             case R.id.i_size: {
-                drawTransformeeOnCanvas();
-                drawTextOnCanvas();
+                drawFloatingLayers();
                 ImageSizeManager
                         .make(this, bitmap, onUpdateImageSizeListener)
                         .show();
@@ -3178,7 +3223,6 @@ public class MainActivity extends AppCompatActivity {
                 break;
         }
         addBitmap(bitmap,
-                width, height,
                 path, documentFile.getName(), compressFormat);
     }
 
@@ -3298,8 +3342,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        drawTransformeeOnCanvas();
-        drawTextOnCanvas();
+        drawFloatingLayers();
 
         File file = new File(path);
         try (FileOutputStream fos = new FileOutputStream(file)) {

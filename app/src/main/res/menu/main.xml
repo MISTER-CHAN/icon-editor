@@ -139,6 +139,10 @@
                 android:title="@string/visible" />
 
             <item
+                android:id="@+id/i_layer_send_to_back"
+                android:title="@string/send_to_back" />
+
+            <item
                 android:id="@+id/i_layer_new"
                 android:title="@string/new_" />
 
@@ -147,8 +151,16 @@
                 android:title="@string/duplicate" />
 
             <item
+                android:id="@+id/i_layer_delete"
+                android:title="@string/delete" />
+
+            <item
                 android:id="@+id/i_layer_merge"
                 android:title="@string/merge" />
+
+            <item
+                android:id="@+id/i_layer_merge_as_new"
+                android:title="@string/merge_as_new" />
 
             <item
                 android:id="@+id/i_layer_merge_as_hidden"

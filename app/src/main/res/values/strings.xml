@@ -43,7 +43,7 @@
     <string name="edit" translatable="false">✎</string>
     <string name="enabled">Enabled</string>
     <string name="eraser">Eraser</string>
-    <string name="exception_merge_as_hidden">Exception: Please select the first tab of two images.</string>
+    <string name="exception_merge_as_hidden">Merge as an Hidden Image\\nException: Please select the first tab of two images.</string>
     <string name="eyedropper">Eyedropper</string>
     <string name="ff" translatable="false">FF</string>
     <string name="file">File</string>
@@ -74,7 +74,9 @@
     <string name="lock_aspect_ratio">Lock Aspect Ratio</string>
     <string name="mask_filter">Mask Filter</string>
     <string name="merge">Merge</string>
-    <string name="merge_as_hidden">Merge as a Hidden Image (Beta)</string>
+    <string name="merge_as_an_hidden_image">Merge as an Hidden Image</string>
+    <string name="merge_as_hidden">Merge as Hidden</string>
+    <string name="merge_as_new">Merge as New</string>
     <string name="mister_chan" translatable="false">MISTER_CHAN</string>
     <string name="new_">New</string>
     <string name="ninety_degrees">90°</string>
@@ -109,6 +111,7 @@
     <string name="scale_to_black">Scale to Black</string>
     <string name="select">Select</string>
     <string name="select_all">Select All</string>
+    <string name="send_to_back">Send to Back</string>
     <string name="settings">Settings</string>
     <string name="shape">Shape</string>
     <string name="shift">Shift</string>
