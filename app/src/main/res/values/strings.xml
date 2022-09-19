@@ -3,6 +3,7 @@
     <string name="about">About</string>
     <string name="add">Add</string>
     <string name="add_symbol" translatable="false">+</string>
+    <string name="alpha_channel">Alpha Channel</string>
     <string name="anti_alias">Anti-alias</string>
     <string name="app_name">Icon Editor</string>
     <string name="argb_channels_radix">ARGB Channels Radix</string>
@@ -12,13 +13,16 @@
     <string name="author">Author</string>
     <string name="b" translatable="false">B</string>
     <string name="background_color">Background Color</string>
+    <string name="blend_modes">Blend Modes</string>
     <string name="blur_radius">Blur</string>
     <string name="bucket_fill">Bucket Fill</string>
     <string name="cancel">Cancel</string>
     <string name="cell_grid">Cell Grid</string>
     <string name="channels">Channels</string>
+    <string name="channel_mixer">Channel Mixer</string>
     <string name="check_for_updates">Check for Updates</string>
     <string name="circle">Circle</string>
+    <string name="clear">Clear</string>
     <string name="clear_destination">Clear Destination</string>
     <string name="cloner">Cloner</string>
     <string name="close">Close</string>
@@ -61,6 +65,7 @@
     <string name="height">Height</string>
     <string name="help">Help</string>
     <string name="hex">Hex</string>
+    <string name="highlights">Highlights</string>
     <string name="homepage">Homepage</string>
     <string name="homepage_address" translatable="false">https://github.com/MISTER-CHAN/IconEditor</string>
     <string name="horizontally">Horizontally</string>
@@ -69,6 +74,7 @@
     <string name="image_size">Image Size</string>
     <string name="invert">Invert</string>
     <string name="layer">Layer</string>
+    <string name="levels_adjustment">Levels</string>
     <string name="lightness">Lightness</string>
     <string name="line">Line</string>
     <string name="lock_aspect_ratio">Lock Aspect Ratio</string>
@@ -113,19 +119,22 @@
     <string name="select_all">Select All</string>
     <string name="send_to_back">Send to Back</string>
     <string name="settings">Settings</string>
+    <string name="shadows">Shadows</string>
     <string name="shape">Shape</string>
     <string name="shift">Shift</string>
     <string name="size">Size</string>
     <string name="source">Source</string>
     <string name="spacing">Spacing</string>
     <string name="stamp">Stamp</string>
+    <string name="state_alpha" translatable="false">Alpha: %s</string>
     <string name="state_axes">"Axes: %d, %d"</string>
-    <string name="state_lightness">Brightness: %d</string>
     <string name="state_contrast">Contrast: %.1f</string>
     <string name="state_eyedropper" translatable="false">(%%d, %%d) A: %1$s, R: %1$s, G: %1$s, B: %1$s</string>
     <string name="state_invert">Invert: %.1f</string>
     <string name="state_left_top">Left: %d, Top: %d</string>
     <string name="state_length">Length: %f</string>
+    <string name="state_levels">Shadows: %d, Highlights: %d</string>
+    <string name="state_lightness">Brightness: %d</string>
     <string name="state_l_t_r_b_size">L: %d, T: %d, R: %d, B: %d, Size: %d × %d"</string>
     <string name="state_radius">Radius: %.1f</string>
     <string name="state_rotate" translatable="false">%d°</string>
@@ -168,4 +177,33 @@
     <string name="rp_gp_bp_ap" translatable="false">𝑅\'\n𝐺\'\n𝐵\'\n𝐴\'</string>
     <string name="eq" translatable="false">＝</string>
     <string name="r_g_b_a_1" translatable="false">𝑅\n𝐺\n𝐵\n𝐴\n1</string>
+
+    <!-- Blend Modes -->
+    <string name="null_">Null</string>
+    <string name="destination">Destination</string>
+    <string name="source_over">Source over</string>
+    <string name="destination_over">Destination over</string>
+    <string name="source_in">Source in</string>
+    <string name="destination_in">Destination in</string>
+    <string name="source_out">Source out</string>
+    <string name="destination_out">Destination out</string>
+    <string name="source_atop">Source atop</string>
+    <string name="destination_atop">Destination atop</string>
+    <string name="xor">Xor</string>
+    <string name="plus">Plus</string>
+    <string name="modulate">Modulate</string>
+    <string name="screen">Screen</string>
+    <string name="overlay">Overlay</string>
+    <string name="darken">Darken</string>
+    <string name="lighten">Lighten</string>
+    <string name="color_dodge">Color Dodge</string>
+    <string name="color_burn">Color Burn</string>
+    <string name="hard_light">Hard Light</string>
+    <string name="soft_light">Soft Light</string>
+    <string name="difference">Difference</string>
+    <string name="exclusion">Exclusion</string>
+    <string name="multiply">Multiply</string>
+    <string name="hue">Hue</string>
+    <string name="color">Color</string>
+    <string name="luminosity">Luminosity</string>
 </resources>

@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.BlendMode;
 import android.graphics.BlurMaskFilter;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -30,6 +31,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
+import android.view.SubMenu;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
@@ -139,8 +141,6 @@ public class MainActivity extends AppCompatActivity {
     };
 
     private Bitmap bitmap;
-    private Bitmap bitmapB;
-    private Bitmap bitmapF;
     private Bitmap bitmapWithoutFilter;
     private Bitmap chessboard;
     private Bitmap chessboardBitmap;
@@ -150,8 +150,6 @@ public class MainActivity extends AppCompatActivity {
     private Bitmap rulerHBitmap, rulerVBitmap;
     private Bitmap selectionBitmap;
     private Bitmap viewBitmap;
-    private Bitmap viewBitmapB;
-    private Bitmap viewBitmapF;
     private BitmapHistory history;
     private BitmapWithFilter bitmapWithFilter;
     private BitmapWithFilter thresholdBitmap;
@@ -169,8 +167,6 @@ public class MainActivity extends AppCompatActivity {
     private Canvas rulerHCanvas, rulerVCanvas;
     private Canvas selectionCanvas;
     private Canvas viewCanvas;
-    private Canvas viewCanvasB;
-    private Canvas viewCanvasF;
     private CellGrid cellGrid;
     private CheckBox cbBucketFillContiguous;
     private CheckBox cbBucketFillHueOnly;
@@ -205,9 +201,7 @@ public class MainActivity extends AppCompatActivity {
     private HorizontalScrollView hsvOptionsBucketFill;
     private HorizontalScrollView hsvOptionsFilter;
     private ImageView imageView;
-    private ImageView ivBackground;
     private ImageView ivChessboard;
-    private ImageView ivForeground;
     private ImageView ivGrid;
     private ImageView ivPreview;
     private ImageView ivRulerH, ivRulerV;
@@ -247,6 +241,7 @@ public class MainActivity extends AppCompatActivity {
     private Settings settings;
     private Spinner sFileType;
     private String tree = "";
+    private SubMenu smBlendModes;
     private Tab tab;
     private TabLayout tabLayout;
     private TextView tvState;
@@ -348,8 +343,6 @@ public class MainActivity extends AppCompatActivity {
             setColor(Color.DKGRAY);
         }
     };
-
-    private final Paint layerPaint = new Paint();
 
     private final Paint marginPaint = new Paint() {
         {
@@ -548,7 +541,7 @@ public class MainActivity extends AppCompatActivity {
             }
             thresholdBitmap.setPixels(pixels, 0, w, 0, 0, w, h);
         }
-        drawBitmapWithFilterOnView(thresholdBitmap);
+        drawBitmapOnView(thresholdBitmap.getBitmap());
     };
 
     private final View.OnClickListener onColorRangeButtonClickListener = v -> {
@@ -572,8 +565,8 @@ public class MainActivity extends AppCompatActivity {
     private final NewGraphicPropertiesDialog.OnFinishSettingListener onFinishSettingNewGraphicPropertiesListener = this::createGraphic;
 
     private final ColorMatrixManager.OnMatrixElementsChangeListener onColorMatrixChangeListener = matrix -> {
-        bitmapWithFilter.setFilter(new ColorMatrix(matrix));
-        drawBitmapWithFilterOnView();
+        bitmapWithFilter.setFilter(matrix);
+        drawBitmapOnView(bitmapWithFilter.getBitmap());
     };
 
     private final OnProgressChangeListener onThresholdChangeListener = progress -> {
@@ -595,7 +588,7 @@ public class MainActivity extends AppCompatActivity {
             }
             thresholdBitmap.setPixels(pixels, 0, w, 0, 0, w, h);
         }
-        drawBitmapWithFilterOnView(thresholdBitmap);
+        drawBitmapOnView(thresholdBitmap.getBitmap());
         tvState.setText(String.format(getString(R.string.state_threshold), progress));
     };
 
@@ -647,11 +640,15 @@ public class MainActivity extends AppCompatActivity {
             }
 
             miLayerVisible.setChecked(MainActivity.this.tab.visible);
+            for (int i = 0; i <= 29; ++i) {
+                MenuItem mi = smBlendModes.getItem(i);
+                BlendMode blendMode = MainActivity.this.tab.paint.getBlendMode();
+                mi.setChecked(i == 0 && blendMode == null
+                        || i > 0 && blendMode == BlendMode.values()[i - 1]);
+            }
 
             drawChessboardOnView();
             drawBitmapOnView();
-            drawOtherLayersMerged();
-            drawOtherLayersOnView();
             drawGridOnView();
             drawSelectionOnView();
             clearCanvasAndInvalidateView(previewCanvas, ivPreview);
@@ -1338,7 +1335,6 @@ public class MainActivity extends AppCompatActivity {
                         tab.translationY += deltaY;
                         drawChessboardOnView();
                         drawBitmapOnView();
-                        drawOtherLayersOnView();
                         drawGridOnView();
                         if (transformer != null) {
                             drawTransformeeOnViewBySelection();
@@ -1378,7 +1374,6 @@ public class MainActivity extends AppCompatActivity {
                         tab.translationY = tab.translationY - pivotY + this.pivotY;
                         drawChessboardOnView();
                         drawBitmapOnView();
-                        drawOtherLayersOnView();
                         drawGridOnView();
                         if (transformer != null) {
                             drawTransformeeOnViewBySelection();
@@ -1534,26 +1529,38 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    private final LevelsAdjustmentDialog.OnLevelsChangeListener onFilterLevelsSeekBarProgressChangeListener = (shadows, highlights) -> {
+        float ratio = 0xFF / (float) (highlights - shadows);
+        bitmapWithFilter.setFilter(new float[]{
+                ratio, 0.0f, 0.0f, 0.0f, -shadows,
+                0.0f, ratio, 0.0f, 0.0f, -shadows,
+                0.0f, 0.0f, ratio, 0.0f, -shadows,
+                0.0f, 0.0f, 0.0f, 1.0f, 0.0f
+        });
+        drawBitmapOnView(bitmapWithFilter.getBitmap());
+        tvState.setText(String.format(getString(R.string.state_levels), shadows, highlights));
+    };
+
     private final OnProgressChangeListener onFilterContrastSeekBarProgressChangeListener = progress -> {
         float scale = progress / 10.0f, shift = 0xFF / 2.0f * (1.0f - scale);
-        bitmapWithFilter.setFilter(new ColorMatrix(new float[]{
+        bitmapWithFilter.setFilter(new float[]{
                 scale, 0.0f, 0.0f, 0.0f, shift,
                 0.0f, scale, 0.0f, 0.0f, shift,
                 0.0f, 0.0f, scale, 0.0f, shift,
                 0.0f, 0.0f, 0.0f, 1.0f, 0.0f
-        }));
-        drawBitmapWithFilterOnView();
+        });
+        drawBitmapOnView(bitmapWithFilter.getBitmap());
         tvState.setText(String.format(getString(R.string.state_contrast), scale));
     };
 
     private final OnProgressChangeListener onFilterLightnessSeekBarProgressChangeListener = progress -> {
-        bitmapWithFilter.setFilter(new ColorMatrix(new float[]{
+        bitmapWithFilter.setFilter(new float[]{
                 1.0f, 0.0f, 0.0f, 0.0f, progress,
                 0.0f, 1.0f, 0.0f, 0.0f, progress,
                 0.0f, 0.0f, 1.0f, 0.0f, progress,
                 0.0f, 0.0f, 0.0f, 1.0f, 0.0f
-        }));
-        drawBitmapWithFilterOnView();
+        });
+        drawBitmapOnView(bitmapWithFilter.getBitmap());
         tvState.setText(String.format(getString(R.string.state_lightness), progress));
     };
 
@@ -1561,8 +1568,8 @@ public class MainActivity extends AppCompatActivity {
         float f = progress / 10.0f;
         ColorMatrix colorMatrix = new ColorMatrix();
         colorMatrix.setSaturation(f);
-        bitmapWithFilter.setFilter(colorMatrix);
-        drawBitmapWithFilterOnView();
+        bitmapWithFilter.setFilter(colorMatrix.getArray());
+        drawBitmapOnView(bitmapWithFilter.getBitmap());
         tvState.setText(String.format(getString(R.string.state_saturation), f));
     };
 
@@ -1581,6 +1588,14 @@ public class MainActivity extends AppCompatActivity {
                         null,
                         colorMatrix)
                 .show();
+    };
+
+    private final OnProgressChangeListener onLayerAlphaSeekBarProgressChangeListener = progress -> {
+        tab.paint.setAlpha(progress);
+        drawBitmapOnView();
+        tvState.setText(String.format(
+                String.format(getString(R.string.state_alpha), settings.getArgbChannelsFormat()),
+                progress));
     };
 
     private final Shape circle = new Shape() {
@@ -1687,6 +1702,7 @@ public class MainActivity extends AppCompatActivity {
         history = new BitmapHistory();
         tab.history = history;
         history.offer(bitmap);
+        tab.paint = new Paint();
         tab.path = path;
         tab.compressFormat = compressFormat;
         cellGrid = new CellGrid();
@@ -1931,27 +1947,31 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void drawBitmapOnView() {
+    private void drawBitmapOnView(Bitmap bitmap) {
         clearCanvas(viewCanvas);
-        drawBitmapOnCanvas(bitmap, tab.translationX, tab.translationY, viewCanvas);
+        Bitmap bm = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
+        Canvas cv = new Canvas(bm);
+        for (int i = tabs.size() - 1; i >= 0; --i) {
+            Tab tab = tabs.get(i);
+            if (i == currentTabIndex) {
+                cv.drawBitmap(bitmap, 0.0f, 0.0f, tab.paint);
+            } else if (tab.visible) {
+                cv.drawBitmap(tab.bitmap, 0.0f, 0.0f, tab.paint);
+            }
+        }
+        drawBitmapOnCanvas(bm, tab.translationX, tab.translationY, viewCanvas);
+        bm.recycle();
         imageView.invalidate();
+    }
+
+    private void drawBitmapOnView() {
+        drawBitmapOnView(bitmap);
     }
 
     private void drawBitmapWithFilterOnCanvas() {
         canvas.drawBitmap(bitmapWithFilter.getBitmap(), 0.0f, 0.0f, opaquePaint);
         drawBitmapOnView();
         history.offer(bitmap);
-    }
-
-    private void drawBitmapWithFilterOnView() {
-        drawBitmapWithFilterOnView(bitmapWithFilter);
-    }
-
-    private void drawBitmapWithFilterOnView(BitmapWithFilter bitmapWithFilter) {
-        clearCanvas(viewCanvas);
-        drawBitmapOnCanvas(bitmapWithFilter.getBitmap(), tab.translationX, tab.translationY, viewCanvas);
-        imageView.invalidate();
-        tvState.setText("");
     }
 
     private void drawChessboardOnView() {
@@ -2070,51 +2090,6 @@ public class MainActivity extends AppCompatActivity {
         else ++startY;
 
         canvas.drawLine(startX, startY, stopX, stopY, paint);
-    }
-
-    private void drawOtherLayersMerged() {
-        recycleBitmap(bitmapB);
-        recycleBitmap(bitmapF);
-        int width = bitmap.getWidth(), height = bitmap.getHeight();
-        bitmapB = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-        bitmapF = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-        Canvas canvasB = new Canvas(bitmapB), canvasF = new Canvas(bitmapF);
-        boolean visibleB = false, visibleF = false;
-        for (int i = tabs.size() - 1; i > currentTabIndex; --i) {
-            Tab tab = tabs.get(i);
-            if (tab.visible) {
-                visibleB = true;
-                canvasB.drawBitmap(tab.bitmap, 0.0f, 0.0f, layerPaint);
-            }
-        }
-        if (!visibleB) {
-            bitmapB.recycle();
-            bitmapB = null;
-        }
-        for (int i = currentTabIndex - 1; i >= 0; --i) {
-            Tab tab = tabs.get(i);
-            if (tab.visible) {
-                visibleF = true;
-                canvasF.drawBitmap(tab.bitmap, 0.0f, 0.0f, layerPaint);
-            }
-        }
-        if (!visibleF) {
-            bitmapF.recycle();
-            bitmapF = null;
-        }
-    }
-
-    private void drawOtherLayersOnView() {
-        clearCanvas(viewCanvasB);
-        if (bitmapB != null) {
-            drawBitmapOnCanvas(bitmapB, tab.translationX, tab.translationY, viewCanvasB);
-        }
-        ivBackground.invalidate();
-        clearCanvas(viewCanvasF);
-        if (bitmapF != null) {
-            drawBitmapOnCanvas(bitmapF, tab.translationX, tab.translationY, viewCanvasF);
-        }
-        ivForeground.invalidate();
     }
 
     private void drawPoint(Canvas canvas, float x, float y, String text) {
@@ -2493,18 +2468,25 @@ public class MainActivity extends AppCompatActivity {
         viewWidth = imageView.getWidth();
         viewHeight = imageView.getHeight();
 
+        currentTabIndex = 0;
+
         tab = new Tab();
         tabs.add(tab);
         bitmap = Bitmap.createBitmap(48, 48, Bitmap.Config.ARGB_8888);
         tab.bitmap = bitmap;
-        currentTabIndex = 0;
         canvas = new Canvas(bitmap);
+
+        cellGrid = new CellGrid();
+        tab.cellGrid = cellGrid;
+
         history = new BitmapHistory();
         tab.history = history;
         history.offer(bitmap);
+
+        tab.paint = new Paint();
+
         tab.path = null;
         cellGrid = new CellGrid();
-        tab.cellGrid = cellGrid;
 
         tab.scale = 20.0f;
         imageWidth = 960;
@@ -2515,14 +2497,6 @@ public class MainActivity extends AppCompatActivity {
         viewBitmap = Bitmap.createBitmap(viewWidth, viewHeight, Bitmap.Config.ARGB_8888);
         viewCanvas = new Canvas(viewBitmap);
         imageView.setImageBitmap(viewBitmap);
-
-        viewBitmapB = Bitmap.createBitmap(viewWidth, viewHeight, Bitmap.Config.ARGB_8888);
-        viewCanvasB = new Canvas(viewBitmapB);
-        ivBackground.setImageBitmap(viewBitmapB);
-
-        viewBitmapF = Bitmap.createBitmap(viewWidth, viewHeight, Bitmap.Config.ARGB_8888);
-        viewCanvasF = new Canvas(viewBitmapF);
-        ivForeground.setImageBitmap(viewBitmapF);
 
         gridBitmap = Bitmap.createBitmap(viewWidth, viewHeight, Bitmap.Config.ARGB_4444);
         gridCanvas = new Canvas(gridBitmap);
@@ -2615,9 +2589,7 @@ public class MainActivity extends AppCompatActivity {
         hsvOptionsFilter = findViewById(R.id.hsv_options_filter);
         imageView = findViewById(R.id.iv);
         inputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
-        ivBackground = findViewById(R.id.iv_background);
         ivChessboard = findViewById(R.id.iv_chessboard);
-        ivForeground = findViewById(R.id.iv_foreground);
         ivGrid = findViewById(R.id.iv_grid);
         ivPreview = findViewById(R.id.iv_preview);
         ivRulerH = findViewById(R.id.iv_ruler_horizontal);
@@ -2756,6 +2728,7 @@ public class MainActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater menuInflater = getMenuInflater();
         menuInflater.inflate(R.menu.main, menu);
+        smBlendModes = menu.findItem(R.id.i_blend_modes).getSubMenu();
         miLayerVisible = menu.findItem(R.id.i_layer_visible);
         return true;
     }
@@ -2818,14 +2791,6 @@ public class MainActivity extends AppCompatActivity {
         viewBitmap.recycle();
         viewBitmap = null;
 
-        viewCanvasB = null;
-        viewBitmapB.recycle();
-        viewBitmapB = null;
-
-        viewCanvasF = null;
-        viewBitmapF.recycle();
-        viewBitmapF = null;
-
         super.onDestroy();
     }
 
@@ -2833,6 +2798,49 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("NonConstantResourceId")
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
+            case R.id.i_blend_mode_null:
+            case R.id.i_blend_mode_clear:
+            case R.id.i_blend_mode_src:
+            case R.id.i_blend_mode_dst:
+            case R.id.i_blend_mode_src_over:
+            case R.id.i_blend_mode_dst_over:
+            case R.id.i_blend_mode_src_in:
+            case R.id.i_blend_mode_dst_in:
+            case R.id.i_blend_mode_src_out:
+            case R.id.i_blend_mode_dst_out:
+            case R.id.i_blend_mode_src_atop:
+            case R.id.i_blend_mode_dst_atop:
+            case R.id.i_blend_mode_xor:
+            case R.id.i_blend_mode_plus:
+            case R.id.i_blend_mode_modulate:
+            case R.id.i_blend_mode_screen:
+            case R.id.i_blend_mode_overlay:
+            case R.id.i_blend_mode_darken:
+            case R.id.i_blend_mode_lighten:
+            case R.id.i_blend_mode_color_dodge:
+            case R.id.i_blend_mode_color_burn:
+            case R.id.i_blend_mode_hard_light:
+            case R.id.i_blend_mode_soft_light:
+            case R.id.i_blend_mode_difference:
+            case R.id.i_blend_mode_exclusion:
+            case R.id.i_blend_mode_multiply:
+            case R.id.i_blend_mode_hue:
+            case R.id.i_blend_mode_saturation:
+            case R.id.i_blend_mode_color:
+            case R.id.i_blend_mode_luminosity:
+                drawFloatingLayers();
+                for (int i = 0; i <= 29; ++i) {
+                    MenuItem mi = smBlendModes.getItem(i);
+                    if (mi == item) {
+                        tab.paint.setBlendMode(i == 0 ? null : BlendMode.values()[i - 1]);
+                        mi.setChecked(true);
+                    } else if (mi.isChecked()) {
+                        mi.setChecked(false);
+                    }
+                }
+                drawBitmapOnView();
+                break;
+
             case R.id.i_cell_grid: {
                 CellGridManager.make(this, cellGrid,
                                 onUpdateCellGridListener)
@@ -2944,6 +2952,16 @@ public class MainActivity extends AppCompatActivity {
                 tvState.setText("");
                 break;
 
+            case R.id.i_filter_levels_adjustment:
+                createBitmapWithFilter();
+                new LevelsAdjustmentDialog(this)
+                        .setOnLevelsChangeListener(onFilterLevelsSeekBarProgressChangeListener)
+                        .setOnPositiveButtonClickListener(onFilterConfirmListener)
+                        .setOnCancelListener(onFilterCancelListener)
+                        .show();
+                tvState.setText("");
+                break;
+
             case R.id.i_filter_lightness:
                 createBitmapWithFilter();
                 new SeekBarDialog(this).setTitle(R.string.lightness).setMin(-0xFF).setMax(0xFF).setProgress(0)
@@ -2996,6 +3014,16 @@ public class MainActivity extends AppCompatActivity {
                 scale(1.0f, -1.0f, false);
                 break;
             }
+            case R.id.i_layer_alpha:
+                drawFloatingLayers();
+                new SeekBarDialog(this).setTitle(R.string.alpha_channel).setMin(0).setMax(255)
+                        .setProgress(tab.paint.getAlpha())
+                        .setOnProgressChangeListener(onLayerAlphaSeekBarProgressChangeListener)
+                        .setOnPositiveButtonClickListener((dialog, which) -> tvState.setText(""))
+                        .setOnCancelListener(dialog -> tvState.setText(""), false)
+                        .show();
+                tvState.setText("");
+                break;
 
             case R.id.i_layer_duplicate: {
                 drawFloatingLayers();
@@ -3010,8 +3038,9 @@ public class MainActivity extends AppCompatActivity {
                     break;
                 }
                 Bitmap bm = Bitmap.createBitmap(bitmap);
+                Paint paint = tab.paint;
                 closeTab();
-                canvas.drawBitmap(bm, 0.0f, 0.0f, layerPaint);
+                canvas.drawBitmap(bm, 0.0f, 0.0f, paint);
                 bm.recycle();
                 drawBitmapOnView();
                 break;
@@ -3038,7 +3067,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 Bitmap bm = Bitmap.createBitmap(tabs.get(currentTabIndex + 1).bitmap);
                 Canvas cv = new Canvas(bm);
-                cv.drawBitmap(bm, 0.0f, 0.0f, layerPaint);
+                cv.drawBitmap(bitmap, 0.0f, 0.0f, tab.paint);
                 addBitmap(bm, currentTabIndex);
                 break;
             }

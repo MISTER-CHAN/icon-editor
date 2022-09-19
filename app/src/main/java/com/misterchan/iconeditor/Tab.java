@@ -1,6 +1,8 @@
 package com.misterchan.iconeditor;
 
 import android.graphics.Bitmap;
+import android.graphics.BlendMode;
+import android.graphics.Paint;
 
 class Tab {
     boolean visible;
@@ -10,5 +12,6 @@ class Tab {
     CellGrid cellGrid;
     float scale;
     float translationX, translationY;
+    Paint paint;
     String path;
 }

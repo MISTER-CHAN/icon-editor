@@ -2,6 +2,7 @@
 <resources>
     <string name="about">关于</string>
     <string name="add">添加</string>
+    <string name="alpha_channel">Alpha 通道</string>
     <string name="anti_alias">抗锯齿</string>
     <string name="app_name">Icon Editor</string>
     <string name="argb_channels_radix">ARGB 通道进位制</string>
@@ -10,13 +11,16 @@
     <string name="around_b">绕 B 轴</string>
     <string name="author">作者</string>
     <string name="background_color">底色</string>
+    <string name="blend_modes">混合模式</string>
     <string name="blur_radius">模糊半径</string>
     <string name="bucket_fill">油漆桶</string>
     <string name="cancel">取消</string>
     <string name="cell_grid">网格</string>
     <string name="channels">通道</string>
+    <string name="channel_mixer">通道混合器</string>
     <string name="check_for_updates">检査更新</string>
     <string name="circle">圆</string>
+    <string name="clear">清除</string>
     <string name="clear_destination">清除目标</string>
     <string name="cloner">克隆笔</string>
     <string name="close">关闭</string>
@@ -51,6 +55,7 @@
     <string name="height">高度</string>
     <string name="help">帮助</string>
     <string name="hex">十六进制</string>
+    <string name="highlights">亮点</string>
     <string name="homepage">主页</string>
     <string name="horizontally">水平</string>
     <string name="hue_only">仅色相</string>
@@ -58,6 +63,7 @@
     <string name="image_size">图像尺寸</string>
     <string name="invert">反相</string>
     <string name="layer">图层</string>
+    <string name="levels_adjustment">色阶</string>
     <string name="lightness">明度</string>
     <string name="line">直线</string>
     <string name="lock_aspect_ratio">锁定宽高比</string>
@@ -96,6 +102,7 @@
     <string name="select_all">全选</string>
     <string name="send_to_back">置底</string>
     <string name="settings">设置</string>
+    <string name="shadows">阴影</string>
     <string name="shape">形状</string>
     <string name="shift">偏移</string>
     <string name="size">尺寸</string>
@@ -103,11 +110,12 @@
     <string name="spacing">间距</string>
     <string name="stamp">图章</string>
     <string name="state_axes">轴长：%d, %d</string>
-    <string name="state_lightness">明度：%d</string>
     <string name="state_contrast">对比度：%.1f</string>
     <string name="state_invert">反相：%.1f</string>
     <string name="state_left_top">左：%d，上：%d</string>
     <string name="state_length">长度：%f</string>
+    <string name="state_levels">阴影：%d，亮点：%d</string>
+    <string name="state_lightness">明度：%d</string>
     <string name="state_l_t_r_b_size">左：%d，上：%d，右：%d，下：%d，尺寸：%d × %d</string>
     <string name="state_radius">半径：%.1f</string>
     <string name="state_saturation">饱和度：%.1f</string>
@@ -133,4 +141,33 @@
     <string name="when_resizing">当重设尺寸时</string>
     <string name="width">宽度</string>
     <string name="zoom">缩放</string>
+
+    <!-- Blend Modes -->
+    <string name="null_">无</string>
+    <string name="destination">目标</string>
+    <string name="source_over">来源盖过</string>
+    <string name="destination_over">目标盖过</string>
+    <string name="source_in">来源内部</string>
+    <string name="destination_in">目标内部</string>
+    <string name="source_out">来源外部</string>
+    <string name="destination_out">目标外部</string>
+    <string name="source_atop">来源置顶</string>
+    <string name="destination_atop">目标置顶</string>
+    <string name="xor">异或</string>
+    <string name="plus">加</string>
+    <string name="modulate">取馀</string>
+    <string name="screen">滤色</string>
+    <string name="overlay">叠加</string>
+    <string name="darken">变暗</string>
+    <string name="lighten">变亮</string>
+    <string name="color_dodge">颜色加亮</string>
+    <string name="color_burn">颜色加深</string>
+    <string name="hard_light">强光</string>
+    <string name="soft_light">柔光</string>
+    <string name="difference">差值</string>
+    <string name="exclusion">排除</string>
+    <string name="multiply">乘</string>
+    <string name="hue">色相</string>
+    <string name="color">颜色</string>
+    <string name="luminosity">明度</string>
 </resources>
