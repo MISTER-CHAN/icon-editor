@@ -182,6 +182,7 @@ public class MainActivity extends AppCompatActivity {
     private ColorAdapter colorAdapter;
     private double prevDiagonal;
     private EditText etCloneStampStrokeWidth;
+    private EditText etEraserBlurRadius;
     private EditText etEraserStrokeWidth;
     private EditText etFileName;
     private EditText etFilterStrokeWidth;
@@ -227,8 +228,8 @@ public class MainActivity extends AppCompatActivity {
     private LinkedList<Integer> palette;
     private List<Tab> tabs = new ArrayList<>();
     private MenuItem miLayerVisible;
-    private Point cloneStampSrc; // Sel. - Selection
-    private Point cloneStampSrcDist = new Point(0, 0); // Dist. - Distance
+    private Point cloneStampSrc;
+    private final Point cloneStampSrcDist = new Point(0, 0); // Dist. - Distance
     private Position draggingBound = Position.NULL;
     private RadioButton rbBucketFill;
     private RadioButton rbCloneStamp;
@@ -2523,6 +2524,7 @@ public class MainActivity extends AppCompatActivity {
         tabLayout.addTab(tabLayout.newTab().setText(R.string.untitled).setTag(bitmap));
 
         etPencilBlurRadius.setText(String.valueOf(0.0f));
+        etEraserBlurRadius.setText(String.valueOf(0.0f));
         etEraserStrokeWidth.setText(String.valueOf(eraser.getStrokeWidth()));
         etPencilStrokeWidth.setText(String.valueOf(paint.getStrokeWidth()));
         etTextSize.setText(String.valueOf(paint.getTextSize()));
@@ -2570,6 +2572,7 @@ public class MainActivity extends AppCompatActivity {
         cbTransformerLar = findViewById(R.id.cb_transformer_lar);
         cbZoom = findViewById(R.id.cb_zoom);
         etCloneStampStrokeWidth = findViewById(R.id.et_clone_stamp_stroke_width);
+        etEraserBlurRadius = findViewById(R.id.et_eraser_blur_radius);
         etEraserStrokeWidth = findViewById(R.id.et_eraser_stroke_width);
         etFilterStrokeWidth = findViewById(R.id.et_filter_stroke_width);
         etGradientBlurRadius = findViewById(R.id.et_gradient_blur_radius);
@@ -2657,6 +2660,14 @@ public class MainActivity extends AppCompatActivity {
         cbTextFill.setOnCheckedChangeListener((buttonView, isChecked) -> {
             paint.setStyle(isChecked ? Paint.Style.FILL : Paint.Style.STROKE);
             drawTextOnView();
+        });
+
+        etEraserBlurRadius.addTextChangedListener((AfterTextChangedListener) s -> {
+            try {
+                float f = Float.parseFloat(s);
+                eraser.setMaskFilter(f > 0.0f ? new BlurMaskFilter(f, BlurMaskFilter.Blur.NORMAL) : null);
+            } catch (NumberFormatException e) {
+            }
         });
 
         etEraserStrokeWidth.addTextChangedListener((AfterTextChangedListener) s -> {
@@ -3030,14 +3041,17 @@ public class MainActivity extends AppCompatActivity {
             }
             case R.id.i_layer_merge: {
                 drawFloatingLayers();
-                if (tabLayout.getSelectedTabPosition() + 1 >= tabs.size()) {
+                int i = tabLayout.getSelectedTabPosition();
+                if (i + 1 >= tabs.size()) {
                     break;
                 }
                 Bitmap bm = Bitmap.createBitmap(bitmap);
                 Paint paint = tab.paint;
                 closeTab();
+                tabLayout.getTabAt(i).select();
                 canvas.drawBitmap(bm, 0.0f, 0.0f, paint);
                 bm.recycle();
+                history.offer(bitmap);
                 drawBitmapOnView();
                 break;
             }
