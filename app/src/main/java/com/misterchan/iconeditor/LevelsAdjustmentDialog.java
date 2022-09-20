@@ -25,6 +25,7 @@ public class LevelsAdjustmentDialog {
 
     public LevelsAdjustmentDialog setOnCancelListener(DialogInterface.OnCancelListener listener) {
         builder.setOnCancelListener(listener);
+        builder.setNegativeButton(R.string.cancel, (dialog, which) -> listener.onCancel(dialog));
         return this;
     }
 

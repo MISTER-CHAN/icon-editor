@@ -89,7 +89,7 @@ public class BitmapWithFilter {
     }
 
     public void setFilter(@Size(20) float[] colorMatrix) {
-        int w = bitmap.getWidth(), h = bitmap.getHeight(), area = w * h;
+        int w = bm.getWidth(), h = bm.getHeight(), area = w * h;
         int[] pixels = new int[area];
         bm.getPixels(pixels, 0, w, 0, 0, w, h);
         for (int i = 0; i < area; ++i) {

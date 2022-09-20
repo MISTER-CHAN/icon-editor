@@ -80,7 +80,7 @@
     <string name="lock_aspect_ratio">Lock Aspect Ratio</string>
     <string name="mask_filter">Mask Filter</string>
     <string name="merge">Merge</string>
-    <string name="merge_as_an_hidden_image">Merge as an Hidden Image</string>
+    <string name="merge_as_a_hidden_image">Merge as a Hidden Image</string>
     <string name="merge_as_hidden">Merge as Hidden</string>
     <string name="merge_as_new">Merge as New</string>
     <string name="mister_chan" translatable="false">MISTER_CHAN</string>

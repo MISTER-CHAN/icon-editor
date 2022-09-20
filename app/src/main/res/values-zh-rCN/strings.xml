@@ -69,7 +69,7 @@
     <string name="lock_aspect_ratio">锁定宽高比</string>
     <string name="mask_filter">遮罩滤镜</string>
     <string name="merge">合并</string>
-    <string name="merge_as_an_hidden_image">合并为隐藏图</string>
+    <string name="merge_as_a_hidden_image">合并为隐藏图</string>
     <string name="merge_as_hidden">合并为 Hidden 图</string>
     <string name="merge_as_new">合并为新图层</string>
     <string name="new_">新建</string>

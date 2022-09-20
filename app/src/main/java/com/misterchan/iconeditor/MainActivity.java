@@ -208,7 +208,6 @@ public class MainActivity extends AppCompatActivity {
     private ImageView ivSelection;
     private InputMethodManager inputMethodManager;
     private int colorRange = 0b111111;
-    private int currentTabIndex;
     @ColorInt
     private int gradientColor0;
     private int imageWidth, imageHeight;
@@ -556,7 +555,7 @@ public class MainActivity extends AppCompatActivity {
     };
 
     private final HiddenImageMaker.OnFinishSettingListener onFinishMakingHiddenImageListener = bm -> {
-        createGraphic(bm.getWidth(), bm.getHeight(), currentTabIndex + 2);
+        createGraphic(bm.getWidth(), bm.getHeight(), tabLayout.getSelectedTabPosition() + 2);
         canvas.drawBitmap(bm, 0.0f, 0.0f, opaquePaint);
         drawBitmapOnView();
         bm.recycle();
@@ -612,8 +611,7 @@ public class MainActivity extends AppCompatActivity {
         public void onTabSelected(TabLayout.Tab tab) {
             drawFloatingLayers();
 
-            currentTabIndex = tab.getPosition();
-            MainActivity.this.tab = tabs.get(currentTabIndex);
+            MainActivity.this.tab = tabs.get(tab.getPosition());
             bitmap = MainActivity.this.tab.bitmap;
             canvas = new Canvas(bitmap);
             history = MainActivity.this.tab.history;
@@ -1532,9 +1530,9 @@ public class MainActivity extends AppCompatActivity {
     private final LevelsAdjustmentDialog.OnLevelsChangeListener onFilterLevelsSeekBarProgressChangeListener = (shadows, highlights) -> {
         float ratio = 0xFF / (float) (highlights - shadows);
         bitmapWithFilter.setFilter(new float[]{
-                ratio, 0.0f, 0.0f, 0.0f, -shadows,
-                0.0f, ratio, 0.0f, 0.0f, -shadows,
-                0.0f, 0.0f, ratio, 0.0f, -shadows,
+                ratio, 0.0f, 0.0f, 0.0f, -shadows * ratio,
+                0.0f, ratio, 0.0f, 0.0f, -shadows * ratio,
+                0.0f, 0.0f, ratio, 0.0f, -shadows * ratio,
                 0.0f, 0.0f, 0.0f, 1.0f, 0.0f
         });
         drawBitmapOnView(bitmapWithFilter.getBitmap());
@@ -1698,7 +1696,6 @@ public class MainActivity extends AppCompatActivity {
         tab = new Tab();
         tabs.add(position, tab);
         tab.bitmap = bitmap;
-        currentTabIndex = position;
         history = new BitmapHistory();
         tab.history = history;
         history.offer(bitmap);
@@ -1845,8 +1842,9 @@ public class MainActivity extends AppCompatActivity {
     private void closeTab() {
         bitmap.recycle();
         history.recycle();
-        tabs.remove(currentTabIndex);
-        tabLayout.removeTabAt(currentTabIndex);
+        int i = tabLayout.getSelectedTabPosition();
+        tabs.remove(i);
+        tabLayout.removeTabAt(i);
     }
 
     private void createBitmapWithFilter() {
@@ -1951,9 +1949,9 @@ public class MainActivity extends AppCompatActivity {
         clearCanvas(viewCanvas);
         Bitmap bm = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
         Canvas cv = new Canvas(bm);
-        for (int i = tabs.size() - 1; i >= 0; --i) {
+        for (int i = tabs.size() - 1, selected = tabLayout.getSelectedTabPosition(); i >= 0; --i) {
             Tab tab = tabs.get(i);
-            if (i == currentTabIndex) {
+            if (i == selected) {
                 cv.drawBitmap(bitmap, 0.0f, 0.0f, tab.paint);
             } else if (tab.visible) {
                 cv.drawBitmap(tab.bitmap, 0.0f, 0.0f, tab.paint);
@@ -2468,8 +2466,6 @@ public class MainActivity extends AppCompatActivity {
         viewWidth = imageView.getWidth();
         viewHeight = imageView.getHeight();
 
-        currentTabIndex = 0;
-
         tab = new Tab();
         tabs.add(tab);
         bitmap = Bitmap.createBitmap(48, 48, Bitmap.Config.ARGB_8888);
@@ -2549,7 +2545,7 @@ public class MainActivity extends AppCompatActivity {
     public void onConfigurationChanged(@NonNull Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
 
-        tab = tabs.get(currentTabIndex);
+        tab = tabs.get(tabLayout.getSelectedTabPosition());
     }
 
     @Override
@@ -2976,7 +2972,7 @@ public class MainActivity extends AppCompatActivity {
                 createBitmapWithFilter();
                 ColorMatrixManager
                         .make(this,
-                                R.string.custom,
+                                R.string.channel_mixer,
                                 onColorMatrixChangeListener,
                                 onFilterConfirmListener,
                                 onFilterCancelListener)
@@ -3028,13 +3024,13 @@ public class MainActivity extends AppCompatActivity {
             case R.id.i_layer_duplicate: {
                 drawFloatingLayers();
                 Bitmap bm = Bitmap.createBitmap(bitmap);
-                addBitmap(bm, currentTabIndex);
+                addBitmap(bm, tabLayout.getSelectedTabPosition());
                 tab.visible = true;
                 break;
             }
             case R.id.i_layer_merge: {
                 drawFloatingLayers();
-                if (currentTabIndex + 1 >= tabs.size()) {
+                if (tabLayout.getSelectedTabPosition() + 1 >= tabs.size()) {
                     break;
                 }
                 Bitmap bm = Bitmap.createBitmap(bitmap);
@@ -3047,48 +3043,50 @@ public class MainActivity extends AppCompatActivity {
             }
             case R.id.i_layer_merge_as_hidden: {
                 drawFloatingLayers();
-                if (currentTabIndex + 1 >= tabs.size()) {
+                int j = tabLayout.getSelectedTabPosition() + 1;
+                if (j >= tabs.size()) {
                     new AlertDialog.Builder(this)
                             .setMessage(R.string.exception_merge_as_hidden)
                             .setPositiveButton(R.string.ok, null)
-                            .setTitle(R.string.merge_as_an_hidden_image)
+                            .setTitle(R.string.merge_as_a_hidden_image)
                             .show();
                     break;
                 }
                 HiddenImageMaker.merge(this,
-                        new Bitmap[]{bitmap, tabs.get(currentTabIndex + 1).bitmap},
+                        new Bitmap[]{bitmap, tabs.get(j).bitmap},
                         onFinishMakingHiddenImageListener);
                 break;
             }
             case R.id.i_layer_merge_as_new: {
                 drawFloatingLayers();
-                if (currentTabIndex + 1 >= tabs.size()) {
+                int i = tabLayout.getSelectedTabPosition(), j = i + 1;
+                if (j >= tabs.size()) {
                     break;
                 }
-                Bitmap bm = Bitmap.createBitmap(tabs.get(currentTabIndex + 1).bitmap);
+                Bitmap bm = Bitmap.createBitmap(tabs.get(j).bitmap);
                 Canvas cv = new Canvas(bm);
                 cv.drawBitmap(bitmap, 0.0f, 0.0f, tab.paint);
-                addBitmap(bm, currentTabIndex);
+                addBitmap(bm, i);
                 break;
             }
             case R.id.i_layer_new:
                 drawFloatingLayers();
-                createGraphic(bitmap.getWidth(), bitmap.getHeight(), currentTabIndex);
+                createGraphic(bitmap.getWidth(), bitmap.getHeight(), tabLayout.getSelectedTabPosition());
                 tab.visible = true;
                 break;
 
             case R.id.i_layer_send_to_back:
                 drawFloatingLayers();
-                if (currentTabIndex + 1 >= tabs.size()) {
+                int i = tabLayout.getSelectedTabPosition(), j = i + 1;
+                if (j >= tabs.size()) {
                     break;
                 }
-                int i = currentTabIndex, j = i + 1;
                 Collections.swap(tabs, i, j);
                 TabLayout.Tab ti = tabLayout.getTabAt(i), tj = tabLayout.getTabAt(j);
                 CharSequence csi = ti.getText(), csj = tj.getText();
                 ti.setText(csj);
                 tj.setText(csi);
-                onTabSelectedListener.onTabSelected(ti);
+                tabLayout.selectTab(tj);
                 break;
 
             case R.id.i_layer_visible:

@@ -32,7 +32,7 @@ public class HiddenImageMaker {
 
         merger.dialog = new AlertDialog.Builder(context)
                 .setNegativeButton(R.string.cancel, null)
-                .setTitle(R.string.merge_as_hidden)
+                .setTitle(R.string.merge_as_a_hidden_image)
                 .setView(R.layout.merge_as_hidden)
                 .setPositiveButton(R.string.ok, (dialog, which) -> {
                     float[] scale = new float[]{
