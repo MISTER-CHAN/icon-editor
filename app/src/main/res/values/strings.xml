@@ -65,6 +65,7 @@
     <string name="height">Height</string>
     <string name="help">Help</string>
     <string name="hex">Hex</string>
+    <string name="hidden_image">Hidden Image</string>
     <string name="highlights">Highlights</string>
     <string name="homepage">Homepage</string>
     <string name="homepage_address" translatable="false">https://github.com/MISTER-CHAN/IconEditor</string>
@@ -80,8 +81,8 @@
     <string name="lock_aspect_ratio">Lock Aspect Ratio</string>
     <string name="mask_filter">Mask Filter</string>
     <string name="merge">Merge</string>
+    <string name="merge_as">Merge as</string>
     <string name="merge_as_a_hidden_image">Merge as a Hidden Image</string>
-    <string name="merge_as_hidden">Merge as Hidden</string>
     <string name="merge_as_new">Merge as New</string>
     <string name="merge_visible">Merge Visible</string>
     <string name="mister_chan" translatable="false">MISTER_CHAN</string>

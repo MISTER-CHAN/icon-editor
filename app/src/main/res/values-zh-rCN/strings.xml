@@ -55,6 +55,7 @@
     <string name="height">高度</string>
     <string name="help">帮助</string>
     <string name="hex">十六进制</string>
+    <string name="hidden_image">隐藏图</string>
     <string name="highlights">亮点</string>
     <string name="homepage">主页</string>
     <string name="horizontally">水平</string>
@@ -69,8 +70,8 @@
     <string name="lock_aspect_ratio">锁定宽高比</string>
     <string name="mask_filter">遮罩滤镜</string>
     <string name="merge">合并</string>
+    <string name="merge_as">合并为</string>
     <string name="merge_as_a_hidden_image">合并为隐藏图</string>
-    <string name="merge_as_hidden">合并为 Hidden 图</string>
     <string name="merge_as_new">合并为新图层</string>
     <string name="new_">新建</string>
     <string name="ninety_degrees">90°</string>

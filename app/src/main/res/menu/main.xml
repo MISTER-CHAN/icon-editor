@@ -167,8 +167,17 @@
                 android:title="@string/merge_visible" />
 
             <item
-                android:id="@+id/i_layer_merge_as_hidden"
-                android:title="@string/merge_as_hidden" />
+                android:title="@string/merge_as">
+
+                <menu>
+
+                    <item
+                        android:id="@+id/i_layer_merge_as_hidden"
+                        android:title="@string/hidden_image" />
+
+                </menu>
+            </item>
+
 
             <item
                 android:id="@+id/i_layer_alpha"
