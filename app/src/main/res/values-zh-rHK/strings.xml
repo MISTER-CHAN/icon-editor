@@ -2,7 +2,7 @@
 <resources>
     <string name="about">關於</string>
     <string name="add">新增</string>
-    <string name="alpha_channel">Alpha 通道</string>
+    <string name="alpha_value">Alpha 値</string>
     <string name="anti_alias">抗鋸齒</string>
     <string name="app_name">Icon Editor</string>
     <string name="argb_channels_radix">ARGB 通道進位制</string>
@@ -72,6 +72,7 @@
     <string name="merge_as_a_hidden_image">合倂爲隱藏圖</string>
     <string name="merge_as_hidden">合倂爲 Hidden 圖</string>
     <string name="merge_as_new">合倂爲新圖層</string>
+    <string name="merge_visible">合倂可見</string>
     <string name="new_">新建</string>
     <string name="ninety_degrees">90°</string>
     <string name="not_supported_file_type">不支援之檔案類型</string>

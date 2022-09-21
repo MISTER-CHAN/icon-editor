@@ -3,7 +3,7 @@
     <string name="about">About</string>
     <string name="add">Add</string>
     <string name="add_symbol" translatable="false">+</string>
-    <string name="alpha_channel">Alpha Channel</string>
+    <string name="alpha_value">Alpha Value</string>
     <string name="anti_alias">Anti-alias</string>
     <string name="app_name">Icon Editor</string>
     <string name="argb_channels_radix">ARGB Channels Radix</string>
@@ -83,6 +83,7 @@
     <string name="merge_as_a_hidden_image">Merge as a Hidden Image</string>
     <string name="merge_as_hidden">Merge as Hidden</string>
     <string name="merge_as_new">Merge as New</string>
+    <string name="merge_visible">Merge Visible</string>
     <string name="mister_chan" translatable="false">MISTER_CHAN</string>
     <string name="new_">New</string>
     <string name="ninety_degrees">90°</string>

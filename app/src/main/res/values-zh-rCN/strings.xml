@@ -2,7 +2,7 @@
 <resources>
     <string name="about">关于</string>
     <string name="add">添加</string>
-    <string name="alpha_channel">Alpha 通道</string>
+    <string name="alpha_value">Alpha 值</string>
     <string name="anti_alias">抗锯齿</string>
     <string name="app_name">Icon Editor</string>
     <string name="argb_channels_radix">ARGB 通道进位制</string>
@@ -170,4 +170,5 @@
     <string name="hue">色相</string>
     <string name="color">颜色</string>
     <string name="luminosity">明度</string>
+    <string name="merge_visible">合并可见</string>
 </resources>

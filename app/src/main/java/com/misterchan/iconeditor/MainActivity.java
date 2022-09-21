@@ -1572,6 +1572,18 @@ public class MainActivity extends AppCompatActivity {
         tvState.setText(String.format(getString(R.string.state_saturation), f));
     };
 
+    private final OnProgressChangeListener onFilterThresholdSeekBarProgressChangeListener = progress -> {
+        float f = -0x100 * progress;
+        bitmapWithFilter.setFilter(new float[]{
+                0.213f * 0x100, 0.715f * 0x100, 0.072f * 0x100, 0.0f, f,
+                0.213f * 0x100, 0.715f * 0x100, 0.072f * 0x100, 0.0f, f,
+                0.213f * 0x100, 0.715f * 0x100, 0.072f * 0x100, 0.0f, f,
+                0.0f, 0.0f, 0.0f, 1.0f, 0.0f
+        });
+        drawBitmapOnView(bitmapWithFilter.getBitmap());
+        tvState.setText(String.format(getString(R.string.state_threshold), progress));
+    };
+
     private final CellGridManager.OnUpdateListener onUpdateCellGridListener = this::drawGridOnView;
 
     private final ImageSizeManager.OnUpdateListener onUpdateImageSizeListener = (width, height, stretch) -> {
@@ -2993,11 +3005,12 @@ public class MainActivity extends AppCompatActivity {
 
             case R.id.i_filter_threshold:
                 createBitmapWithFilter();
-                new ThresholdDialog(this)
-                        .setOnCancelListener(onFilterCancelListener)
-                        .setOnMatrixChangeListener(onColorMatrixChangeListener)
+                new SeekBarDialog(this).setTitle(R.string.threshold).setMin(0).setMax(255).setProgress(128)
+                        .setOnProgressChangeListener(onFilterThresholdSeekBarProgressChangeListener)
                         .setOnPositiveButtonClickListener(onFilterConfirmListener)
+                        .setOnCancelListener(onFilterCancelListener)
                         .show();
+                onFilterThresholdSeekBarProgressChangeListener.onProgressChanged(128);
                 tvState.setText("");
                 break;
 
@@ -3023,7 +3036,7 @@ public class MainActivity extends AppCompatActivity {
             }
             case R.id.i_layer_alpha:
                 drawFloatingLayers();
-                new SeekBarDialog(this).setTitle(R.string.alpha_channel).setMin(0).setMax(255)
+                new SeekBarDialog(this).setTitle(R.string.alpha_value).setMin(0).setMax(255)
                         .setProgress(tab.paint.getAlpha())
                         .setOnProgressChangeListener(onLayerAlphaSeekBarProgressChangeListener)
                         .setOnPositiveButtonClickListener((dialog, which) -> tvState.setText(""))
@@ -3081,6 +3094,21 @@ public class MainActivity extends AppCompatActivity {
                 Canvas cv = new Canvas(bm);
                 cv.drawBitmap(bitmap, 0.0f, 0.0f, tab.paint);
                 addBitmap(bm, i);
+                break;
+            }
+            case R.id.i_layer_merge_visible:{
+                drawFloatingLayers();
+                Bitmap bm = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
+                Canvas cv = new Canvas(bm);
+                int selected = tabLayout.getSelectedTabPosition();
+                for (int i = tabs.size() - 1; i >= 0; --i) {
+                    Tab tab = tabs.get(i);
+                    if (tab.visible || i == selected) {
+                        cv.drawBitmap(tab.bitmap, 0.0f, 0.0f, tab.paint);
+                    }
+                }
+                cv.drawBitmap(bitmap, 0.0f, 0.0f, tab.paint);
+                addBitmap(bm, selected);
                 break;
             }
             case R.id.i_layer_new:

@@ -163,12 +163,16 @@
                 android:title="@string/merge_as_new" />
 
             <item
+                android:id="@+id/i_layer_merge_visible"
+                android:title="@string/merge_visible" />
+
+            <item
                 android:id="@+id/i_layer_merge_as_hidden"
                 android:title="@string/merge_as_hidden" />
 
             <item
                 android:id="@+id/i_layer_alpha"
-                android:title="@string/alpha_channel" />
+                android:title="@string/alpha_value" />
 
             <item
                 android:id="@+id/i_blend_modes"
