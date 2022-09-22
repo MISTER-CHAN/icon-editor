@@ -151,8 +151,8 @@ public class MainActivity extends AppCompatActivity {
     private Bitmap selectionBitmap;
     private Bitmap viewBitmap;
     private BitmapHistory history;
-    private BitmapWithFilter bitmapWithFilter;
-    private BitmapWithFilter thresholdBitmap;
+    private PreviewBitmap bitmapWithFilter;
+    private PreviewBitmap thresholdBitmap;
     private boolean antiAlias = false;
     private boolean hasNotLoaded = true;
     private boolean hasSelection = false;
@@ -470,6 +470,19 @@ public class MainActivity extends AppCompatActivity {
 
     private final DialogInterface.OnClickListener onFilterConfirmListener = (dialog, which) -> {
         drawBitmapWithFilterOnCanvas();
+        tvState.setText("");
+    };
+
+    private final DialogInterface.OnCancelListener onRotateCancelListener = dialog -> {
+        ivSelection.setRotation(0.0f);
+        drawTransformeeAndSelectionOnViewByTranslation();
+        tvState.setText("");
+    };
+
+    private final DialogInterface.OnClickListener onRotateConfirmListener = (dialog, which) -> {
+        transformer.rotate(ivSelection.getRotation());
+        ivSelection.setRotation(0.0f);
+        drawTransformeeAndSelectionOnViewByTranslation();
         tvState.setText("");
     };
 
@@ -1609,6 +1622,12 @@ public class MainActivity extends AppCompatActivity {
                 progress));
     };
 
+    private final OnProgressChangeListener onRotateDegreeSeekBarProgressChangeListener = progress -> {
+        ivSelection.setRotation(progress);
+        drawSelectionOnView();
+        tvState.setText(String.format(getString(R.string.degrees_), progress));
+    };
+
     private final Shape circle = new Shape() {
         @Override
         public void drawShapeOnCanvas(int x0, int y0, int x1, int y1) {
@@ -1864,7 +1883,7 @@ public class MainActivity extends AppCompatActivity {
         if (!hasSelection) {
             selectAll();
         }
-        bitmapWithFilter = new BitmapWithFilter(bitmap, selection);
+        bitmapWithFilter = new PreviewBitmap(bitmap, selection);
     }
 
     private void createGraphic(int width, int height) {
@@ -1887,7 +1906,7 @@ public class MainActivity extends AppCompatActivity {
         if (!hasSelection) {
             selectAll();
         }
-        thresholdBitmap = new BitmapWithFilter(bitmap, selection);
+        thresholdBitmap = new PreviewBitmap(bitmap, selection);
         this.threshold = threshold;
     }
 
@@ -3096,7 +3115,7 @@ public class MainActivity extends AppCompatActivity {
                 addBitmap(bm, i);
                 break;
             }
-            case R.id.i_layer_merge_visible:{
+            case R.id.i_layer_merge_visible: {
                 drawFloatingLayers();
                 Bitmap bm = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
                 Canvas cv = new Canvas(bm);
@@ -3107,7 +3126,6 @@ public class MainActivity extends AppCompatActivity {
                         cv.drawBitmap(tab.bitmap, 0.0f, 0.0f, tab.paint);
                     }
                 }
-                cv.drawBitmap(bitmap, 0.0f, 0.0f, tab.paint);
                 addBitmap(bm, selected);
                 break;
             }
@@ -3171,6 +3189,27 @@ public class MainActivity extends AppCompatActivity {
                 if (history.canRedo()) {
                     undoOrRedo(history.redo());
                 }
+                break;
+
+            case R.id.i_rotate:
+                if (!rbTransformer.isChecked()) {
+                    break;
+                }
+                if (transformer == null) {
+                    transformer = new Transformer(
+                            Bitmap.createBitmap(bitmap, selection.left, selection.top,
+                                    selection.width() + 1, selection.width() + 1),
+                            tab.translationX + toScaled(selection.left),
+                            tab.translationY + toScaled(selection.top));
+                }
+                ivSelection.setPivotX(transformer.getTranslationX() + (toScaled(selection.right) - toScaled(selection.left)) / 2.0f);
+                ivSelection.setPivotX(transformer.getTranslationY() + (toScaled(selection.bottom) - toScaled(selection.top)) / 2.0f);
+                new SeekBarDialog(this).setTitle(R.string.rotate).setMin(0).setMax(359).setProgress(0)
+                        .setOnProgressChangeListener(onRotateDegreeSeekBarProgressChangeListener)
+                        .setOnPositiveButtonClickListener(onRotateConfirmListener)
+                        .setOnCancelListener(onRotateCancelListener)
+                        .show();
+                tvState.setText("");
                 break;
 
             case R.id.i_rotate_90:

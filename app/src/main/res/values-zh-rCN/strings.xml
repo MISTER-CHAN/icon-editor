@@ -35,6 +35,7 @@
     <string name="custom_color_filter">自定义颜色滤镜</string>
     <string name="cut">剪切</string>
     <string name="dec">十进制</string>
+    <string name="degrees_">角度：%d°</string>
     <string name="delete">删除</string>
     <string name="deselect">不选择</string>
     <string name="draw">绘画</string>

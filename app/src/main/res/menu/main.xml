@@ -120,6 +120,11 @@
                             <item
                                 android:id="@+id/i_rotate_270"
                                 android:title="@string/two_seventy_degrees" />
+
+                            <item
+                                android:id="@+id/i_rotate"
+                                android:title="@string/custom"
+                                android:visible="false" />
                         </menu>
                     </item>
                 </menu>
@@ -166,8 +171,7 @@
                 android:id="@+id/i_layer_merge_visible"
                 android:title="@string/merge_visible" />
 
-            <item
-                android:title="@string/merge_as">
+            <item android:title="@string/merge_as">
 
                 <menu>
 

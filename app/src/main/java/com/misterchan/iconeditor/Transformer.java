@@ -79,7 +79,7 @@ public class Transformer {
         }
     }
 
-    public void rotate() {
+    public void rotate(float degrees) {
 
     }
 

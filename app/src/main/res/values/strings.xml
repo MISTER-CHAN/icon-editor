@@ -39,6 +39,7 @@
     <string name="cut">Cut</string>
     <string name="dec">Dec</string>
     <string name="degree" translatable="false">°</string>
+    <string name="degrees_">Degrees: %d°</string>
     <string name="delete">Delete</string>
     <string name="deselect">Deselect</string>
     <string name="double_zero" translatable="false">00</string>
@@ -68,7 +69,7 @@
     <string name="hidden_image">Hidden Image</string>
     <string name="highlights">Highlights</string>
     <string name="homepage">Homepage</string>
-    <string name="homepage_address" translatable="false">https://github.com/MISTER-CHAN/IconEditor</string>
+    <string name="homepage_address" translatable="false">https://github.com/MISTER-CHAN/icon-editor</string>
     <string name="horizontally">Horizontally</string>
     <string name="hue_only">Hue Only</string>
     <string name="image">Image</string>

@@ -35,6 +35,7 @@
     <string name="custom_color_filter">自訂顏色濾鏡</string>
     <string name="cut">剪下</string>
     <string name="dec">十進制</string>
+    <string name="degrees_">角度：%d°</string>
     <string name="delete">刪除</string>
     <string name="deselect">不選取</string>
     <string name="draw">繪畫</string>

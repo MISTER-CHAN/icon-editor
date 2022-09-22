@@ -13,7 +13,7 @@ import android.graphics.Rect;
 import androidx.annotation.ColorInt;
 import androidx.annotation.Size;
 
-public class BitmapWithFilter {
+public class PreviewBitmap {
     private final Bitmap bitmap;
     private final Bitmap bm;
     private final Canvas canvas;
@@ -26,7 +26,7 @@ public class BitmapWithFilter {
         }
     };
 
-    public BitmapWithFilter(Bitmap bitmap, Rect rect) {
+    public PreviewBitmap(Bitmap bitmap, Rect rect) {
         this.bitmap = Bitmap.createBitmap(bitmap);
         this.bm = Bitmap.createBitmap(bitmap, rect.left, rect.top, rect.width() + 1, rect.height() + 1);
         canvas = new Canvas(this.bitmap);
