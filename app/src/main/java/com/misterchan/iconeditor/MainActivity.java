@@ -1466,7 +1466,7 @@ public class MainActivity extends AppCompatActivity {
                         double diagonal = Math.sqrt(Math.pow(x0 - x1, 2.0) + Math.pow(y0 - y1, 2.0));
                         double diagonalRatio = diagonal / prevDiagonal;
                         float scale = (float) (tab.scale * diagonalRatio);
-                        int scaledWidth = (int) toScaled(bitmap.getWidth()), scaledHeight = (int) toScaled(bitmap.getHeight());
+                        int scaledWidth = (int) (bitmap.getWidth() * scale), scaledHeight = (int) (bitmap.getHeight() * scale);
                         tab.scale = scale;
                         imageWidth = scaledWidth;
                         imageHeight = scaledHeight;
