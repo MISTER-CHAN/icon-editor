@@ -227,7 +227,6 @@ public class MainActivity extends AppCompatActivity {
     private CheckBox cbPencilAntiAlias;
     private CheckBox cbShapeAntiAlias;
     private CheckBox cbShapeFill;
-    private CheckBox cbTextAntiAlias;
     private CheckBox cbTextFill;
     private CheckBox cbTransformerLar;
     private CheckBox cbZoom;
@@ -1613,7 +1612,6 @@ public class MainActivity extends AppCompatActivity {
     private final CompoundButton.OnCheckedChangeListener onTextRadioButtonCheckedChangeListener = (buttonView, isChecked) -> {
         if (isChecked) {
             onToolChange(onImageViewTouchWithTextListener);
-            cbTextAntiAlias.setChecked(antiAlias);
             cbTextFill.setChecked(isPaintStyleFill());
         } else {
             drawTextOnCanvas(false);
@@ -2701,7 +2699,6 @@ public class MainActivity extends AppCompatActivity {
         cbPencilAntiAlias = findViewById(R.id.cb_pencil_anti_alias);
         cbShapeAntiAlias = findViewById(R.id.cb_shape_anti_alias);
         cbShapeFill = findViewById(R.id.cb_shape_fill);
-        cbTextAntiAlias = findViewById(R.id.cb_text_anti_alias);
         cbTextFill = findViewById(R.id.cb_text_fill);
         cbTransformerLar = findViewById(R.id.cb_transformer_lar);
         cbZoom = findViewById(R.id.cb_zoom);
@@ -2768,7 +2765,6 @@ public class MainActivity extends AppCompatActivity {
         cbPencilAntiAlias.setOnCheckedChangeListener(onAntiAliasCheckedChangeListener);
         cbShapeAntiAlias.setOnCheckedChangeListener(onAntiAliasCheckedChangeListener);
         cbShapeFill.setOnCheckedChangeListener((buttonView, isChecked) -> paint.setStyle(isChecked ? Paint.Style.FILL_AND_STROKE : Paint.Style.STROKE));
-        cbTextAntiAlias.setOnCheckedChangeListener(onAntiAliasCheckedChangeListener);
         cbZoom.setOnCheckedChangeListener(onZoomToolCheckBoxCheckedChangeListener);
         cbZoom.setTag(onImageViewTouchWithPencilListener);
         etCloneStampBlurRadius.addTextChangedListener(onBlurRadiusTextChangedListener);
