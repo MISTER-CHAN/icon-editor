@@ -2,28 +2,23 @@ package com.misterchan.iconeditor;
 
 import android.content.Context;
 import android.content.DialogInterface;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.WindowManager;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
-import android.widget.GridLayout;
 import android.widget.SeekBar;
 
 import androidx.appcompat.app.AlertDialog;
 
-import javax.microedition.khronos.opengles.GL;
-
 public class ColorRangeDialog {
 
     public interface OnColorRangeChangeListener {
-        void onChange(int range);
+        void onChange(int min, int max);
     }
 
     private final AlertDialog.Builder builder;
     private OnColorRangeChangeListener listener;
 
-    private int range = 0b111111;
+    private SeekBar sbMax;
+    private SeekBar sbMin;
 
     public ColorRangeDialog(Context context) {
         builder = new AlertDialog.Builder(context)
@@ -32,18 +27,13 @@ public class ColorRangeDialog {
                 .setView(R.layout.color_range);
     }
 
-    public ColorRangeDialog setDefaultRange(int range) {
-        this.range = range;
-        return this;
-    }
-
     public ColorRangeDialog setOnCancelListener(DialogInterface.OnCancelListener listener) {
         builder.setOnCancelListener(listener);
         return this;
     }
 
-    public ColorRangeDialog setOnPositiveButtonClickListener(DialogInterface.OnClickListener listener) {
-        builder.setPositiveButton(R.string.ok, listener);
+    public ColorRangeDialog setOnPositiveButtonClickListener(final OnColorRangeChangeListener listener) {
+        builder.setPositiveButton(R.string.ok, (dialog, which) -> listener.onChange(sbMin.getProgress(), sbMax.getProgress()));
         return this;
     }
 
@@ -62,16 +52,11 @@ public class ColorRangeDialog {
         lp.gravity = Gravity.BOTTOM;
         window.setAttributes(lp);
 
-        GridLayout gl = dialog.findViewById(R.id.gl);
+        sbMax = dialog.findViewById(R.id.sb_max);
+        sbMin = dialog.findViewById(R.id.sb_min);
+        OnProgressChangeListener l = (OnProgressChangeListener) progress -> listener.onChange(sbMin.getProgress(), sbMax.getProgress());
 
-        for (int i = 0; i < 6; ++i) {
-            CheckBox cb = (CheckBox) gl.getChildAt(i + 3);
-            final int inv = 5 - i;
-            cb.setChecked((range >> inv & 0b1) == 0b1);
-            cb.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                range = isChecked ? range | 0b1 << inv : range ^ 0b1 << inv ;
-                listener.onChange(range);
-            });
-        }
+        sbMax.setOnSeekBarChangeListener(l);
+        sbMin.setOnSeekBarChangeListener(l);
     }
 }

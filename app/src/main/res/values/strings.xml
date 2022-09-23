@@ -46,6 +46,7 @@
     <string name="double_zero" translatable="false">00</string>
     <string name="draw">Draw</string>
     <string name="duplicate">Duplicate</string>
+    <string name="duplicate_by_color_range">Duplicate by Color Range</string>
     <string name="edit" translatable="false">✎</string>
     <string name="enabled">Enabled</string>
     <string name="eraser">Eraser</string>
@@ -82,11 +83,13 @@
     <string name="line">Line</string>
     <string name="lock_aspect_ratio">Lock Aspect Ratio</string>
     <string name="mask_filter">Mask Filter</string>
+    <string name="max">Max</string>
     <string name="merge">Merge</string>
     <string name="merge_as">Merge as</string>
     <string name="merge_as_a_hidden_image">Merge as a Hidden Image</string>
     <string name="merge_as_new">Merge as New</string>
     <string name="merge_visible">Merge Visible</string>
+    <string name="min">Min</string>
     <string name="mister_chan" translatable="false">MISTER_CHAN</string>
     <string name="new_">New</string>
     <string name="ninety_degrees">90°</string>
@@ -141,6 +144,7 @@
     <string name="state_levels">Shadows: %d, Highlights: %d</string>
     <string name="state_lightness">Brightness: %d</string>
     <string name="state_l_t_r_b_size">L: %d, T: %d, R: %d, B: %d, Size: %d × %d"</string>
+    <string name="state_min_max">Min: %d°, Max: %d°</string>
     <string name="state_radius">Radius: %.1f</string>
     <string name="state_rotate" translatable="false">%d°</string>
     <string name="state_saturation">Saturation: %.1f</string>

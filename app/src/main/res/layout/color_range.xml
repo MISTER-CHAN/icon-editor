@@ -7,38 +7,34 @@
     android:padding="16dp">
 
     <GridLayout
-        android:id="@+id/gl"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:columnCount="6"
+        android:columnCount="2"
         android:orientation="horizontal"
         android:rowCount="2">
 
         <TextView
-            android:layout_columnSpan="2"
-            android:layout_gravity="center_horizontal"
-            android:text="@string/r" />
+            android:layout_gravity="center_vertical|start"
+            android:layout_margin="8dp"
+            android:text="@string/min" />
+
+        <SeekBar
+            android:id="@+id/sb_min"
+            android:layout_gravity="center_vertical|fill_horizontal"
+            android:max="360"
+            android:min="0"
+            android:progress="0" />
 
         <TextView
-            android:layout_columnSpan="2"
-            android:layout_gravity="center_horizontal"
-            android:text="@string/g" />
+            android:layout_gravity="center_vertical|start"
+            android:layout_margin="8dp"
+            android:text="@string/max" />
 
-        <TextView
-            android:layout_columnSpan="2"
-            android:layout_gravity="center_horizontal"
-            android:text="@string/b" />
-
-        <CheckBox />
-
-        <CheckBox />
-
-        <CheckBox />
-
-        <CheckBox />
-
-        <CheckBox />
-
-        <CheckBox />
+        <SeekBar
+            android:id="@+id/sb_max"
+            android:layout_gravity="center_vertical|fill_horizontal"
+            android:max="360"
+            android:min="0"
+            android:progress="360" />
     </GridLayout>
 </LinearLayout>

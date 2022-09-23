@@ -41,6 +41,7 @@
     <string name="deselect">不选择</string>
     <string name="draw">绘画</string>
     <string name="duplicate">复制</string>
+    <string name="duplicate_by_color_range">复制颜色范围</string>
     <string name="enabled">启用</string>
     <string name="eraser">胶擦</string>
     <string name="exception_merge_as_hidden">合并为隐藏图\n异常：请选中两张图像中第一个图像的分页。</string>
@@ -71,10 +72,12 @@
     <string name="line">直线</string>
     <string name="lock_aspect_ratio">锁定宽高比</string>
     <string name="mask_filter">遮罩滤镜</string>
+    <string name="max">最大</string>
     <string name="merge">合并</string>
     <string name="merge_as">合并为</string>
     <string name="merge_as_a_hidden_image">合并为隐藏图</string>
     <string name="merge_as_new">合并为新图层</string>
+    <string name="min">最小</string>
     <string name="new_">新建</string>
     <string name="ninety_degrees">90°</string>
     <string name="not_supported_file_type">不支持的文件类型</string>
@@ -121,6 +124,7 @@
     <string name="state_levels">阴影：%d，亮点：%d</string>
     <string name="state_lightness">明度：%d</string>
     <string name="state_l_t_r_b_size">左：%d，上：%d，右：%d，下：%d，尺寸：%d × %d</string>
+    <string name="state_min_max">最小：%d°，最大：%d°</string>
     <string name="state_radius">半径：%.1f</string>
     <string name="state_saturation">饱和度：%.1f</string>
     <string name="state_selected_bound">选定边界：%s</string>
