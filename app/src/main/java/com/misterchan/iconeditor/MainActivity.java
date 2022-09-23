@@ -220,7 +220,6 @@ public class MainActivity extends AppCompatActivity {
     private CheckBox cbBucketFillContiguous;
     private CheckBox cbCloneStampAntiAlias;
     private CheckBox cbColorReplacerAntiAlias;
-    private CheckBox cbColorReplacerClear;
     private CheckBox cbFilterAntiAlias;
     private CheckBox cbFilterClear;
     private CheckBox cbGradientAntiAlias;
@@ -855,9 +854,6 @@ public class MainActivity extends AppCompatActivity {
                     bm.recycle();
                     cLine.drawBitmap(bThr, 0.0f, 0.0f, PAINT_DST_IN);
                     bThr.recycle();
-                }
-                if (cbColorReplacerClear.isChecked()) {
-                    canvas.drawBitmap(bLine, left, top, PAINT_DST_OUT);
                 }
                 canvas.drawBitmap(bLine, left, top, colorReplacer);
                 bLine.recycle();
@@ -2700,7 +2696,6 @@ public class MainActivity extends AppCompatActivity {
         cbBucketFillContiguous = findViewById(R.id.cb_bucket_fill_contiguous);
         cbCloneStampAntiAlias = findViewById(R.id.cb_clone_stamp_anti_alias);
         cbColorReplacerAntiAlias = findViewById(R.id.cb_color_replacer_anti_alias);
-        cbColorReplacerClear = findViewById(R.id.cb_color_replacer_clear);
         cbFilterAntiAlias = findViewById(R.id.cb_filter_anti_alias);
         cbFilterClear = findViewById(R.id.cb_filter_clear);
         cbGradientAntiAlias = findViewById(R.id.cb_gradient_anti_alias);

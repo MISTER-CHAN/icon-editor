@@ -242,13 +242,6 @@
                             android:layout_height="wrap_content"
                             android:text="@string/anti_alias" />
 
-                        <CheckBox
-                            android:id="@+id/cb_color_replacer_clear"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:checked="true"
-                            android:text="@string/clear_destination" />
-
                         <Button
                             android:id="@+id/b_color_replacer_tolerance"
                             android:layout_width="wrap_content"
