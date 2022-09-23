@@ -8,7 +8,9 @@ public class Settings {
     private static final String FORMAT_D = "%d";
 
     private static final String KEY_ACR = "acr";
+    private static final String KEY_UTS = "uts";
 
+    private boolean unifiedTranslAndScale = false;
     private int argbChannelsRadix = 16;
     private String argbChannelsFormat = FORMAT_02X;
 
@@ -20,8 +22,13 @@ public class Settings {
         return argbChannelsFormat;
     }
 
+    public boolean getUnifiedTranslAndScale() {
+        return unifiedTranslAndScale;
+    }
+
     public void update(SharedPreferences preferences) {
         update(preferences, KEY_ACR);
+        update(preferences, KEY_UTS);
     }
 
     public void update(SharedPreferences preferences, String key) {
@@ -39,6 +46,11 @@ public class Settings {
                 }
                 argbChannelsFormat = argbChannelsRadix == 16 ? FORMAT_02X : FORMAT_D;
                 break;
+
+            case KEY_UTS:
+                unifiedTranslAndScale = preferences.getBoolean(KEY_UTS, false);
+                break;
+
             default:
                 break;
         }

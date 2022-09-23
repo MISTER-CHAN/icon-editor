@@ -1,15 +1,24 @@
 <resources>
 
-    <!-- File Types -->
-    <string-array name="file_types">
-        <item>.png</item>
-        <item>.jpg</item>
-    </string-array>
-
     <!-- ARGB Channels Radix Preference -->
     <string-array name="radix_entries">
         <item>@string/hex</item>
         <item>@string/dec</item>
+    </string-array>
+
+    <!-- Blend Modes -->
+    <string-array name="blend_modes">
+        <item>@string/null_</item>
+        <item>@string/hue</item>
+        <item>@string/saturation</item>
+        <item>@string/color</item>
+        <item>@string/luminosity</item>
+    </string-array>
+
+    <!-- File Types -->
+    <string-array name="file_types">
+        <item>.png</item>
+        <item>.jpg</item>
     </string-array>
 
     <string-array name="radix_values">

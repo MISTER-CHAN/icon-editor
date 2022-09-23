@@ -2,6 +2,7 @@ package com.misterchan.iconeditor;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
@@ -80,7 +81,17 @@ public class Transformer {
     }
 
     public void rotate(float degrees) {
-
+        int w = bitmap.getWidth(), h = bitmap.getHeight();
+        float semiWidth = w / 2.0f, semiHeight = h / 2.0f;
+        float diagonal = (float) Math.sqrt(w * w + h * h), semiDiag = diagonal / 2.0f;
+        Bitmap bm = Bitmap.createBitmap((int) Math.ceil(diagonal), (int) Math.ceil(diagonal), Bitmap.Config.ARGB_8888);
+        Matrix matrix = new Matrix();
+        matrix.setTranslate(semiDiag - semiWidth, semiDiag - semiHeight);
+        matrix.postRotate(degrees, semiDiag, semiDiag);
+        new Canvas(bm).drawBitmap(bitmap, matrix, PAINT);
+        bitmap.recycle();
+        bitmap = bm;
+        translateBy((w - diagonal) / 2.0f, (h - diagonal) / 2.0f);
     }
 
     public void stretch(int width, int height, float translationX, float translationY) {

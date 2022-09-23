@@ -29,6 +29,7 @@
     <string name="color_filter">Color Filter</string>
     <string name="color_picker">Color Picker</string>
     <string name="color_range">Color Range</string>
+    <string name="color_replacer">Color Replacer</string>
     <string name="contiguous">Contiguous</string>
     <string name="contrast">Contrast</string>
     <string name="coordinate" translatable="false">(%d, %d)</string>
@@ -106,6 +107,7 @@
     <string name="r" translatable="false">R</string>
     <string name="rectangle">Rectangle</string>
     <string name="redo" translatable="false">↷</string>
+    <string name="refit">Refit</string>
     <string name="reset_source">Reset Source</string>
     <string name="rotate">Rotate</string>
     <string name="rotate_around_r">Rotate Around R</string>
@@ -154,14 +156,17 @@
     <string name="swatch">Swatch</string>
     <string name="text">Text</string>
     <string name="threshold">Threshold</string>
+    <string name="tolerance">Tolerance</string>
     <string name="tool_options">Tool Options</string>
     <string name="transform">Transform</string>
     <string name="tutorial_merge_as_hidden">Tutorial</string>
     <string name="two_seventy_degrees">270°</string>
     <string name="undo" translatable="false">↶</string>
+    <string name="unified_transl_and_scale">Unified Canvas Location and Scale</string>
     <string name="untitled">Untitled</string>
     <string name="v" translatable="false">V</string>
     <string name="vertically">Vertically</string>
+    <string name="view">View</string>
     <string name="visible">Visible</string>
     <string name="when_resizing">When resizing</string>
     <string name="width">Width</string>

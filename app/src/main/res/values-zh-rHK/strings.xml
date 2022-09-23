@@ -27,6 +27,7 @@
     <string name="color_filter">顏色濾鏡</string>
     <string name="color_picker">拾色器</string>
     <string name="color_range">顏色範圍</string>
+    <string name="color_replacer">顏色取代</string>
     <string name="contiguous">連續</string>
     <string name="contrast">對比度</string>
     <string name="copy">複製</string>
@@ -90,6 +91,7 @@
     <string name="preferences">偏好</string>
     <string name="properties">屬性</string>
     <string name="rectangle">矩形</string>
+    <string name="refit">重新適應</string>
     <string name="reset_source">重設來源</string>
     <string name="rotate">旋轉</string>
     <string name="rotate_around_r">繞 R 軸旋轉</string>
@@ -134,12 +136,15 @@
     <string name="swatch">顏色</string>
     <string name="text">文本</string>
     <string name="threshold">閾値</string>
+    <string name="tolerance">容許度</string>
     <string name="tool_options">工具選項</string>
     <string name="transform">變換</string>
     <string name="tutorial_merge_as_hidden">Tutorial</string>
     <string name="two_seventy_degrees">270°</string>
+    <string name="unified_transl_and_scale">統一畫布位置及縮放</string>
     <string name="untitled">無標題</string>
     <string name="vertically">垂直</string>
+    <string name="view">檢視</string>
     <string name="visible">可見</string>
     <string name="when_resizing">當重設尺寸時</string>
     <string name="width">寬度</string>

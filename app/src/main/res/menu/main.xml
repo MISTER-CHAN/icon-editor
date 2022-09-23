@@ -120,11 +120,6 @@
                             <item
                                 android:id="@+id/i_rotate_270"
                                 android:title="@string/two_seventy_degrees" />
-
-                            <item
-                                android:id="@+id/i_rotate"
-                                android:title="@string/custom"
-                                android:visible="false" />
                         </menu>
                     </item>
                 </menu>
@@ -385,9 +380,21 @@
     </item>
 
     <item
-        android:id="@+id/i_cell_grid"
-        android:title="@string/cell_grid"
-        app:showAsAction="collapseActionView" />
+        android:title="@string/view"
+        app:showAsAction="collapseActionView">
+
+        <menu>
+
+            <item
+                android:id="@+id/i_cell_grid"
+                android:title="@string/cell_grid" />
+
+            <item
+                android:id="@+id/i_view_refit"
+                android:title="@string/refit" />
+        </menu>
+    </item>
+
 
     <item
         android:id="@+id/i_settings"

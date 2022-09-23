@@ -126,6 +126,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
+                    android:gravity="center_vertical"
                     android:orientation="horizontal"
                     android:visibility="invisible">
 
@@ -134,6 +135,13 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/lock_aspect_ratio" />
+
+                    <Button
+                        android:id="@+id/b_transformer_rotate"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginHorizontal="2dp"
+                        android:text="@string/rotate" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -183,6 +191,80 @@
                 </LinearLayout>
 
                 <HorizontalScrollView
+                    android:id="@+id/hsv_options_color_replacer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:fadingEdgeLength="16dp"
+                    android:requiresFadingEdge="horizontal"
+                    android:scrollbars="none"
+                    android:visibility="invisible">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <CheckBox
+                            android:id="@+id/cb_color_replacer_clear"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:checked="true"
+                            android:text="@string/clear_destination" />
+
+                        <CheckBox
+                            android:id="@+id/cb_color_replacer_anti_alias"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/anti_alias" />
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:layout_width="96dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginHorizontal="2dp">
+
+                            <EditText
+                                android:id="@+id/et_color_replacer_stroke_width"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:background="@color/transparent"
+                                android:hint="@string/stroke_width"
+                                android:inputType="numberDecimal"
+                                android:textAlignment="textEnd" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:layout_width="96dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginHorizontal="2dp">
+
+                            <EditText
+                                android:id="@+id/et_color_replacer_blur_radius"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:background="@color/transparent"
+                                android:hint="@string/blur_radius"
+                                android:inputType="numberDecimal"
+                                android:textAlignment="textEnd" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <Button
+                            android:id="@+id/b_color_replacer_tolerance"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginHorizontal="2dp"
+                            android:text="@string/tolerance" />
+
+                        <androidx.appcompat.widget.AppCompatSpinner
+                            android:id="@+id/s_color_replacer_blend_mode"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:entries="@array/blend_modes" />
+                    </LinearLayout>
+                </HorizontalScrollView>
+
+                <HorizontalScrollView
                     android:id="@+id/hsv_options_filter"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -205,6 +287,12 @@
                             android:checked="true"
                             android:text="@string/clear_destination" />
 
+                        <CheckBox
+                            android:id="@+id/cb_filter_anti_alias"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/anti_alias" />
+
                         <com.google.android.material.textfield.TextInputLayout
                             android:layout_width="96dp"
                             android:layout_height="wrap_content"
@@ -220,26 +308,34 @@
                                 android:textAlignment="textEnd" />
                         </com.google.android.material.textfield.TextInputLayout>
 
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:layout_width="96dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginHorizontal="2dp">
+
+                            <EditText
+                                android:id="@+id/et_filter_blur_radius"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:background="@color/transparent"
+                                android:hint="@string/blur_radius"
+                                android:inputType="numberDecimal"
+                                android:textAlignment="textEnd" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <Button
+                            android:id="@+id/b_filter_tolerance"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginHorizontal="2dp"
+                            android:text="@string/tolerance" />
+
                         <Button
                             android:id="@+id/b_color_filter"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginHorizontal="2dp"
                             android:text="@string/color_filter" />
-
-                        <Button
-                            android:id="@+id/b_filter_threshold"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginHorizontal="2dp"
-                            android:text="@string/threshold" />
-
-                        <Button
-                            android:id="@+id/b_filter_color_range"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginHorizontal="2dp"
-                            android:text="@string/color_range" />
                     </LinearLayout>
                 </HorizontalScrollView>
 
@@ -289,37 +385,67 @@
                     </com.google.android.material.textfield.TextInputLayout>
                 </LinearLayout>
 
-                <LinearLayout
-                    android:id="@+id/ll_options_clone_stamp"
+                <HorizontalScrollView
+                    android:id="@+id/hsv_options_clone_stamp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
+                    android:fadingEdgeLength="16dp"
+                    android:requiresFadingEdge="horizontal"
+                    android:scrollbars="none"
                     android:visibility="invisible">
 
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:layout_width="96dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginHorizontal="2dp">
-
-                        <EditText
-                            android:id="@+id/et_clone_stamp_stroke_width"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:background="@color/transparent"
-                            android:hint="@string/stroke_width"
-                            android:inputType="numberDecimal"
-                            android:textAlignment="textEnd" />
-                    </com.google.android.material.textfield.TextInputLayout>
-
-                    <Button
-                        android:id="@+id/b_clone_stamp_src"
+                    <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:maxLines="1"
-                        android:text="@string/reset_source" />
-                </LinearLayout>
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <CheckBox
+                            android:id="@+id/cb_clone_stamp_anti_alias"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/anti_alias" />
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:layout_width="96dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginHorizontal="2dp">
+
+                            <EditText
+                                android:id="@+id/et_clone_stamp_stroke_width"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:background="@color/transparent"
+                                android:hint="@string/stroke_width"
+                                android:inputType="numberDecimal"
+                                android:textAlignment="textEnd" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:layout_width="96dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginHorizontal="2dp">
+
+                            <EditText
+                                android:id="@+id/et_clone_stamp_blur_radius"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:background="@color/transparent"
+                                android:hint="@string/blur_radius"
+                                android:inputType="numberDecimal"
+                                android:textAlignment="textEnd" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <Button
+                            android:id="@+id/b_clone_stamp_src"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginHorizontal="4dp"
+                            android:maxLines="1"
+                            android:text="@string/reset_source" />
+                    </LinearLayout>
+                </HorizontalScrollView>
 
                 <LinearLayout
                     android:id="@+id/ll_options_shape"
@@ -419,25 +545,12 @@
                             android:layout_height="wrap_content"
                             android:text="@string/contiguous" />
 
-                        <CheckBox
-                            android:id="@+id/cb_bucket_fill_hue_only"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/hue_only" />
-
                         <Button
                             android:id="@+id/b_bucket_fill_threshold"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginHorizontal="2dp"
                             android:text="@string/threshold" />
-
-                        <Button
-                            android:id="@+id/b_bucket_fill_color_range"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginHorizontal="2dp"
-                            android:text="@string/color_range" />
                     </LinearLayout>
                 </HorizontalScrollView>
 
@@ -545,6 +658,7 @@
                         android:id="@+id/b_text_draw"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginHorizontal="2dp"
                         android:text="@string/draw" />
                 </LinearLayout>
             </FrameLayout>
@@ -592,6 +706,12 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/pencil" />
+
+                    <RadioButton
+                        android:id="@+id/rb_color_replacer"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/color_replacer" />
 
                     <RadioButton
                         android:id="@+id/rb_filter"
