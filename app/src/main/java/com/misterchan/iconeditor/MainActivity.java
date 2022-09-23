@@ -585,7 +585,15 @@ public class MainActivity extends AppCompatActivity {
     private final NewGraphicPropertiesDialog.OnFinishSettingListener onFinishSettingNewGraphicPropertiesListener = this::createGraphic;
 
     private final OnItemSelectedListener onColorReplacerBlendModeSelectedListener = (parent, view, position, id) -> {
-        colorReplacer.setBlendMode(position == 0 ? null : BlendMode.values()[position + 24]);
+        BlendMode blendMode;
+        if (1 <= position && position <= 4) {
+            blendMode = BlendMode.values()[position + 24];
+        } else if (position == 5) {
+            blendMode = BlendMode.DST_OUT;
+        } else {
+            blendMode = null;
+        }
+        colorReplacer.setBlendMode(blendMode);
     };
 
     private final ColorMatrixManager.OnMatrixElementsChangeListener onColorMatrixChangeListener = matrix -> {

@@ -13,6 +13,7 @@
         <item>@string/saturation</item>
         <item>@string/color</item>
         <item>@string/luminosity</item>
+        <item>@string/clear</item>
     </string-array>
 
     <!-- File Types -->
