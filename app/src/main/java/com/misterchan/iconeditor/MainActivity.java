@@ -704,10 +704,13 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onTabUnselected(TabLayout.Tab tab) {
             if (settings.getUnifiedTranslAndScale()) {
-                Tab t = tabs.get(tab.getPosition());
-                translationX = t.translationX;
-                translationY = t.translationY;
-                scale = t.scale;
+                int i = tab.getPosition();
+                if (i >= 0) {
+                    Tab t = tabs.get(i);
+                    translationX = t.translationX;
+                    translationY = t.translationY;
+                    scale = t.scale;
+                }
             }
         }
 
@@ -1621,7 +1624,7 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    private final LevelsAdjustmentDialog.OnLevelsChangeListener onFilterLevelsSeekBarProgressChangeListener = (shadows, highlights) -> {
+    private final LevelsDialog.OnLevelsChangeListener onFilterLevelsSeekBarProgressChangeListener = (shadows, highlights) -> {
         float ratio = 0xFF / (float) (highlights - shadows);
         preview.setFilter(new float[]{
                 ratio, 0.0f, 0.0f, 0.0f, -shadows * ratio,
@@ -1973,6 +1976,9 @@ public class MainActivity extends AppCompatActivity {
         bitmap.recycle();
         history.recycle();
         int i = tabLayout.getSelectedTabPosition();
+        translationX = tab.translationX;
+        translationY = tab.translationY;
+        scale = tab.scale;
         tabs.remove(i);
         tabLayout.removeTabAt(i);
     }
@@ -3096,6 +3102,17 @@ public class MainActivity extends AppCompatActivity {
                 tvState.setText("");
                 break;
 
+            case R.id.i_filter_color_balance:
+                drawFloatingLayers();
+                createPreviewBitmap();
+                new ColorBalanceDialog(this)
+                        .setOnCancelListener(onFilterCancelListener)
+                        .setOnMatrixChangeListener(onColorMatrixChangeListener)
+                        .setOnPositiveButtonClickListener(onFilterConfirmListener)
+                        .show();
+                tvState.setText("");
+                break;
+
             case R.id.i_filter_contrast:
                 drawFloatingLayers();
                 createPreviewBitmap();
@@ -3107,10 +3124,10 @@ public class MainActivity extends AppCompatActivity {
                 tvState.setText("");
                 break;
 
-            case R.id.i_filter_levels_adjustment:
+            case R.id.i_filter_levels:
                 drawFloatingLayers();
                 createPreviewBitmap();
-                new LevelsAdjustmentDialog(this)
+                new LevelsDialog(this)
                         .setOnLevelsChangeListener(onFilterLevelsSeekBarProgressChangeListener)
                         .setOnPositiveButtonClickListener(onFilterConfirmListener)
                         .setOnCancelListener(onFilterCancelListener)

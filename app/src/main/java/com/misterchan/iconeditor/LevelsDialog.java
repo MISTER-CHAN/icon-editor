@@ -8,7 +8,7 @@ import android.widget.SeekBar;
 
 import androidx.appcompat.app.AlertDialog;
 
-public class LevelsAdjustmentDialog {
+public class LevelsDialog {
 
     public interface OnLevelsChangeListener {
         void onChange(int shadows, int highlights);
@@ -17,24 +17,24 @@ public class LevelsAdjustmentDialog {
     private final AlertDialog.Builder builder;
     private OnLevelsChangeListener listener;
 
-    public LevelsAdjustmentDialog(Context context) {
+    public LevelsDialog(Context context) {
         builder = new AlertDialog.Builder(context)
-                .setTitle(R.string.levels_adjustment)
-                .setView(R.layout.levels_adjustment);
+                .setTitle(R.string.levels)
+                .setView(R.layout.levels);
     }
 
-    public LevelsAdjustmentDialog setOnCancelListener(DialogInterface.OnCancelListener listener) {
+    public LevelsDialog setOnCancelListener(DialogInterface.OnCancelListener listener) {
         builder.setOnCancelListener(listener);
         builder.setNegativeButton(R.string.cancel, (dialog, which) -> listener.onCancel(dialog));
         return this;
     }
 
-    public LevelsAdjustmentDialog setOnPositiveButtonClickListener(DialogInterface.OnClickListener listener) {
+    public LevelsDialog setOnPositiveButtonClickListener(DialogInterface.OnClickListener listener) {
         builder.setPositiveButton(R.string.ok, listener);
         return this;
     }
 
-    public LevelsAdjustmentDialog setOnLevelsChangeListener(OnLevelsChangeListener listener) {
+    public LevelsDialog setOnLevelsChangeListener(OnLevelsChangeListener listener) {
         this.listener = listener;
         return this;
     }

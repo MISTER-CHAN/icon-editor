@@ -29,10 +29,11 @@ public class ColorRangeDialog {
 
     public ColorRangeDialog setOnCancelListener(DialogInterface.OnCancelListener listener) {
         builder.setOnCancelListener(listener);
+        builder.setNegativeButton(R.string.cancel, (dialog, which) -> listener.onCancel(dialog));
         return this;
     }
 
-    public ColorRangeDialog setOnPositiveButtonClickListener(final OnColorRangeChangeListener listener) {
+    public ColorRangeDialog setOnPositiveButtonClickListener(OnColorRangeChangeListener listener) {
         builder.setPositiveButton(R.string.ok, (dialog, which) -> listener.onChange(sbMin.getProgress(), sbMax.getProgress()));
         return this;
     }

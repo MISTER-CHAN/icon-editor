@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <GridLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:columnCount="3"
+        android:orientation="horizontal"
+        android:rowCount="2">
+
+        <TextView
+            android:layout_gravity="center_vertical|start"
+            android:layout_margin="8dp"
+            android:text="@string/c" />
+
+        <SeekBar
+            android:id="@+id/sb_red"
+            android:layout_columnWeight="1"
+            android:layout_gravity="center_vertical"
+            android:max="20"
+            android:min="0"
+            android:progress="10" />
+
+        <TextView
+            android:layout_gravity="center_vertical|start"
+            android:layout_margin="8dp"
+            android:text="@string/r" />
+
+        <TextView
+            android:layout_gravity="center_vertical|start"
+            android:layout_margin="8dp"
+            android:text="@string/m" />
+
+        <SeekBar
+            android:id="@+id/sb_green"
+            android:layout_columnWeight="1"
+            android:layout_gravity="center_vertical"
+            android:max="20"
+            android:min="0"
+            android:progress="10" />
+
+        <TextView
+            android:layout_gravity="center_vertical|start"
+            android:layout_margin="8dp"
+            android:text="@string/g" />
+
+        <TextView
+            android:layout_gravity="center_vertical|start"
+            android:layout_margin="8dp"
+            android:text="@string/y" />
+
+        <SeekBar
+            android:id="@+id/sb_blue"
+            android:layout_columnWeight="1"
+            android:layout_gravity="center_vertical"
+            android:max="20"
+            android:min="0"
+            android:progress="10" />
+
+        <TextView
+            android:layout_gravity="center_vertical|start"
+            android:layout_margin="8dp"
+            android:text="@string/b" />
+    </GridLayout>
+</LinearLayout>

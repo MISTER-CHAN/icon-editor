@@ -24,6 +24,7 @@
     <string name="clear_destination">淸除目標</string>
     <string name="cloner">克隆筆</string>
     <string name="close">關閉</string>
+    <string name="color_balance">色彩平衡</string>
     <string name="color_filter">顏色濾鏡</string>
     <string name="color_picker">拾色器</string>
     <string name="color_range">顏色範圍</string>
@@ -67,7 +68,7 @@
     <string name="image_size">圖像尺寸</string>
     <string name="invert">反相</string>
     <string name="layer">圖層</string>
-    <string name="levels_adjustment">色階</string>
+    <string name="levels">色階</string>
     <string name="lightness">明度</string>
     <string name="line">直線</string>
     <string name="lock_aspect_ratio">鎖定寬高比</string>

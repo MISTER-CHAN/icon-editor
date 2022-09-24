@@ -362,12 +362,16 @@
                 android:title="@string/contrast" />
 
             <item
-                android:id="@+id/i_filter_levels_adjustment"
-                android:title="@string/levels_adjustment" />
+                android:id="@+id/i_filter_levels"
+                android:title="@string/levels" />
 
             <item
                 android:id="@+id/i_filter_saturation"
                 android:title="@string/saturation" />
+
+            <item
+                android:id="@+id/i_filter_color_balance"
+                android:title="@string/color_balance" />
 
             <item
                 android:id="@+id/i_filter_threshold"
