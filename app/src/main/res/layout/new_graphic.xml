@@ -8,7 +8,7 @@
     <GridLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:columnCount="2"
+        android:columnCount="3"
         android:orientation="horizontal"
         android:rowCount="1">
 
@@ -17,45 +17,34 @@
             android:layout_margin="8dp"
             android:text="@string/size" />
 
-        <LinearLayout
-            android:layout_gravity="fill"
-            android:baselineAligned="false"
-            android:orientation="horizontal">
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_columnWeight="1"
+            android:layout_margin="8dp">
 
-            <com.google.android.material.textfield.TextInputLayout
-                android:layout_width="0dp"
+            <EditText
+                android:id="@+id/et_new_size_x"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="8dp"
-                android:layout_weight="1">
+                android:background="@color/transparent"
+                android:hint="@string/width"
+                android:inputType="number"
+                android:text="@string/forty_eight"
+                android:textAlignment="textEnd" />
+        </com.google.android.material.textfield.TextInputLayout>
 
-                <EditText
-                    android:id="@+id/et_new_size_x"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@color/transparent"
-                    android:hint="@string/width"
-                    android:inputType="number"
-                    android:text="@string/forty_eight"
-                    android:textAlignment="textEnd" />
-            </com.google.android.material.textfield.TextInputLayout>
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_columnWeight="1"
+            android:layout_margin="8dp">
 
-
-            <com.google.android.material.textfield.TextInputLayout
-                android:layout_width="0dp"
+            <EditText
+                android:id="@+id/et_new_size_y"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="8dp"
-                android:layout_weight="1">
-
-                <EditText
-                    android:id="@+id/et_new_size_y"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@color/transparent"
-                    android:hint="@string/height"
-                    android:inputType="number"
-                    android:text="@string/forty_eight"
-                    android:textAlignment="textEnd" />
-            </com.google.android.material.textfield.TextInputLayout>
-        </LinearLayout>
+                android:background="@color/transparent"
+                android:hint="@string/height"
+                android:inputType="number"
+                android:text="@string/forty_eight"
+                android:textAlignment="textEnd" />
+        </com.google.android.material.textfield.TextInputLayout>
     </GridLayout>
 </LinearLayout>

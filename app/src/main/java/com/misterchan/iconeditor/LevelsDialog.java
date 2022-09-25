@@ -50,7 +50,7 @@ public class LevelsDialog {
 
         final SeekBar sbHighlights = dialog.findViewById(R.id.sb_highlights);
         final SeekBar sbShadows = dialog.findViewById(R.id.sb_shadows);
-        sbHighlights.setOnSeekBarChangeListener((OnProgressChangeListener) progress -> listener.onChange(sbShadows.getProgress(), sbHighlights.getProgress()));
-        sbShadows.setOnSeekBarChangeListener((OnProgressChangeListener) progress -> listener.onChange(sbShadows.getProgress(), sbHighlights.getProgress()));
+        sbHighlights.setOnSeekBarChangeListener((OnProgressChangeListener) (seekBar, progress) -> listener.onChange(sbShadows.getProgress(), sbHighlights.getProgress()));
+        sbShadows.setOnSeekBarChangeListener((OnProgressChangeListener) (seekBar, progress) -> listener.onChange(sbShadows.getProgress(), sbHighlights.getProgress()));
     }
 }

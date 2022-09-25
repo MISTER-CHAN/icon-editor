@@ -11,14 +11,14 @@ import androidx.appcompat.app.AlertDialog;
 public class ColorRangeDialog {
 
     public interface OnColorRangeChangeListener {
-        void onChange(int min, int max);
+        void onChange(int hueMin, int hueMax, int valueMin, int valueMax);
     }
 
     private final AlertDialog.Builder builder;
     private OnColorRangeChangeListener listener;
 
-    private SeekBar sbMax;
-    private SeekBar sbMin;
+    private SeekBar sbHueMin, sbHueMax;
+    private SeekBar sbValueMin, sbValueMax;
 
     public ColorRangeDialog(Context context) {
         builder = new AlertDialog.Builder(context)
@@ -34,7 +34,9 @@ public class ColorRangeDialog {
     }
 
     public ColorRangeDialog setOnPositiveButtonClickListener(OnColorRangeChangeListener listener) {
-        builder.setPositiveButton(R.string.ok, (dialog, which) -> listener.onChange(sbMin.getProgress(), sbMax.getProgress()));
+        builder.setPositiveButton(R.string.ok, (dialog, which) ->
+                listener.onChange(sbHueMin.getProgress(), sbHueMax.getProgress(),
+                        sbValueMin.getProgress(), sbValueMax.getProgress()));
         return this;
     }
 
@@ -53,11 +55,29 @@ public class ColorRangeDialog {
         lp.gravity = Gravity.BOTTOM;
         window.setAttributes(lp);
 
-        sbMax = dialog.findViewById(R.id.sb_max);
-        sbMin = dialog.findViewById(R.id.sb_min);
-        OnProgressChangeListener l = (OnProgressChangeListener) progress -> listener.onChange(sbMin.getProgress(), sbMax.getProgress());
+        sbHueMin = dialog.findViewById(R.id.sb_hue_min);
+        sbHueMax = dialog.findViewById(R.id.sb_hue_max);
+        sbValueMin = dialog.findViewById(R.id.sb_value_min);
+        sbValueMax = dialog.findViewById(R.id.sb_value_max);
+        OnProgressChangeListener l = (OnProgressChangeListener) (seekBar, progress) ->
+                listener.onChange(sbHueMin.getProgress(), sbHueMax.getProgress(),
+                        sbValueMin.getProgress(), sbValueMax.getProgress());
 
-        sbMax.setOnSeekBarChangeListener(l);
-        sbMin.setOnSeekBarChangeListener(l);
+        sbHueMin.setOnSeekBarChangeListener(l);
+        sbHueMax.setOnSeekBarChangeListener(l);
+
+        sbValueMin.setOnSeekBarChangeListener((OnProgressChangeListener) (seekBar, progress) -> {
+            if (progress > sbValueMax.getProgress()) {
+                seekBar.setProgress(sbValueMax.getProgress());
+            }
+            l.onProgressChanged(seekBar, progress);
+        });
+
+        sbValueMax.setOnSeekBarChangeListener((OnProgressChangeListener) (seekBar, progress) -> {
+            if (progress < sbValueMin.getProgress()) {
+                seekBar.setProgress(sbValueMin.getProgress());
+            }
+            l.onProgressChanged(seekBar, progress);
+        });
     }
 }

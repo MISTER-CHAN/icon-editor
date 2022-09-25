@@ -91,10 +91,10 @@ public class ColorPicker {
         sbRed = dialog.findViewById(R.id.sb_red);
         vPreview = dialog.findViewById(R.id.v_color_preview);
 
-        sbAlpha.setOnSeekBarChangeListener((OnProgressChangeListener) progress -> etAlpha.setText(String.format(format, progress)));
-        sbBlue.setOnSeekBarChangeListener((OnProgressChangeListener) progress -> etBlue.setText(String.format(format, progress)));
-        sbGreen.setOnSeekBarChangeListener((OnProgressChangeListener) progress -> etGreen.setText(String.format(format, progress)));
-        sbRed.setOnSeekBarChangeListener((OnProgressChangeListener) progress -> etRed.setText(String.format(format, progress)));
+        sbAlpha.setOnSeekBarChangeListener((OnProgressChangeListener) (seekBar, progress) -> etAlpha.setText(String.format(format, progress)));
+        sbBlue.setOnSeekBarChangeListener((OnProgressChangeListener) (seekBar, progress) -> etBlue.setText(String.format(format, progress)));
+        sbGreen.setOnSeekBarChangeListener((OnProgressChangeListener) (seekBar, progress) -> etGreen.setText(String.format(format, progress)));
+        sbRed.setOnSeekBarChangeListener((OnProgressChangeListener) (seekBar, progress) -> etRed.setText(String.format(format, progress)));
         etAlpha.addTextChangedListener((AfterTextChangedListener) s -> onChannelChanged(s, sbAlpha));
         etBlue.addTextChangedListener((AfterTextChangedListener) s -> onChannelChanged(s, sbBlue));
         etGreen.addTextChangedListener((AfterTextChangedListener) s -> onChannelChanged(s, sbGreen));

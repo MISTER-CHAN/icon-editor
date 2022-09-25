@@ -548,26 +548,31 @@ public class MainActivity extends AppCompatActivity {
                             paint.getColor())
                     .show();
 
-    private final ColorRangeDialog.OnColorRangeChangeListener onColorRangeChangeListener = (min, max) -> {
-        if (min == 0.0f && max == 360.0f) {
+    private final ColorRangeDialog.OnColorRangeChangeListener onColorRangeChangeListener = (hueMin, hueMax, valueMin, valueMax) -> {
+        if (hueMin == 0 && hueMax == 360 && valueMin == 0x0 && valueMax == 0xFF) {
             preview.clearFilter();
+        } else if (valueMin > valueMax) {
+            preview.drawColor(Color.TRANSPARENT);
         } else {
             final int width = preview.getWidth(), height = preview.getHeight(), area = width * height;
             final int[] pixels = new int[area];
             preview.getPixels(pixels, 0, width, 0, 0, width, height);
             for (int i = 0; i < area; ++i) {
                 float h = hue(pixels[i]);
-                if (!(min <= max && (min <= h && h <= max) || min > max && (min <= h || h <= max))) {
+                int v = luminosity(pixels[i]);
+                if (!((hueMin <= h && h <= hueMax
+                        || hueMin > hueMax && (hueMin <= h || h <= hueMax))
+                        && (valueMin <= v && v <= valueMax))) {
                     pixels[i] = Color.TRANSPARENT;
                 }
             }
             preview.setPixels(pixels, 0, width, 0, 0, width, height);
         }
         drawBitmapOnView(preview.getBitmap());
-        tvState.setText(String.format(getString(R.string.state_min_max), min, max));
+        tvState.setText(String.format(getString(R.string.state_color_range), hueMin, hueMax, valueMin, valueMax));
     };
 
-    private final ColorRangeDialog.OnColorRangeChangeListener onLayerDuplicateByHueConfirmListener = (min, max) -> {
+    private final ColorRangeDialog.OnColorRangeChangeListener onLayerDuplicateByHueConfirmListener = (hueMin, hueMax, valueMin, valueMax) -> {
         Bitmap bm = Bitmap.createBitmap(preview.getBitmap());
         preview.recycle();
         preview = null;
@@ -602,7 +607,7 @@ public class MainActivity extends AppCompatActivity {
         drawBitmapOnView(preview.getBitmap());
     };
 
-    private final OnProgressChangeListener onThresholdChangeListener = progress -> {
+    private final OnProgressChangeListener onThresholdChangeListener = (seekBar, progress) -> {
         threshold = progress;
         if (progress == 0x100) {
             preview.drawColor(Color.BLACK);
@@ -658,7 +663,7 @@ public class MainActivity extends AppCompatActivity {
                 .setOnProgressChangeListener(onThresholdChangeListener)
                 .setProgress(threshold)
                 .show();
-        onThresholdChangeListener.onProgressChanged(threshold);
+        onThresholdChangeListener.onProgressChanged(null, threshold);
     };
 
     private final TabLayout.OnTabSelectedListener onTabSelectedListener = new TabLayout.OnTabSelectedListener() {
@@ -1644,7 +1649,7 @@ public class MainActivity extends AppCompatActivity {
         tvState.setText(String.format(getString(R.string.state_levels), shadows, highlights));
     };
 
-    private final OnProgressChangeListener onFilterContrastSeekBarProgressChangeListener = progress -> {
+    private final OnProgressChangeListener onFilterContrastSeekBarProgressChangeListener = (seekBar, progress) -> {
         float scale = progress / 10.0f, shift = 0xFF / 2.0f * (1.0f - scale);
         preview.setFilter(new float[]{
                 scale, 0.0f, 0.0f, 0.0f, shift,
@@ -1656,7 +1661,7 @@ public class MainActivity extends AppCompatActivity {
         tvState.setText(String.format(getString(R.string.state_contrast), scale));
     };
 
-    private final OnProgressChangeListener onFilterLightnessSeekBarProgressChangeListener = progress -> {
+    private final OnProgressChangeListener onFilterLightnessSeekBarProgressChangeListener = (seekBar, progress) -> {
         preview.setFilter(new float[]{
                 1.0f, 0.0f, 0.0f, 0.0f, progress,
                 0.0f, 1.0f, 0.0f, 0.0f, progress,
@@ -1667,7 +1672,7 @@ public class MainActivity extends AppCompatActivity {
         tvState.setText(String.format(getString(R.string.state_lightness), progress));
     };
 
-    private final OnProgressChangeListener onFilterSaturationSeekBarProgressChangeListener = progress -> {
+    private final OnProgressChangeListener onFilterSaturationSeekBarProgressChangeListener = (seekBar, progress) -> {
         float f = progress / 10.0f;
         ColorMatrix colorMatrix = new ColorMatrix();
         colorMatrix.setSaturation(f);
@@ -1676,7 +1681,7 @@ public class MainActivity extends AppCompatActivity {
         tvState.setText(String.format(getString(R.string.state_saturation), f));
     };
 
-    private final OnProgressChangeListener onFilterThresholdSeekBarProgressChangeListener = progress -> {
+    private final OnProgressChangeListener onFilterThresholdSeekBarProgressChangeListener = (seekBar, progress) -> {
         float f = -0x100 * progress;
         preview.setFilter(new float[]{
                 0.213f * 0x100, 0.715f * 0x100, 0.072f * 0x100, 0.0f, f,
@@ -1696,7 +1701,7 @@ public class MainActivity extends AppCompatActivity {
         history.offer(bitmap);
     };
 
-    private final OnProgressChangeListener onLayerAlphaSeekBarProgressChangeListener = progress -> {
+    private final OnProgressChangeListener onLayerAlphaSeekBarProgressChangeListener = (seekBar, progress) -> {
         tab.paint.setAlpha(progress);
         drawBitmapOnView();
         tvState.setText(String.format(
@@ -1704,7 +1709,7 @@ public class MainActivity extends AppCompatActivity {
                 progress));
     };
 
-    private final OnProgressChangeListener onRotateDegreeSeekBarProgressChangeListener = progress -> {
+    private final OnProgressChangeListener onRotateDegreeSeekBarProgressChangeListener = (seekBar, progress) -> {
         ivSelection.setRotation(progress);
         drawSelectionOnView();
         tvState.setText(String.format(getString(R.string.degrees_), progress));
@@ -1873,12 +1878,6 @@ public class MainActivity extends AppCompatActivity {
         tab.scale = (float) ((double) viewWidth / (double) bitmap.getWidth());
         imageWidth = (int) toScaled(bitmap.getWidth());
         imageHeight = (int) toScaled(bitmap.getHeight());
-    }
-
-    private boolean areRGBsEqual(@ColorInt int a, @ColorInt int b) {
-        int a_a = Color.alpha(a), a_b = Color.alpha(b);
-        int rgb_a = rgb(a), rgb_b = rgb(b);
-        return a_a == 0x00 && a_b == 0x00 || a_a > 0x00 && a_b > 0x00 && rgb_a == rgb_b;
     }
 
     private void bucketFill(Bitmap bitmap, int x, int y, @ColorInt final int color) {
@@ -2689,6 +2688,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private int luminosity(@ColorInt int color) {
+        return Math.max(Math.max(Color.red(color), Color.green(color)), Color.blue(color));
+    }
+
     @Override
     public void onBackPressed() {
         moveTaskToBack(true);
@@ -3181,7 +3184,7 @@ public class MainActivity extends AppCompatActivity {
                         .setOnPositiveButtonClickListener(onFilterConfirmListener)
                         .setOnCancelListener(onFilterCancelListener)
                         .show();
-                onFilterThresholdSeekBarProgressChangeListener.onProgressChanged(128);
+                onFilterThresholdSeekBarProgressChangeListener.onProgressChanged(null, 128);
                 tvState.setText("");
                 break;
 

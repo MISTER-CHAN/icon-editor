@@ -140,6 +140,7 @@
     <string name="stamp">Stamp</string>
     <string name="state_alpha" translatable="false">Alpha: %s</string>
     <string name="state_axes">"Axes: %d, %d"</string>
+    <string name="state_color_range">Hue: %d° – %d°, Luminosity: %d – %d</string>
     <string name="state_contrast">Contrast: %.1f</string>
     <string name="state_eyedropper" translatable="false">(%%d, %%d) A: %1$s, R: %1$s, G: %1$s, B: %1$s</string>
     <string name="state_invert">Invert: %.1f</string>
@@ -148,7 +149,6 @@
     <string name="state_levels">Shadows: %d, Highlights: %d</string>
     <string name="state_lightness">Brightness: %d</string>
     <string name="state_l_t_r_b_size">L: %d, T: %d, R: %d, B: %d, Size: %d × %d"</string>
-    <string name="state_min_max">Min: %d°, Max: %d°</string>
     <string name="state_radius">Radius: %.1f</string>
     <string name="state_rotate" translatable="false">%d°</string>
     <string name="state_saturation">Saturation: %.1f</string>

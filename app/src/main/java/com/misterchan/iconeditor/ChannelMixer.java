@@ -57,13 +57,13 @@ public class ChannelMixer {
         lp.gravity = Gravity.BOTTOM;
         window.setAttributes(lp);
 
-        ((SeekBar) dialog.findViewById(R.id.sb_red_scale)).setOnSeekBarChangeListener((OnProgressChangeListener) progress -> setElement(0, progress / 10.0f));
-        ((SeekBar) dialog.findViewById(R.id.sb_red_shift)).setOnSeekBarChangeListener((OnProgressChangeListener) progress -> setElement(4, progress));
-        ((SeekBar) dialog.findViewById(R.id.sb_green_scale)).setOnSeekBarChangeListener((OnProgressChangeListener) progress -> setElement(6, progress / 10.0f));
-        ((SeekBar) dialog.findViewById(R.id.sb_green_shift)).setOnSeekBarChangeListener((OnProgressChangeListener) progress -> setElement(9, progress));
-        ((SeekBar) dialog.findViewById(R.id.sb_blue_scale)).setOnSeekBarChangeListener((OnProgressChangeListener) progress -> setElement(12, progress / 10.0f));
-        ((SeekBar) dialog.findViewById(R.id.sb_blue_shift)).setOnSeekBarChangeListener((OnProgressChangeListener) progress -> setElement(14, progress));
-        ((SeekBar) dialog.findViewById(R.id.sb_alpha_scale)).setOnSeekBarChangeListener((OnProgressChangeListener) progress -> setElement(18, progress / 10.0f));
-        ((SeekBar) dialog.findViewById(R.id.sb_alpha_shift)).setOnSeekBarChangeListener((OnProgressChangeListener) progress -> setElement(19, progress));
+        ((SeekBar) dialog.findViewById(R.id.sb_red_scale)).setOnSeekBarChangeListener((OnProgressChangeListener) (seekBar, progress) -> setElement(0, progress / 10.0f));
+        ((SeekBar) dialog.findViewById(R.id.sb_red_shift)).setOnSeekBarChangeListener((OnProgressChangeListener) (seekBar, progress) -> setElement(4, progress));
+        ((SeekBar) dialog.findViewById(R.id.sb_green_scale)).setOnSeekBarChangeListener((OnProgressChangeListener) (seekBar, progress) -> setElement(6, progress / 10.0f));
+        ((SeekBar) dialog.findViewById(R.id.sb_green_shift)).setOnSeekBarChangeListener((OnProgressChangeListener) (seekBar, progress) -> setElement(9, progress));
+        ((SeekBar) dialog.findViewById(R.id.sb_blue_scale)).setOnSeekBarChangeListener((OnProgressChangeListener) (seekBar, progress) -> setElement(12, progress / 10.0f));
+        ((SeekBar) dialog.findViewById(R.id.sb_blue_shift)).setOnSeekBarChangeListener((OnProgressChangeListener) (seekBar, progress) -> setElement(14, progress));
+        ((SeekBar) dialog.findViewById(R.id.sb_alpha_scale)).setOnSeekBarChangeListener((OnProgressChangeListener) (seekBar, progress) -> setElement(18, progress / 10.0f));
+        ((SeekBar) dialog.findViewById(R.id.sb_alpha_shift)).setOnSeekBarChangeListener((OnProgressChangeListener) (seekBar, progress) -> setElement(19, progress));
     }
 }

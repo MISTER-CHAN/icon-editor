@@ -4,12 +4,12 @@ import android.widget.SeekBar;
 
 interface OnProgressChangeListener extends SeekBar.OnSeekBarChangeListener {
 
-    void onProgressChanged(int progress);
+    void onProgressChanged(SeekBar seekBar, int progress);
 
     @Override
     default void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
         if (fromUser) {
-            onProgressChanged(progress);
+            onProgressChanged(seekBar, progress);
         }
     }
 
