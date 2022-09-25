@@ -29,7 +29,7 @@ public class SettingsActivity extends AppCompatActivity {
         PreferenceManager
                 .getDefaultSharedPreferences(this)
                 .registerOnSharedPreferenceChangeListener((sharedPreferences, key) ->
-                        settings.update(sharedPreferences, key));
+                        settings.update(this, sharedPreferences, key));
     }
 
     @Override

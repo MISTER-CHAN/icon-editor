@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.BlendMode;
@@ -70,6 +71,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Queue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -2708,11 +2710,34 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("ClickableViewAccessibility")
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
 
+        // Preferences
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         settings = ((MainApplication) getApplicationContext()).getSettings();
-        settings.update(preferences);
+        settings.update(this, preferences);
+
+        // Locale
+        String loc = preferences.getString("loc", "def");
+        if (!"def".equals(loc)) {
+            Locale locale;
+            int i = loc.indexOf('_');
+            String lang, country = "";
+            if (i == -1) {
+                lang = loc;
+            } else {
+                lang = loc.substring(0, i);
+                country = loc.substring(i + 1);
+            }
+            locale = new Locale(lang, country);
+            Resources resources = getResources();
+            Configuration configuration = resources.getConfiguration();
+            configuration.setLocale(locale);
+            Locale.setDefault(locale);
+            resources.updateConfiguration(configuration, resources.getDisplayMetrics());
+        }
+
+        // Content view
+        setContentView(R.layout.activity_main);
 
         cbBucketFillContiguous = findViewById(R.id.cb_bucket_fill_contiguous);
         cbCloneStampAntiAlias = findViewById(R.id.cb_clone_stamp_anti_alias);

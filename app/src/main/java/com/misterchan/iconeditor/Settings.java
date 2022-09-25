@@ -1,6 +1,9 @@
 package com.misterchan.iconeditor;
 
+import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
+import android.widget.Toast;
 
 public class Settings {
 
@@ -8,6 +11,7 @@ public class Settings {
     private static final String FORMAT_D = "%d";
 
     private static final String KEY_ACR = "acr";
+    private static final String KEY_LOC = "loc";
     private static final String KEY_UTS = "uts";
 
     private boolean unifiedTranslAndScale = false;
@@ -26,12 +30,12 @@ public class Settings {
         return unifiedTranslAndScale;
     }
 
-    public void update(SharedPreferences preferences) {
-        update(preferences, KEY_ACR);
-        update(preferences, KEY_UTS);
+    public void update(Context context, SharedPreferences preferences) {
+        update(context, preferences, KEY_ACR);
+        update(context, preferences, KEY_UTS);
     }
 
-    public void update(SharedPreferences preferences, String key) {
+    public void update(Context context, SharedPreferences preferences, String key) {
         switch (key) {
             case KEY_ACR:
                 if (preferences.contains(KEY_ACR)) {
@@ -47,11 +51,11 @@ public class Settings {
                 argbChannelsFormat = argbChannelsRadix == 16 ? FORMAT_02X : FORMAT_D;
                 break;
 
-            case KEY_UTS:
-                unifiedTranslAndScale = preferences.getBoolean(KEY_UTS, false);
+            case KEY_LOC:
                 break;
 
-            default:
+            case KEY_UTS:
+                unifiedTranslAndScale = preferences.getBoolean(KEY_UTS, false);
                 break;
         }
     }

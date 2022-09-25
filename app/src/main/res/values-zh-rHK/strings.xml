@@ -10,6 +10,7 @@
     <string name="around_g">繞 G 軸</string>
     <string name="around_b">繞 B 軸</string>
     <string name="author">作者</string>
+    <string name="automatic">自動</string>
     <string name="background_color">底色</string>
     <string name="blend_modes">混合模式</string>
     <string name="blur_radius">模糊半徑</string>
@@ -37,6 +38,7 @@
     <string name="custom_color_filter">自訂顏色濾鏡</string>
     <string name="cut">剪下</string>
     <string name="dec">十進制</string>
+    <string name="default_">預設</string>
     <string name="degrees_">角度：%d°</string>
     <string name="delete">刪除</string>
     <string name="deselect">不選取</string>
@@ -67,10 +69,12 @@
     <string name="image">圖像</string>
     <string name="image_size">圖像尺寸</string>
     <string name="invert">反相</string>
+    <string name="language">語言</string>
     <string name="layer">圖層</string>
     <string name="levels">色階</string>
     <string name="lightness">明度</string>
     <string name="line">直線</string>
+    <string name="locale">地區</string>
     <string name="lock_aspect_ratio">鎖定寬高比</string>
     <string name="mask_filter">遮罩濾鏡</string>
     <string name="max">最大</string>
@@ -184,4 +188,9 @@
     <string name="hue">色相</string>
     <string name="color">顏色</string>
     <string name="luminosity">明度</string>
+
+    <!-- Locales -->
+    <string name="en">英文</string>
+    <string name="zh_cn">中文（中國）</string>
+    <string name="zh_hk">中文（香港）</string>
 </resources>

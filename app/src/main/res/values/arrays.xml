@@ -6,6 +6,11 @@
         <item>@string/dec</item>
     </string-array>
 
+    <string-array name="radix_values">
+        <item>16</item>
+        <item>10</item>
+    </string-array>
+
     <!-- Blend Modes -->
     <string-array name="blend_modes">
         <item>@string/null_</item>
@@ -22,8 +27,18 @@
         <item>.jpg</item>
     </string-array>
 
-    <string-array name="radix_values">
-        <item>16</item>
-        <item>10</item>
+    <!-- Locales -->
+    <string-array name="locales_entries">
+        <item>@string/default_</item>
+        <item>@string/en</item>
+        <item>@string/zh_cn</item>
+        <item>@string/zh_hk</item>
+    </string-array>
+
+    <string-array name="locales_values">
+        <item>def</item>
+        <item>en</item>
+        <item>zh_CN</item>
+        <item>zh_HK</item>
     </string-array>
 </resources>

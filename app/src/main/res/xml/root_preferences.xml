@@ -14,6 +14,14 @@
             app:title="@string/argb_channels_radix"
             app:useSimpleSummaryProvider="true" />
 
+        <ListPreference
+            app:defaultValue="def"
+            app:entries="@array/locales_entries"
+            app:entryValues="@array/locales_values"
+            app:key="loc"
+            app:title="@string/language"
+            app:useSimpleSummaryProvider="true" />
+
     </PreferenceCategory>
 
     <PreferenceCategory app:title="@string/about">
