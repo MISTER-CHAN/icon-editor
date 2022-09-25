@@ -637,9 +637,9 @@ public class MainActivity extends AppCompatActivity {
         filter.setColorFilter(new ColorMatrixColorFilter(matrix));
     };
 
-    private final View.OnClickListener onFilterButtonClickListener = v -> {
+    private final View.OnClickListener onColorFilterButtonClickListener = v -> {
         ColorMatrixManager.make(this,
-                        R.string.filter,
+                        R.string.color_filter,
                         onPaintFilterChangeListener,
                         null,
                         colorMatrix)
@@ -2801,7 +2801,7 @@ public class MainActivity extends AppCompatActivity {
 
         findViewById(R.id.b_bucket_fill_threshold).setOnClickListener(onThresholdButtonClickListener);
         findViewById(R.id.b_clone_stamp_src).setOnClickListener(onCloneStampSrcButtonClickListener);
-        findViewById(R.id.b_color_filter).setOnClickListener(onFilterButtonClickListener);
+        findViewById(R.id.b_color_filter).setOnClickListener(onColorFilterButtonClickListener);
         findViewById(R.id.b_color_replacer_tolerance).setOnClickListener(onThresholdButtonClickListener);
         findViewById(R.id.b_filter_tolerance).setOnClickListener(onThresholdButtonClickListener);
         findViewById(R.id.b_text_draw).setOnClickListener(v -> drawTextOnCanvas());
