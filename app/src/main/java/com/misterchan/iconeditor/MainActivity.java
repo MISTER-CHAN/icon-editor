@@ -449,7 +449,7 @@ public class MainActivity extends AppCompatActivity {
 
         EditText etFileName = fileNameDialog.findViewById(R.id.et_file_name);
         etFileName.setFilters(FILTERS_FILE_NAME);
-        etFileName.setText(tabLayout.getTabAt(tabLayout.getSelectedTabPosition()).getText());
+        etFileName.setText(getTabName());
     };
 
     private final ActivityResultLauncher<String> getImage =
@@ -2567,6 +2567,12 @@ public class MainActivity extends AppCompatActivity {
         return range;
     }
 
+    private String getTabName() {
+        String s = tabLayout.getTabAt(tabLayout.getSelectedTabPosition()).getText().toString();
+        int i = s.lastIndexOf('.');
+        return i == -1 ? s : s.substring(0, i);
+    }
+
     private void hideSoftInputFromWindow() {
         inputMethodManager.hideSoftInputFromWindow(getWindow().getDecorView().getWindowToken(), 0);
     }
@@ -3303,7 +3309,7 @@ public class MainActivity extends AppCompatActivity {
                 EditText et = dialog.findViewById(R.id.et_file_name);
 
                 et.setFilters(FILTERS_FILE_NAME);
-                et.setText(tabLayout.getTabAt(tabLayout.getSelectedTabPosition()).getText());
+                et.setText(getTabName());
                 dialog.findViewById(R.id.s_file_type).setVisibility(View.GONE);
 
                 break;
