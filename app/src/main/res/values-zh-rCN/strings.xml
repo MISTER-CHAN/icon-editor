@@ -95,6 +95,7 @@
     <string name="properties">属性</string>
     <string name="rectangle">矩形</string>
     <string name="refit">重新适应</string>
+    <string name="rename">重命名</string>
     <string name="reset_source">重设来源</string>
     <string name="rotate">旋转</string>
     <string name="rotate_around_r">绕 R 轴旋转</string>

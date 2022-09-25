@@ -25,6 +25,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.text.Editable;
 import android.text.InputFilter;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -41,7 +42,6 @@ import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -129,7 +129,7 @@ public class MainActivity extends AppCompatActivity {
             Bitmap.CompressFormat.JPEG
     };
 
-    private static final InputFilter[] FILE_NAME_FILTERS = new InputFilter[]{
+    private static final InputFilter[] FILTERS_FILE_NAME = new InputFilter[]{
             (source, sourceStart, sourceEnd, dest, destStart, destEnd) -> {
                 Matcher matcher = PATTERN_FILE_NAME.matcher(source.toString());
                 if (matcher.find()) {
@@ -234,7 +234,6 @@ public class MainActivity extends AppCompatActivity {
     private EditText etColorReplacerStrokeWidth;
     private EditText etEraserBlurRadius;
     private EditText etEraserStrokeWidth;
-    private EditText etFileName;
     private EditText etFilterBlurRadius;
     private EditText etFilterStrokeWidth;
     private EditText etGradientBlurRadius;
@@ -295,7 +294,6 @@ public class MainActivity extends AppCompatActivity {
     private RectF transfromeeDpb = new RectF(); // DPB - Distance from point to bounds
     private RecyclerView rvSwatches;
     private Settings settings;
-    private Spinner sFileType;
     private String tree = "";
     private SubMenu smBlendModes;
     private Tab tab;
@@ -418,11 +416,12 @@ public class MainActivity extends AppCompatActivity {
     };
 
     private final DialogInterface.OnClickListener onFileNameDialogPosButtonClickListener = (dialog, which) -> {
-        String fileName = etFileName.getText().toString();
-        if ("".equals(fileName)) {
+        final EditText etFileName = ((AlertDialog) dialog).findViewById(R.id.et_file_name);
+        final AppCompatSpinner sFileType = ((AlertDialog) dialog).findViewById(R.id.s_file_type);
+        final String fileName = etFileName.getText().toString() + sFileType.getSelectedItem().toString();
+        if (fileName.length() <= 0) {
             return;
         }
-        fileName += sFileType.getSelectedItem().toString();
         tab.path = Environment.getExternalStorageDirectory().getPath() + File.separator + tree + File.separator + fileName;
         tab.compressFormat = COMPRESS_FORMATS[sFileType.getSelectedItemPosition()];
         save(tab.path);
@@ -440,6 +439,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
         tree = matcher.group("path").replace("%2F", "/");
+
         AlertDialog fileNameDialog = new AlertDialog.Builder(this)
                 .setNegativeButton(R.string.cancel, null)
                 .setPositiveButton(R.string.ok, onFileNameDialogPosButtonClickListener)
@@ -447,10 +447,9 @@ public class MainActivity extends AppCompatActivity {
                 .setView(R.layout.file_name)
                 .show();
 
-        etFileName = fileNameDialog.findViewById(R.id.et_file_name);
-        sFileType = fileNameDialog.findViewById(R.id.s_file_type);
-
-        etFileName.setFilters(FILE_NAME_FILTERS);
+        EditText etFileName = fileNameDialog.findViewById(R.id.et_file_name);
+        etFileName.setFilters(FILTERS_FILE_NAME);
+        etFileName.setText(tabLayout.getTabAt(tabLayout.getSelectedTabPosition()).getText());
     };
 
     private final ActivityResultLauncher<String> getImage =
@@ -497,6 +496,15 @@ public class MainActivity extends AppCompatActivity {
     private final DialogInterface.OnClickListener onFilterConfirmListener = (dialog, which) -> {
         drawPreviewBitmapOnCanvas();
         tvState.setText("");
+    };
+
+    private final DialogInterface.OnClickListener onLayerRenameDialogPosButtonClickListener = (dialog, which) -> {
+        final EditText etFileName = ((AlertDialog) dialog).findViewById(R.id.et_file_name);
+        final Editable name = etFileName.getText();
+        if (name.length() <= 0) {
+            return;
+        }
+        tabLayout.getTabAt(tabLayout.getSelectedTabPosition()).setText(name);
     };
 
     private final View.OnClickListener onAddSwatchViewClickListener = v ->
@@ -3284,6 +3292,22 @@ public class MainActivity extends AppCompatActivity {
                 tab.visible = true;
                 break;
 
+            case R.id.i_layer_rename: {
+                AlertDialog dialog = new AlertDialog.Builder(this)
+                        .setNegativeButton(R.string.cancel, null)
+                        .setPositiveButton(R.string.ok, onLayerRenameDialogPosButtonClickListener)
+                        .setTitle(R.string.rename)
+                        .setView(R.layout.file_name)
+                        .show();
+
+                EditText et = dialog.findViewById(R.id.et_file_name);
+
+                et.setFilters(FILTERS_FILE_NAME);
+                et.setText(tabLayout.getTabAt(tabLayout.getSelectedTabPosition()).getText());
+                dialog.findViewById(R.id.s_file_type).setVisibility(View.GONE);
+
+                break;
+            }
             case R.id.i_layer_send_to_back:
                 drawFloatingLayers();
                 int i = tabLayout.getSelectedTabPosition(), j = i + 1;

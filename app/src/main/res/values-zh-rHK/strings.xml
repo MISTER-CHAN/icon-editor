@@ -96,6 +96,7 @@
     <string name="properties">屬性</string>
     <string name="rectangle">矩形</string>
     <string name="refit">重新適應</string>
+    <string name="rename">重命名</string>
     <string name="reset_source">重設來源</string>
     <string name="rotate">旋轉</string>
     <string name="rotate_around_r">繞 R 軸旋轉</string>

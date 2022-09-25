@@ -155,6 +155,10 @@
                 android:title="@string/duplicate_by_color_range" />
 
             <item
+                android:id="@+id/i_layer_rename"
+                android:title="@string/rename" />
+
+            <item
                 android:id="@+id/i_layer_delete"
                 android:title="@string/delete" />
 

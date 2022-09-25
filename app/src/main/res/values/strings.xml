@@ -114,6 +114,7 @@
     <string name="rectangle">Rectangle</string>
     <string name="redo" translatable="false">↷</string>
     <string name="refit">Refit</string>
+    <string name="rename">Rename</string>
     <string name="reset_source">Reset Source</string>
     <string name="rotate">Rotate</string>
     <string name="rotate_around_r">Rotate Around R</string>
