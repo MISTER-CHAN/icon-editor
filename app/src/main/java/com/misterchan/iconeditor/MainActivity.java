@@ -19,6 +19,7 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Shader;
@@ -151,25 +152,25 @@ public class MainActivity extends AppCompatActivity {
 
     private static final Paint PAINT_CLEAR = new Paint() {
         {
-            setBlendMode(BlendMode.CLEAR);
+            setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
         }
     };
 
     private static final Paint PAINT_DST_IN = new Paint() {
         {
-            setBlendMode(BlendMode.DST_IN);
+            setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_IN));
         }
     };
 
     private static final Paint PAINT_DST_OUT = new Paint() {
         {
-            setBlendMode(BlendMode.DST_OUT);
+            setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_OUT));
         }
     };
 
     private static final Paint PAINT_OPAQUE = new Paint() {
         {
-            setBlendMode(BlendMode.SRC);
+            setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC));
             setColor(Color.BLACK);
         }
     };
@@ -184,7 +185,7 @@ public class MainActivity extends AppCompatActivity {
 
     private static final Paint PAINT_SRC_IN = new Paint() {
         {
-            setBlendMode(BlendMode.SRC_IN);
+            setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
         }
     };
 
@@ -323,7 +324,7 @@ public class MainActivity extends AppCompatActivity {
 
     private final Paint colorPaint = new Paint() {
         {
-            setBlendMode(BlendMode.SRC);
+            setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC));
         }
     };
 
@@ -352,7 +353,7 @@ public class MainActivity extends AppCompatActivity {
 
     private final Paint filter = new Paint() {
         {
-            setBlendMode(BlendMode.SRC_IN);
+            setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
         }
     };
 
@@ -574,7 +575,7 @@ public class MainActivity extends AppCompatActivity {
         tvState.setText(String.format(getString(R.string.state_color_range), hueMin, hueMax, valueMin, valueMax));
     };
 
-    private final ColorRangeDialog.OnColorRangeChangeListener onLayerDuplicateByHueConfirmListener = (hueMin, hueMax, valueMin, valueMax) -> {
+    private final ColorRangeDialog.OnColorRangeChangeListener onLayerDuplicateByColorRangeConfirmListener = (hueMin, hueMax, valueMin, valueMax) -> {
         Bitmap bm = Bitmap.createBitmap(preview.getBitmap());
         preview.recycle();
         preview = null;
@@ -1641,35 +1642,20 @@ public class MainActivity extends AppCompatActivity {
 
     private final LevelsDialog.OnLevelsChangeListener onFilterLevelsSeekBarProgressChangeListener = (shadows, highlights) -> {
         float ratio = 0xFF / (float) (highlights - shadows);
-        preview.setFilter(new float[]{
-                ratio, 0.0f, 0.0f, 0.0f, -shadows * ratio,
-                0.0f, ratio, 0.0f, 0.0f, -shadows * ratio,
-                0.0f, 0.0f, ratio, 0.0f, -shadows * ratio,
-                0.0f, 0.0f, 0.0f, 1.0f, 0.0f
-        });
+        preview.setFilter(ratio, -shadows * ratio);
         drawBitmapOnView(preview.getBitmap());
         tvState.setText(String.format(getString(R.string.state_levels), shadows, highlights));
     };
 
     private final OnProgressChangeListener onFilterContrastSeekBarProgressChangeListener = (seekBar, progress) -> {
         float scale = progress / 10.0f, shift = 0xFF / 2.0f * (1.0f - scale);
-        preview.setFilter(new float[]{
-                scale, 0.0f, 0.0f, 0.0f, shift,
-                0.0f, scale, 0.0f, 0.0f, shift,
-                0.0f, 0.0f, scale, 0.0f, shift,
-                0.0f, 0.0f, 0.0f, 1.0f, 0.0f
-        });
+        preview.setFilter(scale, shift);
         drawBitmapOnView(preview.getBitmap());
         tvState.setText(String.format(getString(R.string.state_contrast), scale));
     };
 
     private final OnProgressChangeListener onFilterLightnessSeekBarProgressChangeListener = (seekBar, progress) -> {
-        preview.setFilter(new float[]{
-                1.0f, 0.0f, 0.0f, 0.0f, progress,
-                0.0f, 1.0f, 0.0f, 0.0f, progress,
-                0.0f, 0.0f, 1.0f, 0.0f, progress,
-                0.0f, 0.0f, 0.0f, 1.0f, 0.0f
-        });
+        preview.setFilter(1.0f, progress);
         drawBitmapOnView(preview.getBitmap());
         tvState.setText(String.format(getString(R.string.state_lightness), progress));
     };
@@ -3257,7 +3243,7 @@ public class MainActivity extends AppCompatActivity {
                 createPreviewBitmap();
                 new ColorRangeDialog(this)
                         .setOnColorRangeChangeListener(onColorRangeChangeListener)
-                        .setOnPositiveButtonClickListener(onLayerDuplicateByHueConfirmListener)
+                        .setOnPositiveButtonClickListener(onLayerDuplicateByColorRangeConfirmListener)
                         .setOnCancelListener(onFilterCancelListener)
                         .show();
                 break;
