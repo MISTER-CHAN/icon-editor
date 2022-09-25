@@ -580,7 +580,6 @@ public class MainActivity extends AppCompatActivity {
         preview.recycle();
         preview = null;
         addBitmap(bm, tabLayout.getSelectedTabPosition());
-        tab.visible = true;
         tvState.setText("");
     };
 
@@ -1828,11 +1827,6 @@ public class MainActivity extends AppCompatActivity {
     private void addBitmap(Bitmap bitmap, int position) {
         addBitmap(bitmap, position,
                 null, getString(R.string.untitled), null);
-    }
-
-    private void addBitmap(Bitmap bitmap,
-                           String path, String title, Bitmap.CompressFormat compressFormat) {
-        addBitmap(bitmap, tabs.size(), path, title, compressFormat);
     }
 
     private void addBitmap(Bitmap bitmap, int position,
@@ -3235,7 +3229,6 @@ public class MainActivity extends AppCompatActivity {
                 drawFloatingLayers();
                 Bitmap bm = Bitmap.createBitmap(bitmap);
                 addBitmap(bm, tabLayout.getSelectedTabPosition());
-                tab.visible = true;
                 break;
             }
             case R.id.i_layer_duplicate_by_hue: {
@@ -3309,7 +3302,6 @@ public class MainActivity extends AppCompatActivity {
             case R.id.i_layer_new:
                 drawFloatingLayers();
                 createGraphic(bitmap.getWidth(), bitmap.getHeight(), tabLayout.getSelectedTabPosition());
-                tab.visible = true;
                 break;
 
             case R.id.i_layer_rename: {
@@ -3508,8 +3500,7 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(this, R.string.not_supported_file_type, Toast.LENGTH_SHORT).show();
                 break;
         }
-        addBitmap(bitmap,
-                path, documentFile.getName(), compressFormat);
+        addBitmap(bitmap, tabs.size(), path, documentFile.getName(), compressFormat);
     }
 
     private void openFile(Uri uri) {
