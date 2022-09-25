@@ -63,13 +63,13 @@ public class CellGridManager {
 
         AlertDialog dialog = builder.show();
 
-        cbEnabled = dialog.findViewById(R.id.cb_cg_enabled);
-        etSizeX = dialog.findViewById(R.id.et_cg_size_x);
-        etSizeY = dialog.findViewById(R.id.et_cg_size_y);
-        etSpacingX = dialog.findViewById(R.id.et_cg_spacing_x);
-        etSpacingY = dialog.findViewById(R.id.et_cg_spacing_y);
-        etOffsetX = dialog.findViewById(R.id.et_cg_offset_x);
-        etOffsetY = dialog.findViewById(R.id.et_cg_offset_y);
+        cbEnabled = dialog.findViewById(R.id.cb_enabled);
+        etSizeX = dialog.findViewById(R.id.et_size_x);
+        etSizeY = dialog.findViewById(R.id.et_size_y);
+        etSpacingX = dialog.findViewById(R.id.et_spacing_x);
+        etSpacingY = dialog.findViewById(R.id.et_spacing_y);
+        etOffsetX = dialog.findViewById(R.id.et_offset_x);
+        etOffsetY = dialog.findViewById(R.id.et_offset_y);
 
         cbEnabled.setChecked(cellGrid.enabled);
         etSizeX.setText(String.valueOf(cellGrid.sizeX));

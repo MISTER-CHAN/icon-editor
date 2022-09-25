@@ -5,21 +5,20 @@
     android:orientation="vertical"
     android:padding="16dp">
 
-    <CheckBox
-        android:id="@+id/cb_cg_enabled"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/enabled" />
-
     <GridLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:columnCount="3"
         android:orientation="horizontal"
-        android:rowCount="3">
+        android:rowCount="4">
+
+        <CheckBox
+            android:id="@+id/cb_enabled"
+            android:layout_columnSpan="3"
+            android:text="@string/enabled" />
 
         <TextView
-            android:layout_gravity="center_vertical|start"
+            android:layout_gravity="center_vertical"
             android:layout_margin="8dp"
             android:text="@string/size" />
 
@@ -28,7 +27,7 @@
             android:layout_margin="8dp">
 
             <EditText
-                android:id="@+id/et_cg_size_x"
+                android:id="@+id/et_size_x"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@color/transparent"
@@ -42,7 +41,7 @@
             android:layout_margin="8dp">
 
             <EditText
-                android:id="@+id/et_cg_size_y"
+                android:id="@+id/et_size_y"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@color/transparent"
@@ -52,7 +51,7 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <TextView
-            android:layout_gravity="center_vertical|start"
+            android:layout_gravity="center_vertical"
             android:layout_margin="8dp"
             android:text="@string/spacing" />
 
@@ -61,7 +60,7 @@
             android:layout_margin="8dp">
 
             <EditText
-                android:id="@+id/et_cg_spacing_x"
+                android:id="@+id/et_spacing_x"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@color/transparent"
@@ -75,7 +74,7 @@
             android:layout_margin="8dp">
 
             <EditText
-                android:id="@+id/et_cg_spacing_y"
+                android:id="@+id/et_spacing_y"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@color/transparent"
@@ -85,7 +84,7 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <TextView
-            android:layout_gravity="center_vertical|start"
+            android:layout_gravity="center_vertical"
             android:layout_margin="8dp"
             android:text="@string/offset" />
 
@@ -94,10 +93,9 @@
             android:layout_margin="8dp">
 
             <EditText
-                android:id="@+id/et_cg_offset_x"
+                android:id="@+id/et_offset_x"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:autofillHints=""
                 android:background="@color/transparent"
                 android:hint="@string/x"
                 android:inputType="number"
@@ -109,10 +107,9 @@
             android:layout_margin="8dp">
 
             <EditText
-                android:id="@+id/et_cg_offset_y"
+                android:id="@+id/et_offset_y"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:autofillHints=""
                 android:background="@color/transparent"
                 android:hint="@string/y"
                 android:inputType="number"

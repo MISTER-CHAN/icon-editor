@@ -1,7 +1,6 @@
 package com.misterchan.iconeditor;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.widget.EditText;
 
 import androidx.appcompat.app.AlertDialog;
@@ -37,7 +36,7 @@ public class NewGraphicPropertiesDialog {
     public void show() {
         AlertDialog dialog = builder.show();
 
-        etSizeX = dialog.findViewById(R.id.et_new_size_x);
-        etSizeY = dialog.findViewById(R.id.et_new_size_y);
+        etSizeX = dialog.findViewById(R.id.et_size_x);
+        etSizeY = dialog.findViewById(R.id.et_size_y);
     }
 }

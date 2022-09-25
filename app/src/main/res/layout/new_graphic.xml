@@ -13,7 +13,7 @@
         android:rowCount="1">
 
         <TextView
-            android:layout_gravity="center_vertical|start"
+            android:layout_gravity="center_vertical"
             android:layout_margin="8dp"
             android:text="@string/size" />
 
@@ -22,7 +22,7 @@
             android:layout_margin="8dp">
 
             <EditText
-                android:id="@+id/et_new_size_x"
+                android:id="@+id/et_size_x"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@color/transparent"
@@ -37,7 +37,7 @@
             android:layout_margin="8dp">
 
             <EditText
-                android:id="@+id/et_new_size_y"
+                android:id="@+id/et_size_y"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@color/transparent"
