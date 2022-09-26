@@ -13,7 +13,7 @@
 
     <!-- Blend Modes -->
     <string-array name="blend_modes">
-        <item>@string/null_</item>
+        <item>@string/default_</item>
         <item>@string/hue</item>
         <item>@string/saturation</item>
         <item>@string/color</item>

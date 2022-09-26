@@ -700,11 +700,10 @@ public class MainActivity extends AppCompatActivity {
             }
 
             miLayerVisible.setChecked(MainActivity.this.tab.visible);
-            for (int i = 0; i <= 29; ++i) {
+            for (int i = 0; i <= 28; ++i) {
                 MenuItem mi = smBlendModes.getItem(i);
                 BlendMode blendMode = MainActivity.this.tab.paint.getBlendMode();
-                mi.setChecked(i == 0 && blendMode == null
-                        || i > 0 && blendMode == BlendMode.values()[i - 1]);
+                mi.setChecked(blendMode == BlendMode.values()[i]);
             }
 
             drawChessboardOnView();
@@ -1838,6 +1837,7 @@ public class MainActivity extends AppCompatActivity {
         tab.history = history;
         history.offer(bitmap);
         tab.paint = new Paint();
+        tab.paint.setBlendMode(BlendMode.SRC_OVER);
         tab.path = path;
         tab.compressFormat = compressFormat;
         cellGrid = new CellGrid();
@@ -2614,6 +2614,7 @@ public class MainActivity extends AppCompatActivity {
         history.offer(bitmap);
 
         tab.paint = new Paint();
+        tab.paint.setBlendMode(BlendMode.SRC_OVER);
 
         tab.path = null;
         cellGrid = new CellGrid();
@@ -2980,7 +2981,6 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("NonConstantResourceId")
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.i_blend_mode_null:
             case R.id.i_blend_mode_clear:
             case R.id.i_blend_mode_src:
             case R.id.i_blend_mode_dst:
@@ -3011,10 +3011,10 @@ public class MainActivity extends AppCompatActivity {
             case R.id.i_blend_mode_color:
             case R.id.i_blend_mode_luminosity:
                 drawFloatingLayers();
-                for (int i = 0; i <= 29; ++i) {
+                for (int i = 0; i <= 28; ++i) {
                     MenuItem mi = smBlendModes.getItem(i);
                     if (mi == item) {
-                        tab.paint.setBlendMode(i == 0 ? null : BlendMode.values()[i - 1]);
+                        tab.paint.setBlendMode(BlendMode.values()[i]);
                         mi.setChecked(true);
                     } else if (mi.isChecked()) {
                         mi.setChecked(false);
@@ -3261,11 +3261,6 @@ public class MainActivity extends AppCompatActivity {
                 drawFloatingLayers();
                 int j = tabLayout.getSelectedTabPosition() + 1;
                 if (j >= tabs.size()) {
-                    new AlertDialog.Builder(this)
-                            .setMessage(R.string.exception_merge_as_hidden)
-                            .setPositiveButton(R.string.ok, null)
-                            .setTitle(R.string.merge_as_a_hidden_image)
-                            .show();
                     break;
                 }
                 HiddenImageMaker.merge(this,

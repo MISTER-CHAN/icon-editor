@@ -34,7 +34,7 @@
 
         <com.google.android.material.textfield.TextInputLayout>
 
-            <EditText
+            <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/et_alpha"
                 android:layout_width="64dp"
                 android:layout_height="wrap_content"
@@ -53,7 +53,7 @@
 
         <com.google.android.material.textfield.TextInputLayout>
 
-            <EditText
+            <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/et_red"
                 android:layout_width="64dp"
                 android:layout_height="wrap_content"
@@ -71,7 +71,7 @@
 
         <com.google.android.material.textfield.TextInputLayout>
 
-            <EditText
+            <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/et_green"
                 android:layout_width="64dp"
                 android:layout_height="wrap_content"
@@ -89,7 +89,7 @@
 
         <com.google.android.material.textfield.TextInputLayout>
 
-            <EditText
+            <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/et_blue"
                 android:layout_width="64dp"
                 android:layout_height="wrap_content"

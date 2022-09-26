@@ -197,12 +197,6 @@
                 <menu>
 
                     <item
-                        android:id="@+id/i_blend_mode_null"
-                        android:checkable="true"
-                        android:checked="true"
-                        android:title="@string/null_" />
-
-                    <item
                         android:id="@+id/i_blend_mode_clear"
                         android:checkable="true"
                         android:title="@string/clear" />
@@ -220,6 +214,7 @@
                     <item
                         android:id="@+id/i_blend_mode_src_over"
                         android:checkable="true"
+                        android:checked="true"
                         android:title="@string/source_over" />
 
                     <item

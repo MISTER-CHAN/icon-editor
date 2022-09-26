@@ -159,7 +159,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginHorizontal="2dp">
 
-                        <EditText
+                        <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/et_pencil_stroke_width"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -174,7 +174,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginHorizontal="2dp">
 
-                        <EditText
+                        <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/et_pencil_blur_radius"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -212,7 +212,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginHorizontal="2dp">
 
-                            <EditText
+                            <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/et_color_replacer_stroke_width"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
@@ -227,7 +227,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginHorizontal="2dp">
 
-                            <EditText
+                            <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/et_color_replacer_blur_radius"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
@@ -279,7 +279,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginHorizontal="2dp">
 
-                            <EditText
+                            <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/et_filter_stroke_width"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
@@ -294,7 +294,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginHorizontal="2dp">
 
-                            <EditText
+                            <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/et_filter_blur_radius"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
@@ -347,7 +347,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginHorizontal="2dp">
 
-                        <EditText
+                        <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/et_gradient_stroke_width"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -362,7 +362,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginHorizontal="2dp">
 
-                        <EditText
+                        <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/et_gradient_blur_radius"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -400,7 +400,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginHorizontal="2dp">
 
-                            <EditText
+                            <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/et_clone_stamp_stroke_width"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
@@ -415,7 +415,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginHorizontal="2dp">
 
-                            <EditText
+                            <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/et_clone_stamp_blur_radius"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
@@ -455,7 +455,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginHorizontal="2dp">
 
-                        <EditText
+                        <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/et_shape_stroke_width"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -562,7 +562,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginHorizontal="2dp">
 
-                        <EditText
+                        <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/et_eraser_stroke_width"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -578,7 +578,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginHorizontal="2dp">
 
-                        <EditText
+                        <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/et_eraser_blur_radius"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -610,7 +610,7 @@
                         android:layout_marginHorizontal="2dp"
                         android:layout_weight="1">
 
-                        <EditText
+                        <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/et_text"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -625,7 +625,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginHorizontal="2dp">
 
-                        <EditText
+                        <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/et_text_size"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"

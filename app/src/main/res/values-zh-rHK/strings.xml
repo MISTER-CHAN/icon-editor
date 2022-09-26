@@ -38,7 +38,7 @@
     <string name="custom_color_filter">自訂顏色濾鏡</string>
     <string name="cut">剪下</string>
     <string name="dec">十進制</string>
-    <string name="default_">預設</string>
+    <string name="default_">缺省</string>
     <string name="degrees_">角度：%d°</string>
     <string name="delete">刪除</string>
     <string name="deselect">不選取</string>
@@ -163,14 +163,14 @@
     <!-- Blend Modes -->
     <string name="null_">無</string>
     <string name="destination">目標</string>
-    <string name="source_over">來源蓋過</string>
-    <string name="destination_over">目標蓋過</string>
+    <string name="source_over">來源在上（缺省）</string>
+    <string name="destination_over">目標在上</string>
     <string name="source_in">來源內部</string>
     <string name="destination_in">目標內部</string>
     <string name="source_out">來源外部</string>
     <string name="destination_out">目標外部</string>
-    <string name="source_atop">來源置頂</string>
-    <string name="destination_atop">目標置頂</string>
+    <string name="source_atop">來源在頂</string>
+    <string name="destination_atop">目標在頂</string>
     <string name="xor">異或</string>
     <string name="plus">加</string>
     <string name="modulate">取餘</string>

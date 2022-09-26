@@ -38,7 +38,7 @@
     <string name="custom_color_filter">自定义颜色滤镜</string>
     <string name="cut">剪切</string>
     <string name="dec">十进制</string>
-    <string name="default_">默认</string>
+    <string name="default_">缺省</string>
     <string name="degrees_">角度：%d°</string>
     <string name="delete">删除</string>
     <string name="deselect">不选择</string>
@@ -47,7 +47,7 @@
     <string name="duplicate_by_color_range">复制颜色范围</string>
     <string name="enabled">启用</string>
     <string name="eraser">胶擦</string>
-    <string name="exception_merge_as_hidden">合并为隐藏图\n异常：请选中两张图像中第一个图像的分页。</string>
+    <string name="exception_merge_as_hidden">异常：请选中两张图像中第一个图像的分页。</string>
     <string name="eyedropper">滴管</string>
     <string name="file">文件</string>
     <string name="file_name">文件名</string>
@@ -162,14 +162,14 @@
     <!-- Blend Modes -->
     <string name="null_">无</string>
     <string name="destination">目标</string>
-    <string name="source_over">来源盖过</string>
-    <string name="destination_over">目标盖过</string>
+    <string name="source_over">来源在上（缺省）</string>
+    <string name="destination_over">目标在上</string>
     <string name="source_in">来源内部</string>
     <string name="destination_in">目标内部</string>
     <string name="source_out">来源外部</string>
     <string name="destination_out">目标外部</string>
-    <string name="source_atop">来源置顶</string>
-    <string name="destination_atop">目标置顶</string>
+    <string name="source_atop">来源在顶</string>
+    <string name="destination_atop">目标在顶</string>
     <string name="xor">异或</string>
     <string name="plus">加</string>
     <string name="modulate">取馀</string>

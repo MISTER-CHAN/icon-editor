@@ -33,7 +33,7 @@
                     android:layout_margin="8dp"
                     android:layout_weight="1">
 
-                    <EditText
+                    <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/et_img_size_x"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -49,7 +49,7 @@
                     android:layout_margin="8dp"
                     android:layout_weight="1">
 
-                    <EditText
+                    <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/et_img_size_y"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
