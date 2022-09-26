@@ -3,8 +3,10 @@
     <PreferenceCategory app:title="@string/general">
 
         <SwitchPreferenceCompat
-            app:key="uts"
-            app:title="@string/unified_transl_and_scale" />
+            app:defaultValue="true"
+            app:key="its"
+            app:singleLineTitle="false"
+            app:title="@string/independent_transl_and_scale" />
 
         <ListPreference
             app:defaultValue="hex"

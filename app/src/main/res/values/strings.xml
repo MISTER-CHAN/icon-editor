@@ -81,6 +81,7 @@
     <string name="hue_only">Hue Only</string>
     <string name="image">Image</string>
     <string name="image_size">Image Size</string>
+    <string name="independent_transl_and_scale">Independent Canvas Location and Scale</string>
     <string name="invert">Invert</string>
     <string name="language">Language</string>
     <string name="layer">Layer</string>
@@ -176,7 +177,6 @@
     <string name="tutorial_merge_as_hidden">Tutorial</string>
     <string name="two_seventy_degrees">270°</string>
     <string name="undo" translatable="false">↶</string>
-    <string name="unified_transl_and_scale">Unified Canvas Location and Scale</string>
     <string name="untitled">Untitled</string>
     <string name="v" translatable="false">V</string>
     <string name="vertically">Vertically</string>

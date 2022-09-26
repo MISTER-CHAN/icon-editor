@@ -69,6 +69,7 @@
     <string name="hue_only">僅色相</string>
     <string name="image">圖像</string>
     <string name="image_size">圖像尺寸</string>
+    <string name="independent_transl_and_scale">獨立畫布位置及縮放</string>
     <string name="invert">反相</string>
     <string name="language">語言</string>
     <string name="layer">圖層</string>
@@ -153,7 +154,6 @@
     <string name="transform">變換</string>
     <string name="tutorial_merge_as_hidden">Tutorial</string>
     <string name="two_seventy_degrees">270°</string>
-    <string name="unified_transl_and_scale">統一畫布位置及縮放</string>
     <string name="untitled">無標題</string>
     <string name="vertically">垂直</string>
     <string name="view">檢視</string>
