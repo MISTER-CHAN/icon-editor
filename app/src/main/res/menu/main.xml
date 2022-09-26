@@ -60,6 +60,10 @@
                 android:title="@string/paste" />
 
             <item
+                android:id="@+id/i_clone"
+                android:title="@string/clone" />
+
+            <item
                 android:id="@+id/i_delete"
                 android:title="@string/delete" />
 

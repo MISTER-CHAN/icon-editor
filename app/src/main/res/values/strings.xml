@@ -26,13 +26,14 @@
     <string name="circle">Circle</string>
     <string name="clear">Clear</string>
     <string name="clear_destination">Clear Destination</string>
+    <string name="clone">Clone</string>
     <string name="cloner">Cloner</string>
     <string name="close">Close</string>
     <string name="color_balance">Color Balance</string>
     <string name="color_filter">Color Filter</string>
     <string name="color_picker">Color Picker</string>
     <string name="color_range">Color Range</string>
-    <string name="color_replacer">Color Replacer</string>
+    <string name="color_replace">Color Replace</string>
     <string name="contiguous">Contiguous</string>
     <string name="contrast">Contrast</string>
     <string name="coordinate" translatable="false">(%d, %d)</string>
@@ -109,6 +110,7 @@
     <string name="oval">Oval</string>
     <string name="palette">Palette</string>
     <string name="paste">Paste</string>
+    <string name="patch">Patch</string>
     <string name="pencil">Pencil</string>
     <string name="pen_with_filter">Filter</string>
     <string name="percent" translatable="false">%</string>

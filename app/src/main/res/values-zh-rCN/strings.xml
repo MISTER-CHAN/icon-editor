@@ -23,13 +23,14 @@
     <string name="circle">圆</string>
     <string name="clear">清除</string>
     <string name="clear_destination">清除目标</string>
+    <string name="clone">克隆</string>
     <string name="cloner">克隆笔</string>
     <string name="close">关闭</string>
     <string name="color_balance">色彩平衡</string>
     <string name="color_filter">颜色滤镜</string>
     <string name="color_picker">拾色器</string>
     <string name="color_range">颜色范围</string>
-    <string name="color_replacer">颜色替换</string>
+    <string name="color_replace">颜色替换</string>
     <string name="contiguous">连续</string>
     <string name="contrast">对比度</string>
     <string name="copy">复制</string>
@@ -93,6 +94,7 @@
     <string name="oval">椭圆</string>
     <string name="palette">调色板</string>
     <string name="paste">粘贴</string>
+    <string name="patch">修补</string>
     <string name="pencil">铅笔</string>
     <string name="pen_with_filter">滤光笔</string>
     <string name="preferences">偏好</string>

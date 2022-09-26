@@ -1,11 +1,8 @@
 package com.misterchan.iconeditor;
 
 import android.graphics.Bitmap;
-import android.graphics.BlendMode;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.ColorMatrix;
-import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
@@ -16,21 +13,25 @@ import androidx.annotation.Size;
 
 public class PreviewBitmap {
 
-    private static final Paint PAINT = new Paint() {
+    private static final Paint PAINT_SRC = new Paint() {
         {
             setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC));
         }
     };
 
+    private static final Paint PAINT = new Paint();
+
     private Bitmap bitmap;
     private Bitmap bm;
     private Canvas canvas;
+    private Canvas cv;
     private final Rect rect;
 
     public PreviewBitmap(Bitmap bitmap, Rect rect) {
         this.bitmap = Bitmap.createBitmap(bitmap);
-        this.bm = Bitmap.createBitmap(bitmap, rect.left, rect.top, rect.width() + 1, rect.height() + 1);
+        bm = Bitmap.createBitmap(bitmap, rect.left, rect.top, rect.width() + 1, rect.height() + 1);
         canvas = new Canvas(this.bitmap);
+        cv = new Canvas(bm);
         this.rect = rect;
     }
 
@@ -39,11 +40,18 @@ public class PreviewBitmap {
     }
 
     private void draw() {
-        canvas.drawBitmap(bm, rect.left, rect.top, PAINT);
+        canvas.drawBitmap(bm, rect.left, rect.top, PAINT_SRC);
+    }
+
+    public void drawBitmap(Bitmap b) {
+        canvas.drawBitmap(b, rect.left, rect.top, PAINT);
     }
 
     public void drawColor(@ColorInt int color) {
-        canvas.drawColor(color, PorterDuff.Mode.SRC_OVER);
+        Paint paint = new Paint();
+        paint.setColor(color);
+        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC));
+        canvas.drawRect(rect, paint);
     }
 
     public Bitmap getBitmap() {
@@ -72,8 +80,13 @@ public class PreviewBitmap {
         bitmap.recycle();
         bitmap = null;
 
+        cv = null;
         bm.recycle();
         bm = null;
+    }
+
+    public void reset() {
+        canvas.drawBitmap(bm, rect.left, rect.top, PAINT_SRC);
     }
 
     public void setFilter(@Size(20) float[] colorMatrix) {
