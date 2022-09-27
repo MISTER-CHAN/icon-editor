@@ -27,8 +27,7 @@ public class Transformer {
     }
 
     public void calculateAspectRatio(Rect rect) {
-        aspectRatio =
-                (double) (rect.right - rect.left + 1) / (double) (rect.bottom - rect.top + 1);
+        aspectRatio = (double) rect.width() / (double) rect.height();
     }
 
     public void calculateByLocation(Rect rect) {
@@ -37,8 +36,8 @@ public class Transformer {
     }
 
     public void calculateCenter(Rect rect) {
-        centerX = (rect.left + rect.right + 1) / 2.0f;
-        centerY = (rect.top + rect.bottom + 1) / 2.0f;
+        centerX = (rect.left + rect.right) / 2.0f;
+        centerY = (rect.top + rect.bottom) / 2.0f;
     }
 
     public double getAspectRatio() {

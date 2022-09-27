@@ -1086,7 +1086,7 @@ public class MainActivity extends AppCompatActivity {
             case MotionEvent.ACTION_MOVE: {
                 float x = event.getX(), y = event.getY();
                 int unscaledX = toUnscaled(x - translationX), unscaledY = toUnscaled(y - translationY);
-                int w = selection.width() + 1, h = selection.height() + 1;
+                int w = selection.width(), h = selection.height();
                 Bitmap bm = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
                 Canvas cv = new Canvas(bm);
                 int wh = w >> 1, hh = h >> 1; // h - Half
@@ -1161,15 +1161,15 @@ public class MainActivity extends AppCompatActivity {
                         tvState.setText(String.format(getString(R.string.state_selected_bound),
                                 draggingBound.name));
                     } else {
-                        if (hasSelection && selectionStartX == selectionEndX && selectionStartY == selectionEndY) {
-                            selectionEndX = toUnscaled(x - translationX);
-                            selectionEndY = toUnscaled(y - translationY);
+                        if (hasSelection && selectionStartX == selectionEndX - 1 && selectionStartY == selectionEndY - 1) {
+                            selectionEndX = toUnscaled(x - translationX) + 1;
+                            selectionEndY = toUnscaled(y - translationY) + 1;
                         } else {
                             hasSelection = true;
                             selectionStartX = toUnscaled(x - translationX);
                             selectionStartY = toUnscaled(y - translationY);
-                            selectionEndX = selectionStartX;
-                            selectionEndY = selectionStartY;
+                            selectionEndX = selectionStartX + 1;
+                            selectionEndY = selectionStartY + 1;
                         }
                         drawSelectionOnViewByStartsAndEnds();
                         tvState.setText(String.format(getString(R.string.state_start_end_size_1),
@@ -1179,8 +1179,8 @@ public class MainActivity extends AppCompatActivity {
                     dragBound(x, y);
                     drawSelectionOnView();
                     tvState.setText(String.format(getString(R.string.state_l_t_r_b_size),
-                            selection.left, selection.top, selection.right, selection.bottom,
-                            selection.width() + 1, selection.height() + 1));
+                            selection.left, selection.top, selection.right - 1, selection.bottom - 1,
+                            selection.width(), selection.height()));
                 }
                 break;
             }
@@ -1188,18 +1188,18 @@ public class MainActivity extends AppCompatActivity {
             case MotionEvent.ACTION_MOVE: {
                 float x = event.getX(), y = event.getY();
                 if (draggingBound == Position.NULL) {
-                    selectionEndX = toUnscaled(x - translationX);
-                    selectionEndY = toUnscaled(y - translationY);
+                    selectionEndX = toUnscaled(x - translationX) + 1;
+                    selectionEndY = toUnscaled(y - translationY) + 1;
                     drawSelectionOnViewByStartsAndEnds();
                     tvState.setText(String.format(getString(R.string.state_start_end_size),
-                            selectionStartX, selectionStartY, selectionEndX, selectionEndY,
-                            Math.abs(selectionEndX - selectionStartX) + 1, Math.abs(selectionEndY - selectionStartY) + 1));
+                            selectionStartX, selectionStartY, selectionEndX - 1, selectionEndY - 1,
+                            Math.abs(selectionEndX - selectionStartX), Math.abs(selectionEndY - selectionStartY)));
                 } else {
                     dragBound(x, y);
                     drawSelectionOnView();
                     tvState.setText(String.format(getString(R.string.state_l_t_r_b_size),
-                            selection.left, selection.top, selection.right, selection.bottom,
-                            selection.width() + 1, selection.height() + 1));
+                            selection.left, selection.top, selection.right - 1, selection.bottom - 1,
+                            selection.width(), selection.height()));
                 }
                 break;
             }
@@ -1214,15 +1214,15 @@ public class MainActivity extends AppCompatActivity {
                         hasDragged = false;
                         tvState.setText(hasSelection ?
                                 String.format(getString(R.string.state_l_t_r_b_size),
-                                        selection.left, selection.top, selection.right, selection.bottom,
-                                        selection.width() + 1, selection.height() + 1) :
+                                        selection.left, selection.top, selection.right - 1, selection.bottom - 1,
+                                        selection.width(), selection.height()) :
                                 "");
                     }
                 } else {
                     tvState.setText(hasSelection ?
                             String.format(getString(R.string.state_l_t_r_b_size),
-                                    selection.left, selection.top, selection.right, selection.bottom,
-                                    selection.width() + 1, selection.height() + 1) :
+                                    selection.left, selection.top, selection.right - 1, selection.bottom - 1,
+                                    selection.width(), selection.height()) :
                             "");
                 }
                 break;
@@ -1322,14 +1322,14 @@ public class MainActivity extends AppCompatActivity {
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN: {
                         float x = event.getX(), y = event.getY();
-                        int width = selection.width() + 1, height = selection.height() + 1;
+                        int width = selection.width(), height = selection.height();
                         if (width > 0 && height > 0) {
                             if (transformer == null) {
                                 transformer = new Transformer(
                                         Bitmap.createBitmap(bitmap, selection.left, selection.top, width, height),
                                         translationX + toScaled(selection.left),
                                         translationY + toScaled(selection.top));
-                                canvas.drawRect(selection.left, selection.top, selection.right + 1, selection.bottom + 1, eraser);
+                                canvas.drawRect(selection.left, selection.top, selection.right, selection.bottom, eraser);
                             }
                             drawBitmapOnView();
                             drawTransformeeAndSelectionOnViewByTranslation(false);
@@ -1367,7 +1367,7 @@ public class MainActivity extends AppCompatActivity {
                         } else {
                             stretchByBound(x, y);
                             tvState.setText(String.format(getString(R.string.state_size),
-                                    selection.width() + 1, selection.height() + 1));
+                                    selection.width(), selection.height()));
                         }
                         prevX = x;
                         prevY = y;
@@ -1380,7 +1380,7 @@ public class MainActivity extends AppCompatActivity {
                                 draggingBound = Position.NULL;
                                 isDraggingCorner = false;
                                 hasDragged = false;
-                                int width = selection.width() + 1, height = selection.height() + 1;
+                                int width = selection.width(), height = selection.height();
                                 if (width > 0 && height > 0) {
                                     transformer.stretch(width, height,
                                             translationX + toScaled(selection.left),
@@ -1423,7 +1423,7 @@ public class MainActivity extends AppCompatActivity {
                             if (Math.abs(dpbDiff.left) + Math.abs(dpbDiff.right) >= Math.abs(dpbDiff.top) + Math.abs(dpbDiff.bottom)) {
                                 selection.left -= toUnscaled(transfromeeDpb.left - dpb.left);
                                 selection.right += toUnscaled(transfromeeDpb.right - dpb.right);
-                                double width = selection.width() + 1, height = width / transformer.getAspectRatio();
+                                double width = selection.width(), height = width / transformer.getAspectRatio();
                                 selection.top = (int) (transformer.getCenterY() - height / 2.0);
                                 selection.bottom = (int) (transformer.getCenterY() + height / 2.0);
                                 scaledSelection.top = translationY + toScaled(selection.top);
@@ -1433,7 +1433,7 @@ public class MainActivity extends AppCompatActivity {
                             } else {
                                 selection.top -= toUnscaled(transfromeeDpb.top - dpb.top);
                                 selection.bottom += toUnscaled(transfromeeDpb.bottom - dpb.bottom);
-                                double height = selection.height() + 1, width = height * transformer.getAspectRatio();
+                                double height = selection.height(), width = height * transformer.getAspectRatio();
                                 selection.left = (int) (transformer.getCenterX() - width / 2.0);
                                 selection.right = (int) (transformer.getCenterX() + width / 2.0);
                                 scaledSelection.left = translationX + toScaled(selection.left);
@@ -1449,7 +1449,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                         drawSelectionOnView();
                         tvState.setText(String.format(getString(R.string.state_size),
-                                selection.width() + 1, selection.height() + 1));
+                                selection.width(), selection.height()));
                         break;
                     }
                     case MotionEvent.ACTION_POINTER_DOWN: {
@@ -1470,11 +1470,11 @@ public class MainActivity extends AppCompatActivity {
                             transformer.calculateByLocation(selection);
                         }
                         tvState.setText(String.format(getString(R.string.state_size),
-                                selection.width() + 1, selection.height() + 1));
+                                selection.width(), selection.height()));
                         break;
                     }
                     case MotionEvent.ACTION_POINTER_UP: {
-                        int width = selection.width() + 1, height = selection.height() + 1;
+                        int width = selection.width(), height = selection.height();
                         if (width > 0 && height > 0) {
                             transformer.stretch(width, height,
                                     translationX + toScaled(selection.left),
@@ -1782,7 +1782,7 @@ public class MainActivity extends AppCompatActivity {
     };
 
     private final View.OnClickListener onRotateButtonClickListener = v -> {
-        int width = selection.width() + 1, height = selection.height() + 1;
+        int width = selection.width(), height = selection.height();
         if (width <= 0 || height <= 0) {
             return;
         }
@@ -1791,12 +1791,12 @@ public class MainActivity extends AppCompatActivity {
                     Bitmap.createBitmap(bitmap, selection.left, selection.top, width, height),
                     translationX + toScaled(selection.left),
                     translationY + toScaled(selection.top));
-            canvas.drawRect(selection.left, selection.top, selection.right + 1, selection.bottom + 1, eraser);
+            canvas.drawRect(selection.left, selection.top, selection.right, selection.bottom, eraser);
             drawBitmapOnView();
             drawTransformeeAndSelectionOnViewByTranslation(false);
         }
-        ivSelection.setPivotX(transformer.getTranslationX() + (toScaled(selection.right) - toScaled(selection.left)) / 2.0f);
-        ivSelection.setPivotY(transformer.getTranslationY() + (toScaled(selection.bottom) - toScaled(selection.top)) / 2.0f);
+        ivSelection.setPivotX(transformer.getTranslationX() + (toScaled(selection.width())) / 2.0f);
+        ivSelection.setPivotY(transformer.getTranslationY() + (toScaled(selection.height())) / 2.0f);
         new SeekBarDialog(this).setTitle(R.string.rotate).setMin(0).setMax(359).setProgress(0)
                 .setOnCancelListener(onRotateCancelListener)
                 .setOnPositiveButtonClickListener(onRotateConfirmListener)
@@ -1946,10 +1946,10 @@ public class MainActivity extends AppCompatActivity {
         } else {
             left = 0;
             top = 0;
-            right = bitmap.getWidth() - 1;
-            bottom = bitmap.getHeight() - 1;
+            right = bitmap.getWidth();
+            bottom = bitmap.getHeight();
         }
-        if (!(left <= x && x <= right && top <= y && y <= bottom)) {
+        if (!(left <= x && x < right && top <= y && y < bottom)) {
             return;
         }
         final int pixel = bitmap.getPixel(x, y);
@@ -1960,8 +1960,8 @@ public class MainActivity extends AppCompatActivity {
         final int[] pixels = new int[w * h];
         bitmap.getPixels(pixels, 0, w, left, top, w, h);
         int i = 0;
-        for (y = top; y <= bottom; ++y) {
-            for (x = left; x <= right; ++i, ++x) {
+        for (y = top; y < bottom; ++y) {
+            for (x = left; x < right; ++i, ++x) {
                 int px = pixels[i];
                 boolean match = false;
                 if (threshold > 0) {
@@ -1987,8 +1987,8 @@ public class MainActivity extends AppCompatActivity {
         RectF sb = new RectF( // sb - Selection Bounds
                 translationX + toScaled(selection.left),
                 translationY + toScaled(selection.top),
-                translationX + toScaled(selection.right + 1),
-                translationY + toScaled(selection.bottom + 1));
+                translationX + toScaled(selection.right),
+                translationY + toScaled(selection.bottom));
 
         if (sb.left - 50.0f <= x && x < sb.left + 50.0f) {
             if (sb.top + 50.0f <= y && y < sb.bottom - 50.0f) {
@@ -2093,13 +2093,13 @@ public class MainActivity extends AppCompatActivity {
                 break;
             }
             case RIGHT: {
-                int right = toUnscaled(viewX - translationX + halfScale) - 1;
+                int right = toUnscaled(viewX - translationX + halfScale);
                 if (right != selection.right) selection.right = right;
                 else return;
                 break;
             }
             case BOTTOM: {
-                int bottom = toUnscaled(viewY - translationY + halfScale) - 1;
+                int bottom = toUnscaled(viewY - translationY + halfScale);
                 if (bottom != selection.bottom) selection.bottom = bottom;
                 else return;
                 break;
@@ -2343,8 +2343,8 @@ public class MainActivity extends AppCompatActivity {
         if (hasSelection) {
             float left = Math.max(0.0f, translationX + toScaled(selection.left)),
                     top = Math.max(0.0f, translationY + toScaled(selection.top)),
-                    right = Math.min(viewWidth, translationX + toScaled(selection.right + 1)),
-                    bottom = Math.min(viewHeight, translationY + toScaled(selection.bottom + 1));
+                    right = Math.min(viewWidth, translationX + toScaled(selection.right)),
+                    bottom = Math.min(viewHeight, translationY + toScaled(selection.bottom));
             selectionCanvas.drawRect(left, top, right, bottom, selector);
             if (showMargins) {
                 float imageLeft = Math.max(0.0f, translationX),
@@ -2363,11 +2363,11 @@ public class MainActivity extends AppCompatActivity {
                 }
                 if (right < viewWidth) {
                     selectionCanvas.drawLine(right, centerVertical, imageRight, centerVertical, marginPaint);
-                    selectionCanvas.drawText(String.valueOf(bitmap.getWidth() - selection.right - 1), (imageRight + right) / 2.0f, centerVertical, marginPaint);
+                    selectionCanvas.drawText(String.valueOf(bitmap.getWidth() - selection.right), (imageRight + right) / 2.0f, centerVertical, marginPaint);
                 }
                 if (bottom < viewHeight) {
                     selectionCanvas.drawLine(centerHorizontal, bottom, centerHorizontal, imageBottom, marginPaint);
-                    selectionCanvas.drawText(String.valueOf(bitmap.getHeight() - selection.bottom - 1), centerHorizontal, (imageBottom + bottom) / 2.0f, marginPaint);
+                    selectionCanvas.drawText(String.valueOf(bitmap.getHeight() - selection.bottom), centerHorizontal, (imageBottom + bottom) / 2.0f, marginPaint);
                 }
             }
         }
@@ -2381,25 +2381,25 @@ public class MainActivity extends AppCompatActivity {
     private void drawSelectionOnViewByStartsAndEnds() {
         clearCanvas(selectionCanvas);
         if (hasSelection) {
-            if (selectionStartX <= selectionEndX) {
+            if (selectionStartX < selectionEndX) {
                 selection.left = selectionStartX;
                 selection.right = selectionEndX;
             } else {
-                selection.left = selectionEndX;
-                selection.right = selectionStartX;
+                selection.left = selectionEndX - 1;
+                selection.right = selectionStartX + 1;
             }
-            if (selectionStartY <= selectionEndY) {
+            if (selectionStartY < selectionEndY) {
                 selection.top = selectionStartY;
                 selection.bottom = selectionEndY;
             } else {
-                selection.top = selectionEndY;
-                selection.bottom = selectionStartY;
+                selection.top = selectionEndY - 1;
+                selection.bottom = selectionStartY + 1;
             }
             selectionCanvas.drawRect(
                     translationX + toScaled(selection.left),
                     translationY + toScaled(selection.top),
-                    translationX + toScaled(selection.right + 1),
-                    translationY + toScaled(selection.bottom + 1),
+                    translationX + toScaled(selection.right),
+                    translationY + toScaled(selection.bottom),
                     selector);
         }
         ivSelection.invalidate();
@@ -2478,8 +2478,8 @@ public class MainActivity extends AppCompatActivity {
         if (hasSelection && transformer != null) {
             selection.left = toUnscaled(transformer.getTranslationX() - translationX);
             selection.top = toUnscaled(transformer.getTranslationY() - translationY);
-            selection.right = selection.left + transformer.getWidth() - 1;
-            selection.bottom = selection.top + transformer.getHeight() - 1;
+            selection.right = selection.left + transformer.getWidth();
+            selection.bottom = selection.top + transformer.getHeight();
             float ttx = toScaled(selection.left) + translationX;
             float tty = toScaled(selection.top) + translationY;
             drawBitmapOnCanvas(transformer.getBitmap(), ttx, tty, previewCanvas);
@@ -2548,17 +2548,17 @@ public class MainActivity extends AppCompatActivity {
         } else {
             left = 0;
             top = 0;
-            right = src.getWidth() - 1;
-            bottom = src.getHeight() - 1;
+            right = src.getWidth();
+            bottom = src.getHeight();
         }
-        if (!(left <= x && x <= right && top <= y && y <= bottom)) {
+        if (!(left <= x && x < right && top <= y && y < bottom)) {
             return;
         }
         final int pixel = src.getPixel(x, y);
         if (pixel == color && threshold == 0) {
             return;
         }
-        final int w = right - left + 1, h = bottom - top + 1, area = w * h;
+        final int w = right - left, h = bottom - top, area = w * h;
         final int[] srcPixels = new int[area], dstPixels = src == dst ? srcPixels : new int[area];
         src.getPixels(srcPixels, 0, w, left, top, w, h);
 //        long a = System.currentTimeMillis();
@@ -2590,11 +2590,11 @@ public class MainActivity extends AppCompatActivity {
                 int xn = point.x - 1, xp = point.x + 1, yn = point.y - 1, yp = point.y + 1; // n - negative, p - positive
                 if (left <= xn && !havePointsBeenSet[i - 1])
                     pointsToBeSet.offer(new Point(xn, point.y));
-                if (xp <= right && !havePointsBeenSet[i + 1])
+                if (xp < right && !havePointsBeenSet[i + 1])
                     pointsToBeSet.offer(new Point(xp, point.y));
                 if (top <= yn && !havePointsBeenSet[i - w])
                     pointsToBeSet.offer(new Point(point.x, yn));
-                if (yp <= bottom && !havePointsBeenSet[i + w])
+                if (yp < bottom && !havePointsBeenSet[i + w])
                     pointsToBeSet.offer(new Point(point.x, yp));
             }
         }
@@ -3108,7 +3108,7 @@ public class MainActivity extends AppCompatActivity {
                 if (transformer == null) {
                     Bitmap bm = Bitmap.createBitmap(bitmap,
                             selection.left, selection.top,
-                            selection.width() + 1, selection.height() + 1);
+                            selection.width(), selection.height());
                     drawFloatingLayers();
                     transformer = new Transformer(bm,
                             translationX + toScaled(selection.left),
@@ -3146,7 +3146,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                     clipboard = Bitmap.createBitmap(bitmap,
                             selection.left, selection.top,
-                            selection.width() + 1, selection.height() + 1);
+                            selection.width(), selection.height());
                 } else {
                     clipboard = Bitmap.createBitmap(transformer.getBitmap());
                 }
@@ -3157,7 +3157,7 @@ public class MainActivity extends AppCompatActivity {
                     break;
                 }
                 drawFloatingLayers();
-                int width = selection.width() + 1, height = selection.height() + 1;
+                int width = selection.width(), height = selection.height();
                 Bitmap bm = Bitmap.createBitmap(bitmap, selection.left, selection.top, width, height);
                 resizeBitmap(width, height, false);
                 canvas.drawBitmap(bm, 0.0f, 0.0f, PAINT_OPAQUE);
@@ -3175,8 +3175,8 @@ public class MainActivity extends AppCompatActivity {
                         clipboard.recycle();
                     }
                     clipboard = Bitmap.createBitmap(bitmap, selection.left, selection.top,
-                            selection.width() + 1, selection.height() + 1);
-                    canvas.drawRect(selection.left, selection.top, selection.right + 1, selection.bottom + 1, eraser);
+                            selection.width(), selection.height());
+                    canvas.drawRect(selection.left, selection.top, selection.right, selection.bottom + 1, eraser);
                     drawBitmapOnView();
                     addHistory();
                 } else {
@@ -3192,7 +3192,7 @@ public class MainActivity extends AppCompatActivity {
                     break;
                 }
                 if (transformer == null) {
-                    canvas.drawRect(selection.left, selection.top, selection.right + 1, selection.bottom + 1, eraser);
+                    canvas.drawRect(selection.left, selection.top, selection.right, selection.bottom + 1, eraser);
                     drawBitmapOnView();
                     addHistory();
                 } else {
@@ -3613,22 +3613,13 @@ public class MainActivity extends AppCompatActivity {
 
     private void optimizeSelection() {
         int bitmapWidth = bitmap.getWidth(), bitmapHeight = bitmap.getHeight();
-        if (selection.left > selection.right) {
-            int i = selection.left;
-            selection.left = selection.right + 1;
-            selection.right = i - 1;
-        }
-        if (selection.top > selection.bottom) {
-            int i = selection.top;
-            selection.top = selection.bottom + 1;
-            selection.bottom = i - 1;
-        }
+        selection.sort();
         if (selection.left < bitmapWidth && selection.top < bitmapHeight
-                && selection.right >= 0 && selection.bottom >= 0) {
+                && selection.right > 0 && selection.bottom > 0) {
             selection.left = Math.max(0, selection.left);
             selection.top = Math.max(0, selection.top);
-            selection.right = Math.min(bitmapWidth - 1, selection.right);
-            selection.bottom = Math.min(bitmapHeight - 1, selection.bottom);
+            selection.right = Math.min(bitmapWidth, selection.right);
+            selection.bottom = Math.min(bitmapHeight, selection.bottom);
         } else {
             hasSelection = false;
         }
@@ -3686,8 +3677,8 @@ public class MainActivity extends AppCompatActivity {
         if (hasSelection) {
             left = selection.left;
             top = selection.top;
-            width = selection.width() + 1;
-            height = selection.height() + 1;
+            width = selection.width();
+            height = selection.height();
         }
         Matrix matrix = new Matrix();
         matrix.setRotate(degrees, width / 2.0f, height / 2.0f);
@@ -3738,8 +3729,8 @@ public class MainActivity extends AppCompatActivity {
         if (hasSelection) {
             left = selection.left;
             top = selection.top;
-            width = selection.width() + 1;
-            height = selection.height() + 1;
+            width = selection.width();
+            height = selection.height();
         }
         Matrix matrix = new Matrix();
         matrix.setScale(x, y, 0.0f, 0.0f);
@@ -3765,8 +3756,8 @@ public class MainActivity extends AppCompatActivity {
     private void selectAll() {
         selection.left = 0;
         selection.top = 0;
-        selection.right = bitmap.getWidth() - 1;
-        selection.bottom = bitmap.getHeight() - 1;
+        selection.right = bitmap.getWidth();
+        selection.bottom = bitmap.getHeight();
     }
 
     private void setBlurRadius(float f) {
@@ -3777,11 +3768,11 @@ public class MainActivity extends AppCompatActivity {
         dragBound(viewX, viewY);
         if (cbTransformerLar.isChecked()) {
             if (draggingBound == Position.LEFT || draggingBound == Position.RIGHT) {
-                double width = selection.width() + 1, height = width / transformer.getAspectRatio();
+                double width = selection.width(), height = width / transformer.getAspectRatio();
                 selection.top = (int) (transformer.getCenterY() - height / 2.0);
                 selection.bottom = (int) (transformer.getCenterY() + height / 2.0);
             } else if (draggingBound == Position.TOP || draggingBound == Position.BOTTOM) {
-                double height = selection.height() + 1, width = height * transformer.getAspectRatio();
+                double height = selection.height(), width = height * transformer.getAspectRatio();
                 selection.left = (int) (transformer.getCenterX() - width / 2.0);
                 selection.right = (int) (transformer.getCenterX() + width / 2.0);
             }

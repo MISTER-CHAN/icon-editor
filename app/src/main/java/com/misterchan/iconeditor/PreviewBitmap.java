@@ -29,7 +29,7 @@ public class PreviewBitmap {
 
     public PreviewBitmap(Bitmap bitmap, Rect rect) {
         this.bitmap = Bitmap.createBitmap(bitmap);
-        bm = Bitmap.createBitmap(bitmap, rect.left, rect.top, rect.width() + 1, rect.height() + 1);
+        bm = Bitmap.createBitmap(bitmap, rect.left, rect.top, rect.width(), rect.height());
         canvas = new Canvas(this.bitmap);
         cv = new Canvas(bm);
         this.rect = rect;
@@ -50,7 +50,7 @@ public class PreviewBitmap {
     public void drawColor(@ColorInt int color) {
         Paint paint = new Paint();
         paint.setColor(color);
-        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC));
+        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
         canvas.drawRect(rect, paint);
     }
 
