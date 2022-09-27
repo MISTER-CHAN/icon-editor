@@ -1956,7 +1956,7 @@ public class MainActivity extends AppCompatActivity {
         if (pixel == color && threshold == 0) {
             return;
         }
-        final int w = right - left + 1, h = bottom - top + 1;
+        final int w = right - left, h = bottom - top;
         final int[] pixels = new int[w * h];
         bitmap.getPixels(pixels, 0, w, left, top, w, h);
         int i = 0;
