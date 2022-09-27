@@ -1193,7 +1193,7 @@ public class MainActivity extends AppCompatActivity {
                     drawSelectionOnViewByStartsAndEnds();
                     tvState.setText(String.format(getString(R.string.state_start_end_size),
                             selectionStartX, selectionStartY, selectionEndX - 1, selectionEndY - 1,
-                            Math.abs(selectionEndX - selectionStartX), Math.abs(selectionEndY - selectionStartY)));
+                            Math.abs(selectionEndX - selectionStartX - 1) + 1, Math.abs(selectionEndY - selectionStartY - 1) + 1));
                 } else {
                     dragBound(x, y);
                     drawSelectionOnView();
