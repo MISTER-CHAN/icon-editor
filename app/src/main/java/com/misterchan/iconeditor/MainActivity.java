@@ -1923,8 +1923,8 @@ public class MainActivity extends AppCompatActivity {
         tab.translationX = 0.0f;
         tab.translationY = 0.0f;
         tab.scale = (float) ((double) viewWidth / (double) bitmap.getWidth());
-        imageWidth = (int) toScaled(bitmap.getWidth());
-        imageHeight = (int) toScaled(bitmap.getHeight());
+        imageWidth = viewWidth;
+        imageHeight = (int) (bitmap.getHeight() * tab.scale);
     }
 
     private void addHistory() {
@@ -2061,22 +2061,6 @@ public class MainActivity extends AppCompatActivity {
         preview = new PreviewBitmap(bitmap, selection);
     }
 
-    private void drawAfterTranslatingOrScaling() {
-        drawChessboardOnView();
-        drawBitmapOnView();
-        drawGridOnView();
-        if (transformer != null) {
-            drawTransformeeOnViewBySelection();
-        } else if (isEditingText) {
-            drawTextOnView();
-        } else if (!isShapeStopped) {
-            drawPointOnView(shapeStartX, shapeStartY);
-        } else if (cloneStampSrc != null) {
-            drawCloneStampSrcOnView(cloneStampSrc.x, cloneStampSrc.y);
-        }
-        drawSelectionOnView();
-    }
-
     private void dragBound(float viewX, float viewY) {
         float halfScale = scale / 2.0f;
         switch (draggingBound) {
@@ -2108,6 +2092,22 @@ public class MainActivity extends AppCompatActivity {
                 return;
         }
         hasDragged = true;
+    }
+
+    private void drawAfterTranslatingOrScaling() {
+        drawChessboardOnView();
+        drawBitmapOnView();
+        drawGridOnView();
+        if (transformer != null) {
+            drawTransformeeOnViewBySelection();
+        } else if (isEditingText) {
+            drawTextOnView();
+        } else if (!isShapeStopped) {
+            drawPointOnView(shapeStartX, shapeStartY);
+        } else if (cloneStampSrc != null) {
+            drawCloneStampSrcOnView(cloneStampSrc.x, cloneStampSrc.y);
+        }
+        drawSelectionOnView();
     }
 
     private void drawBitmapOnCanvas(Bitmap bm, float translX, float translY, Canvas cv) {
