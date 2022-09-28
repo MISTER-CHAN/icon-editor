@@ -1325,11 +1325,7 @@ public class MainActivity extends AppCompatActivity {
                         int width = selection.width(), height = selection.height();
                         if (width > 0 && height > 0) {
                             if (transformer == null) {
-                                transformer = new Transformer(
-                                        Bitmap.createBitmap(bitmap, selection.left, selection.top, width, height),
-                                        translationX + toScaled(selection.left),
-                                        translationY + toScaled(selection.top));
-                                canvas.drawRect(selection.left, selection.top, selection.right, selection.bottom, eraser);
+                                createTransformer();
                             }
                             drawBitmapOnView();
                             drawTransformeeAndSelectionOnViewByTranslation(false);
@@ -1775,7 +1771,10 @@ public class MainActivity extends AppCompatActivity {
     };
 
     private final DialogInterface.OnClickListener onRotateConfirmListener = (dialog, which) -> {
+        int w = transformer.getWidth(), h = transformer.getHeight();
         transformer.rotate(ivSelection.getRotation());
+        int w_ = transformer.getWidth(), h_ = transformer.getHeight();
+        transformer.translateBy(toScaled(w - w_) / 2.0f, toScaled(h - h_) / 2.0f);
         ivSelection.setRotation(0.0f);
         drawTransformeeAndSelectionOnViewByTranslation();
         tvState.setText("");
@@ -1787,16 +1786,12 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
         if (transformer == null) {
-            transformer = new Transformer(
-                    Bitmap.createBitmap(bitmap, selection.left, selection.top, width, height),
-                    translationX + toScaled(selection.left),
-                    translationY + toScaled(selection.top));
-            canvas.drawRect(selection.left, selection.top, selection.right, selection.bottom, eraser);
+            createTransformer();
             drawBitmapOnView();
             drawTransformeeAndSelectionOnViewByTranslation(false);
         }
-        ivSelection.setPivotX(transformer.getTranslationX() + (toScaled(selection.width())) / 2.0f);
-        ivSelection.setPivotY(transformer.getTranslationY() + (toScaled(selection.height())) / 2.0f);
+        ivSelection.setPivotX(transformer.getTranslationX() + toScaled(width) / 2.0f);
+        ivSelection.setPivotY(transformer.getTranslationY() + toScaled(height) / 2.0f);
         new SeekBarDialog(this).setTitle(R.string.rotate).setMin(0).setMax(359).setProgress(0)
                 .setOnCancelListener(onRotateCancelListener)
                 .setOnPositiveButtonClickListener(onRotateConfirmListener)
@@ -2059,6 +2054,16 @@ public class MainActivity extends AppCompatActivity {
             selectAll();
         }
         preview = new PreviewBitmap(bitmap, selection);
+    }
+
+    private void createTransformer() {
+        transformer = new Transformer(
+                Bitmap.createBitmap(bitmap,
+                        selection.left, selection.top, selection.width(), selection.height()),
+                translationX + toScaled(selection.left),
+                translationY + toScaled(selection.top));
+        canvas.drawRect(selection.left, selection.top, selection.right, selection.bottom,
+                eraser);
     }
 
     private void dragBound(float viewX, float viewY) {
@@ -2497,39 +2502,6 @@ public class MainActivity extends AppCompatActivity {
             transformer.translateTo(ttx, tty);
         }
         ivPreview.invalidate();
-    }
-
-    private int fillButOnlyHue(float r, float g, float b, float s0, float v0, float s0_,
-                               float v0_, float f, int hi, float alpha) {
-        int color = 0;
-        final float max = Math.max(Math.max(r, g), b), min = Math.min(Math.min(r, g), b);
-        final float s = max == 0.0f ? 0.0f : 1.0f - min / max, v = max;
-        final float s_ = inRange(s0_ + s - s0, 0.0f, 1.0f),
-                v_ = inRange(v0_ + v - v0, 0.0f, 1.0f);
-        final float p = v_ * (1.0f - s_),
-                q = v_ * (1.0f - f * s_),
-                t = v_ * (1.0f - (1.0f - f) * s_);
-        switch (hi) {
-            case 0:
-                color = Color.argb(alpha, v_, t, p);
-                break;
-            case 1:
-                color = Color.argb(alpha, q, v_, p);
-                break;
-            case 2:
-                color = Color.argb(alpha, p, v_, t);
-                break;
-            case 3:
-                color = Color.argb(alpha, p, q, v_);
-                break;
-            case 4:
-                color = Color.argb(alpha, t, p, v_);
-                break;
-            case 5:
-                color = Color.argb(alpha, v_, p, q);
-                break;
-        }
-        return color;
     }
 
     private void floodFill(Bitmap bitmap, int x, int y, @ColorInt final int color) {
@@ -3614,7 +3586,8 @@ public class MainActivity extends AppCompatActivity {
     private void optimizeSelection() {
         int bitmapWidth = bitmap.getWidth(), bitmapHeight = bitmap.getHeight();
         selection.sort();
-        if (selection.left < bitmapWidth && selection.top < bitmapHeight
+        if (selection.left < selection.right && selection.top < selection.bottom
+                && selection.left < bitmapWidth && selection.top < bitmapHeight
                 && selection.right > 0 && selection.bottom > 0) {
             selection.left = Math.max(0, selection.left);
             selection.top = Math.max(0, selection.top);

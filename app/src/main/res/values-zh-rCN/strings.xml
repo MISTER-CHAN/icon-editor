@@ -174,7 +174,7 @@
     <string name="destination_atop">目标在顶</string>
     <string name="xor">异或</string>
     <string name="plus">加</string>
-    <string name="modulate">取馀</string>
+    <string name="modulate">模</string>
     <string name="screen">滤色</string>
     <string name="overlay">叠加</string>
     <string name="darken">变暗</string>
