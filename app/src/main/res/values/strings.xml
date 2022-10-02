@@ -79,6 +79,7 @@
     <string name="homepage_address" translatable="false">https://github.com/MISTER-CHAN/icon-editor</string>
     <string name="horizontally">Horizontally</string>
     <string name="hue_only">Hue Only</string>
+    <string name="ignore_alpha_channel">Ignore Alpha Channel</string>
     <string name="image">Image</string>
     <string name="image_size">Image Size</string>
     <string name="independent_transl_and_scale">Independent Canvas Location and Scale</string>
@@ -192,7 +193,7 @@
     <!-- Blend Modes -->
     <string name="null_">Null</string>
     <string name="destination">Destination</string>
-    <string name="source_over">Source over (Default)</string>
+    <string name="source_over">Source over</string>
     <string name="destination_over">Destination over</string>
     <string name="source_in">Source in</string>
     <string name="destination_in">Destination in</string>

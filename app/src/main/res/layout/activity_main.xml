@@ -585,6 +585,12 @@
                             android:layout_height="wrap_content"
                             android:text="@string/contiguous" />
 
+                        <CheckBox
+                            android:id="@+id/cb_bucket_fill_ignore_alpha"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/ignore_alpha_channel" />
+
                         <Button
                             android:id="@+id/b_bucket_fill_threshold"
                             android:layout_width="wrap_content"

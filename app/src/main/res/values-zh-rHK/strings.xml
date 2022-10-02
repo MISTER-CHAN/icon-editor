@@ -67,6 +67,7 @@
     <string name="homepage">主頁</string>
     <string name="horizontally">水平</string>
     <string name="hue_only">僅色相</string>
+    <string name="ignore_alpha_channel">忽略 Alpha 通道</string>
     <string name="image">圖像</string>
     <string name="image_size">圖像尺寸</string>
     <string name="independent_transl_and_scale">獨立畫布位置及縮放</string>
@@ -165,7 +166,7 @@
     <!-- Blend Modes -->
     <string name="null_">無</string>
     <string name="destination">目標</string>
-    <string name="source_over">來源在上（缺省）</string>
+    <string name="source_over">來源在上</string>
     <string name="destination_over">目標在上</string>
     <string name="source_in">來源內部</string>
     <string name="destination_in">目標內部</string>
