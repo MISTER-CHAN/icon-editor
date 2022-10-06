@@ -604,6 +604,70 @@ public class MainActivity extends AppCompatActivity {
 
     private final NewGraphicPropertiesDialog.OnFinishSettingListener onFinishSettingNewGraphicPropertiesListener = this::createGraphic;
 
+    @Size(3)
+    private static float[] colorToHSV(@ColorInt int color) {
+        float h = 0.0f, s, v;
+        float r = Color.red(color) / 255.0f,
+                g = Color.green(color) / 255.0f,
+                b = Color.blue(color) / 255.0f;
+        float max = Math.max(Math.max(r, g), b), min = Math.min(Math.min(r, g), b);
+        if (max == min) {
+            h = 0.0f;
+        } else if (max == r) {
+            h = 60.0f * (g - b) / (max - min) + (g >= b ? 0.0f : 360.0f);
+        } else if (max == g) {
+            h = 60.0f * (b - r) / (max - min) + 120.0f;
+        } else if (max == b) {
+            h = 60.0f * (r - g) / (max - min) + 240.0f;
+        }
+        s = max == 0.0f ? 0.0f : 1.0f - min / max;
+        v = max;
+        return new float[]{h, s, v};
+    }
+
+    private static int HSVToColor(@Size(3) float[] hsv) {
+        float r = 0.0f, g = 0.0f, b = 0.0f;
+        float h = hsv[0], s = hsv[1], v = hsv[2];
+        int hi = (int) (h / 60.0f);
+        float f = h / 60.0f - hi;
+        float p = v * (1.0f - s);
+        float q = v * (1.0f - f * s);
+        float t = v * (1.0f - (1.0f - f) * s);
+        switch (hi) {
+            case 0: r = v; g = t; b = p; break;
+            case 1: r = q; g = v; b = p; break;
+            case 2: r = p; g = v; b = t; break;
+            case 3: r = p; g = q; b = v; break;
+            case 4: r = t; g = p; b = v; break;
+            case 5: r = v; g = p; b = q; break;
+        }
+        return Color.argb(0,
+                inRange(r, 0.0f, 1.0f) * 0xFF,
+                inRange(g, 0.0f, 1.0f) * 0xFF,
+                inRange(b, 0.0f, 1.0f) * 0xFF);
+    }
+
+    private final HSVDialog.OnHSVChangeListener onFilterHSVChangeListener = deltaHSV -> {
+        if (deltaHSV[0] == 0.0f && deltaHSV[1] == 0.0f && deltaHSV[2] == 0.0f) {
+            preview.clearFilter();
+        } else {
+            final int w = preview.getWidth(), h = preview.getHeight(), area = w * h;
+            final int[] pixels = new int[area];
+            preview.getPixels(pixels, 0, w, 0, 0, w, h);
+            for (int i = 0; i < area; ++i) {
+                final int pixel = pixels[i];
+                float[] hsv = colorToHSV(pixel);
+                hsv[0] = (hsv[0] + deltaHSV[0] + 360.0f) % 360.0f;
+                hsv[1] = inRange(hsv[1] + deltaHSV[1], 0.0f, 1.0f);
+                hsv[2] = inRange(hsv[2] + deltaHSV[2], 0.0f, 1.0f);
+                pixels[i] = pixel & 0xFF000000 | HSVToColor(hsv);
+            }
+            preview.setPixels(pixels, 0, w, 0, 0, w, h);
+        }
+        drawBitmapOnView(preview.getBitmap());
+        tvState.setText(String.format(getString(R.string.state_hsv), deltaHSV[0], deltaHSV[1], deltaHSV[2]));
+    };
+
     private final OnItemSelectedListener onColorReplacerBlendModeSelectedListener = (parent, view, position, id) -> {
         BlendMode blendMode;
         if (1 <= position && position <= 4) {
@@ -614,6 +678,13 @@ public class MainActivity extends AppCompatActivity {
             blendMode = null;
         }
         colorReplacer.setBlendMode(blendMode);
+    };
+
+    private final LevelsDialog.OnLevelsChangeListener onFilterLevelsChangeListener = (shadows, highlights) -> {
+        float ratio = 0xFF / (float) (highlights - shadows);
+        preview.setFilter(ratio, -shadows * ratio);
+        drawBitmapOnView(preview.getBitmap());
+        tvState.setText(String.format(getString(R.string.state_levels), shadows, highlights));
     };
 
     private final ColorMatrixManager.OnMatrixElementsChangeListener onColorMatrixChangeListener = matrix -> {
@@ -1700,13 +1771,6 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    private final LevelsDialog.OnLevelsChangeListener onFilterLevelsSeekBarProgressChangeListener = (shadows, highlights) -> {
-        float ratio = 0xFF / (float) (highlights - shadows);
-        preview.setFilter(ratio, -shadows * ratio);
-        drawBitmapOnView(preview.getBitmap());
-        tvState.setText(String.format(getString(R.string.state_levels), shadows, highlights));
-    };
-
     private final OnProgressChangeListener onFilterContrastSeekBarProgressChangeListener = (seekBar, progress) -> {
         float scale = progress / 10.0f, shift = 0xFF / 2.0f * (1.0f - scale);
         preview.setFilter(scale, shift);
@@ -2109,59 +2173,65 @@ public class MainActivity extends AppCompatActivity {
         drawSelectionOnView();
     }
 
-    private void drawBitmapOnCanvas(Bitmap bm, float translX, float translY, Canvas cv) {
-        int bitmapWidth = bm.getWidth(), bitmapHeight = bm.getHeight();
-        int scaledBitmapW = (int) toScaled(bitmapWidth), scaledBitmapH = (int) toScaled(bitmapHeight);
-        int startX = translX >= 0.0f ? 0 : toUnscaled(-translX);
-        int startY = translY >= 0.0f ? 0 : toUnscaled(-translY);
-        int endX = Math.min(toUnscaled(translX + scaledBitmapW <= viewWidth ? scaledBitmapW : viewWidth - translX) + 1, bitmapWidth);
-        int endY = Math.min(toUnscaled(translY + scaledBitmapH <= viewHeight ? scaledBitmapH : viewHeight - translY) + 1, bitmapHeight);
-        if (startX >= endX || startY >= endY) {
+    private void drawBitmapOnCanvas(Bitmap bitmap, Canvas canvas, float translX, float translY) {
+        Rect vp = getVisiblePart(bitmap, translX, translY);
+        drawBitmapOnCanvas(bitmap, canvas, translX, translY, vp);
+    }
+
+    private void drawBitmapOnCanvas(Bitmap bitmap, Canvas canvas, float translX, float translY, Rect vp) {
+        if (vp.isEmpty()) {
             return;
         }
-        float left = translX >= 0.0f ? translX : translX % scale;
-        float top = translY >= 0.0f ? translY : translY % scale;
+        RectF svp = getScaledVisiblePart(bitmap, translX, translY);
         if (isScaledMuch()) {
-            int w = endX - startX, h = endY - startY;
+            int w = vp.width(), h = vp.height();
             int[] pixels = new int[w * h];
-            bm.getPixels(pixels, 0, w, startX, startY, w, h);
-            float t = top, b = t + scale;
-            for (int i = 0, y = startY; y < endY; ++y, t += scale, b += scale) {
-                float l = left;
-                for (int x = startX; x < endX; ++x, ++i) {
+            bitmap.getPixels(pixels, 0, w, vp.left, vp.top, w, h);
+            float t = svp.top, b = t + scale;
+            for (int i = 0, y = vp.top; y < vp.bottom; ++y, t += scale, b += scale) {
+                float l = svp.left;
+                for (int x = vp.left; x < vp.right; ++x, ++i) {
                     colorPaint.setColor(pixels[i]);
-                    cv.drawRect(l, t, l += scale, b, colorPaint);
+                    canvas.drawRect(l, t, l += scale, b, colorPaint);
                 }
             }
         } else {
-            float right = Math.min(translX + scaledBitmapW, viewWidth);
-            float bottom = Math.min(translY + scaledBitmapH, viewHeight);
-            cv.drawBitmap(bm,
-                    new Rect(startX, startY, endX, endY),
-                    new RectF(left, top, right, bottom),
+            canvas.drawBitmap(bitmap,
+                    new Rect(vp.left, vp.top, vp.right, vp.bottom),
+                    new RectF(svp.left, svp.top, svp.right, svp.bottom),
                     PAINT_OPAQUE);
         }
     }
 
-    private void drawBitmapOnView(Bitmap bitmap) {
-        clearCanvas(viewCanvas);
-        Bitmap bm = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
-        Canvas cv = new Canvas(bm);
-        for (int i = tabs.size() - 1, selected = tabLayout.getSelectedTabPosition(); i >= 0; --i) {
-            Tab tab = tabs.get(i);
-            if (i == selected) {
-                cv.drawBitmap(bitmap, 0.0f, 0.0f, tab.paint);
-            } else if (tab.visible) {
-                cv.drawBitmap(tab.bitmap, 0.0f, 0.0f, tab.paint);
-            }
-        }
-        drawBitmapOnCanvas(bm, translationX, translationY, viewCanvas);
-        bm.recycle();
-        imageView.invalidate();
-    }
-
     private void drawBitmapOnView() {
         drawBitmapOnView(bitmap);
+    }
+
+    private void drawBitmapOnView(Bitmap bitmap) {
+        clearCanvas(viewCanvas);
+        Rect vp = getVisiblePart(bitmap, translationX, translationY);
+        if (vp.isEmpty()) {
+            return;
+        }
+        int width = bitmap.getWidth(), height = bitmap.getHeight();
+        int w = vp.width(), h = vp.height();
+        Rect relative = new Rect(0, 0, w, h);
+        Bitmap bm = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+        Canvas cv = new Canvas(bm);
+        for (int i = tabs.size() - 1, selected = tabLayout.getSelectedTabPosition(); i >= 0; --i) {
+            Tab t = tabs.get(i);
+            if (i == selected) {
+                cv.drawBitmap(bitmap, vp, relative, t.paint);
+            } else if (t.visible && t.bitmap.getWidth() == width && t.bitmap.getHeight() == height) {
+                cv.drawBitmap(t.bitmap, vp, relative, t.paint);
+            }
+        }
+        drawBitmapOnCanvas(bm, viewCanvas,
+                translationX > -scale ? translationX : translationX % scale,
+                translationY > -scale ? translationY : translationY % scale,
+                relative);
+        bm.recycle();
+        imageView.invalidate();
     }
 
     private void drawPreviewBitmapOnCanvas() {
@@ -2481,7 +2551,7 @@ public class MainActivity extends AppCompatActivity {
             selection.bottom = selection.top + transformer.getHeight();
             float ttx = toScaled(selection.left) + translationX;
             float tty = toScaled(selection.top) + translationY;
-            drawBitmapOnCanvas(transformer.getBitmap(), ttx, tty, previewCanvas);
+            drawBitmapOnCanvas(transformer.getBitmap(), previewCanvas, ttx, tty);
         }
         ivPreview.invalidate();
         drawSelectionOnView(showMargins);
@@ -2492,7 +2562,7 @@ public class MainActivity extends AppCompatActivity {
         if (hasSelection && transformer != null) {
             float ttx = toScaled(selection.left) + translationX;
             float tty = toScaled(selection.top) + translationY;
-            drawBitmapOnCanvas(transformer.getBitmap(), ttx, tty, previewCanvas);
+            drawBitmapOnCanvas(transformer.getBitmap(), previewCanvas, ttx, tty);
             transformer.translateTo(ttx, tty);
         }
         ivPreview.invalidate();
@@ -2594,10 +2664,28 @@ public class MainActivity extends AppCompatActivity {
         return range;
     }
 
+    private RectF getScaledVisiblePart(Bitmap bitmap, float translX, float translY) {
+        float left = translX > -scale ? translX : translX % scale;
+        float top = translY > -scale ? translY : translY % scale;
+        float right = Math.min(translX + toScaled(bitmap.getWidth()), viewWidth);
+        float bottom = Math.min(translY + toScaled(bitmap.getHeight()), viewHeight);
+        return new RectF(left, top, right, bottom);
+    }
+
     private String getTabName() {
         String s = tabLayout.getTabAt(tabLayout.getSelectedTabPosition()).getText().toString();
         int i = s.lastIndexOf('.');
         return i == -1 ? s : s.substring(0, i);
+    }
+
+    private Rect getVisiblePart(Bitmap bitmap, float translX, float translY) {
+        int bitmapWidth = bitmap.getWidth(), bitmapHeight = bitmap.getHeight();
+        int scaledBitmapW = (int) toScaled(bitmapWidth), scaledBitmapH = (int) toScaled(bitmapHeight);
+        int startX = translX >= 0.0f ? 0 : toUnscaled(-translX);
+        int startY = translY >= 0.0f ? 0 : toUnscaled(-translY);
+        int endX = Math.min(toUnscaled(translX + scaledBitmapW <= viewWidth ? scaledBitmapW : viewWidth - translX) + 1, bitmapWidth);
+        int endY = Math.min(toUnscaled(translY + scaledBitmapH <= viewHeight ? scaledBitmapH : viewHeight - translY) + 1, bitmapHeight);
+        return new Rect(startX, startY, endX, endY);
     }
 
     private void hideSoftInputFromWindow() {
@@ -3222,11 +3310,22 @@ public class MainActivity extends AppCompatActivity {
                 tvState.setText("");
                 break;
 
+            case R.id.i_filter_hsv:
+                drawFloatingLayers();
+                createPreviewBitmap();
+                new HSVDialog(this)
+                        .setOnHSVChangeListener(onFilterHSVChangeListener)
+                        .setOnPositiveButtonClickListener(onFilterConfirmListener)
+                        .setOnCancelListener(onFilterCancelListener)
+                        .show();
+                tvState.setText("");
+                break;
+
             case R.id.i_filter_levels:
                 drawFloatingLayers();
                 createPreviewBitmap();
                 new LevelsDialog(this)
-                        .setOnLevelsChangeListener(onFilterLevelsSeekBarProgressChangeListener)
+                        .setOnLevelsChangeListener(onFilterLevelsChangeListener)
                         .setOnPositiveButtonClickListener(onFilterConfirmListener)
                         .setOnCancelListener(onFilterCancelListener)
                         .show()
@@ -3320,17 +3419,21 @@ public class MainActivity extends AppCompatActivity {
             }
             case R.id.i_layer_merge: {
                 drawFloatingLayers();
-                int i = tabLayout.getSelectedTabPosition();
-                if (i + 1 >= tabs.size()) {
+                final int next = tabLayout.getSelectedTabPosition() + 1, size = tabs.size();
+                if (next >= size) {
                     break;
                 }
-                Bitmap bm = Bitmap.createBitmap(bitmap);
-                Paint paint = tab.paint;
+                int w = bitmap.getWidth(), h = bitmap.getHeight();
+                for (int i = next; i < size; ++i) {
+                    Tab t = tabs.get(i);
+                    if (t.visible && t.bitmap.getWidth() == w && t.bitmap.getHeight() == h) {
+                        new Canvas(t.bitmap).drawBitmap(tab.bitmap, 0.0f, 0.0f, tab.paint);
+                        t.history.offer(t.bitmap);
+                        break;
+                    }
+                }
                 closeTab();
-                tabLayout.getTabAt(i).select();
-                canvas.drawBitmap(bm, 0.0f, 0.0f, paint);
-                bm.recycle();
-                addHistory();
+                tabLayout.getTabAt(next).select();
                 drawBitmapOnView();
                 break;
             }
@@ -3345,27 +3448,16 @@ public class MainActivity extends AppCompatActivity {
                         onFinishMakingHiddenImageListener);
                 break;
             }
-            case R.id.i_layer_merge_as_new: {
-                drawFloatingLayers();
-                int i = tabLayout.getSelectedTabPosition(), j = i + 1;
-                if (j >= tabs.size()) {
-                    break;
-                }
-                Bitmap bm = Bitmap.createBitmap(tabs.get(j).bitmap);
-                Canvas cv = new Canvas(bm);
-                cv.drawBitmap(bitmap, 0.0f, 0.0f, tab.paint);
-                addBitmap(bm, i);
-                break;
-            }
             case R.id.i_layer_merge_visible: {
                 drawFloatingLayers();
-                Bitmap bm = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
+                int w = bitmap.getWidth(), h = bitmap.getHeight();
+                Bitmap bm = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
                 Canvas cv = new Canvas(bm);
                 int selected = tabLayout.getSelectedTabPosition();
                 for (int i = tabs.size() - 1; i >= 0; --i) {
-                    Tab tab = tabs.get(i);
-                    if (tab.visible || i == selected) {
-                        cv.drawBitmap(tab.bitmap, 0.0f, 0.0f, tab.paint);
+                    Tab t = tabs.get(i);
+                    if (t.visible && t.bitmap.getWidth() == w && t.bitmap.getHeight() == h || i == selected) {
+                        cv.drawBitmap(t.bitmap, 0.0f, 0.0f, t.paint);
                     }
                 }
                 addBitmap(bm, selected);

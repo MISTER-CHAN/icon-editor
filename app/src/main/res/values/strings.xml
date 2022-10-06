@@ -78,6 +78,7 @@
     <string name="homepage">Homepage</string>
     <string name="homepage_address" translatable="false">https://github.com/MISTER-CHAN/icon-editor</string>
     <string name="horizontally">Horizontally</string>
+    <string name="hsv" translatable="false">HSV</string>
     <string name="hue_only">Hue Only</string>
     <string name="ignore_alpha_channel">Ignore Alpha Channel</string>
     <string name="image">Image</string>
@@ -151,6 +152,7 @@
     <string name="state_color_range">Hue: %d° – %d°, Luminosity: %d – %d</string>
     <string name="state_contrast">Contrast: %.1f</string>
     <string name="state_eyedropper" translatable="false">(%%d, %%d) A: %1$s, R: %1$s, G: %1$s, B: %1$s</string>
+    <string name="state_hsv" translatable="false">H: %.1f°, S: %.2f, V: %.2f</string>
     <string name="state_invert">Invert: %.1f</string>
     <string name="state_left_top">Left: %d, Top: %d</string>
     <string name="state_length">Length: %f</string>

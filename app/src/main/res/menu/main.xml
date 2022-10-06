@@ -171,10 +171,6 @@
                 android:title="@string/merge" />
 
             <item
-                android:id="@+id/i_layer_merge_as_new"
-                android:title="@string/merge_as_new" />
-
-            <item
                 android:id="@+id/i_layer_merge_visible"
                 android:title="@string/merge_visible" />
 
@@ -375,6 +371,10 @@
             <item
                 android:id="@+id/i_filter_color_balance"
                 android:title="@string/color_balance" />
+
+            <item
+                android:id="@+id/i_filter_hsv"
+                android:title="@string/hsv" />
 
             <item
                 android:id="@+id/i_filter_threshold"
