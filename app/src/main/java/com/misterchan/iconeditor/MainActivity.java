@@ -604,49 +604,6 @@ public class MainActivity extends AppCompatActivity {
 
     private final NewGraphicPropertiesDialog.OnFinishSettingListener onFinishSettingNewGraphicPropertiesListener = this::createGraphic;
 
-    @Size(3)
-    private static float[] colorToHSV(@ColorInt int color) {
-        float h = 0.0f, s, v;
-        float r = Color.red(color) / 255.0f,
-                g = Color.green(color) / 255.0f,
-                b = Color.blue(color) / 255.0f;
-        float max = Math.max(Math.max(r, g), b), min = Math.min(Math.min(r, g), b);
-        if (max == min) {
-            h = 0.0f;
-        } else if (max == r) {
-            h = 60.0f * (g - b) / (max - min) + (g >= b ? 0.0f : 360.0f);
-        } else if (max == g) {
-            h = 60.0f * (b - r) / (max - min) + 120.0f;
-        } else if (max == b) {
-            h = 60.0f * (r - g) / (max - min) + 240.0f;
-        }
-        s = max == 0.0f ? 0.0f : 1.0f - min / max;
-        v = max;
-        return new float[]{h, s, v};
-    }
-
-    private static int HSVToColor(@Size(3) float[] hsv) {
-        float r = 0.0f, g = 0.0f, b = 0.0f;
-        float h = hsv[0], s = hsv[1], v = hsv[2];
-        int hi = (int) (h / 60.0f);
-        float f = h / 60.0f - hi;
-        float p = v * (1.0f - s);
-        float q = v * (1.0f - f * s);
-        float t = v * (1.0f - (1.0f - f) * s);
-        switch (hi) {
-            case 0: r = v; g = t; b = p; break;
-            case 1: r = q; g = v; b = p; break;
-            case 2: r = p; g = v; b = t; break;
-            case 3: r = p; g = q; b = v; break;
-            case 4: r = t; g = p; b = v; break;
-            case 5: r = v; g = p; b = q; break;
-        }
-        return Color.argb(0,
-                inRange(r, 0.0f, 1.0f) * 0xFF,
-                inRange(g, 0.0f, 1.0f) * 0xFF,
-                inRange(b, 0.0f, 1.0f) * 0xFF);
-    }
-
     private final HSVDialog.OnHSVChangeListener onFilterHSVChangeListener = deltaHSV -> {
         if (deltaHSV[0] == 0.0f && deltaHSV[1] == 0.0f && deltaHSV[2] == 0.0f) {
             preview.clearFilter();
@@ -2092,6 +2049,27 @@ public class MainActivity extends AppCompatActivity {
         h.recycle();
     }
 
+    @Size(3)
+    private static float[] colorToHSV(@ColorInt int color) {
+        float h = 0.0f, s, v;
+        float r = Color.red(color) / 255.0f,
+                g = Color.green(color) / 255.0f,
+                b = Color.blue(color) / 255.0f;
+        float max = Math.max(Math.max(r, g), b), min = Math.min(Math.min(r, g), b);
+        if (max == min) {
+            h = 0.0f;
+        } else if (max == r) {
+            h = 60.0f * (g - b) / (max - min) + (g >= b ? 0.0f : 360.0f);
+        } else if (max == g) {
+            h = 60.0f * (b - r) / (max - min) + 120.0f;
+        } else if (max == b) {
+            h = 60.0f * (r - g) / (max - min) + 240.0f;
+        }
+        s = max == 0.0f ? 0.0f : 1.0f - min / max;
+        v = max;
+        return new float[]{h, s, v};
+    }
+
     private void createGraphic(int width, int height) {
         createGraphic(width, height, -1);
     }
@@ -2696,6 +2674,32 @@ public class MainActivity extends AppCompatActivity {
         for (int i = 0; i < flToolOptions.getChildCount(); ++i) {
             flToolOptions.getChildAt(i).setVisibility(View.INVISIBLE);
         }
+    }
+
+    @ColorInt
+    private static int HSVToColor(@Size(3) float[] hsv) {
+        float h = hsv[0], s = hsv[1], v = hsv[2];
+        int hi = (int) (h / 60.0f);
+        float f = h / 60.0f - hi;
+        float p = inRange(v * (1.0f - s), 0.0f, 1.0f);
+        float q = inRange(v * (1.0f - f * s), 0.0f, 1.0f);
+        float t = inRange(v * (1.0f - (1.0f - f) * s), 0.0f, 1.0f);
+        v = inRange(v, 0.0f, 1.0f);
+        switch (hi) {
+            case 0:
+                return Color.argb(0.0f, v, t, p);
+            case 1:
+                return Color.argb(0.0f, q, v, p);
+            case 2:
+                return Color.argb(0.0f, p, v, t);
+            case 3:
+                return Color.argb(0.0f, p, q, v);
+            case 4:
+                return Color.argb(0.0f, t, p, v);
+            case 5:
+                return Color.argb(0.0f, v, p, q);
+        }
+        return 0x000000;
     }
 
     private float hue(@ColorInt int color) {
@@ -3419,7 +3423,7 @@ public class MainActivity extends AppCompatActivity {
             }
             case R.id.i_layer_merge: {
                 drawFloatingLayers();
-                final int next = tabLayout.getSelectedTabPosition() + 1, size = tabs.size();
+                final int pos = tabLayout.getSelectedTabPosition(), next = pos + 1, size = tabs.size();
                 if (next >= size) {
                     break;
                 }
@@ -3433,7 +3437,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
                 closeTab();
-                tabLayout.getTabAt(next).select();
+                tabLayout.getTabAt(pos).select();
                 drawBitmapOnView();
                 break;
             }

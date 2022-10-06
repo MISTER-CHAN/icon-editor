@@ -191,6 +191,53 @@
                         android:text="@string/anti_alias" />
                 </LinearLayout>
 
+                <LinearLayout
+                    android:id="@+id/ll_options_eraser"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:visibility="invisible">
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="96dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginHorizontal="2dp">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/et_eraser_stroke_width"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:autofillHints="0"
+                            android:background="@color/transparent"
+                            android:hint="@string/stroke_width"
+                            android:inputType="numberDecimal"
+                            android:textAlignment="textEnd" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="96dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginHorizontal="2dp">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/et_eraser_blur_radius"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="@color/transparent"
+                            android:hint="@string/blur_radius"
+                            android:inputType="numberDecimal"
+                            android:textAlignment="textEnd" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <CheckBox
+                        android:id="@+id/cb_eraser_anti_alias"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/anti_alias" />
+                </LinearLayout>
+
                 <HorizontalScrollView
                     android:id="@+id/hsv_options_color_replacer"
                     android:layout_width="match_parent"
@@ -487,6 +534,43 @@
                     </LinearLayout>
                 </HorizontalScrollView>
 
+                <HorizontalScrollView
+                    android:id="@+id/hsv_options_bucket_fill"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:fadingEdgeLength="16dp"
+                    android:requiresFadingEdge="horizontal"
+                    android:scrollbars="none"
+                    android:visibility="invisible">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <CheckBox
+                            android:id="@+id/cb_bucket_fill_contiguous"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/contiguous" />
+
+                        <CheckBox
+                            android:id="@+id/cb_bucket_fill_ignore_alpha"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/ignore_alpha_channel" />
+
+                        <Button
+                            android:id="@+id/b_bucket_fill_threshold"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginHorizontal="2dp"
+                            android:text="@string/threshold" />
+                    </LinearLayout>
+                </HorizontalScrollView>
+
                 <LinearLayout
                     android:id="@+id/ll_options_shape"
                     android:layout_width="match_parent"
@@ -561,90 +645,6 @@
                                 android:text="@string/circle" />
                         </RadioGroup>
                     </HorizontalScrollView>
-                </LinearLayout>
-
-                <HorizontalScrollView
-                    android:id="@+id/hsv_options_bucket_fill"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:fadingEdgeLength="16dp"
-                    android:requiresFadingEdge="horizontal"
-                    android:scrollbars="none"
-                    android:visibility="invisible">
-
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal">
-
-                        <CheckBox
-                            android:id="@+id/cb_bucket_fill_contiguous"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/contiguous" />
-
-                        <CheckBox
-                            android:id="@+id/cb_bucket_fill_ignore_alpha"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/ignore_alpha_channel" />
-
-                        <Button
-                            android:id="@+id/b_bucket_fill_threshold"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginHorizontal="2dp"
-                            android:text="@string/threshold" />
-                    </LinearLayout>
-                </HorizontalScrollView>
-
-                <LinearLayout
-                    android:id="@+id/ll_options_eraser"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:visibility="invisible">
-
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:layout_width="96dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginHorizontal="2dp">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/et_eraser_stroke_width"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:autofillHints="0"
-                            android:background="@color/transparent"
-                            android:hint="@string/stroke_width"
-                            android:inputType="numberDecimal"
-                            android:textAlignment="textEnd" />
-                    </com.google.android.material.textfield.TextInputLayout>
-
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:layout_width="96dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginHorizontal="2dp">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/et_eraser_blur_radius"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:background="@color/transparent"
-                            android:hint="@string/blur_radius"
-                            android:inputType="numberDecimal"
-                            android:textAlignment="textEnd" />
-                    </com.google.android.material.textfield.TextInputLayout>
-
-                    <CheckBox
-                        android:id="@+id/cb_eraser_anti_alias"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/anti_alias" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -742,10 +742,22 @@
                         android:text="@string/transform" />
 
                     <RadioButton
+                        android:id="@+id/rb_eyedropper"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/eyedropper" />
+
+                    <RadioButton
                         android:id="@+id/rb_pencil"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/pencil" />
+
+                    <RadioButton
+                        android:id="@+id/rb_eraser"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/eraser" />
 
                     <RadioButton
                         android:id="@+id/rb_color_replacer"
@@ -778,28 +790,16 @@
                         android:text="@string/stamp" />
 
                     <RadioButton
-                        android:id="@+id/rb_shape"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/shape" />
-
-                    <RadioButton
                         android:id="@+id/rb_bucket_fill"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/bucket_fill" />
 
                     <RadioButton
-                        android:id="@+id/rb_eraser"
+                        android:id="@+id/rb_shape"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/eraser" />
-
-                    <RadioButton
-                        android:id="@+id/rb_eyedropper"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/eyedropper" />
+                        android:text="@string/shape" />
 
                     <RadioButton
                         android:id="@+id/rb_text"

@@ -13,7 +13,7 @@
         android:rowCount="2">
 
         <TextView
-            android:layout_gravity="center_vertical|start"
+            android:layout_gravity="center_vertical"
             android:layout_margin="8dp"
             android:text="@string/c" />
 
@@ -26,12 +26,12 @@
             android:progress="10" />
 
         <TextView
-            android:layout_gravity="center_vertical|start"
+            android:layout_gravity="center_vertical"
             android:layout_margin="8dp"
             android:text="@string/r" />
 
         <TextView
-            android:layout_gravity="center_vertical|start"
+            android:layout_gravity="center_vertical"
             android:layout_margin="8dp"
             android:text="@string/m" />
 
@@ -44,12 +44,12 @@
             android:progress="10" />
 
         <TextView
-            android:layout_gravity="center_vertical|start"
+            android:layout_gravity="center_vertical"
             android:layout_margin="8dp"
             android:text="@string/g" />
 
         <TextView
-            android:layout_gravity="center_vertical|start"
+            android:layout_gravity="center_vertical"
             android:layout_margin="8dp"
             android:text="@string/y" />
 
@@ -62,7 +62,7 @@
             android:progress="10" />
 
         <TextView
-            android:layout_gravity="center_vertical|start"
+            android:layout_gravity="center_vertical"
             android:layout_margin="8dp"
             android:text="@string/b" />
     </GridLayout>

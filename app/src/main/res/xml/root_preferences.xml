@@ -3,7 +3,7 @@
     <PreferenceCategory app:title="@string/general">
 
         <SwitchPreferenceCompat
-            app:defaultValue="true"
+            app:defaultValue="false"
             app:key="its"
             app:singleLineTitle="false"
             app:title="@string/independent_transl_and_scale" />
