@@ -84,6 +84,7 @@
     <string name="image">Image</string>
     <string name="image_size">Image Size</string>
     <string name="independent_transl_and_scale">Independent Canvas Location and Scale</string>
+    <string name="input">Input</string>
     <string name="invert">Invert</string>
     <string name="language">Language</string>
     <string name="layer">Layer</string>
@@ -110,6 +111,7 @@
     <string name="one" translatable="false">1</string>
     <string name="one_eighty_degrees">180°</string>
     <string name="open">Open</string>
+    <string name="output">Output</string>
     <string name="oval">Oval</string>
     <string name="palette">Palette</string>
     <string name="paste">Paste</string>
@@ -152,11 +154,10 @@
     <string name="state_color_range">Hue: %d° – %d°, Luminosity: %d – %d</string>
     <string name="state_contrast">Contrast: %.1f</string>
     <string name="state_eyedropper" translatable="false">(%%d, %%d) A: %1$s, R: %1$s, G: %1$s, B: %1$s</string>
-    <string name="state_hsv" translatable="false">H: %.1f°, S: %.2f, V: %.2f</string>
+    <string name="state_hsv" translatable="false">H: %+.0f°, S: %+.2f, V: %+.2f</string>
     <string name="state_invert">Invert: %.1f</string>
     <string name="state_left_top">Left: %d, Top: %d</string>
     <string name="state_length">Length: %f</string>
-    <string name="state_levels">Shadows: %d, Highlights: %d</string>
     <string name="state_lightness">Brightness: %d</string>
     <string name="state_l_t_r_b_size">L: %d, T: %d, R: %d, B: %d, Size: %d × %d"</string>
     <string name="state_radius">Radius: %.1f</string>

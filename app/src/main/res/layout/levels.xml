@@ -10,7 +10,7 @@
         android:layout_height="wrap_content"
         android:columnCount="2"
         android:orientation="horizontal"
-        android:rowCount="3">
+        android:rowCount="7">
 
         <FrameLayout
             android:layout_height="128dp"
@@ -32,12 +32,19 @@
         </FrameLayout>
 
         <TextView
+            android:layout_columnSpan="2"
+            android:layout_margin="8dp"
+            android:layout_marginTop="16dp"
+            android:text="@string/input"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <TextView
             android:layout_gravity="center_vertical|start"
             android:layout_margin="8dp"
             android:text="@string/shadows" />
 
         <SeekBar
-            android:id="@+id/sb_shadows"
+            android:id="@+id/sb_input_shadows"
             android:layout_gravity="center_vertical|fill_horizontal"
             android:max="255"
             android:min="0"
@@ -49,7 +56,38 @@
             android:text="@string/highlights" />
 
         <SeekBar
-            android:id="@+id/sb_highlights"
+            android:id="@+id/sb_input_highlights"
+            android:layout_gravity="center_vertical|fill_horizontal"
+            android:max="255"
+            android:min="0"
+            android:progress="255" />
+
+        <TextView
+            android:layout_columnSpan="2"
+            android:layout_margin="8dp"
+            android:layout_marginTop="16dp"
+            android:text="@string/output"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <TextView
+            android:layout_gravity="center_vertical|start"
+            android:layout_margin="8dp"
+            android:text="@string/shadows" />
+
+        <SeekBar
+            android:id="@+id/sb_output_shadows"
+            android:layout_gravity="center_vertical|fill_horizontal"
+            android:max="255"
+            android:min="0"
+            android:progress="0" />
+
+        <TextView
+            android:layout_gravity="center_vertical|start"
+            android:layout_margin="8dp"
+            android:text="@string/highlights" />
+
+        <SeekBar
+            android:id="@+id/sb_output_highlights"
             android:layout_gravity="center_vertical|fill_horizontal"
             android:max="255"
             android:min="0"

@@ -615,8 +615,8 @@ public class MainActivity extends AppCompatActivity {
                 final int pixel = pixels[i];
                 float[] hsv = colorToHSV(pixel);
                 hsv[0] = (hsv[0] + deltaHSV[0] + 360.0f) % 360.0f;
-                hsv[1] = inRange(hsv[1] + deltaHSV[1], 0.0f, 1.0f);
-                hsv[2] = inRange(hsv[2] + deltaHSV[2], 0.0f, 1.0f);
+                hsv[1] = saturate(hsv[1] + deltaHSV[1]);
+                hsv[2] = saturate(hsv[2] + deltaHSV[2]);
                 pixels[i] = pixel & 0xFF000000 | HSVToColor(hsv);
             }
             preview.setPixels(pixels, 0, w, 0, 0, w, h);
@@ -637,11 +637,10 @@ public class MainActivity extends AppCompatActivity {
         colorReplacer.setBlendMode(blendMode);
     };
 
-    private final LevelsDialog.OnLevelsChangeListener onFilterLevelsChangeListener = (shadows, highlights) -> {
-        float ratio = 0xFF / (float) (highlights - shadows);
-        preview.setFilter(ratio, -shadows * ratio);
+    private final LevelsDialog.OnLevelsChangeListener onFilterLevelsChangeListener = (inputShadows, inputHighlights, outputShadows, outputHighlights) -> {
+        float ratio = (float) (outputHighlights - outputShadows) / (float) (inputHighlights - inputShadows);
+        preview.setFilter(ratio, -inputShadows * ratio + outputShadows);
         drawBitmapOnView(preview.getBitmap());
-        tvState.setText(String.format(getString(R.string.state_levels), shadows, highlights));
     };
 
     private final ColorMatrixManager.OnMatrixElementsChangeListener onColorMatrixChangeListener = matrix -> {
@@ -2681,10 +2680,10 @@ public class MainActivity extends AppCompatActivity {
         float h = hsv[0], s = hsv[1], v = hsv[2];
         int hi = (int) (h / 60.0f);
         float f = h / 60.0f - hi;
-        float p = inRange(v * (1.0f - s), 0.0f, 1.0f);
-        float q = inRange(v * (1.0f - f * s), 0.0f, 1.0f);
-        float t = inRange(v * (1.0f - (1.0f - f) * s), 0.0f, 1.0f);
-        v = inRange(v, 0.0f, 1.0f);
+        float p = saturate(v * (1.0f - s));
+        float q = saturate(v * (1.0f - f * s));
+        float t = saturate(v * (1.0f - (1.0f - f) * s));
+        v = saturate(v);
         switch (hi) {
             case 0:
                 return Color.argb(0.0f, v, t, p);
@@ -2723,7 +2722,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private static float inRange(float a, float min, float max) {
-        return Math.max(Math.min(a, max), min);
+        return a <= min ? min : a >= max ? max : a;
     }
 
     private static int inRange(int a, int min, int max) {
@@ -2806,7 +2805,13 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private int luminosity(@ColorInt int color) {
+    private static float luminance(@ColorInt int color) {
+        return 0.2126f * Color.red(color) / 255.0f
+                + 0.7152f * Color.green(color) / 255.0f
+                + 0.0722f * Color.blue(color) / 255.0f;
+    }
+
+    private static int luminosity(@ColorInt int color) {
         return Math.max(Math.max(Color.red(color), Color.green(color)), Color.blue(color));
     }
 
@@ -3771,6 +3776,10 @@ public class MainActivity extends AppCompatActivity {
         bm.recycle();
         drawBitmapOnView();
         addHistory();
+    }
+
+    private static float saturate(float v) {
+        return v <= 0.0f ? 0.0f : v >= 1.0f ? 1.0f : v;
     }
 
     private void save() {

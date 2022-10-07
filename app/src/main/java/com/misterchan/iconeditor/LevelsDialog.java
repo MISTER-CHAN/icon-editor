@@ -18,7 +18,7 @@ import androidx.appcompat.app.AlertDialog;
 public class LevelsDialog {
 
     public interface OnLevelsChangeListener {
-        void onChange(int shadows, int highlights);
+        void onChange(int inputShadows, int inputHighlights, int outputShadows, int outputHighlights);
     }
 
     private Bitmap bitmap;
@@ -29,7 +29,8 @@ public class LevelsDialog {
     private ImageView ivProgress;
     private OnLevelsChangeListener listener;
     private final Paint paint = new Paint();
-    private SeekBar sbHighlights, sbShadows;
+    private SeekBar sbInputHighlights, sbInputShadows;
+    private SeekBar sbOutputHighlights, sbOutputShadows;
 
     public LevelsDialog(Context context) {
         DialogInterface.OnDismissListener onDismissListener = dialog -> {
@@ -50,8 +51,8 @@ public class LevelsDialog {
 
     private void drawProgress() {
         progressCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-        progressCanvas.drawLine(sbShadows.getProgress(), 0.0f, sbShadows.getProgress(), 100.0f, paint);
-        progressCanvas.drawLine(sbHighlights.getProgress(), 0.0f, sbHighlights.getProgress(), 100.0f, paint);
+        progressCanvas.drawLine(sbInputShadows.getProgress(), 0.0f, sbInputShadows.getProgress(), 100.0f, paint);
+        progressCanvas.drawLine(sbInputHighlights.getProgress(), 0.0f, sbInputHighlights.getProgress(), 100.0f, paint);
         ivProgress.invalidate();
     }
 
@@ -82,11 +83,17 @@ public class LevelsDialog {
 
         iv = dialog.findViewById(R.id.iv);
         ivProgress = dialog.findViewById(R.id.iv_progress);
-        sbHighlights = dialog.findViewById(R.id.sb_highlights);
-        sbShadows = dialog.findViewById(R.id.sb_shadows);
+        sbInputHighlights = dialog.findViewById(R.id.sb_input_highlights);
+        sbInputShadows = dialog.findViewById(R.id.sb_input_shadows);
+        sbOutputHighlights = dialog.findViewById(R.id.sb_output_highlights);
+        sbOutputShadows = dialog.findViewById(R.id.sb_output_shadows);
 
-        sbHighlights.setOnSeekBarChangeListener((OnProgressChangeListener) (seekBar, progress) -> update());
-        sbShadows.setOnSeekBarChangeListener((OnProgressChangeListener) (seekBar, progress) -> update());
+        OnProgressChangeListener l = (seekBar, progress) -> update();
+
+        sbInputHighlights.setOnSeekBarChangeListener(l);
+        sbInputShadows.setOnSeekBarChangeListener(l);
+        sbOutputHighlights.setOnSeekBarChangeListener(l);
+        sbOutputShadows.setOnSeekBarChangeListener(l);
 
         bitmap = Bitmap.createBitmap(0x100, 100, Bitmap.Config.ARGB_4444);
         iv.setImageBitmap(bitmap);
@@ -101,7 +108,8 @@ public class LevelsDialog {
     }
 
     private void update() {
-        listener.onChange(sbShadows.getProgress(), sbHighlights.getProgress());
+        listener.onChange(sbInputShadows.getProgress(), sbInputHighlights.getProgress(),
+                sbOutputShadows.getProgress(), sbOutputHighlights.getProgress());
         drawProgress();
     }
 

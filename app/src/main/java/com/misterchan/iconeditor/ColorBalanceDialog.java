@@ -16,7 +16,7 @@ public class ColorBalanceDialog {
     private SeekBar sbRed, sbGreen, sbBlue;
 
     @Size(20)
-    private final float[] matrix = new float[] {
+    private final float[] matrix = new float[]{
             1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
             0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
             0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
@@ -26,9 +26,9 @@ public class ColorBalanceDialog {
     private final OnProgressChangeListener onProgressChangeListener = (seekBar, progress) -> {
         float r = sbRed.getProgress() / 10.0f, g = sbGreen.getProgress() / 10.0f, b = sbBlue.getProgress() / 10.0f;
         float average = (r + g + b) / 3.0f;
-        matrix[0] = r / average;
-        matrix[6] = g / average;
-        matrix[12] = b / average;
+        matrix[0] = 1.0f + r - average;
+        matrix[6] = 1.0f + g - average;
+        matrix[12] = 1.0f + b - average;
         listener.onChanged(matrix);
     };
 
