@@ -238,148 +238,6 @@
                         android:text="@string/anti_alias" />
                 </LinearLayout>
 
-                <HorizontalScrollView
-                    android:id="@+id/hsv_options_color_replacer"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:fadingEdgeLength="16dp"
-                    android:requiresFadingEdge="horizontal"
-                    android:scrollbars="none"
-                    android:visibility="invisible">
-
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal">
-
-                        <com.google.android.material.textfield.TextInputLayout
-                            android:layout_width="96dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginHorizontal="2dp">
-
-                            <com.google.android.material.textfield.TextInputEditText
-                                android:id="@+id/et_color_replacer_stroke_width"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:background="@color/transparent"
-                                android:hint="@string/stroke_width"
-                                android:inputType="numberDecimal"
-                                android:textAlignment="textEnd" />
-                        </com.google.android.material.textfield.TextInputLayout>
-
-                        <com.google.android.material.textfield.TextInputLayout
-                            android:layout_width="96dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginHorizontal="2dp">
-
-                            <com.google.android.material.textfield.TextInputEditText
-                                android:id="@+id/et_color_replacer_blur_radius"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:background="@color/transparent"
-                                android:hint="@string/blur_radius"
-                                android:inputType="numberDecimal"
-                                android:textAlignment="textEnd" />
-                        </com.google.android.material.textfield.TextInputLayout>
-
-                        <CheckBox
-                            android:id="@+id/cb_color_replacer_anti_alias"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/anti_alias" />
-
-                        <Button
-                            android:id="@+id/b_color_replacer_tolerance"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginHorizontal="2dp"
-                            android:text="@string/tolerance" />
-
-                        <androidx.appcompat.widget.AppCompatSpinner
-                            android:id="@+id/s_color_replacer_blend_mode"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:entries="@array/blend_modes" />
-                    </LinearLayout>
-                </HorizontalScrollView>
-
-                <HorizontalScrollView
-                    android:id="@+id/hsv_options_filter"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:fadingEdgeLength="16dp"
-                    android:requiresFadingEdge="horizontal"
-                    android:scrollbars="none"
-                    android:visibility="invisible">
-
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal">
-
-                        <com.google.android.material.textfield.TextInputLayout
-                            android:layout_width="96dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginHorizontal="2dp">
-
-                            <com.google.android.material.textfield.TextInputEditText
-                                android:id="@+id/et_filter_stroke_width"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:background="@color/transparent"
-                                android:hint="@string/stroke_width"
-                                android:inputType="numberDecimal"
-                                android:textAlignment="textEnd" />
-                        </com.google.android.material.textfield.TextInputLayout>
-
-                        <com.google.android.material.textfield.TextInputLayout
-                            android:layout_width="96dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginHorizontal="2dp">
-
-                            <com.google.android.material.textfield.TextInputEditText
-                                android:id="@+id/et_filter_blur_radius"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:background="@color/transparent"
-                                android:hint="@string/blur_radius"
-                                android:inputType="numberDecimal"
-                                android:textAlignment="textEnd" />
-                        </com.google.android.material.textfield.TextInputLayout>
-
-                        <CheckBox
-                            android:id="@+id/cb_filter_anti_alias"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/anti_alias" />
-
-                        <CheckBox
-                            android:id="@+id/cb_filter_clear"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:checked="true"
-                            android:text="@string/clear_destination" />
-
-                        <Button
-                            android:id="@+id/b_filter_tolerance"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginHorizontal="2dp"
-                            android:text="@string/tolerance" />
-
-                        <Button
-                            android:id="@+id/b_color_filter"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginHorizontal="2dp"
-                            android:text="@string/color_filter" />
-                    </LinearLayout>
-                </HorizontalScrollView>
-
                 <LinearLayout
                     android:id="@+id/ll_options_gradient"
                     android:layout_width="match_parent"
@@ -531,6 +389,73 @@
                             android:layout_marginHorizontal="4dp"
                             android:maxLines="1"
                             android:text="@string/reset_source" />
+                    </LinearLayout>
+                </HorizontalScrollView>
+
+                <HorizontalScrollView
+                    android:id="@+id/hsv_options_magic_paint"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:fadingEdgeLength="16dp"
+                    android:requiresFadingEdge="horizontal"
+                    android:scrollbars="none"
+                    android:visibility="invisible">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:layout_width="96dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginHorizontal="2dp">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/et_magic_paint_stroke_width"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:background="@color/transparent"
+                                android:hint="@string/stroke_width"
+                                android:inputType="numberDecimal"
+                                android:textAlignment="textEnd" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:layout_width="96dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginHorizontal="2dp">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/et_magic_paint_blur_radius"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:background="@color/transparent"
+                                android:hint="@string/blur_radius"
+                                android:inputType="numberDecimal"
+                                android:textAlignment="textEnd" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <CheckBox
+                            android:id="@+id/cb_magic_paint_anti_alias"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/anti_alias" />
+
+                        <CheckBox
+                            android:id="@+id/cb_magic_paint_clear"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/clear_destination" />
+
+                        <Button
+                            android:id="@+id/b_magic_paint_tolerance"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginHorizontal="2dp"
+                            android:text="@string/tolerance" />
                     </LinearLayout>
                 </HorizontalScrollView>
 
@@ -760,16 +685,11 @@
                         android:text="@string/eraser" />
 
                     <RadioButton
-                        android:id="@+id/rb_color_replacer"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/color_replace" />
-
-                    <RadioButton
                         android:id="@+id/rb_filter"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/pen_with_filter" />
+                        android:text="@string/pen_with_filter"
+                        android:visibility="gone" />
 
                     <RadioButton
                         android:id="@+id/rb_gradient"
@@ -788,6 +708,12 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/stamp" />
+
+                    <RadioButton
+                        android:id="@+id/rb_magic_paint"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/magic_paint" />
 
                     <RadioButton
                         android:id="@+id/rb_bucket_fill"

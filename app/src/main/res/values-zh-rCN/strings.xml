@@ -80,6 +80,7 @@
     <string name="line">直线</string>
     <string name="locale">地区</string>
     <string name="lock_aspect_ratio">锁定宽高比</string>
+    <string name="magic_paint">魔术笔</string>
     <string name="mask_filter">遮罩滤镜</string>
     <string name="max">最大</string>
     <string name="merge">合并</string>
