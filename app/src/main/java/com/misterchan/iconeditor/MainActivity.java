@@ -262,7 +262,6 @@ public class MainActivity extends AppCompatActivity {
     private ImageView ivRulerH, ivRulerV;
     private ImageView ivSelection;
     private InputMethodManager inputMethodManager;
-    //    private int colorRange = 0b111111;
     @ColorInt
     private int gradientColor0;
     private int imageWidth, imageHeight;
@@ -287,9 +286,7 @@ public class MainActivity extends AppCompatActivity {
     private Position draggingBound = Position.NULL;
     private RadioButton rbCloneStamp;
     private RadioButton rbTransformer;
-    private Rect selection = new Rect();
-    private RectF transfromeeDpb = new RectF(); // DPB - Distance from point to bounds
-    private RecyclerView rvSwatches;
+    private final Rect selection = new Rect();
     private Settings settings;
     private String tree = "";
     private SubMenu smBlendModes;
@@ -706,8 +703,7 @@ public class MainActivity extends AppCompatActivity {
             imageHeight = (int) toScaled(height);
 
             if (transformer != null) {
-                transformer.recycle();
-                transformer = null;
+                recycleTransformer();
             }
             hasSelection = false;
 
@@ -1268,13 +1264,12 @@ public class MainActivity extends AppCompatActivity {
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN: {
                         float x = event.getX(), y = event.getY();
-                        int width = selection.width(), height = selection.height();
-                        if (width > 0 && height > 0) {
+                        if (!selection.isEmpty()) {
                             if (transformer == null) {
                                 createTransformer();
                             }
                             drawBitmapOnView();
-                            drawTransformeeAndSelectionOnViewByTranslation(false);
+                            drawSelectionOnView(false);
                             if (draggingBound == Position.NULL) {
                                 if (checkDraggingBound(x, y) != Position.NULL) {
                                     if (cbTransformerLar.isChecked()) {
@@ -1292,8 +1287,8 @@ public class MainActivity extends AppCompatActivity {
                                         selection.left, selection.top));
                             }
                         }
-                        prevX = x;
-                        prevY = y;
+                        prevX = x - translationX - toScaled(selection.left);
+                        prevY = y - translationY - toScaled(selection.top);
                         break;
                     }
                     case MotionEvent.ACTION_MOVE: {
@@ -1302,8 +1297,10 @@ public class MainActivity extends AppCompatActivity {
                         }
                         float x = event.getX(), y = event.getY();
                         if (draggingBound == Position.NULL) {
-                            transformer.translateBy(x - prevX, y - prevY);
-                            drawTransformeeAndSelectionOnViewByTranslation(true);
+                            selection.offsetTo(toUnscaled(x - translationX - prevX),
+                                    toUnscaled(y - translationY - prevY));
+                            drawBitmapOnView();
+                            drawSelectionOnView(true);
                             tvState.setText(String.format(getString(R.string.state_left_top),
                                     selection.left, selection.top));
                         } else {
@@ -1311,8 +1308,6 @@ public class MainActivity extends AppCompatActivity {
                             tvState.setText(String.format(getString(R.string.state_size),
                                     selection.width(), selection.height()));
                         }
-                        prevX = x;
-                        prevY = y;
                         break;
                     }
                     case MotionEvent.ACTION_UP:
@@ -1324,14 +1319,12 @@ public class MainActivity extends AppCompatActivity {
                                 hasDragged = false;
                                 int width = selection.width(), height = selection.height();
                                 if (width > 0 && height > 0) {
-                                    transformer.stretch(width, height,
-                                            translationX + toScaled(selection.left),
-                                            translationY + toScaled(selection.top));
+                                    transformer.stretch(width, height);
                                 } else if (transformer != null) {
-                                    transformer.recycle();
-                                    transformer = null;
+                                    recycleTransformer();
                                 }
-                                drawTransformeeAndSelectionOnViewByTranslation(false);
+                                drawBitmapOnView();
+                                drawSelectionOnView(false);
                                 tvState.setText("");
                             }
                         } else {
@@ -1356,38 +1349,38 @@ public class MainActivity extends AppCompatActivity {
                                 Math.min(y0 - scaledSelection.top, y1 - scaledSelection.top),
                                 Math.min(scaledSelection.right - x0, scaledSelection.right - x1),
                                 Math.min(scaledSelection.bottom - y0, scaledSelection.bottom - y1));
+                        RectF transformerDpb = transformer.getDpb();
                         if (cbTransformerLar.isChecked()) {
-                            RectF dpbDiff = new RectF();
-                            dpbDiff.left = transfromeeDpb.left - dpb.left;
-                            dpbDiff.top = transfromeeDpb.top - dpb.top;
-                            dpbDiff.right = transfromeeDpb.right - dpb.right;
-                            dpbDiff.bottom = transfromeeDpb.bottom - dpb.bottom;
+                            RectF dpbDiff = new RectF(transformerDpb.left - dpb.left,
+                                    transformerDpb.top - dpb.top,
+                                    transformerDpb.right - dpb.right,
+                                    transformerDpb.bottom - dpb.bottom);
                             if (Math.abs(dpbDiff.left) + Math.abs(dpbDiff.right) >= Math.abs(dpbDiff.top) + Math.abs(dpbDiff.bottom)) {
-                                selection.left -= toUnscaled(transfromeeDpb.left - dpb.left);
-                                selection.right += toUnscaled(transfromeeDpb.right - dpb.right);
+                                selection.left -= toUnscaled(transformerDpb.left - dpb.left);
+                                selection.right += toUnscaled(transformerDpb.right - dpb.right);
                                 double width = selection.width(), height = width / transformer.getAspectRatio();
                                 selection.top = (int) (transformer.getCenterY() - height / 2.0);
                                 selection.bottom = (int) (transformer.getCenterY() + height / 2.0);
                                 scaledSelection.top = translationY + toScaled(selection.top);
                                 scaledSelection.bottom = translationY + toScaled(selection.bottom);
-                                transfromeeDpb.top = Math.min(y0 - scaledSelection.top, y1 - scaledSelection.top);
-                                transfromeeDpb.bottom = Math.min(scaledSelection.bottom - y0, scaledSelection.bottom - y1);
+                                transformerDpb.top = Math.min(y0 - scaledSelection.top, y1 - scaledSelection.top);
+                                transformerDpb.bottom = Math.min(scaledSelection.bottom - y0, scaledSelection.bottom - y1);
                             } else {
-                                selection.top -= toUnscaled(transfromeeDpb.top - dpb.top);
-                                selection.bottom += toUnscaled(transfromeeDpb.bottom - dpb.bottom);
+                                selection.top -= toUnscaled(transformerDpb.top - dpb.top);
+                                selection.bottom += toUnscaled(transformerDpb.bottom - dpb.bottom);
                                 double height = selection.height(), width = height * transformer.getAspectRatio();
                                 selection.left = (int) (transformer.getCenterX() - width / 2.0);
                                 selection.right = (int) (transformer.getCenterX() + width / 2.0);
                                 scaledSelection.left = translationX + toScaled(selection.left);
                                 scaledSelection.right = translationX + toScaled(selection.right);
-                                transfromeeDpb.left = Math.min(x0 - scaledSelection.left, x1 - scaledSelection.left);
-                                transfromeeDpb.right = Math.min(scaledSelection.right - x0, scaledSelection.right - x1);
+                                transformerDpb.left = Math.min(x0 - scaledSelection.left, x1 - scaledSelection.left);
+                                transformerDpb.right = Math.min(scaledSelection.right - x0, scaledSelection.right - x1);
                             }
                         } else {
-                            selection.left -= toUnscaled(transfromeeDpb.left - dpb.left);
-                            selection.top -= toUnscaled(transfromeeDpb.top - dpb.top);
-                            selection.right += toUnscaled(transfromeeDpb.right - dpb.right);
-                            selection.bottom += toUnscaled(transfromeeDpb.bottom - dpb.bottom);
+                            selection.left -= toUnscaled(transformerDpb.left - dpb.left);
+                            selection.top -= toUnscaled(transformerDpb.top - dpb.top);
+                            selection.right += toUnscaled(transformerDpb.right - dpb.right);
+                            selection.bottom += toUnscaled(transformerDpb.bottom - dpb.bottom);
                         }
                         drawSelectionOnView();
                         tvState.setText(String.format(getString(R.string.state_size),
@@ -1400,14 +1393,14 @@ public class MainActivity extends AppCompatActivity {
                         float x0 = event.getX(0), y0 = event.getY(0),
                                 x1 = event.getX(1), y1 = event.getY(1);
                         RectF scaledSelection = new RectF();
-                        scaledSelection.left = translationX + toScaled(selection.left);
-                        scaledSelection.top = translationY + toScaled(selection.top);
-                        scaledSelection.right = translationX + toScaled(selection.right);
-                        scaledSelection.bottom = translationY + toScaled(selection.bottom);
-                        transfromeeDpb.left = Math.min(x0 - scaledSelection.left, x1 - scaledSelection.left);
-                        transfromeeDpb.top = Math.min(y0 - scaledSelection.top, y1 - scaledSelection.top);
-                        transfromeeDpb.right = Math.min(scaledSelection.right - x0, scaledSelection.right - x1);
-                        transfromeeDpb.bottom = Math.min(scaledSelection.bottom - y0, scaledSelection.bottom - y1);
+                        scaledSelection.set(translationX + toScaled(selection.left),
+                                translationY + toScaled(selection.top),
+                                translationX + toScaled(selection.right),
+                                translationY + toScaled(selection.bottom));
+                        transformer.getDpb().set(Math.min(x0 - scaledSelection.left, x1 - scaledSelection.left),
+                                Math.min(y0 - scaledSelection.top, y1 - scaledSelection.top),
+                                Math.min(scaledSelection.right - x0, scaledSelection.right - x1),
+                                Math.min(scaledSelection.bottom - y0, scaledSelection.bottom - y1));
                         if (cbTransformerLar.isChecked()) {
                             transformer.calculateByLocation(selection);
                         }
@@ -1418,16 +1411,14 @@ public class MainActivity extends AppCompatActivity {
                     case MotionEvent.ACTION_POINTER_UP: {
                         int width = selection.width(), height = selection.height();
                         if (width > 0 && height > 0) {
-                            transformer.stretch(width, height,
-                                    translationX + toScaled(selection.left),
-                                    translationY + toScaled(selection.top));
+                            transformer.stretch(width, height);
                         } else if (transformer != null) {
-                            transformer.recycle();
-                            transformer = null;
+                            recycleTransformer();
                         }
-                        drawTransformeeAndSelectionOnViewByTranslation();
-                        prevX = event.getX(1 - event.getActionIndex());
-                        prevY = event.getY(1 - event.getActionIndex());
+                        drawBitmapOnView();
+                        drawSelectionOnView();
+                        prevX = event.getX(1 - event.getActionIndex()) - translationX - toScaled(selection.left);
+                        prevY = event.getY(1 - event.getActionIndex()) - translationY - toScaled(selection.top);
                         tvState.setText("");
                         break;
                     }
@@ -1606,7 +1597,7 @@ public class MainActivity extends AppCompatActivity {
             selector.setColor(Color.BLUE);
             drawSelectionOnView();
         } else {
-            drawTransformeeOnCanvas();
+            drawTransformerOnCanvas();
             draggingBound = Position.NULL;
             isDraggingCorner = false;
             selector.setColor(Color.DKGRAY);
@@ -1691,17 +1682,22 @@ public class MainActivity extends AppCompatActivity {
 
     private final DialogInterface.OnCancelListener onRotateCancelListener = dialog -> {
         ivSelection.setRotation(0.0f);
-        drawTransformeeAndSelectionOnViewByTranslation();
+        drawBitmapOnView();
+        drawSelectionOnView();
         tvState.setText("");
     };
 
     private final DialogInterface.OnClickListener onRotateConfirmListener = (dialog, which) -> {
         int w = transformer.getWidth(), h = transformer.getHeight();
         transformer.rotate(ivSelection.getRotation());
-        int w_ = transformer.getWidth(), h_ = transformer.getHeight();
-        transformer.translateBy(toScaled(w - w_) / 2.0f, toScaled(h - h_) / 2.0f);
         ivSelection.setRotation(0.0f);
-        drawTransformeeAndSelectionOnViewByTranslation();
+        int w_ = transformer.getWidth(), h_ = transformer.getHeight();
+        selection.left += w - w_ >> 1;
+        selection.top += h - h_ >> 1;
+        selection.right = selection.left + w_;
+        selection.bottom = selection.top + h_;
+        drawBitmapOnView();
+        drawSelectionOnView();
         tvState.setText("");
     };
 
@@ -1713,11 +1709,11 @@ public class MainActivity extends AppCompatActivity {
         if (transformer == null) {
             createTransformer();
             drawBitmapOnView();
-            drawTransformeeAndSelectionOnViewByTranslation(false);
+            drawSelectionOnView(false);
         }
-        ivSelection.setPivotX(transformer.getTranslationX() + toScaled(width) / 2.0f);
-        ivSelection.setPivotY(transformer.getTranslationY() + toScaled(height) / 2.0f);
-        new SeekBarDialog(this).setTitle(R.string.rotate).setMin(0).setMax(359).setProgress(0)
+        ivSelection.setPivotX(translationX + toScaled(selection.exactCenterX()));
+        ivSelection.setPivotY(translationY + toScaled(selection.exactCenterY()));
+        new SeekBarDialog(this).setTitle(R.string.rotate).setMin(0).setMax(360).setProgress(0)
                 .setOnCancelListener(onRotateCancelListener)
                 .setOnPositiveButtonClickListener(onRotateConfirmListener)
                 .setOnProgressChangeListener(onRotateDegreeSeekBarProgressChangeListener)
@@ -1831,8 +1827,7 @@ public class MainActivity extends AppCompatActivity {
         resetTranslAndScale();
 
         if (transformer != null) {
-            transformer.recycle();
-            transformer = null;
+            recycleTransformer();
         }
         hasSelection = false;
 
@@ -2000,9 +1995,7 @@ public class MainActivity extends AppCompatActivity {
     private void createTransformer() {
         transformer = new Transformer(
                 Bitmap.createBitmap(bitmap,
-                        selection.left, selection.top, selection.width(), selection.height()),
-                translationX + toScaled(selection.left),
-                translationY + toScaled(selection.top));
+                        selection.left, selection.top, selection.width(), selection.height()));
         canvas.drawRect(selection.left, selection.top, selection.right, selection.bottom,
                 eraser);
     }
@@ -2045,7 +2038,7 @@ public class MainActivity extends AppCompatActivity {
         drawBitmapOnView();
         drawGridOnView();
         if (transformer != null) {
-            drawTransformeeOnViewBySelection();
+
         } else if (isEditingText) {
             drawTextOnView();
         } else if (!isShapeStopped) {
@@ -2104,7 +2097,23 @@ public class MainActivity extends AppCompatActivity {
         for (int i = tabs.size() - 1, selected = tabLayout.getSelectedTabPosition(); i >= 0; --i) {
             Tab t = tabs.get(i);
             if (i == selected) {
-                cv.drawBitmap(bitmap, vp, relative, t.paint);
+                if (transformer != null) {
+                    Bitmap b = Bitmap.createBitmap(bitmap, vp.left, vp.top, w, h);
+                    Rect intersect = new Rect(Math.max(vp.left, selection.left), Math.max(vp.top, selection.top),
+                            Math.min(vp.right, selection.right), Math.min(vp.bottom, selection.bottom));
+                    new Canvas(b).drawBitmap(transformer.getBitmap(),
+                            new Rect(intersect.left - selection.left, intersect.top - selection.top,
+                                    intersect.right - selection.left, intersect.bottom - selection.top),
+                            new Rect(intersect.left - vp.left, intersect.top - vp.top,
+                                    intersect.right - vp.left, intersect.bottom - vp.top),
+                            PAINT_BLACK);
+                    cv.drawBitmap(b, 0.0f, 0.0f, t.paint);
+                    b.recycle();
+//              } else if (isEditingText) {
+//
+                } else {
+                    cv.drawBitmap(bitmap, vp, relative, t.paint);
+                }
             } else if (t.visible && t.bitmap.getWidth() == width && t.bitmap.getHeight() == height) {
                 cv.drawBitmap(t.bitmap, vp, relative, t.paint);
             }
@@ -2148,7 +2157,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void drawFloatingLayers() {
-        drawTransformeeOnCanvas();
+        drawTransformerOnCanvas();
         drawTextOnCanvas();
     }
 
@@ -2404,51 +2413,18 @@ public class MainActivity extends AppCompatActivity {
         ivPreview.invalidate();
     }
 
-    private void drawTransformeeOnCanvas() {
-        if (transformer == null) {
+    private void drawTransformerOnCanvas() {
+        if (transformer == null || !hasSelection) {
             return;
         }
-        if (hasSelection) {
-            canvas.drawBitmap(transformer.getBitmap(), selection.left, selection.top, PAINT_BLACK);
-            optimizeSelection();
-            drawSelectionOnView();
-            drawBitmapOnView();
-            addHistory();
-            tvState.setText("");
-        }
-        transformer.recycle();
-        transformer = null;
+        canvas.drawBitmap(transformer.getBitmap(), selection.left, selection.top, PAINT_BLACK);
+        recycleTransformer();
+        optimizeSelection();
+        drawSelectionOnView();
+        drawBitmapOnView();
+        addHistory();
+        tvState.setText("");
         clearCanvasAndInvalidateView(previewCanvas, ivPreview);
-    }
-
-    private void drawTransformeeAndSelectionOnViewByTranslation() {
-        drawTransformeeAndSelectionOnViewByTranslation(false);
-    }
-
-    private void drawTransformeeAndSelectionOnViewByTranslation(boolean showMargins) {
-        clearCanvas(previewCanvas);
-        if (hasSelection && transformer != null) {
-            selection.left = toUnscaled(transformer.getTranslationX() - translationX);
-            selection.top = toUnscaled(transformer.getTranslationY() - translationY);
-            selection.right = selection.left + transformer.getWidth();
-            selection.bottom = selection.top + transformer.getHeight();
-            float ttx = toScaled(selection.left) + translationX;
-            float tty = toScaled(selection.top) + translationY;
-            drawBitmapOnCanvas(transformer.getBitmap(), previewCanvas, ttx, tty);
-        }
-        ivPreview.invalidate();
-        drawSelectionOnView(showMargins);
-    }
-
-    private void drawTransformeeOnViewBySelection() {
-        clearCanvas(previewCanvas);
-        if (hasSelection && transformer != null) {
-            float ttx = toScaled(selection.left) + translationX;
-            float tty = toScaled(selection.top) + translationY;
-            drawBitmapOnCanvas(transformer.getBitmap(), previewCanvas, ttx, tty);
-            transformer.translateTo(ttx, tty);
-        }
-        ivPreview.invalidate();
     }
 
     private void floodFill(final Bitmap bitmap, int x, int y, @ColorInt final int color) {
@@ -2813,7 +2789,7 @@ public class MainActivity extends AppCompatActivity {
         llOptionsShape = findViewById(R.id.ll_options_shape);
         llOptionsText = findViewById(R.id.ll_options_text);
         llOptionsTransformer = findViewById(R.id.ll_options_transformer);
-        rvSwatches = findViewById(R.id.rv_swatches);
+        RecyclerView rvSwatches = findViewById(R.id.rv_swatches);
         rbCloneStamp = findViewById(R.id.rb_clone_stamp);
         RadioButton rbPencil = findViewById(R.id.rb_pencil);
         rbTransformer = findViewById(R.id.rb_transformer);
@@ -3006,8 +2982,7 @@ public class MainActivity extends AppCompatActivity {
         selectionBitmap = null;
 
         if (transformer != null) {
-            transformer.recycle();
-            transformer = null;
+            recycleTransformer();
         }
 
         viewCanvas = null;
@@ -3078,11 +3053,10 @@ public class MainActivity extends AppCompatActivity {
                             selection.left, selection.top,
                             selection.width(), selection.height());
                     drawFloatingLayers();
-                    transformer = new Transformer(bm,
-                            translationX + toScaled(selection.left),
-                            translationY + toScaled(selection.top));
+                    transformer = new Transformer(bm);
                     rbTransformer.setChecked(true);
-                    drawTransformeeAndSelectionOnViewByTranslation();
+                    drawBitmapOnView();
+                    drawSelectionOnView();
                 } else {
                     canvas.drawBitmap(transformer.getBitmap(),
                             selection.left, selection.top,
@@ -3098,8 +3072,7 @@ public class MainActivity extends AppCompatActivity {
                     break;
                 }
                 if (transformer != null) {
-                    transformer.recycle();
-                    transformer = null;
+                    recycleTransformer();
                 }
                 closeTab();
                 break;
@@ -3120,6 +3093,21 @@ public class MainActivity extends AppCompatActivity {
                 }
                 break;
 
+            case R.id.i_copy_as_new: {
+                if (!hasSelection) {
+                    break;
+                }
+                Bitmap bm;
+                if (transformer == null) {
+                    bm = Bitmap.createBitmap(bitmap,
+                            selection.left, selection.top,
+                            selection.width(), selection.height());
+                } else {
+                    bm = Bitmap.createBitmap(transformer.getBitmap());
+                }
+                addBitmap(bm, tabLayout.getSelectedTabPosition() + 1);
+                break;
+            }
             case R.id.i_crop: {
                 if (!hasSelection) {
                     break;
@@ -3149,8 +3137,7 @@ public class MainActivity extends AppCompatActivity {
                     addHistory();
                 } else {
                     clipboard = Bitmap.createBitmap(transformer.getBitmap());
-                    transformer.recycle();
-                    transformer = null;
+                    recycleTransformer();
                     clearCanvasAndInvalidateView(previewCanvas, ivPreview);
                 }
                 break;
@@ -3164,8 +3151,7 @@ public class MainActivity extends AppCompatActivity {
                     drawBitmapOnView();
                     addHistory();
                 } else {
-                    transformer.recycle();
-                    transformer = null;
+                    recycleTransformer();
                     clearCanvasAndInvalidateView(previewCanvas, ivPreview);
                 }
                 break;
@@ -3422,16 +3408,15 @@ public class MainActivity extends AppCompatActivity {
                 }
                 drawFloatingLayers();
 
-                selection.left = translationX >= 0.0f ? 0 : toUnscaled(-translationX) + 1;
-                selection.top = translationY >= 0.0f ? 0 : toUnscaled(-translationY) + 1;
-                selection.right = selection.left + Math.min(clipboard.getWidth(), bitmap.getWidth());
-                selection.bottom = selection.top + Math.min(clipboard.getHeight(), bitmap.getHeight());
-                transformer = new Transformer(Bitmap.createBitmap(clipboard),
-                        translationX + toScaled(selection.left),
-                        translationY + toScaled(selection.top));
+                selection.set(translationX >= 0.0f ? 0 : toUnscaled(-translationX) + 1,
+                        translationY >= 0.0f ? 0 : toUnscaled(-translationY) + 1,
+                        selection.left + Math.min(clipboard.getWidth(), bitmap.getWidth()),
+                        selection.top + Math.min(clipboard.getHeight(), bitmap.getHeight()));
+                transformer = new Transformer(Bitmap.createBitmap(clipboard));
                 hasSelection = true;
                 rbTransformer.setChecked(true);
-                drawTransformeeAndSelectionOnViewByTranslation();
+                drawBitmapOnView();
+                drawSelectionOnView();
                 break;
 
             case R.id.i_redo:
@@ -3585,13 +3570,11 @@ public class MainActivity extends AppCompatActivity {
     private void optimizeSelection() {
         int bitmapWidth = bitmap.getWidth(), bitmapHeight = bitmap.getHeight();
         selection.sort();
-        if (selection.left < selection.right && selection.top < selection.bottom
+        if (!selection.isEmpty()
                 && selection.left < bitmapWidth && selection.top < bitmapHeight
                 && selection.right > 0 && selection.bottom > 0) {
-            selection.left = Math.max(0, selection.left);
-            selection.top = Math.max(0, selection.top);
-            selection.right = Math.min(bitmapWidth, selection.right);
-            selection.bottom = Math.min(bitmapHeight, selection.bottom);
+            selection.set(Math.max(0, selection.left), Math.max(0, selection.top),
+                    Math.min(bitmapWidth, selection.right), Math.min(bitmapHeight, selection.bottom));
         } else {
             hasSelection = false;
         }
@@ -3601,6 +3584,11 @@ public class MainActivity extends AppCompatActivity {
         if (bm != null) {
             bm.recycle();
         }
+    }
+
+    private void recycleTransformer() {
+        transformer.recycle();
+        transformer = null;
     }
 
     private void resetTranslAndScale() {
@@ -3631,8 +3619,7 @@ public class MainActivity extends AppCompatActivity {
         imageHeight = (int) toScaled(height);
 
         if (transformer != null) {
-            transformer.recycle();
-            transformer = null;
+            recycleTransformer();
         }
         hasSelection = false;
 
@@ -3738,10 +3725,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void selectAll() {
-        selection.left = 0;
-        selection.top = 0;
-        selection.right = bitmap.getWidth();
-        selection.bottom = bitmap.getHeight();
+        selection.set(0, 0, bitmap.getWidth(), bitmap.getHeight());
     }
 
     private void setBlurRadius(float f) {
@@ -3788,8 +3772,7 @@ public class MainActivity extends AppCompatActivity {
         imageHeight = (int) toScaled(bitmap.getHeight());
 
         if (transformer != null) {
-            transformer.recycle();
-            transformer = null;
+            recycleTransformer();
         }
         clearCanvasAndInvalidateView(previewCanvas, ivPreview);
 

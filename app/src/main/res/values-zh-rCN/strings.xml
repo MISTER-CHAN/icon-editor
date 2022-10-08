@@ -34,6 +34,7 @@
     <string name="contiguous">连续</string>
     <string name="contrast">对比度</string>
     <string name="copy">复制</string>
+    <string name="copy_as_new">复制为新图像</string>
     <string name="crop">裁剪</string>
     <string name="custom">自定义</string>
     <string name="custom_color_filter">自定义颜色滤镜</string>
