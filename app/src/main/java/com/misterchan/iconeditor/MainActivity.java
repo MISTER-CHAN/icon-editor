@@ -3408,10 +3408,10 @@ public class MainActivity extends AppCompatActivity {
                 }
                 drawFloatingLayers();
 
-                selection.set(translationX >= 0.0f ? 0 : toUnscaled(-translationX) + 1,
-                        translationY >= 0.0f ? 0 : toUnscaled(-translationY) + 1,
-                        selection.left + Math.min(clipboard.getWidth(), bitmap.getWidth()),
-                        selection.top + Math.min(clipboard.getHeight(), bitmap.getHeight()));
+                selection.left = translationX >= 0.0f ? 0 : toUnscaled(-translationX) + 1;
+                selection.top = translationY >= 0.0f ? 0 : toUnscaled(-translationY) + 1;
+                selection.right = selection.left + Math.min(clipboard.getWidth(), bitmap.getWidth());
+                selection.bottom = selection.top + Math.min(clipboard.getHeight(), bitmap.getHeight());
                 transformer = new Transformer(Bitmap.createBitmap(clipboard));
                 hasSelection = true;
                 rbTransformer.setChecked(true);
