@@ -142,14 +142,6 @@ public class MainActivity extends AppCompatActivity {
             }
     };
 
-    private static final Paint PAINT = new Paint();
-
-    private static final Paint PAINT_BLACK = new Paint() {
-        {
-            setColor(Color.BLACK);
-        }
-    };
-
     private static final Paint PAINT_CLEAR = new Paint() {
         {
             setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
@@ -168,13 +160,6 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    private static final Paint PAINT_OPAQUE = new Paint() {
-        {
-            setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC));
-            setColor(Color.BLACK);
-        }
-    };
-
     private static final Paint PAINT_POINT = new Paint() {
         {
             setColor(Color.RED);
@@ -183,11 +168,19 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    private static final Paint PAINT_SRC = new Paint() {
+        {
+            setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC));
+        }
+    };
+
     private static final Paint PAINT_SRC_IN = new Paint() {
         {
             setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
         }
     };
+
+    private static final Paint PAINT_SRC_OVER = new Paint();
 
     private Bitmap bitmap;
     private Bitmap bitmapOriginal;
@@ -585,7 +578,7 @@ public class MainActivity extends AppCompatActivity {
 
     private final HiddenImageMaker.OnFinishSettingListener onFinishMakingHiddenImageListener = bm -> {
         createGraphic(bm.getWidth(), bm.getHeight(), tabLayout.getSelectedTabPosition() + 2);
-        canvas.drawBitmap(bm, 0.0f, 0.0f, PAINT_OPAQUE);
+        canvas.drawBitmap(bm, 0.0f, 0.0f, PAINT_SRC);
         drawBitmapOnView();
         bm.recycle();
     };
@@ -809,7 +802,7 @@ public class MainActivity extends AppCompatActivity {
                         new Rect(l, t, l + width, t + height),
                         new RectF(0.0f, 0.0f, width, height),
                         PAINT_SRC_IN);
-                canvas.drawBitmap(bm, left, top, PAINT);
+                canvas.drawBitmap(bm, left, top, PAINT_SRC_OVER);
                 bm.recycle();
                 drawBitmapOnView();
                 drawCloneStampSrcOnView(unscaledX + cloneStampSrcDist.x, unscaledY + cloneStampSrcDist.y);
@@ -1035,7 +1028,7 @@ public class MainActivity extends AppCompatActivity {
                 cv.drawBitmap(bitmap,
                         new Rect(unscaledX - wh, unscaledY - hh, unscaledX + w - wh, unscaledY + h - hh),
                         new Rect(0, 0, w, h),
-                        PAINT_OPAQUE);
+                        PAINT_SRC);
                 Bitmap rect = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
                 new Canvas(rect).drawRect(radius, radius, w - radius, h - radius, paint);
                 cv.drawBitmap(rect, 0.0f, 0.0f, patcher);
@@ -2075,7 +2068,7 @@ public class MainActivity extends AppCompatActivity {
             canvas.drawBitmap(bitmap,
                     new Rect(vp.left, vp.top, vp.right, vp.bottom),
                     new RectF(svp.left, svp.top, svp.right, svp.bottom),
-                    PAINT_OPAQUE);
+                    PAINT_SRC);
         }
     }
 
@@ -2106,7 +2099,7 @@ public class MainActivity extends AppCompatActivity {
                                     intersect.right - selection.left, intersect.bottom - selection.top),
                             new Rect(intersect.left - vp.left, intersect.top - vp.top,
                                     intersect.right - vp.left, intersect.bottom - vp.top),
-                            PAINT_BLACK);
+                            PAINT_SRC_OVER);
                     cv.drawBitmap(b, 0.0f, 0.0f, t.paint);
                     b.recycle();
 //              } else if (isEditingText) {
@@ -2127,7 +2120,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void drawPreviewBitmapOnCanvas() {
-        canvas.drawBitmap(preview.getBitmap(), 0.0f, 0.0f, PAINT_OPAQUE);
+        canvas.drawBitmap(preview.getBitmap(), 0.0f, 0.0f, PAINT_SRC);
         drawBitmapOnView();
     }
 
@@ -2141,7 +2134,7 @@ public class MainActivity extends AppCompatActivity {
         chessboardCanvas.drawBitmap(chessboard,
                 new Rect((int) left, (int) top, (int) right, (int) bottom),
                 new RectF(left, top, right, bottom),
-                PAINT_OPAQUE);
+                PAINT_SRC);
 
         ivChessboard.invalidate();
 
@@ -2417,7 +2410,7 @@ public class MainActivity extends AppCompatActivity {
         if (transformer == null || !hasSelection) {
             return;
         }
-        canvas.drawBitmap(transformer.getBitmap(), selection.left, selection.top, PAINT_BLACK);
+        canvas.drawBitmap(transformer.getBitmap(), selection.left, selection.top, PAINT_SRC_OVER);
         recycleTransformer();
         optimizeSelection();
         drawSelectionOnView();
@@ -3060,7 +3053,7 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     canvas.drawBitmap(transformer.getBitmap(),
                             selection.left, selection.top,
-                            PAINT_BLACK);
+                            PAINT_SRC_OVER);
                     drawBitmapOnView();
                     addHistory();
                 }
@@ -3116,7 +3109,7 @@ public class MainActivity extends AppCompatActivity {
                 int width = selection.width(), height = selection.height();
                 Bitmap bm = Bitmap.createBitmap(bitmap, selection.left, selection.top, width, height);
                 resizeBitmap(width, height, false);
-                canvas.drawBitmap(bm, 0.0f, 0.0f, PAINT_OPAQUE);
+                canvas.drawBitmap(bm, 0.0f, 0.0f, PAINT_SRC);
                 bm.recycle();
                 drawBitmapOnView();
                 addHistory();
@@ -3289,7 +3282,14 @@ public class MainActivity extends AppCompatActivity {
 
             case R.id.i_layer_duplicate: {
                 drawFloatingLayers();
-                Bitmap bm = Bitmap.createBitmap(bitmap);
+                Bitmap bm;
+                if (hasSelection) {
+                    bm = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
+                    new Canvas(bm)
+                            .drawBitmap(bitmap, selection, selection, PAINT_SRC_OVER);
+                } else {
+                    bm = Bitmap.createBitmap(bitmap);
+                }
                 addBitmap(bm, tabLayout.getSelectedTabPosition());
                 break;
             }
@@ -3533,7 +3533,7 @@ public class MainActivity extends AppCompatActivity {
     private void openBitmap(Bitmap bitmap, Uri uri) {
         int width = bitmap.getWidth(), height = bitmap.getHeight();
         Bitmap bm = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-        new Canvas(bm).drawBitmap(bitmap, 0.0f, 0.0f, PAINT_OPAQUE);
+        new Canvas(bm).drawBitmap(bitmap, 0.0f, 0.0f, PAINT_SRC);
         bitmap.recycle();
         DocumentFile documentFile = DocumentFile.fromSingleUri(this, uri);
         String path = null;
@@ -3606,10 +3606,10 @@ public class MainActivity extends AppCompatActivity {
             cv.drawBitmap(bitmap,
                     new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight()),
                     new RectF(0.0f, 0.0f, width, height),
-                    PAINT_OPAQUE);
+                    PAINT_SRC);
         } else {
             cv.drawRect(0.0f, 0.0f, width, height, eraser);
-            cv.drawBitmap(bitmap, 0.0f, 0.0f, PAINT_OPAQUE);
+            cv.drawBitmap(bitmap, 0.0f, 0.0f, PAINT_SRC);
         }
         bitmap.recycle();
         bitmap = bm;
@@ -3650,7 +3650,7 @@ public class MainActivity extends AppCompatActivity {
         Matrix matrix = new Matrix();
         matrix.setRotate(degrees, width / 2.0f, height / 2.0f);
         Bitmap bm = Bitmap.createBitmap(bitmap, left, top, width, height, matrix, filter);
-        canvas.drawBitmap(bm, left, top, PAINT_OPAQUE);
+        canvas.drawBitmap(bm, left, top, PAINT_SRC);
         bm.recycle();
         drawBitmapOnView();
         addHistory();
@@ -3706,7 +3706,7 @@ public class MainActivity extends AppCompatActivity {
         Matrix matrix = new Matrix();
         matrix.setScale(x, y, 0.0f, 0.0f);
         Bitmap bm = Bitmap.createBitmap(bitmap, left, top, width, height, matrix, filter);
-        canvas.drawBitmap(bm, left, top, PAINT_OPAQUE);
+        canvas.drawBitmap(bm, left, top, PAINT_SRC);
         bm.recycle();
         drawBitmapOnView();
         addHistory();
@@ -3766,7 +3766,7 @@ public class MainActivity extends AppCompatActivity {
         bitmap = Bitmap.createBitmap(bm.getWidth(), bm.getHeight(), Bitmap.Config.ARGB_8888);
         tab.bitmap = bitmap;
         canvas = new Canvas(bitmap);
-        canvas.drawBitmap(bm, 0.0f, 0.0f, PAINT_OPAQUE);
+        canvas.drawBitmap(bm, 0.0f, 0.0f, PAINT_SRC);
 
         imageWidth = (int) toScaled(bitmap.getWidth());
         imageHeight = (int) toScaled(bitmap.getHeight());
