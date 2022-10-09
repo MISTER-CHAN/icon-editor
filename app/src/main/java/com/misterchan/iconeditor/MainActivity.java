@@ -142,6 +142,13 @@ public class MainActivity extends AppCompatActivity {
             }
     };
 
+    private static final Paint PAINT_CELL_GRID = new Paint() {
+        {
+            setColor(Color.RED);
+            setStrokeWidth(2.0f);
+        }
+    };
+
     private static final Paint PAINT_CLEAR = new Paint() {
         {
             setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
@@ -157,6 +164,12 @@ public class MainActivity extends AppCompatActivity {
     private static final Paint PAINT_DST_OUT = new Paint() {
         {
             setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_OUT));
+        }
+    };
+
+    private static final Paint PAINT_GRID = new Paint() {
+        {
+            setColor(Color.GRAY);
         }
     };
 
@@ -299,13 +312,6 @@ public class MainActivity extends AppCompatActivity {
             0.0f, 0.0f, 0.0f, 1.0f, 0.0f
     };
 
-    private final Paint cellGridPaint = new Paint() {
-        {
-            setColor(Color.RED);
-            setStrokeWidth(2.0f);
-        }
-    };
-
     private final Paint colorPaint = new Paint() {
         {
             setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC));
@@ -336,12 +342,6 @@ public class MainActivity extends AppCompatActivity {
     private final Paint filter = new Paint() {
         {
             setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
-        }
-    };
-
-    private final Paint gridPaint = new Paint() {
-        {
-            setColor(Color.GRAY);
         }
     };
 
@@ -569,7 +569,14 @@ public class MainActivity extends AppCompatActivity {
     };
 
     private final ColorRangeDialog.OnColorRangeChangeListener onLayerDuplicateByColorRangeConfirmListener = (hueMin, hueMax, valueMin, valueMax) -> {
-        Bitmap bm = Bitmap.createBitmap(preview.getBitmap());
+        Bitmap bm;
+        if (hasSelection) {
+            Bitmap p = preview.getBitmap();
+            bm = Bitmap.createBitmap(p.getWidth(), p.getHeight(), Bitmap.Config.ARGB_8888);
+            new Canvas(bm).drawBitmap(p, selection, selection, PAINT_SRC_OVER);
+        } else {
+            bm = Bitmap.createBitmap(preview.getBitmap());
+        }
         preview.recycle();
         preview = null;
         addBitmap(bm, tabLayout.getSelectedTabPosition());
@@ -2162,10 +2169,10 @@ public class MainActivity extends AppCompatActivity {
                 endY = Math.min(translationY + imageHeight, viewHeight);
         if (isScaledMuch()) {
             for (float x = startX; x < endX; x += scale) {
-                gridCanvas.drawLine(x, startY, x, endY, gridPaint);
+                gridCanvas.drawLine(x, startY, x, endY, PAINT_GRID);
             }
             for (float y = startY; y < endY; y += scale) {
-                gridCanvas.drawLine(startX, y, endX, y, gridPaint);
+                gridCanvas.drawLine(startX, y, endX, y, PAINT_GRID);
             }
         }
 
@@ -2188,17 +2195,17 @@ public class MainActivity extends AppCompatActivity {
                 if (cellGrid.spacingX <= 0) {
                     float x = startX;
                     while (x < endX) {
-                        gridCanvas.drawLine(x, startY, x, endY, cellGridPaint);
+                        gridCanvas.drawLine(x, startY, x, endY, PAINT_CELL_GRID);
                         x += scaledSizeX;
                     }
                 } else {
                     float x = startX;
                     while (true) {
-                        gridCanvas.drawLine(x, startY, x, endY, cellGridPaint);
+                        gridCanvas.drawLine(x, startY, x, endY, PAINT_CELL_GRID);
                         if ((x += scaledSizeX) >= endX) {
                             break;
                         }
-                        gridCanvas.drawLine(x, startY, x, endY, cellGridPaint);
+                        gridCanvas.drawLine(x, startY, x, endY, PAINT_CELL_GRID);
                         if ((x += scaledSpacingX) >= endX) {
                             break;
                         }
@@ -2213,17 +2220,17 @@ public class MainActivity extends AppCompatActivity {
                 if (cellGrid.spacingY <= 0) {
                     float y = startY;
                     while (y < endY) {
-                        gridCanvas.drawLine(startX, y, endX, y, cellGridPaint);
+                        gridCanvas.drawLine(startX, y, endX, y, PAINT_CELL_GRID);
                         y += scaledSizeY;
                     }
                 } else {
                     float y = startY;
                     while (true) {
-                        gridCanvas.drawLine(startX, y, endX, y, cellGridPaint);
+                        gridCanvas.drawLine(startX, y, endX, y, PAINT_CELL_GRID);
                         if ((y += scaledSizeY) >= endY) {
                             break;
                         }
-                        gridCanvas.drawLine(startX, y, endX, y, cellGridPaint);
+                        gridCanvas.drawLine(startX, y, endX, y, PAINT_CELL_GRID);
                         if ((y += scaledSpacingY) >= endY) {
                             break;
                         }
@@ -2269,6 +2276,7 @@ public class MainActivity extends AppCompatActivity {
         final float scaledMultiplier = toScaled(multiplier);
         float x = translationX % scaledMultiplier, height = rulerHBitmap.getHeight();
         int unscaledX = (int) (-translationX / scaledMultiplier) * multiplier;
+        rulerPaint.setTextAlign(Paint.Align.LEFT);
         for (;
              x < viewWidth;
              x += scaledMultiplier, unscaledX += multiplier) {
@@ -2277,12 +2285,13 @@ public class MainActivity extends AppCompatActivity {
         }
         float y = translationY % scaledMultiplier, width = rulerVBitmap.getWidth();
         int unscaledY = (int) (-translationY / scaledMultiplier) * multiplier;
+        rulerPaint.setTextAlign(Paint.Align.RIGHT);
         float ascent = rulerPaint.getFontMetrics().ascent;
         for (;
              y < viewHeight;
              y += scaledMultiplier, unscaledY += multiplier) {
             rulerVCanvas.drawLine(0.0f, y, width, y, rulerPaint);
-            rulerVCanvas.drawText(String.valueOf(unscaledY), 0.0f, y - ascent, rulerPaint);
+            rulerVCanvas.drawText(String.valueOf(unscaledY), width, y - ascent, rulerPaint);
         }
         ivRulerH.invalidate();
         ivRulerV.invalidate();
@@ -2400,9 +2409,9 @@ public class MainActivity extends AppCompatActivity {
         Paint.FontMetrics fontMetrics = paint.getFontMetrics();
         float centerVertical = y + fontMetrics.ascent / 2.0f;
         previewCanvas.drawText(etText.getText().toString(), x, y, paint);
-        previewCanvas.drawLine(x, 0.0f, x, viewHeight, cellGridPaint);
+        previewCanvas.drawLine(x, 0.0f, x, viewHeight, PAINT_CELL_GRID);
         previewCanvas.drawLine(0.0f, y, viewWidth, y, textLine);
-        previewCanvas.drawLine(0.0f, centerVertical, viewWidth, centerVertical, cellGridPaint);
+        previewCanvas.drawLine(0.0f, centerVertical, viewWidth, centerVertical, PAINT_CELL_GRID);
         ivPreview.invalidate();
     }
 
