@@ -78,6 +78,10 @@
             <item
                 android:id="@+id/i_deselect"
                 android:title="@string/deselect" />
+
+            <item
+                android:id="@+id/i_draw_color"
+                android:title="@string/draw_color" />
         </menu>
     </item>
 

@@ -573,7 +573,7 @@ public class MainActivity extends AppCompatActivity {
         if (hasSelection) {
             Bitmap p = preview.getBitmap();
             bm = Bitmap.createBitmap(p.getWidth(), p.getHeight(), Bitmap.Config.ARGB_8888);
-            new Canvas(bm).drawBitmap(p, selection, selection, PAINT_SRC_OVER);
+            new Canvas(bm).drawBitmap(p, selection, selection, PAINT_SRC);
         } else {
             bm = Bitmap.createBitmap(preview.getBitmap());
         }
@@ -3165,6 +3165,13 @@ public class MainActivity extends AppCompatActivity {
                 tvState.setText("");
                 break;
 
+            case R.id.i_draw_color:
+                canvas.drawColor(paint.getColor());
+                drawBitmapOnView();
+                addHistory();
+                tvState.setText("");
+                break;
+
             case R.id.i_filter_channels:
                 drawFloatingLayers();
                 createPreviewBitmap();
@@ -3295,7 +3302,7 @@ public class MainActivity extends AppCompatActivity {
                 if (hasSelection) {
                     bm = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
                     new Canvas(bm)
-                            .drawBitmap(bitmap, selection, selection, PAINT_SRC_OVER);
+                            .drawBitmap(bitmap, selection, selection, PAINT_SRC);
                 } else {
                     bm = Bitmap.createBitmap(bitmap);
                 }

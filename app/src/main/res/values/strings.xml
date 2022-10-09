@@ -51,6 +51,7 @@
     <string name="deselect">Deselect</string>
     <string name="double_zero" translatable="false">00</string>
     <string name="draw">Draw</string>
+    <string name="draw_color">Draw Color</string>
     <string name="duplicate">Duplicate</string>
     <string name="duplicate_by_color_range">Duplicate by Color Range</string>
     <string name="edit" translatable="false">✎</string>

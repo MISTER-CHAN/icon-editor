@@ -45,6 +45,7 @@
     <string name="delete">删除</string>
     <string name="deselect">不选择</string>
     <string name="draw">绘画</string>
+    <string name="draw_color">画颜色</string>
     <string name="duplicate">复制</string>
     <string name="duplicate_by_color_range">复制颜色范围</string>
     <string name="enabled">启用</string>
