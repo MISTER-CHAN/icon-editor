@@ -5,6 +5,7 @@ import android.graphics.BlendMode;
 import android.graphics.Paint;
 
 class Tab {
+    boolean sub;
     boolean visible;
     Bitmap bitmap;
     Bitmap.CompressFormat compressFormat;

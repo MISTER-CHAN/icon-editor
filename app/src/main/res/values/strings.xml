@@ -97,6 +97,7 @@
     <string name="lock_aspect_ratio">Lock Aspect Ratio</string>
     <string name="m" translatable="false">M</string>
     <string name="magic_paint">Magic Paint</string>
+    <string name="mask">Mask</string>
     <string name="mask_filter">Mask Filter</string>
     <string name="max">Max</string>
     <string name="merge">Merge</string>
@@ -175,6 +176,7 @@
     <string name="state_threshold">Threshold: %d</string>
     <string name="stretch">Stretch</string>
     <string name="stroke_width">Width</string>
+    <string name="sub">Stacking Order of Mask</string>
     <string name="swatch">Swatch</string>
     <string name="text">Text</string>
     <string name="threshold">Threshold</string>

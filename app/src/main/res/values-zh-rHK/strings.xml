@@ -83,6 +83,7 @@
     <string name="locale">地區</string>
     <string name="lock_aspect_ratio">鎖定寬高比</string>
     <string name="magic_paint">魔術筆</string>
+    <string name="mask">遮色片</string>
     <string name="mask_filter">遮罩濾鏡</string>
     <string name="max">最大</string>
     <string name="merge">合倂</string>
@@ -151,6 +152,7 @@
     <string name="state_threshold">閾値：%d</string>
     <string name="stretch">拉伸</string>
     <string name="stroke_width">筆劃寛度</string>
+    <string name="sub">遮色片堆疊次序</string>
     <string name="swatch">顏色</string>
     <string name="text">文本</string>
     <string name="threshold">閾値</string>

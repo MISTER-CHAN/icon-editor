@@ -83,6 +83,7 @@
     <string name="locale">地区</string>
     <string name="lock_aspect_ratio">锁定宽高比</string>
     <string name="magic_paint">魔术笔</string>
+    <string name="mask">蒙版</string>
     <string name="mask_filter">遮罩滤镜</string>
     <string name="max">最大</string>
     <string name="merge">合并</string>
@@ -150,6 +151,7 @@
     <string name="state_threshold">阈值：%d</string>
     <string name="stretch">拉伸</string>
     <string name="stroke_width">笔划宽度</string>
+    <string name="sub">蒙版堆叠次序</string>
     <string name="swatch">颜色</string>
     <string name="text">文本</string>
     <string name="threshold">阈值</string>

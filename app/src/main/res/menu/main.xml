@@ -351,6 +351,11 @@
                         android:title="@string/luminosity" />
                 </menu>
             </item>
+
+            <item
+                android:id="@+id/i_layer_sub"
+                android:checkable="true"
+                android:title="@string/sub" />
         </menu>
     </item>
 
