@@ -313,6 +313,19 @@ public class MainActivity extends AppCompatActivity {
             0.0f, 0.0f, 0.0f, 1.0f, 0.0f
     };
 
+    /**
+     * Each layer has one of following values.<br />
+     * <table>
+     *     <tr><th>Value</th><th>Description</th></tr>
+     *     <tr><td>4</td><td>Layer</td></tr>
+     *     <tr><td>3</td><td>Layer with masks</td></tr>
+     *     <tr><td>2</td><td>Last mask</td></tr>
+     *     <tr><td>1</td><td>Mask</td></tr>
+     *     <tr><td>0</td><td>Layer that doesn't belong here</td></tr>
+     * </table>
+     */
+    private int[] stackingOrder;
+
     private final Paint colorPaint = new Paint() {
         {
             setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC));
@@ -702,6 +715,8 @@ public class MainActivity extends AppCompatActivity {
             }
             imageWidth = (int) toScaled(width);
             imageHeight = (int) toScaled(height);
+
+            calculateStackingOrder();
 
             if (transformer != null) {
                 recycleTransformer();
@@ -1954,6 +1969,37 @@ public class MainActivity extends AppCompatActivity {
         return draggingBound;
     }
 
+    private void calculateStackingOrder() {
+        stackingOrder = new int[tabs.size()];
+        final int bg = tabs.size() - 1;
+        final int w = bitmap.getWidth(), h = bitmap.getHeight();
+        int i;
+        for (i = bg; i >= 0; --i) {
+            if (isSizeEqualTo(tabs.get(i).bitmap, w, h)) {
+                break;
+            }
+        }
+        stackingOrder[i] = 3;
+        for (int j = i - 1; ; --j) {
+            if (j >= 0) {
+                final Tab t = tabs.get(j);
+                if (!isSizeEqualTo(t.bitmap, w, h)) {
+                    continue;
+                }
+                if (t.sub) {
+                    stackingOrder[j] = 1;
+                } else {
+                    ++stackingOrder[i];
+                    stackingOrder[j] = 3;
+                }
+                i = j;
+            } else {
+                ++stackingOrder[i];
+                break;
+            }
+        }
+    }
+
     private boolean checkColorIsWithinThreshold(int r0, int g0, int b0, int r, int g, int b) {
         return Math.abs(r - r0) <= threshold
                 && Math.abs(g - g0) <= threshold
@@ -2124,7 +2170,7 @@ public class MainActivity extends AppCompatActivity {
         if (vp.isEmpty()) {
             return;
         }
-        final int width = bitmap.getWidth(), height = bitmap.getHeight();
+        final int selected = tabLayout.getSelectedTabPosition();
         final int w = vp.width(), h = vp.height();
         final Rect relative = new Rect(0, 0, w, h);
         final Bitmap bp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888); // p - Part
@@ -2132,27 +2178,21 @@ public class MainActivity extends AppCompatActivity {
         Bitmap bs = bp; // s - Sub
         Canvas cs = cp;
         Paint paint = null, p;
-        // bg - Background
-        for (int bg = tabs.size() - 1, i = bg, selected = tabLayout.getSelectedTabPosition(); i >= 0; --i) {
-            final Tab t = tabs.get(i);
-            if (t.bitmap.getWidth() != width || t.bitmap.getHeight() != height) {
+        for (int bg = tabs.size() - 1, i = bg; i >= 0; --i) { // bg - Background
+            final int so = stackingOrder[i];
+            if (so == 0) {
                 continue;
             }
-            final Tab tn = i > 0 ? tabs.get(i - 1) : null; // Next layer
-            final boolean nns = tn == null || !tn.sub || tn.bitmap.getWidth() != width || tn.bitmap.getHeight() != height; // Is next layer not sub.
-            if (!t.sub || i == bg) {
-                if (nns) {
-                    bs = bp;
-                    cs = cp;
-                    p = t.paint;
-                } else {
-                    bs = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
-                    cs = new Canvas(bs);
-                    paint = t.paint;
-                    p = PAINT_SRC;
-                }
-            } else if (bs == bp) {
-                continue;
+            final Tab t = tabs.get(i);
+            if (so == 4) {
+                bs = bp;
+                cs = cp;
+                p = t.paint;
+            } else if (so == 3) {
+                bs = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+                cs = new Canvas(bs);
+                paint = t.paint;
+                p = PAINT_SRC;
             } else {
                 p = t.paint;
             }
@@ -2177,10 +2217,9 @@ public class MainActivity extends AppCompatActivity {
             } else if (t.visible) {
                 cs.drawBitmap(t.bitmap, vp, relative, p);
             }
-            if (t.sub && nns) {
+            if (so == 2) {
                 cp.drawBitmap(bs, 0.0f, 0.0f, paint);
                 bs.recycle();
-                bs = bp;
             }
         }
         drawBitmapOnCanvas(bp, viewCanvas,
@@ -2682,6 +2721,10 @@ public class MainActivity extends AppCompatActivity {
         return scale >= 16.0f;
     }
 
+    private boolean isSizeEqualTo(Bitmap bitmap, int w, int h) {
+        return bitmap.getWidth() == w && bitmap.getHeight() == h;
+    }
+
     private void load() {
         viewWidth = imageView.getWidth();
         viewHeight = imageView.getHeight();
@@ -2737,7 +2780,7 @@ public class MainActivity extends AppCompatActivity {
         ivSelection.setImageBitmap(selectionBitmap);
         drawSelectionOnView();
 
-        tabLayout.addTab(tabLayout.newTab().setText(R.string.untitled).setTag(bitmap));
+        tabLayout.addTab(tabLayout.newTab().setText(R.string.untitled).setTag(bitmap), true);
 
         etPencilBlurRadius.setText(String.valueOf(0.0f));
         etEraserBlurRadius.setText(String.valueOf(0.0f));
@@ -3425,34 +3468,28 @@ public class MainActivity extends AppCompatActivity {
                 Bitmap bs = bm;
                 Canvas cs = cv;
                 Paint paint = null, p;
-                // bg - Background
-                for (int bg = tabs.size() - 1, i = bg; i >= 0; --i) {
-                    final Tab t = tabs.get(i);
-                    if (t.bitmap.getWidth() != w || t.bitmap.getHeight() != h) {
+                for (int bg = tabs.size() - 1, i = bg; i >= 0; --i) { // bg - Background
+                    final int so = stackingOrder[i];
+                    if (so == 0) {
                         continue;
                     }
-                    final Tab tn = i > 0 ? tabs.get(i - 1) : null; // Next layer
-                    final boolean nns = tn == null || !tn.sub || tn.bitmap.getWidth() != w || tn.bitmap.getHeight() != h; // Is next layer not sub.
-                    if (!t.sub || i == bg) {
-                        if (nns) {
-                            bs = bm;
-                            cs = cv;
-                            p = t.paint;
-                        } else {
-                            bs = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
-                            cs = new Canvas(bs);
-                            paint = t.paint;
-                            p = PAINT_SRC;
-                        }
-                    } else if (bs == bm) {
-                        continue;
+                    final Tab t = tabs.get(i);
+                    if (so == 4) {
+                        bs = bm;
+                        cs = cv;
+                        p = t.paint;
+                    } else if (so == 3) {
+                        bs = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+                        cs = new Canvas(bs);
+                        paint = t.paint;
+                        p = PAINT_SRC;
                     } else {
                         p = t.paint;
                     }
                     if (t.visible || i == selected) {
                         cs.drawBitmap(t.bitmap, 0.0f, 0.0f, p);
                     }
-                    if (t.sub && nns) {
+                    if (so == 2) {
                         cv.drawBitmap(bs, 0.0f, 0.0f, paint);
                         bs.recycle();
                         bs = bm;
@@ -3499,6 +3536,7 @@ public class MainActivity extends AppCompatActivity {
             case R.id.i_layer_sub:
                 item.setChecked(!item.isChecked());
                 tab.sub = item.isChecked();
+                calculateStackingOrder();
                 drawBitmapOnView();
                 break;
 
@@ -3735,6 +3773,8 @@ public class MainActivity extends AppCompatActivity {
         canvas = cv;
         imageWidth = (int) toScaled(width);
         imageHeight = (int) toScaled(height);
+
+        calculateStackingOrder();
 
         if (transformer != null) {
             recycleTransformer();
