@@ -12,6 +12,7 @@
     <string name="author">作者</string>
     <string name="automatic">自动</string>
     <string name="background_color">底色</string>
+    <string name="below_background">背景底下</string>
     <string name="blend_modes">混合模式</string>
     <string name="blur_radius">模糊半径</string>
     <string name="bucket_fill">油漆桶</string>
@@ -91,6 +92,7 @@
     <string name="merge_as_a_hidden_image">合并为隐藏图</string>
     <string name="merge_as_new">合并为新图层</string>
     <string name="min">最小</string>
+    <string name="move_layer">移动图层</string>
     <string name="new_">新建</string>
     <string name="ninety_degrees">90°</string>
     <string name="not_supported_file_type">不支持的文件类型</string>

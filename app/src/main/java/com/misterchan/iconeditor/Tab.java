@@ -1,8 +1,9 @@
 package com.misterchan.iconeditor;
 
 import android.graphics.Bitmap;
-import android.graphics.BlendMode;
 import android.graphics.Paint;
+import android.widget.CheckBox;
+import android.widget.TextView;
 
 class Tab {
     boolean sub;
@@ -11,8 +12,11 @@ class Tab {
     Bitmap.CompressFormat compressFormat;
     BitmapHistory history;
     CellGrid cellGrid;
+    CheckBox cbLayerVisible;
     float scale;
     float translationX, translationY;
     Paint paint;
     String path;
+    TextView tvSub;
+    TextView tvTitle;
 }

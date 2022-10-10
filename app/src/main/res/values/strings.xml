@@ -14,6 +14,7 @@
     <string name="automatic">Automatic</string>
     <string name="b" translatable="false">B</string>
     <string name="background_color">Background Color</string>
+    <string name="below_background">Below Background</string>
     <string name="blend_modes">Blend Modes</string>
     <string name="blur_radius">Blur</string>
     <string name="bucket_fill">Bucket Fill</string>
@@ -71,6 +72,7 @@
     <string name="g" translatable="false">G</string>
     <string name="general">General</string>
     <string name="gradient">Gradient</string>
+    <string name="gt" translatable="false"><![CDATA[>]]></string>
     <string name="h" translatable="false">H</string>
     <string name="height">Height</string>
     <string name="help">Help</string>
@@ -95,6 +97,7 @@
     <string name="line">Line</string>
     <string name="locale">Locale</string>
     <string name="lock_aspect_ratio">Lock Aspect Ratio</string>
+    <string name="lt" translatable="false"><![CDATA[<]]></string>
     <string name="m" translatable="false">M</string>
     <string name="magic_paint">Magic Paint</string>
     <string name="mask">Mask</string>
@@ -107,6 +110,7 @@
     <string name="merge_visible">Merge Visible</string>
     <string name="min">Min</string>
     <string name="mister_chan" translatable="false">MISTER_CHAN</string>
+    <string name="move_layer">Move Layer</string>
     <string name="new_">New</string>
     <string name="ninety_degrees">90°</string>
     <string name="not_supported_file_type">Not supported file type</string>
@@ -131,6 +135,7 @@
     <string name="refit">Refit</string>
     <string name="rename">Rename</string>
     <string name="reset_source">Reset Source</string>
+    <string name="rightwards_arrow" translatable="false">→</string>
     <string name="rotate">Rotate</string>
     <string name="rotate_around_r">Rotate Around R</string>
     <string name="rotate_around_g">Rotate Around G</string>

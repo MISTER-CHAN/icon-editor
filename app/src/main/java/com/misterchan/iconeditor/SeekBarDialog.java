@@ -3,6 +3,7 @@ package com.misterchan.iconeditor;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.view.Gravity;
+import android.view.Window;
 import android.view.WindowManager;
 import android.widget.SeekBar;
 
@@ -66,7 +67,7 @@ public class SeekBarDialog {
     public void show() {
         AlertDialog dialog = builder.show();
 
-        android.view.Window window = dialog.getWindow();
+        Window window = dialog.getWindow();
         WindowManager.LayoutParams lp = window.getAttributes();
         lp.flags &= ~WindowManager.LayoutParams.FLAG_DIM_BEHIND;
         lp.gravity = Gravity.BOTTOM;

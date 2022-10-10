@@ -29,12 +29,15 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.text.Editable;
 import android.text.InputFilter;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.SubMenu;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -69,7 +72,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
@@ -268,8 +270,6 @@ public class MainActivity extends AppCompatActivity {
     private ImageView ivRulerH, ivRulerV;
     private ImageView ivSelection;
     private InputMethodManager inputMethodManager;
-    @ColorInt
-    private int gradientColor0;
     private int imageWidth, imageHeight;
     private int selectionStartX, selectionStartY;
     private int selectionEndX, selectionEndY;
@@ -287,7 +287,6 @@ public class MainActivity extends AppCompatActivity {
     private LinkedList<Integer> palette;
     private List<Tab> tabs = new ArrayList<>();
     private MenuItem miLayerSub;
-    private MenuItem miLayerVisible;
     private Point cloneStampSrc;
     private final Point cloneStampSrcDist = new Point(0, 0); // Dist. - Distance
     private Position draggingBound = Position.NULL;
@@ -325,6 +324,9 @@ public class MainActivity extends AppCompatActivity {
      * </table>
      */
     private int[] stackingOrder;
+
+    @ColorInt
+    private int gradientColor0;
 
     private final Paint colorPaint = new Paint() {
         {
@@ -434,7 +436,7 @@ public class MainActivity extends AppCompatActivity {
         tab.path = Environment.getExternalStorageDirectory().getPath() + File.separator + tree + File.separator + fileName;
         tab.compressFormat = COMPRESS_FORMATS[sFileType.getSelectedItemPosition()];
         save(tab.path);
-        tabLayout.getTabAt(tabLayout.getSelectedTabPosition()).setText(fileName);
+        tab.tvTitle.setText(fileName);
     };
 
     private final ActivityResultCallback<Uri> imageCallback = this::openFile;
@@ -514,7 +516,7 @@ public class MainActivity extends AppCompatActivity {
         if (name.length() <= 0) {
             return;
         }
-        tabLayout.getTabAt(tabLayout.getSelectedTabPosition()).setText(name);
+        tab.tvTitle.setText(name);
     };
 
     private final View.OnClickListener onAddSwatchViewClickListener = v ->
@@ -727,7 +729,6 @@ public class MainActivity extends AppCompatActivity {
                 cloneStampSrc = null;
             }
 
-            miLayerVisible.setChecked(MainActivity.this.tab.visible);
             miLayerSub.setChecked(MainActivity.this.tab.sub);
             for (int i = 0; i <= 28; ++i) {
                 MenuItem mi = smBlendModes.getItem(i);
@@ -757,6 +758,48 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onTabReselected(TabLayout.Tab tab) {
+            final int position = tab.getPosition();
+
+            final AlertDialog dialog = new AlertDialog.Builder(MainActivity.this)
+                    .setTitle(R.string.move_layer)
+                    .setView(R.layout.tab_layout)
+                    .setNegativeButton(R.string.cancel, null)
+                    .show();
+
+            Window window = dialog.getWindow();
+            WindowManager.LayoutParams lp = window.getAttributes();
+            lp.flags &= ~WindowManager.LayoutParams.FLAG_DIM_BEHIND;
+            lp.gravity = Gravity.TOP;
+            window.setAttributes(lp);
+
+            final TabLayout tl = dialog.findViewById(R.id.tl);
+            for (int i = 0; i < tabLayout.getTabCount(); ++i) {
+                tl.addTab(tl.newTab().setText(tabs.get(i).tvTitle.getText()), i == position);
+            }
+            tl.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+                @Override
+                public void onTabSelected(TabLayout.Tab t) {
+                    dialog.cancel();
+                    final int p = t.getPosition();
+                    final Tab selected = tabs.remove(position);
+                    final View cv = tab.getCustomView();
+                    tabLayout.removeTabAt(position);
+                    tabs.add(p, selected);
+                    final TabLayout.Tab nt = tabLayout.newTab().setTag(selected);
+                    nt.setCustomView(cv);
+                    tabLayout.addTab(nt, p, true);
+                }
+
+                @Override
+                public void onTabUnselected(TabLayout.Tab t) {
+                }
+
+                @Override
+                public void onTabReselected(TabLayout.Tab t) {
+                    dialog.cancel();
+                }
+            });
+
         }
     };
 
@@ -1864,7 +1907,17 @@ public class MainActivity extends AppCompatActivity {
         }
         hasSelection = false;
 
-        tabLayout.addTab(tabLayout.newTab().setTag(bitmap).setText(title), position, true);
+        final TabLayout.Tab t = tabLayout.newTab().setTag(tab);
+        t.setCustomView(R.layout.tab);
+        final View customView = t.getCustomView();
+        tab.cbLayerVisible = customView.findViewById(R.id.cb_layer_visible);
+        tab.cbLayerVisible.setChecked(tab.visible);
+        tab.cbLayerVisible.setOnCheckedChangeListener(getOnLayerVisibleCheckBoxCheckedChangeListener(tab));
+        tab.tvSub = customView.findViewById(R.id.tv_sub);
+        tab.tvSub.setVisibility(tab.sub ? View.VISIBLE : View.INVISIBLE);
+        tab.tvTitle = customView.findViewById(R.id.tv_title);
+        tab.tvTitle.setText(title);
+        tabLayout.addTab(t, position, true);
     }
 
     private void addHistory() {
@@ -1974,29 +2027,25 @@ public class MainActivity extends AppCompatActivity {
         final int bg = tabs.size() - 1;
         final int w = bitmap.getWidth(), h = bitmap.getHeight();
         int i;
-        for (i = bg; i >= 0; --i) {
-            if (isSizeEqualTo(tabs.get(i).bitmap, w, h)) {
-                break;
-            }
+        for (i = bg; i > 0 && !isSizeEqualTo(tabs.get(i).bitmap, w, h); --i) {
         }
         stackingOrder[i] = 3;
-        for (int j = i - 1; ; --j) {
-            if (j >= 0) {
-                final Tab t = tabs.get(j);
-                if (!isSizeEqualTo(t.bitmap, w, h)) {
-                    continue;
-                }
-                if (t.sub) {
-                    stackingOrder[j] = 1;
-                } else {
-                    ++stackingOrder[i];
-                    stackingOrder[j] = 3;
-                }
-                i = j;
+        for (int j = i - 1; j >= 0; --j) {
+            final Tab t = tabs.get(j);
+            if (!isSizeEqualTo(t.bitmap, w, h)) {
+                continue;
+            }
+            if (t.sub) {
+                stackingOrder[j] = 1;
             } else {
                 ++stackingOrder[i];
-                break;
+                stackingOrder[j] = 3;
             }
+            i = j;
+        }
+        ++stackingOrder[i];
+        for (int j = bg; j >= 0; --j) {
+            tabs.get(j).cbLayerVisible.setVisibility(stackingOrder[j] > 0 ? View.VISIBLE : View.GONE);
         }
     }
 
@@ -2629,6 +2678,13 @@ public class MainActivity extends AppCompatActivity {
         return range;
     }
 
+    private CompoundButton.OnCheckedChangeListener getOnLayerVisibleCheckBoxCheckedChangeListener(final Tab tab) {
+        return (buttonView, isChecked) -> {
+            tab.visible = isChecked;
+            drawBitmapOnView();
+        };
+    }
+
     private RectF getScaledVisiblePart(Bitmap bitmap, float translX, float translY) {
         float left = translX > -scale ? translX : translX % scale;
         float top = translY > -scale ? translY : translY % scale;
@@ -2638,7 +2694,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private String getTabName() {
-        String s = tabLayout.getTabAt(tabLayout.getSelectedTabPosition()).getText().toString();
+        String s = tab.tvTitle.getText().toString();
         int i = s.lastIndexOf('.');
         return i == -1 ? s : s.substring(0, i);
     }
@@ -2780,7 +2836,16 @@ public class MainActivity extends AppCompatActivity {
         ivSelection.setImageBitmap(selectionBitmap);
         drawSelectionOnView();
 
-        tabLayout.addTab(tabLayout.newTab().setText(R.string.untitled).setTag(bitmap), true);
+        final TabLayout.Tab t = tabLayout.newTab().setTag(tab);
+        t.setCustomView(R.layout.tab);
+        final View customView = t.getCustomView();
+        tab.cbLayerVisible = customView.findViewById(R.id.cb_layer_visible);
+        tab.cbLayerVisible.setChecked(tab.visible);
+        tab.cbLayerVisible.setOnCheckedChangeListener(getOnLayerVisibleCheckBoxCheckedChangeListener(tab));
+        tab.tvSub = findViewById(R.id.tv_sub);
+        tab.tvTitle = customView.findViewById(R.id.tv_title);
+        tab.tvTitle.setText(R.string.untitled);
+        tabLayout.addTab(t, true);
 
         etPencilBlurRadius.setText(String.valueOf(0.0f));
         etEraserBlurRadius.setText(String.valueOf(0.0f));
@@ -3038,7 +3103,6 @@ public class MainActivity extends AppCompatActivity {
         MenuInflater menuInflater = getMenuInflater();
         menuInflater.inflate(R.menu.main, menu);
         miLayerSub = menu.findItem(R.id.i_layer_sub);
-        miLayerVisible = menu.findItem(R.id.i_layer_visible);
         smBlendModes = menu.findItem(R.id.i_blend_modes).getSubMenu();
         return true;
     }
@@ -3519,32 +3583,15 @@ public class MainActivity extends AppCompatActivity {
 
                 break;
             }
-            case R.id.i_layer_send_to_back:
-                drawFloatingLayers();
-                int i = tabLayout.getSelectedTabPosition(), j = i + 1;
-                if (j >= tabs.size()) {
-                    break;
-                }
-                Collections.swap(tabs, i, j);
-                TabLayout.Tab ti = tabLayout.getTabAt(i), tj = tabLayout.getTabAt(j);
-                CharSequence csi = ti.getText(), csj = tj.getText();
-                ti.setText(csj);
-                tj.setText(csi);
-                tabLayout.selectTab(tj);
-                break;
-
-            case R.id.i_layer_sub:
-                item.setChecked(!item.isChecked());
-                tab.sub = item.isChecked();
+            case R.id.i_layer_sub: {
+                boolean isChecked = !item.isChecked();
+                item.setChecked(isChecked);
+                tab.sub = isChecked;
+                tab.tvSub.setVisibility(isChecked ? View.VISIBLE : View.INVISIBLE);
                 calculateStackingOrder();
                 drawBitmapOnView();
                 break;
-
-            case R.id.i_layer_visible:
-                item.setChecked(!item.isChecked());
-                tab.visible = item.isChecked();
-                break;
-
+            }
             case R.id.i_new: {
                 drawFloatingLayers();
                 new NewGraphicPropertiesDialog(this)

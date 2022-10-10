@@ -146,15 +146,6 @@
         <menu>
 
             <item
-                android:id="@+id/i_layer_visible"
-                android:checkable="true"
-                android:title="@string/visible" />
-
-            <item
-                android:id="@+id/i_layer_send_to_back"
-                android:title="@string/send_to_back" />
-
-            <item
                 android:id="@+id/i_layer_new"
                 android:title="@string/new_" />
 
