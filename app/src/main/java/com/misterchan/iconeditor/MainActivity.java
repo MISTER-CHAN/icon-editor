@@ -2057,11 +2057,11 @@ public class MainActivity extends AppCompatActivity {
                 && Math.abs(b - b0) <= threshold;
     }
 
-    private void clearCanvas(Canvas canvas) {
+    private static void clearCanvas(Canvas canvas) {
         canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
     }
 
-    private void clearCanvasAndInvalidateView(Canvas canvas, ImageView imageView) {
+    private static void clearCanvasAndInvalidateView(Canvas canvas, ImageView imageView) {
         clearCanvas(canvas);
         imageView.invalidate();
     }
@@ -2766,7 +2766,7 @@ public class MainActivity extends AppCompatActivity {
         return 0x000000;
     }
 
-    private float hue(@ColorInt int color) {
+    private static float hue(@ColorInt int color) {
         float r = Color.red(color), g = Color.green(color), b = Color.blue(color);
         float max = Math.max(Math.max(r, g), b), min = Math.min(Math.min(r, g), b);
         if (max == min) {
@@ -2798,7 +2798,7 @@ public class MainActivity extends AppCompatActivity {
         return scale >= 16.0f;
     }
 
-    private boolean isSizeEqualTo(Bitmap bitmap, int w, int h) {
+    private static boolean isSizeEqualTo(Bitmap bitmap, int w, int h) {
         return bitmap.getWidth() == w && bitmap.getHeight() == h;
     }
 
@@ -3803,7 +3803,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void recycleBitmap(Bitmap bm) {
+    private static void recycleBitmap(Bitmap bm) {
         if (bm != null) {
             bm.recycle();
         }
@@ -3856,7 +3856,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @ColorInt
-    private int rgb(@ColorInt int color) {
+    private static int rgb(@ColorInt int color) {
         return color & 0x00FFFFFF;
     }
 
@@ -3937,7 +3937,7 @@ public class MainActivity extends AppCompatActivity {
         addHistory();
     }
 
-    private void scaleAlpha(Bitmap bitmap) {
+    private static void scaleAlpha(Bitmap bitmap) {
         int w = bitmap.getWidth(), h = bitmap.getHeight(), area = w * h;
         int[] pixels = new int[area];
         bitmap.getPixels(pixels, 0, w, 0, 0, w, h);
