@@ -6,17 +6,17 @@ import android.widget.CheckBox;
 import android.widget.TextView;
 
 class Tab {
-    boolean sub;
-    boolean visible;
-    Bitmap bitmap;
-    Bitmap.CompressFormat compressFormat;
-    BitmapHistory history;
-    CellGrid cellGrid;
-    CheckBox cbLayerVisible;
-    float scale;
-    float translationX, translationY;
-    Paint paint;
-    String path;
-    TextView tvSub;
-    TextView tvTitle;
+    public boolean sub;
+    public boolean visible;
+    public Bitmap bitmap;
+    public Bitmap.CompressFormat compressFormat;
+    public BitmapHistory history;
+    public CellGrid cellGrid;
+    public CheckBox cbLayerVisible;
+    public float scale;
+    public float translationX, translationY;
+    public Paint paint;
+    public String path;
+    public TextView tvSub;
+    public TextView tvTitle;
 }

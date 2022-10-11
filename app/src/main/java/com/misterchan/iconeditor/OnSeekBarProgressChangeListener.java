@@ -2,7 +2,7 @@ package com.misterchan.iconeditor;
 
 import android.widget.SeekBar;
 
-interface OnProgressChangeListener extends SeekBar.OnSeekBarChangeListener {
+public interface OnSeekBarProgressChangeListener extends SeekBar.OnSeekBarChangeListener {
 
     void onProgressChanged(SeekBar seekBar, int progress);
 

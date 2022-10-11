@@ -642,7 +642,7 @@ public class MainActivity extends AppCompatActivity {
         drawBitmapOnView(preview.getBitmap());
     };
 
-    private final OnProgressChangeListener onThresholdChangeListener = (seekBar, progress) -> {
+    private final OnSeekBarProgressChangeListener onThresholdChangeListener = (seekBar, progress) -> {
         threshold = progress;
         if (progress == 0xFF) {
             preview.drawColor(Color.BLACK);
@@ -1686,20 +1686,20 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    private final OnProgressChangeListener onFilterContrastSeekBarProgressChangeListener = (seekBar, progress) -> {
+    private final OnSeekBarProgressChangeListener onFilterContrastSeekBarProgressChangeListener = (seekBar, progress) -> {
         float scale = progress / 10.0f, shift = 0xFF / 2.0f * (1.0f - scale);
         preview.setFilter(scale, shift);
         drawBitmapOnView(preview.getBitmap());
         tvState.setText(String.format(getString(R.string.state_contrast), scale));
     };
 
-    private final OnProgressChangeListener onFilterLightnessSeekBarProgressChangeListener = (seekBar, progress) -> {
+    private final OnSeekBarProgressChangeListener onFilterLightnessSeekBarProgressChangeListener = (seekBar, progress) -> {
         preview.setFilter(1.0f, progress);
         drawBitmapOnView(preview.getBitmap());
         tvState.setText(String.format(getString(R.string.state_lightness), progress));
     };
 
-    private final OnProgressChangeListener onFilterSaturationSeekBarProgressChangeListener = (seekBar, progress) -> {
+    private final OnSeekBarProgressChangeListener onFilterSaturationSeekBarProgressChangeListener = (seekBar, progress) -> {
         float f = progress / 10.0f;
         ColorMatrix colorMatrix = new ColorMatrix();
         colorMatrix.setSaturation(f);
@@ -1708,7 +1708,7 @@ public class MainActivity extends AppCompatActivity {
         tvState.setText(String.format(getString(R.string.state_saturation), f));
     };
 
-    private final OnProgressChangeListener onFilterThresholdSeekBarProgressChangeListener = (seekBar, progress) -> {
+    private final OnSeekBarProgressChangeListener onFilterThresholdSeekBarProgressChangeListener = (seekBar, progress) -> {
         float f = -0x100 * progress;
         preview.setFilter(new float[]{
                 0.213f * 0x100, 0.715f * 0x100, 0.072f * 0x100, 0.0f, f,
@@ -1728,7 +1728,7 @@ public class MainActivity extends AppCompatActivity {
         addHistory();
     };
 
-    private final OnProgressChangeListener onLayerAlphaSeekBarProgressChangeListener = (seekBar, progress) -> {
+    private final OnSeekBarProgressChangeListener onLayerAlphaSeekBarProgressChangeListener = (seekBar, progress) -> {
         tab.paint.setAlpha(progress);
         drawBitmapOnView();
         tvState.setText(String.format(
@@ -1736,7 +1736,7 @@ public class MainActivity extends AppCompatActivity {
                 progress));
     };
 
-    private final OnProgressChangeListener onRotateDegreeSeekBarProgressChangeListener = (seekBar, progress) -> {
+    private final OnSeekBarProgressChangeListener onRotateDegreeSeekBarProgressChangeListener = (seekBar, progress) -> {
         ivSelection.setRotation(progress);
         drawSelectionOnView();
         tvState.setText(String.format(getString(R.string.degrees_), progress));
@@ -3399,7 +3399,7 @@ public class MainActivity extends AppCompatActivity {
                 drawFloatingLayers();
                 createPreviewBitmap();
                 new HSVDialog(this)
-                        .setOnHSVChangeListener(onFilterHSVChangeListener)
+                        .setOnHSVChangeListener(onFilterHSVChangeListener, settings.getMultithreaded())
                         .setOnPositiveButtonClickListener(onFilterConfirmListener)
                         .setOnCancelListener(onFilterCancelListener)
                         .show();

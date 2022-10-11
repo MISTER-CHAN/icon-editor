@@ -59,21 +59,21 @@ public class ColorRangeDialog {
         sbHueMax = dialog.findViewById(R.id.sb_hue_max);
         sbValueMin = dialog.findViewById(R.id.sb_value_min);
         sbValueMax = dialog.findViewById(R.id.sb_value_max);
-        OnProgressChangeListener l = (OnProgressChangeListener) (seekBar, progress) ->
+        OnSeekBarProgressChangeListener l = (OnSeekBarProgressChangeListener) (seekBar, progress) ->
                 listener.onChange(sbHueMin.getProgress(), sbHueMax.getProgress(),
                         sbValueMin.getProgress(), sbValueMax.getProgress());
 
         sbHueMin.setOnSeekBarChangeListener(l);
         sbHueMax.setOnSeekBarChangeListener(l);
 
-        sbValueMin.setOnSeekBarChangeListener((OnProgressChangeListener) (seekBar, progress) -> {
+        sbValueMin.setOnSeekBarChangeListener((OnSeekBarProgressChangeListener) (seekBar, progress) -> {
             if (progress > sbValueMax.getProgress()) {
                 seekBar.setProgress(sbValueMax.getProgress());
             }
             l.onProgressChanged(seekBar, progress);
         });
 
-        sbValueMax.setOnSeekBarChangeListener((OnProgressChangeListener) (seekBar, progress) -> {
+        sbValueMax.setOnSeekBarChangeListener((OnSeekBarProgressChangeListener) (seekBar, progress) -> {
             if (progress < sbValueMin.getProgress()) {
                 seekBar.setProgress(sbValueMin.getProgress());
             }

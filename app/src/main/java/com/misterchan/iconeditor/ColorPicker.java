@@ -1,7 +1,6 @@
 package com.misterchan.iconeditor;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.view.View;
 import android.widget.EditText;
@@ -91,10 +90,10 @@ public class ColorPicker {
         sbRed = dialog.findViewById(R.id.sb_red);
         vPreview = dialog.findViewById(R.id.v_color_preview);
 
-        sbAlpha.setOnSeekBarChangeListener((OnProgressChangeListener) (seekBar, progress) -> etAlpha.setText(String.format(format, progress)));
-        sbBlue.setOnSeekBarChangeListener((OnProgressChangeListener) (seekBar, progress) -> etBlue.setText(String.format(format, progress)));
-        sbGreen.setOnSeekBarChangeListener((OnProgressChangeListener) (seekBar, progress) -> etGreen.setText(String.format(format, progress)));
-        sbRed.setOnSeekBarChangeListener((OnProgressChangeListener) (seekBar, progress) -> etRed.setText(String.format(format, progress)));
+        sbAlpha.setOnSeekBarChangeListener((OnSeekBarProgressChangeListener) (seekBar, progress) -> etAlpha.setText(String.format(format, progress)));
+        sbBlue.setOnSeekBarChangeListener((OnSeekBarProgressChangeListener) (seekBar, progress) -> etBlue.setText(String.format(format, progress)));
+        sbGreen.setOnSeekBarChangeListener((OnSeekBarProgressChangeListener) (seekBar, progress) -> etGreen.setText(String.format(format, progress)));
+        sbRed.setOnSeekBarChangeListener((OnSeekBarProgressChangeListener) (seekBar, progress) -> etRed.setText(String.format(format, progress)));
         etAlpha.addTextChangedListener((AfterTextChangedListener) s -> onChannelChanged(s, sbAlpha));
         etBlue.addTextChangedListener((AfterTextChangedListener) s -> onChannelChanged(s, sbBlue));
         etGreen.addTextChangedListener((AfterTextChangedListener) s -> onChannelChanged(s, sbGreen));

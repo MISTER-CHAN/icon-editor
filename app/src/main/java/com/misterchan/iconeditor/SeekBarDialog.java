@@ -9,13 +9,11 @@ import android.widget.SeekBar;
 
 import androidx.appcompat.app.AlertDialog;
 
-import java.security.PublicKey;
-
 public class SeekBarDialog {
 
     private final AlertDialog.Builder builder;
     private int max, min, progress;
-    private OnProgressChangeListener onProgressChangeListener;
+    private OnSeekBarProgressChangeListener onProgressChangeListener;
 
     public SeekBarDialog(Context context) {
         builder = new AlertDialog.Builder(context)
@@ -49,7 +47,7 @@ public class SeekBarDialog {
         return this;
     }
 
-    public SeekBarDialog setOnProgressChangeListener(OnProgressChangeListener listener) {
+    public SeekBarDialog setOnProgressChangeListener(OnSeekBarProgressChangeListener listener) {
         onProgressChangeListener = listener;
         return this;
     }

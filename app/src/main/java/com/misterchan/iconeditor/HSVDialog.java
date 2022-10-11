@@ -16,6 +16,7 @@ public class HSVDialog {
     }
 
     private final AlertDialog.Builder builder;
+    private boolean when = false;
     @Size(3)
     private final float[] deltaHSV = new float[3];
     private OnHSVChangeListener listener;
@@ -42,6 +43,11 @@ public class HSVDialog {
         return this;
     }
 
+    public HSVDialog setOnHSVChangeListener(OnHSVChangeListener listener, boolean when) {
+        this.when = when;
+        return setOnHSVChangeListener(listener);
+    }
+
     public void show() {
         AlertDialog dialog = builder.show();
 
@@ -52,21 +58,30 @@ public class HSVDialog {
         window.setAttributes(lp);
 
         ((SeekBar) dialog.findViewById(R.id.sb_hue))
-                .setOnSeekBarChangeListener((OnProgressChangeListener) (seekBar, progress) -> {
-                    deltaHSV[0] = progress;
-                    listener.onChange(deltaHSV);
+                .setOnSeekBarChangeListener(new OnSeekBarChangeListener(when) {
+                    @Override
+                    void onChanged(SeekBar seekBar, int progress) {
+                        deltaHSV[0] = progress;
+                        listener.onChange(deltaHSV);
+                    }
                 });
 
         ((SeekBar) dialog.findViewById(R.id.sb_saturation))
-                .setOnSeekBarChangeListener((OnProgressChangeListener) (seekBar, progress) -> {
-                    deltaHSV[1] = progress / 100.0f;
-                    listener.onChange(deltaHSV);
+                .setOnSeekBarChangeListener(new OnSeekBarChangeListener(when) {
+                    @Override
+                    void onChanged(SeekBar seekBar, int progress) {
+                        deltaHSV[1] = progress / 100.0f;
+                        listener.onChange(deltaHSV);
+                    }
                 });
 
         ((SeekBar) dialog.findViewById(R.id.sb_value))
-                .setOnSeekBarChangeListener((OnProgressChangeListener) (seekBar, progress) -> {
-                    deltaHSV[2] = progress / 100.0f;
-                    listener.onChange(deltaHSV);
+                .setOnSeekBarChangeListener(new OnSeekBarChangeListener(when) {
+                    @Override
+                    void onChanged(SeekBar seekBar, int progress) {
+                        deltaHSV[2] = progress / 100.0f;
+                        listener.onChange(deltaHSV);
+                    }
                 });
     }
 }

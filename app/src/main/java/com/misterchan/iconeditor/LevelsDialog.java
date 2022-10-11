@@ -88,7 +88,7 @@ public class LevelsDialog {
         sbOutputHighlights = dialog.findViewById(R.id.sb_output_highlights);
         sbOutputShadows = dialog.findViewById(R.id.sb_output_shadows);
 
-        OnProgressChangeListener l = (seekBar, progress) -> update();
+        OnSeekBarProgressChangeListener l = (seekBar, progress) -> update();
 
         sbInputHighlights.setOnSeekBarChangeListener(l);
         sbInputShadows.setOnSeekBarChangeListener(l);
