@@ -2859,7 +2859,7 @@ public class MainActivity extends AppCompatActivity {
         tab.cbLayerVisible = customView.findViewById(R.id.cb_layer_visible);
         tab.cbLayerVisible.setChecked(tab.visible);
         tab.cbLayerVisible.setOnCheckedChangeListener(getOnLayerVisibleCheckBoxCheckedChangeListener(tab));
-        tab.tvSub = findViewById(R.id.tv_sub);
+        tab.tvSub = customView.findViewById(R.id.tv_sub);
         tab.tvTitle = customView.findViewById(R.id.tv_title);
         tab.tvTitle.setText(R.string.untitled);
         tabLayout.addTab(t, true);
