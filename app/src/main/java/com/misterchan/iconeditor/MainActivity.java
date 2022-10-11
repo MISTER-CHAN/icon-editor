@@ -2067,11 +2067,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void closeTab() {
-        Bitmap bm = bitmap;
-        BitmapHistory h = tab.history;
-        int i = tabLayout.getSelectedTabPosition();
-        tabs.remove(i);
-        tabLayout.removeTabAt(i);
+        closeTab(tabLayout.getSelectedTabPosition());
+    }
+
+    private void closeTab(int position) {
+        final Tab tab = tabs.get(position);
+        final Bitmap bm = tab.bitmap;
+        final BitmapHistory h = tab.history;
+        tabs.remove(position);
+        tabLayout.removeTabAt(position);
         bm.recycle();
         h.recycle();
     }
@@ -2873,9 +2877,8 @@ public class MainActivity extends AppCompatActivity {
         clearCanvasAndInvalidateView(previewCanvas, ivPreview);
 
         if (fileToBeOpened != null) {
+            closeTab(0);
             openFile(fileToBeOpened);
-            tabs.remove(0);
-            tabLayout.removeTabAt(0);
         }
     }
 
