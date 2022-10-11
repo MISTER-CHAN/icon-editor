@@ -299,6 +299,7 @@ public class MainActivity extends AppCompatActivity {
     private Tab tab;
     private TabLayout tabLayout;
     private TextView tvState;
+    private Thread thread = new Thread();
     private Transformer transformer;
     private Uri fileToBeOpened;
     private View vBackgroundColor;
@@ -627,6 +628,7 @@ public class MainActivity extends AppCompatActivity {
         }
         drawBitmapOnView(preview.getBitmap());
         tvState.setText(String.format(getString(R.string.state_hsv), deltaHSV[0], deltaHSV[1], deltaHSV[2]));
+
     };
 
     private final LevelsDialog.OnLevelsChangeListener onFilterLevelsChangeListener = (inputShadows, inputHighlights, outputShadows, outputHighlights) -> {
@@ -2189,6 +2191,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
         RectF svp = getScaledVisiblePart(bitmap, translX, translY);
+        clearCanvas(viewCanvas);
         if (isScaledMuch()) {
             int w = vp.width(), h = vp.height();
             int[] pixels = new int[w * h];
@@ -2214,7 +2217,21 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void drawBitmapOnView(Bitmap bitmap) {
-        clearCanvas(viewCanvas);
+        drawBitmapOnView(bitmap, settings.getMultithreaded());
+    }
+
+    private void drawBitmapOnView(Bitmap bitmap, boolean multithreaded) {
+        if (multithreaded) {
+            if (!thread.isAlive()) {
+                thread = new Thread(() -> drawBmOnView(bitmap));
+                thread.start();
+            }
+        } else {
+            drawBmOnView(bitmap);
+        }
+    }
+
+    private void drawBmOnView(Bitmap bitmap) {
         final Rect vp = getVisiblePart(bitmap, translationX, translationY);
         if (vp.isEmpty()) {
             return;
@@ -2276,12 +2293,7 @@ public class MainActivity extends AppCompatActivity {
                 translationY > -scale ? translationY : translationY % scale,
                 relative);
         bp.recycle();
-        imageView.invalidate();
-    }
-
-    private void drawPreviewBitmapOnCanvas() {
-        canvas.drawBitmap(preview.getBitmap(), 0.0f, 0.0f, PAINT_SRC);
-        drawBitmapOnView();
+        runOnUiThread(() -> imageView.invalidate());
     }
 
     private void drawChessboardOnView() {
@@ -2420,6 +2432,11 @@ public class MainActivity extends AppCompatActivity {
                 translationY + toScaled(y + 1),
                 fillPaint);
         ivPreview.invalidate();
+    }
+
+    private void drawPreviewBitmapOnCanvas() {
+        canvas.drawBitmap(preview.getBitmap(), 0.0f, 0.0f, PAINT_SRC);
+        drawBitmapOnView();
     }
 
     private void drawRuler() {
@@ -3613,8 +3630,8 @@ public class MainActivity extends AppCompatActivity {
 
                 selection.left = translationX >= 0.0f ? 0 : toUnscaled(-translationX) + 1;
                 selection.top = translationY >= 0.0f ? 0 : toUnscaled(-translationY) + 1;
-                selection.right = selection.left + Math.min(clipboard.getWidth(), bitmap.getWidth());
-                selection.bottom = selection.top + Math.min(clipboard.getHeight(), bitmap.getHeight());
+                selection.right = selection.left + clipboard.getWidth();
+                selection.bottom = selection.top + clipboard.getHeight();
                 transformer = new Transformer(Bitmap.createBitmap(clipboard));
                 hasSelection = true;
                 rbTransformer.setChecked(true);

@@ -14,6 +14,7 @@
     <string name="background_color">底色</string>
     <string name="below_background">背景底下</string>
     <string name="blend_modes">混合模式</string>
+    <string name="blocking">阻塞（推荐）</string>
     <string name="blur_radius">模糊半径</string>
     <string name="bucket_fill">油漆桶</string>
     <string name="cancel">取消</string>
@@ -73,7 +74,8 @@
     <string name="ignore_alpha_channel">忽略 Alpha 通道</string>
     <string name="image">图像</string>
     <string name="image_size">图像尺寸</string>
-    <string name="independent_transl_and_scale">独立画布位置及缩放</string>
+    <string name="independent_layer">独立图层</string>
+    <string name="independent_transl_and_scale">独立各图层的位置及缩放</string>
     <string name="input">输入</string>
     <string name="invert">反相</string>
     <string name="language">语言</string>
@@ -93,6 +95,7 @@
     <string name="merge_as_new">合并为新图层</string>
     <string name="min">最小</string>
     <string name="move_layer">移动图层</string>
+    <string name="multithreaded_drawing_on_view">多线程绘画于视件</string>
     <string name="new_">新建</string>
     <string name="ninety_degrees">90°</string>
     <string name="not_supported_file_type">不支持的文件类型</string>
@@ -156,12 +159,14 @@
     <string name="sub">蒙版堆叠次序</string>
     <string name="swatch">颜色</string>
     <string name="text">文本</string>
+    <string name="threaded">线程</string>
     <string name="threshold">阈值</string>
     <string name="tolerance">容差</string>
     <string name="tool_options">工具选项</string>
     <string name="transform">变换</string>
     <string name="tutorial_merge_as_hidden">Tutorial</string>
     <string name="two_seventy_degrees">270°</string>
+    <string name="unified_transl_and_scale">统一各图层的位置及缩放</string>
     <string name="untitled">无标题</string>
     <string name="vertically">垂直</string>
     <string name="view">视图</string>

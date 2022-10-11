@@ -6,7 +6,9 @@
             app:defaultValue="false"
             app:key="its"
             app:singleLineTitle="false"
-            app:title="@string/independent_transl_and_scale" />
+            app:summaryOff="@string/unified_transl_and_scale"
+            app:summaryOn="@string/independent_transl_and_scale"
+            app:title="@string/independent_layer" />
 
         <ListPreference
             app:defaultValue="hex"
@@ -15,6 +17,14 @@
             app:key="acr"
             app:title="@string/argb_channels_radix"
             app:useSimpleSummaryProvider="true" />
+
+        <SwitchPreferenceCompat
+            app:defaultValue="false"
+            app:key="mt"
+            app:singleLineTitle="false"
+            app:summaryOff="@string/blocking"
+            app:summaryOn="@string/threaded"
+            app:title="@string/multithreaded_drawing_on_view" />
 
         <ListPreference
             app:defaultValue="def"

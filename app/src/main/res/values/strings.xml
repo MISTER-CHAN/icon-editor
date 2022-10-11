@@ -16,6 +16,7 @@
     <string name="background_color">Background Color</string>
     <string name="below_background">Below Background</string>
     <string name="blend_modes">Blend Modes</string>
+    <string name="blocking">Blocking (Recommended)</string>
     <string name="blur_radius">Blur</string>
     <string name="bucket_fill">Bucket Fill</string>
     <string name="c" translatable="false">C</string>
@@ -87,7 +88,8 @@
     <string name="ignore_alpha_channel">Ignore Alpha Channel</string>
     <string name="image">Image</string>
     <string name="image_size">Image Size</string>
-    <string name="independent_transl_and_scale">Independent Canvas Location and Scale</string>
+    <string name="independent_layer">Independent Layer</string>
+    <string name="independent_transl_and_scale">Independent Location and Scale of Each Layer</string>
     <string name="input">Input</string>
     <string name="invert">Invert</string>
     <string name="language">Language</string>
@@ -111,6 +113,7 @@
     <string name="min">Min</string>
     <string name="mister_chan" translatable="false">MISTER_CHAN</string>
     <string name="move_layer">Move Layer</string>
+    <string name="multithreaded_drawing_on_view">Multi-thread Drawing on View</string>
     <string name="new_">New</string>
     <string name="ninety_degrees">90°</string>
     <string name="not_supported_file_type">Not supported file type</string>
@@ -184,6 +187,7 @@
     <string name="sub">Stacking Order of Mask</string>
     <string name="swatch">Swatch</string>
     <string name="text">Text</string>
+    <string name="threaded">Threaded</string>
     <string name="threshold">Threshold</string>
     <string name="tolerance">Tolerance</string>
     <string name="tool_options">Tool Options</string>
@@ -191,6 +195,7 @@
     <string name="tutorial_merge_as_hidden">Tutorial</string>
     <string name="two_seventy_degrees">270°</string>
     <string name="undo" translatable="false">↶</string>
+    <string name="unified_transl_and_scale">Unified Location and Scale of Each Layer</string>
     <string name="untitled">Untitled</string>
     <string name="v" translatable="false">V</string>
     <string name="vertically">Vertically</string>

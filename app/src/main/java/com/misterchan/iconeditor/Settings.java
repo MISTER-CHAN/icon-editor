@@ -9,10 +9,12 @@ public class Settings {
     private static final String FORMAT_D = "%d";
 
     private static final String KEY_ACR = "acr";
-    private static final String KEY_LOC = "loc";
     private static final String KEY_ITS = "its";
+    private static final String KEY_LOC = "loc";
+    private static final String KEY_MT = "mt";
 
-    private boolean independentTranslAndScale = true;
+    private boolean independentTranslAndScale = false;
+    private boolean multithreaded = false;
     private int argbChannelsRadix = 16;
     private String argbChannelsFormat = FORMAT_02X;
 
@@ -28,9 +30,14 @@ public class Settings {
         return independentTranslAndScale;
     }
 
+    public boolean getMultithreaded() {
+        return multithreaded;
+    }
+
     public void update(Context context, SharedPreferences preferences) {
         update(context, preferences, KEY_ACR);
         update(context, preferences, KEY_ITS);
+        update(context, preferences, KEY_MT);
     }
 
     public void update(Context context, SharedPreferences preferences, String key) {
@@ -49,11 +56,15 @@ public class Settings {
                 argbChannelsFormat = argbChannelsRadix == 16 ? FORMAT_02X : FORMAT_D;
                 break;
 
+            case KEY_ITS:
+                independentTranslAndScale = preferences.getBoolean(KEY_ITS, false);
+                break;
+
             case KEY_LOC:
                 break;
 
-            case KEY_ITS:
-                independentTranslAndScale = preferences.getBoolean(KEY_ITS, true);
+            case KEY_MT:
+                multithreaded = preferences.getBoolean(KEY_MT, false);
                 break;
         }
     }
