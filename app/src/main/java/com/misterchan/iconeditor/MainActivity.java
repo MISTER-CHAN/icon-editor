@@ -2195,7 +2195,6 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
         RectF svp = getScaledVisiblePart(bitmap, translX, translY);
-        clearCanvas(viewCanvas);
         if (isScaledMuch()) {
             int w = vp.width(), h = vp.height();
             int[] pixels = new int[w * h];
@@ -2236,6 +2235,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void drawBmOnView(Bitmap bitmap) {
+        clearCanvas(viewCanvas);
         final Rect vp = getVisiblePart(bitmap, translationX, translationY);
         if (vp.isEmpty()) {
             return;
