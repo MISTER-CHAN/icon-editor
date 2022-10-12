@@ -3,6 +3,7 @@ package com.misterchan.iconeditor;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.view.Gravity;
+import android.view.Window;
 import android.view.WindowManager;
 import android.widget.SeekBar;
 
@@ -17,9 +18,10 @@ public class HSVDialog {
 
     private final AlertDialog.Builder builder;
     private boolean when = false;
+    private OnHSVChangeListener listener;
+
     @Size(3)
     private final float[] deltaHSV = new float[3];
-    private OnHSVChangeListener listener;
 
     public HSVDialog(Context context) {
         builder = new AlertDialog.Builder(context)
@@ -49,10 +51,10 @@ public class HSVDialog {
     }
 
     public void show() {
-        AlertDialog dialog = builder.show();
+        final AlertDialog dialog = builder.show();
 
-        android.view.Window window = dialog.getWindow();
-        WindowManager.LayoutParams lp = window.getAttributes();
+        final Window window = dialog.getWindow();
+        final WindowManager.LayoutParams lp = window.getAttributes();
         lp.flags &= ~WindowManager.LayoutParams.FLAG_DIM_BEHIND;
         lp.gravity = Gravity.BOTTOM;
         window.setAttributes(lp);

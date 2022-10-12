@@ -9,6 +9,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.view.Gravity;
+import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.SeekBar;
@@ -33,7 +34,7 @@ public class LevelsDialog {
     private SeekBar sbOutputHighlights, sbOutputShadows;
 
     public LevelsDialog(Context context) {
-        DialogInterface.OnDismissListener onDismissListener = dialog -> {
+        final DialogInterface.OnDismissListener onDismissListener = dialog -> {
             bitmap.recycle();
             bitmap = null;
             progressCanvas = null;
@@ -44,7 +45,7 @@ public class LevelsDialog {
                 .setOnDismissListener(onDismissListener)
                 .setTitle(R.string.levels)
                 .setView(R.layout.levels);
-        TypedArray typedArray = context.getTheme().obtainStyledAttributes(new int[]{android.R.attr.textColorPrimary});
+        final TypedArray typedArray = context.getTheme().obtainStyledAttributes(new int[]{android.R.attr.textColorPrimary});
         paint.setColor(typedArray.getColor(0, 0xFF000000));
         typedArray.recycle();
     }
@@ -73,10 +74,10 @@ public class LevelsDialog {
     }
 
     public LevelsDialog show() {
-        AlertDialog dialog = builder.show();
+        final AlertDialog dialog = builder.show();
 
-        android.view.Window window = dialog.getWindow();
-        WindowManager.LayoutParams lp = window.getAttributes();
+        final Window window = dialog.getWindow();
+        final WindowManager.LayoutParams lp = window.getAttributes();
         lp.flags &= ~WindowManager.LayoutParams.FLAG_DIM_BEHIND;
         lp.gravity = Gravity.BOTTOM;
         window.setAttributes(lp);
@@ -88,7 +89,7 @@ public class LevelsDialog {
         sbOutputHighlights = dialog.findViewById(R.id.sb_output_highlights);
         sbOutputShadows = dialog.findViewById(R.id.sb_output_shadows);
 
-        OnSeekBarProgressChangeListener l = (seekBar, progress) -> update();
+        final OnSeekBarProgressChangeListener l = (seekBar, progress) -> update();
 
         sbInputHighlights.setOnSeekBarChangeListener(l);
         sbInputShadows.setOnSeekBarChangeListener(l);

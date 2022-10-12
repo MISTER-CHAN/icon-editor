@@ -76,11 +76,11 @@ public class Transformer {
     }
 
     public void rotate(float degrees) {
-        int w = bitmap.getWidth(), h = bitmap.getHeight();
-        float semiWidth = w / 2.0f, semiHeight = h / 2.0f;
-        float diagonal = (float) Math.sqrt(w * w + h * h), semiDiag = diagonal / 2.0f;
-        Bitmap bm = Bitmap.createBitmap((int) Math.ceil(diagonal), (int) Math.ceil(diagonal), Bitmap.Config.ARGB_8888);
-        Matrix matrix = new Matrix();
+        final int w = bitmap.getWidth(), h = bitmap.getHeight();
+        final float semiWidth = w / 2.0f, semiHeight = h / 2.0f;
+        final float diagonal = (float) Math.sqrt(w * w + h * h), semiDiag = diagonal / 2.0f;
+        final Bitmap bm = Bitmap.createBitmap((int) Math.ceil(diagonal), (int) Math.ceil(diagonal), Bitmap.Config.ARGB_8888);
+        final Matrix matrix = new Matrix();
         matrix.setTranslate((float) Math.floor(semiDiag - semiWidth), (float) Math.floor(semiDiag - semiHeight));
         matrix.postRotate(degrees, semiDiag, semiDiag);
         new Canvas(bm).drawBitmap(bitmap, matrix, PAINT);
@@ -89,7 +89,7 @@ public class Transformer {
     }
 
     public void stretch(int width, int height) {
-        Bitmap bm = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        final Bitmap bm = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         new Canvas(bm).drawBitmap(bitmap,
                 new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight()),
                 new Rect(0, 0, width, height),

@@ -43,14 +43,9 @@ public class Settings {
     public void update(Context context, SharedPreferences preferences, String key) {
         switch (key) {
             case KEY_ACR:
-                if (preferences.contains(KEY_ACR)) {
-                    try {
-                        argbChannelsRadix = Integer.parseUnsignedInt(preferences.getString(KEY_ACR, "16"));
-                    } catch (NumberFormatException e) {
-                        argbChannelsRadix = 16;
-                    }
-                } else {
-                    preferences.edit().putString(KEY_ACR, "16").apply();
+                try {
+                    argbChannelsRadix = Integer.parseUnsignedInt(preferences.getString(KEY_ACR, "16"));
+                } catch (NumberFormatException e) {
                     argbChannelsRadix = 16;
                 }
                 argbChannelsFormat = argbChannelsRadix == 16 ? FORMAT_02X : FORMAT_D;

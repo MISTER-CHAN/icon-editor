@@ -3,6 +3,7 @@ package com.misterchan.iconeditor;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.view.Gravity;
+import android.view.Window;
 import android.view.WindowManager;
 import android.widget.SeekBar;
 
@@ -24,8 +25,8 @@ public class ColorBalanceDialog {
     };
 
     private final OnSeekBarProgressChangeListener onProgressChangeListener = (seekBar, progress) -> {
-        float r = sbRed.getProgress() / 10.0f, g = sbGreen.getProgress() / 10.0f, b = sbBlue.getProgress() / 10.0f;
-        float average = (r + g + b) / 3.0f;
+        final float r = sbRed.getProgress() / 10.0f, g = sbGreen.getProgress() / 10.0f, b = sbBlue.getProgress() / 10.0f;
+        final float average = (r + g + b) / 3.0f;
         matrix[0] = 1.0f + r - average;
         matrix[6] = 1.0f + g - average;
         matrix[12] = 1.0f + b - average;
@@ -55,10 +56,10 @@ public class ColorBalanceDialog {
     }
 
     public void show() {
-        AlertDialog dialog = builder.show();
+        final AlertDialog dialog = builder.show();
 
-        android.view.Window window = dialog.getWindow();
-        WindowManager.LayoutParams lp = window.getAttributes();
+        final Window window = dialog.getWindow();
+        final WindowManager.LayoutParams lp = window.getAttributes();
         lp.flags &= ~WindowManager.LayoutParams.FLAG_DIM_BEHIND;
         lp.gravity = Gravity.BOTTOM;
         window.setAttributes(lp);

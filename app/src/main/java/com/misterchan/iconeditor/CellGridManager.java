@@ -61,7 +61,7 @@ public class CellGridManager {
 
     public void show() {
 
-        AlertDialog dialog = builder.show();
+        final AlertDialog dialog = builder.show();
 
         cbEnabled = dialog.findViewById(R.id.cb_enabled);
         etSizeX = dialog.findViewById(R.id.et_size_x);

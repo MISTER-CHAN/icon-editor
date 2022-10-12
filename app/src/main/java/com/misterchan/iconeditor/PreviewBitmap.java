@@ -48,7 +48,7 @@ public class PreviewBitmap {
     }
 
     public void drawColor(@ColorInt int color) {
-        Paint paint = new Paint();
+        final Paint paint = new Paint();
         paint.setColor(color);
         paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
         canvas.drawRect(rect, paint);
@@ -90,8 +90,8 @@ public class PreviewBitmap {
     }
 
     public void setFilter(@Size(20) float[] colorMatrix) {
-        int w = bm.getWidth(), h = bm.getHeight(), area = w * h;
-        int[] pixels = new int[area];
+        final int w = bm.getWidth(), h = bm.getHeight(), area = w * h;
+        final int[] pixels = new int[area];
         bm.getPixels(pixels, 0, w, 0, 0, w, h);
         for (int i = 0; i < area; ++i) {
             final int r = Color.red(pixels[i]), g = Color.green(pixels[i]), b = Color.blue(pixels[i]),
@@ -106,8 +106,8 @@ public class PreviewBitmap {
     }
 
     public void setFilter(float scale, float shift) {
-        int w = bm.getWidth(), h = bm.getHeight(), area = w * h;
-        int[] pixels = new int[area];
+        final int w = bm.getWidth(), h = bm.getHeight(), area = w * h;
+        final int[] pixels = new int[area];
         bm.getPixels(pixels, 0, w, 0, 0, w, h);
         for (int i = 0; i < area; ++i) {
             final int r = Color.red(pixels[i]), g = Color.green(pixels[i]), b = Color.blue(pixels[i]),

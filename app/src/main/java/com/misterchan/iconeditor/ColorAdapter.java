@@ -12,7 +12,7 @@ import java.util.List;
 public class ColorAdapter extends RecyclerView.Adapter<ColorAdapter.ViewHolder> {
 
     protected static class ViewHolder extends RecyclerView.ViewHolder {
-        private View view;
+        private final View view;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -20,7 +20,7 @@ public class ColorAdapter extends RecyclerView.Adapter<ColorAdapter.ViewHolder> 
         }
     }
 
-    private List<Integer> colors;
+    private final List<Integer> colors;
     private View.OnClickListener onItemClickListener;
     private View.OnLongClickListener onItemLongClickListener;
 
@@ -45,7 +45,7 @@ public class ColorAdapter extends RecyclerView.Adapter<ColorAdapter.ViewHolder> 
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View item = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_color, parent, false);
+        final View item = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_color, parent, false);
         return new ViewHolder(item);
     }
 

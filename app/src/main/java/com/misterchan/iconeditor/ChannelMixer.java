@@ -3,9 +3,11 @@ package com.misterchan.iconeditor;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.view.Gravity;
+import android.view.Window;
 import android.view.WindowManager;
 import android.widget.SeekBar;
 
+import androidx.annotation.Size;
 import androidx.appcompat.app.AlertDialog;
 
 public class ChannelMixer {
@@ -13,6 +15,7 @@ public class ChannelMixer {
     private final AlertDialog.Builder builder;
     private ColorMatrixManager.OnMatrixElementsChangeListener onMatrixElementsChangeListener;
 
+    @Size(20)
     private final float[] a = new float[]{
             1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
             0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
@@ -49,10 +52,10 @@ public class ChannelMixer {
     }
 
     public void show() {
-        AlertDialog dialog = builder.show();
+        final AlertDialog dialog = builder.show();
 
-        android.view.Window window = dialog.getWindow();
-        WindowManager.LayoutParams lp = window.getAttributes();
+        final Window window = dialog.getWindow();
+        final WindowManager.LayoutParams lp = window.getAttributes();
         lp.flags &= ~WindowManager.LayoutParams.FLAG_DIM_BEHIND;
         lp.gravity = Gravity.BOTTOM;
         window.setAttributes(lp);

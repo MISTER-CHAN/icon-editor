@@ -63,15 +63,15 @@ public class SeekBarDialog {
     }
 
     public void show() {
-        AlertDialog dialog = builder.show();
+        final AlertDialog dialog = builder.show();
 
-        Window window = dialog.getWindow();
-        WindowManager.LayoutParams lp = window.getAttributes();
+        final Window window = dialog.getWindow();
+        final WindowManager.LayoutParams lp = window.getAttributes();
         lp.flags &= ~WindowManager.LayoutParams.FLAG_DIM_BEHIND;
         lp.gravity = Gravity.BOTTOM;
         window.setAttributes(lp);
 
-        SeekBar seekBar = dialog.findViewById(R.id.seek_bar);
+        final SeekBar seekBar = dialog.findViewById(R.id.seek_bar);
         seekBar.setMax(max);
         seekBar.setMin(min);
         seekBar.setProgress(progress);

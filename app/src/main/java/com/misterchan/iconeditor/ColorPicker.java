@@ -42,7 +42,7 @@ public class ColorPicker {
     }
 
     public static ColorPicker make(Context context, int titleId, Settings settings, final OnColorPickListener onColorPickListener, @ColorInt final Integer oldColor, boolean canDeleteOld) {
-        ColorPicker picker = new ColorPicker();
+        final ColorPicker picker = new ColorPicker();
         picker.radix = settings.getArgbChannelsRadix();
         picker.format = settings.getArgbChannelsFormat();
         picker.dialogBuilder = new AlertDialog.Builder(context)
@@ -78,7 +78,7 @@ public class ColorPicker {
 
     public void show() {
 
-        AlertDialog dialog = dialogBuilder.show();
+        final AlertDialog dialog = dialogBuilder.show();
 
         etAlpha = dialog.findViewById(R.id.et_alpha);
         etBlue = dialog.findViewById(R.id.et_blue);

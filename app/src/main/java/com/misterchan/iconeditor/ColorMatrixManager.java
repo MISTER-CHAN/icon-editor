@@ -3,6 +3,7 @@ package com.misterchan.iconeditor;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.view.Gravity;
+import android.view.Window;
 import android.view.WindowManager;
 import android.widget.EditText;
 
@@ -22,6 +23,7 @@ public class ColorMatrixManager {
     private AlertDialog.Builder dialogBuilder;
     private OnMatrixElementsChangeListener onMatrixElementsChangeListener;
 
+    @Size(20)
     private float[] a;
 
     public static ColorMatrixManager make(Context context,
@@ -61,7 +63,7 @@ public class ColorMatrixManager {
                                           final DialogInterface.OnClickListener onPosButtonClickListener,
                                           final DialogInterface.OnCancelListener onCancelListener,
                                           @Size(value = 20) float[] defaultMatrix) {
-        ColorMatrixManager manager = new ColorMatrixManager();
+        final ColorMatrixManager manager = new ColorMatrixManager();
 
         manager.a = defaultMatrix;
 
@@ -82,10 +84,10 @@ public class ColorMatrixManager {
     }
 
     public void show() {
-        AlertDialog dialog = dialogBuilder.show();
+        final AlertDialog dialog = dialogBuilder.show();
 
-        android.view.Window window = dialog.getWindow();
-        WindowManager.LayoutParams lp = window.getAttributes();
+        final Window window = dialog.getWindow();
+        final WindowManager.LayoutParams lp = window.getAttributes();
         lp.flags &= ~WindowManager.LayoutParams.FLAG_DIM_BEHIND;
         lp.gravity = Gravity.BOTTOM;
         window.setAttributes(lp);
@@ -107,7 +109,7 @@ public class ColorMatrixManager {
 
     private void tryParsing(int index, String s) {
         try {
-            float f = Float.parseFloat(s);
+            final float f = Float.parseFloat(s);
             a[index] = f;
         } catch (NumberFormatException e) {
         }

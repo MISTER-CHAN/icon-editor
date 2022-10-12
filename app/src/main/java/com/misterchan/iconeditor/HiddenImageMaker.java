@@ -25,7 +25,7 @@ public class HiddenImageMaker {
         return Math.max(Math.min(a, (float) 1.0), (float) 0.0);
     }
 
-    public static void merge(Context context, final @Size(2) Bitmap[] bitmaps,
+    public static void merge(Context context, @Size(2) final Bitmap[] bitmaps,
                              final OnFinishSettingListener listener) {
 
         final HiddenImageMaker merger = new HiddenImageMaker();
@@ -86,8 +86,8 @@ public class HiddenImageMaker {
             }));
             canvases[1].drawBitmap(bitmaps[1], left[1], top[1], paint);
         }
-        int[][] pixels = {new int[area], new int[area]};
-        int[] pixels_ = new int[area];
+        final int[][] pixels = {new int[area], new int[area]};
+        final int[] pixels_ = new int[area];
         bitmaps_[0].getPixels(pixels[0], 0, w, 0, 0, w, h);
         bitmaps_[1].getPixels(pixels[1], 0, w, 0, 0, w, h);
 
@@ -95,12 +95,12 @@ public class HiddenImageMaker {
         bitmaps_[1].recycle();
 
         for (int i = 0; i < area; ++i) {
-            float[] red = {Color.red(pixels[0][i]) / 255.0f, Color.red(pixels[1][i]) / 255.0f},
+            final float[] red = {Color.red(pixels[0][i]) / 255.0f, Color.red(pixels[1][i]) / 255.0f},
                     green = {Color.green(pixels[0][i]) / 255.0f, Color.green(pixels[1][i]) / 255.0f},
                     blue = {Color.blue(pixels[0][i]) / 255.0f, Color.blue(pixels[1][i]) / 255.0f};
-            float[] average = {(red[0] + green[0] + blue[0]) / 3.0f, (red[1] + green[1] + blue[1]) / 3.0f};
-            float a = inRangeFrom0To1(1 + (average[1] - average[0]));
-            float ar = inRangeFrom0To1(1 + (red[1] - red[0])),
+            final float[] average = {(red[0] + green[0] + blue[0]) / 3.0f, (red[1] + green[1] + blue[1]) / 3.0f};
+            final float a = inRangeFrom0To1(1 + (average[1] - average[0]));
+            final float ar = inRangeFrom0To1(1 + (red[1] - red[0])),
                     ag = inRangeFrom0To1(1 + (green[1] - green[0])),
                     ab = inRangeFrom0To1(1 + (blue[1] - blue[0]));
             pixels_[i] = Color.argb(
@@ -110,7 +110,7 @@ public class HiddenImageMaker {
                     inRangeFrom0To1(ab > 0.0f ? (blue[1] / ab) : 1.0f));
         }
 
-        Bitmap bm = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+        final Bitmap bm = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
         bm.setPixels(pixels_, 0, w, 0, 0, w, h);
         return bm;
     }

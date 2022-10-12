@@ -34,7 +34,7 @@ public class NewGraphicPropertiesDialog {
     }
 
     public void show() {
-        AlertDialog dialog = builder.show();
+        final AlertDialog dialog = builder.show();
 
         etSizeX = dialog.findViewById(R.id.et_size_x);
         etSizeY = dialog.findViewById(R.id.et_size_y);

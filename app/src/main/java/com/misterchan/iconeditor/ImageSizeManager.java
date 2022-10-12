@@ -23,7 +23,7 @@ public class ImageSizeManager {
     private AfterTextChangedListener onSizeXTextChangedListener, onSizeYTextChangedListener;
 
     public static ImageSizeManager make(Context context, Bitmap bitmap, OnUpdateListener listener) {
-        ImageSizeManager manager = new ImageSizeManager();
+        final ImageSizeManager manager = new ImageSizeManager();
 
         manager.bitmap = bitmap;
         manager.listener = listener;
@@ -60,7 +60,7 @@ public class ImageSizeManager {
 
     private void keepAspectRatio(String s, EditText et, double ratio, AfterTextChangedListener listener) {
         try {
-            int i = Integer.parseUnsignedInt(s);
+            final int i = Integer.parseUnsignedInt(s);
             et.removeTextChangedListener(listener);
             et.setText(String.valueOf((int) (i * ratio)));
             et.addTextChangedListener(listener);
@@ -70,7 +70,7 @@ public class ImageSizeManager {
 
     public void show() {
 
-        AlertDialog dialog = builder.show();
+        final AlertDialog dialog = builder.show();
 
         etSizeX = dialog.findViewById(R.id.et_img_size_x);
         etSizeY = dialog.findViewById(R.id.et_img_size_y);

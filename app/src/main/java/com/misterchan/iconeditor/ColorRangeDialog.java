@@ -3,6 +3,7 @@ package com.misterchan.iconeditor;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.view.Gravity;
+import android.view.Window;
 import android.view.WindowManager;
 import android.widget.SeekBar;
 
@@ -47,10 +48,10 @@ public class ColorRangeDialog {
 
     public void show() {
 
-        AlertDialog dialog = builder.show();
+        final AlertDialog dialog = builder.show();
 
-        android.view.Window window = dialog.getWindow();
-        WindowManager.LayoutParams lp = window.getAttributes();
+        final Window window = dialog.getWindow();
+        final WindowManager.LayoutParams lp = window.getAttributes();
         lp.flags &= ~WindowManager.LayoutParams.FLAG_DIM_BEHIND;
         lp.gravity = Gravity.BOTTOM;
         window.setAttributes(lp);
@@ -59,7 +60,7 @@ public class ColorRangeDialog {
         sbHueMax = dialog.findViewById(R.id.sb_hue_max);
         sbValueMin = dialog.findViewById(R.id.sb_value_min);
         sbValueMax = dialog.findViewById(R.id.sb_value_max);
-        OnSeekBarProgressChangeListener l = (OnSeekBarProgressChangeListener) (seekBar, progress) ->
+        final OnSeekBarProgressChangeListener l = (OnSeekBarProgressChangeListener) (seekBar, progress) ->
                 listener.onChange(sbHueMin.getProgress(), sbHueMax.getProgress(),
                         sbValueMin.getProgress(), sbValueMax.getProgress());
 
