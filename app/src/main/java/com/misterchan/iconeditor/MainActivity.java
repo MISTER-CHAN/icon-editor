@@ -1383,6 +1383,7 @@ public class MainActivity extends AppCompatActivity {
                                 if (width > 0 && height > 0) {
                                     transformer.stretch(width, height);
                                 } else if (transformer != null) {
+                                    hasSelection = false;
                                     recycleTransformer();
                                 }
                                 drawBitmapOnView();
