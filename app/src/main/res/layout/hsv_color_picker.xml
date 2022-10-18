@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <View
+        android:id="@+id/v_color_preview"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_marginHorizontal="8dp"
+        android:background="@color/black" />
+
+    <GridLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:columnCount="3"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:rowCount="3">
+
+        <com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_hue"
+                android:layout_width="64dp"
+                android:layout_height="wrap_content"
+                android:background="@color/transparent"
+                android:hint="@string/h"
+                android:inputType="numberDecimal"
+                android:textAlignment="center" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <TextView
+            android:layout_gravity="center_vertical"
+            android:text="@string/degree" />
+
+        <SeekBar
+            android:id="@+id/sb_hue"
+            android:layout_gravity="center_vertical|fill_horizontal"
+            android:max="360" />
+
+        <com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_saturation"
+                android:layout_width="64dp"
+                android:layout_height="wrap_content"
+                android:background="@color/transparent"
+                android:hint="@string/s"
+                android:inputType="numberDecimal"
+                android:textAlignment="center" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <TextView
+            android:layout_gravity="center_vertical"
+            android:text="@string/percent" />
+
+        <SeekBar
+            android:id="@+id/sb_saturation"
+            android:layout_gravity="center_vertical|fill_horizontal"
+            android:max="100" />
+
+        <com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_value"
+                android:layout_width="64dp"
+                android:layout_height="wrap_content"
+                android:background="@color/transparent"
+                android:hint="@string/v"
+                android:inputType="numberDecimal"
+                android:textAlignment="center" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <TextView
+            android:layout_gravity="center_vertical"
+            android:text="@string/percent" />
+
+        <SeekBar
+            android:id="@+id/sb_value"
+            android:layout_gravity="center_vertical|fill_horizontal"
+            android:max="100" />
+    </GridLayout>
+</LinearLayout>

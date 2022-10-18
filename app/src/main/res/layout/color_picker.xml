@@ -47,7 +47,7 @@
 
         <SeekBar
             android:id="@+id/sb_alpha"
-            android:layout_gravity="fill"
+            android:layout_gravity="center_vertical|fill_horizontal"
             android:max="255"
             android:progress="255" />
 
@@ -66,7 +66,7 @@
 
         <SeekBar
             android:id="@+id/sb_red"
-            android:layout_gravity="fill"
+            android:layout_gravity="center_vertical|fill_horizontal"
             android:max="255" />
 
         <com.google.android.material.textfield.TextInputLayout>
@@ -84,7 +84,7 @@
 
         <SeekBar
             android:id="@+id/sb_green"
-            android:layout_gravity="fill"
+            android:layout_gravity="center_vertical|fill_horizontal"
             android:max="255" />
 
         <com.google.android.material.textfield.TextInputLayout>
@@ -102,8 +102,15 @@
 
         <SeekBar
             android:id="@+id/sb_blue"
-            android:layout_gravity="fill"
+            android:layout_gravity="center_vertical|fill_horizontal"
             android:max="255" />
-
     </GridLayout>
+
+    <TextView
+        android:id="@+id/tv_hsv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:text="@string/convert_from_hsv_u"
+        android:textColor="@color/blue" />
 </LinearLayout>

@@ -38,6 +38,8 @@
     <string name="color_replace">Color Replace</string>
     <string name="contiguous">Contiguous</string>
     <string name="contrast">Contrast</string>
+    <string name="convert_from_hsv">Convert from HSV</string>
+    <string name="convert_from_hsv_u"><u>Convert from HSV</u></string>
     <string name="coordinate" translatable="false">(%d, %d)</string>
     <string name="copy">Copy</string>
     <string name="copy_as_new">Copy as New</string>

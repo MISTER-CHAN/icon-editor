@@ -35,6 +35,8 @@
     <string name="color_replace">颜色替换</string>
     <string name="contiguous">连续</string>
     <string name="contrast">对比度</string>
+    <string name="convert_from_hsv">由 HSV 转换</string>
+    <string name="convert_from_hsv_u"><u>由 HSV 转换</u></string>
     <string name="copy">复制</string>
     <string name="copy_as_new">复制为新图像</string>
     <string name="crop">裁剪</string>

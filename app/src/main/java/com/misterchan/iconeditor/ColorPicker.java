@@ -17,21 +17,28 @@ public class ColorPicker {
 
     private static final String FORMAT_02X = "%02X";
 
-    @ColorInt
-    private int newColor, oldColor;
-    private int radix = 16;
-    private String format = FORMAT_02X;
-
     private AlertDialog.Builder dialogBuilder;
+    private Context context;
     private EditText etAlpha;
     private EditText etBlue;
     private EditText etGreen;
     private EditText etRed;
+    private int radix = 16;
     private SeekBar sbAlpha;
     private SeekBar sbBlue;
     private SeekBar sbGreen;
     private SeekBar sbRed;
+    private String format = FORMAT_02X;
     private View vPreview;
+
+    @ColorInt
+    private int newColor, oldColor;
+
+    private void loadColor(@ColorInt int color) {
+        etRed.setText(String.format(format, Color.red(color)));
+        etGreen.setText(String.format(format, Color.green(color)));
+        etBlue.setText(String.format(format, Color.blue(color)));
+    }
 
     public static ColorPicker make(Context context, int titleId, Settings settings, final OnColorPickListener onColorPickListener) {
         return make(context, titleId, settings, onColorPickListener, null, false);
@@ -43,8 +50,9 @@ public class ColorPicker {
 
     public static ColorPicker make(Context context, int titleId, Settings settings, final OnColorPickListener onColorPickListener, @ColorInt final Integer oldColor, boolean canDeleteOld) {
         final ColorPicker picker = new ColorPicker();
-        picker.radix = settings.getArgbChannelsRadix();
+        picker.context = context;
         picker.format = settings.getArgbChannelsFormat();
+        picker.radix = settings.getArgbChannelsRadix();
         picker.dialogBuilder = new AlertDialog.Builder(context)
                 .setNegativeButton(R.string.cancel, null)
                 .setPositiveButton(R.string.ok, (dialog, which) -> onColorPickListener.onPick(oldColor, picker.newColor))
@@ -99,8 +107,13 @@ public class ColorPicker {
         etGreen.addTextChangedListener((AfterTextChangedListener) s -> onChannelChanged(s, sbGreen));
         etRed.addTextChangedListener((AfterTextChangedListener) s -> onChannelChanged(s, sbRed));
         etAlpha.setText(String.format(format, Color.alpha(oldColor)));
-        etRed.setText(String.format(format, Color.red(oldColor)));
-        etGreen.setText(String.format(format, Color.green(oldColor)));
-        etBlue.setText(String.format(format, Color.blue(oldColor)));
+        loadColor(oldColor);
+
+        dialog.findViewById(R.id.tv_hsv).setOnClickListener(v ->
+                HSVColorPicker
+                        .make(context,
+                                ((oldColor, newColor) -> loadColor(newColor)),
+                                this.newColor)
+                        .show());
     }
 }
