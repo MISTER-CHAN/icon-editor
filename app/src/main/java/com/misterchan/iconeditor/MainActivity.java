@@ -449,20 +449,21 @@ public class MainActivity extends AppCompatActivity {
         if (result == null) {
             return;
         }
-        Matcher matcher = PATTERN_TREE.matcher(result.toString());
+
+        final Matcher matcher = PATTERN_TREE.matcher(result.toString());
         if (!matcher.find()) {
             return;
         }
         tree = matcher.group("path").replace("%2F", "/");
 
-        AlertDialog fileNameDialog = new AlertDialog.Builder(this)
+        final AlertDialog fileNameDialog = new AlertDialog.Builder(this)
                 .setNegativeButton(R.string.cancel, null)
                 .setPositiveButton(R.string.ok, onFileNameDialogPosButtonClickListener)
                 .setTitle(R.string.file_name)
                 .setView(R.layout.file_name)
                 .show();
 
-        EditText etFileName = fileNameDialog.findViewById(R.id.et_file_name);
+        final EditText etFileName = fileNameDialog.findViewById(R.id.et_file_name);
         etFileName.setFilters(FILTERS_FILE_NAME);
         etFileName.setText(getTabName());
     };
@@ -1770,6 +1771,7 @@ public class MainActivity extends AppCompatActivity {
     private final View.OnClickListener onRotateButtonClickListener = v -> {
         if (!hasSelection) {
             selectAll();
+            hasSelection = true;
         }
         if (transformer == null) {
             createTransformer();
