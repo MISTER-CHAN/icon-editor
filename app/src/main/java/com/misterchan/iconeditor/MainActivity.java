@@ -101,20 +101,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private static final ColorMatrix COLOR_MATRIX_BLACK = new ColorMatrix(new float[]{
-            0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-            0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-            0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-            0.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-    });
-
-    private static final ColorMatrix COLOR_MATRIX_INVERT = new ColorMatrix(new float[]{
-            -1.0f, 0.0f, 0.0f, 0.0f, 0xFF,
-            0.0f, -1.0f, 0.0f, 0.0f, 0xFF,
-            0.0f, 0.0f, -1.0f, 0.0f, 0xFF,
-            0.0f, 0.0f, 0.0f, 1.0f, 0.0f
-    });
-
     private static final ColorMatrixColorFilter COLOR_MATRIX_REPLACE_BLACK_TO_TRANSPARENT = new ColorMatrixColorFilter(new float[]{
             1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
             0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
@@ -3285,11 +3271,12 @@ public class MainActivity extends AppCompatActivity {
                 break;
 
             case R.id.i_delete:
-                if (!hasSelection) {
-                    break;
-                }
                 if (transformer == null) {
-                    canvas.drawRect(selection.left, selection.top, selection.right, selection.bottom + 1, eraser);
+                    if (hasSelection) {
+                        canvas.drawRect(selection.left, selection.top, selection.right, selection.bottom, eraser);
+                    } else {
+                        canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+                    }
                     drawBitmapOnView();
                     addHistory();
                 } else {
@@ -3961,6 +3948,8 @@ public class MainActivity extends AppCompatActivity {
         optimizeSelection();
         isShapeStopped = true;
         hasDragged = false;
+
+        calculateStackingOrder();
 
         drawChessboardOnView();
         drawBitmapOnView();
