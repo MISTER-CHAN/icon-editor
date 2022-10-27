@@ -101,6 +101,8 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private static final BlendMode[] BLEND_MODES = BlendMode.values();
+
     private static final ColorMatrixColorFilter COLOR_MATRIX_REPLACE_BLACK_TO_TRANSPARENT = new ColorMatrixColorFilter(new float[]{
             1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
             0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
@@ -695,14 +697,16 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onTabSelected(TabLayout.Tab tab) {
             drawFloatingLayers();
-            final int oldWidth = bitmap.getWidth(), oldHeight = bitmap.getHeight();
+
+            final boolean areSizesNotEqual = MainActivity.this.tab.bitmap.getWidth() != bitmap.getWidth()
+                    || MainActivity.this.tab.bitmap.getHeight() != bitmap.getHeight();
 
             MainActivity.this.tab = tabs.get(tab.getPosition());
             bitmap = MainActivity.this.tab.bitmap;
             canvas = new Canvas(bitmap);
 
             final int width = bitmap.getWidth(), height = bitmap.getHeight();
-            if (settings.getIndependentTranslAndScale() || (width != oldWidth || height != oldHeight)) {
+            if (settings.getIndependentTranslAndScale() || areSizesNotEqual) {
                 translationX = MainActivity.this.tab.translationX;
                 translationY = MainActivity.this.tab.translationY;
                 scale = MainActivity.this.tab.scale;
@@ -715,17 +719,19 @@ public class MainActivity extends AppCompatActivity {
             if (transformer != null) {
                 recycleTransformer();
             }
-            hasSelection = false;
+            if (areSizesNotEqual) {
+                hasSelection = false;
+            }
 
             if (rbCloneStamp.isChecked()) {
                 cloneStampSrc = null;
             }
 
             miLayerSub.setChecked(MainActivity.this.tab.sub);
-            for (int i = 0; i <= 28; ++i) {
+            for (int i = 0; i < BLEND_MODES.length; ++i) {
                 final MenuItem mi = smBlendModes.getItem(i);
                 final BlendMode blendMode = MainActivity.this.tab.paint.getBlendMode();
-                mi.setChecked(blendMode == BlendMode.values()[i]);
+                mi.setChecked(blendMode == BLEND_MODES[i]);
             }
 
             drawChessboardOnView();
@@ -771,14 +777,15 @@ public class MainActivity extends AppCompatActivity {
             tl.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
                 @Override
                 public void onTabSelected(TabLayout.Tab t) {
-                    dialog.cancel();
+                    dialog.dismiss();
                     final int p = t.getPosition();
                     final Tab selected = tabs.remove(position);
                     final View cv = tab.getCustomView();
                     tabLayout.removeTabAt(position);
                     tabs.add(p, selected);
-                    final TabLayout.Tab nt = tabLayout.newTab().setTag(selected);
-                    nt.setCustomView(cv);
+                    final TabLayout.Tab nt = tabLayout.newTab()
+                            .setCustomView(cv)
+                            .setTag(selected);
                     tabLayout.addTab(nt, p, true);
                 }
 
@@ -1900,8 +1907,9 @@ public class MainActivity extends AppCompatActivity {
         }
         hasSelection = false;
 
-        final TabLayout.Tab t = tabLayout.newTab().setTag(tab);
-        t.setCustomView(R.layout.tab);
+        final TabLayout.Tab t = tabLayout.newTab()
+                .setCustomView(R.layout.tab)
+                .setTag(tab);
         final View customView = t.getCustomView();
         tab.cbLayerVisible = customView.findViewById(R.id.cb_layer_visible);
         tab.cbLayerVisible.setChecked(tab.visible);
@@ -2790,8 +2798,9 @@ public class MainActivity extends AppCompatActivity {
         ivSelection.setImageBitmap(selectionBitmap);
         drawSelectionOnView();
 
-        final TabLayout.Tab t = tabLayout.newTab().setTag(tab);
-        t.setCustomView(R.layout.tab);
+        final TabLayout.Tab t = tabLayout.newTab()
+                .setCustomView(R.layout.tab)
+                .setTag(tab);
         final View customView = t.getCustomView();
         tab.cbLayerVisible = customView.findViewById(R.id.cb_layer_visible);
         tab.cbLayerVisible.setChecked(tab.visible);
@@ -3154,10 +3163,10 @@ public class MainActivity extends AppCompatActivity {
             case R.id.i_blend_mode_color:
             case R.id.i_blend_mode_luminosity:
                 drawFloatingLayers();
-                for (int i = 0; i <= 28; ++i) {
+                for (int i = 0; i < BLEND_MODES.length; ++i) {
                     final MenuItem mi = smBlendModes.getItem(i);
                     if (mi == item) {
-                        tab.paint.setBlendMode(BlendMode.values()[i]);
+                        tab.paint.setBlendMode(BLEND_MODES[i]);
                         mi.setChecked(true);
                     } else if (mi.isChecked()) {
                         mi.setChecked(false);
@@ -3565,12 +3574,14 @@ public class MainActivity extends AppCompatActivity {
                 }
                 drawFloatingLayers();
 
-                selection.left = translationX >= 0.0f ? 0 : toUnscaled(-translationX) + 1;
-                selection.top = translationY >= 0.0f ? 0 : toUnscaled(-translationY) + 1;
+                if (!hasSelection) {
+                    hasSelection = true;
+                    selection.left = translationX >= 0.0f ? 0 : toUnscaled(-translationX) + 1;
+                    selection.top = translationY >= 0.0f ? 0 : toUnscaled(-translationY) + 1;
+                }
                 selection.right = selection.left + clipboard.getWidth();
                 selection.bottom = selection.top + clipboard.getHeight();
                 transformer = new Transformer(Bitmap.createBitmap(clipboard));
-                hasSelection = true;
                 rbTransformer.setChecked(true);
                 drawBitmapOnView();
                 drawSelectionOnView();
