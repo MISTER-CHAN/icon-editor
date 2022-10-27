@@ -3,11 +3,6 @@ package com.misterchan.iconeditor;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.util.Log;
-import android.widget.Toast;
-
-import java.util.Deque;
-import java.util.LinkedList;
 
 class BitmapHistory {
 
@@ -29,8 +24,9 @@ class BitmapHistory {
         }
     }
 
-    private final Deque<Node> history = new LinkedList<>();
+    private int size = 0;
     private Node current = null;
+    private Node first, last;
 
     boolean canRedo() {
         return current != null && current.next != null;
@@ -40,47 +36,57 @@ class BitmapHistory {
         return current != null && current.prev != null;
     }
 
+    void clear() {
+        for (Node n = first; n != null; ) {
+            final Node next = n.next;
+            n.val.recycle();
+            n.val = null;
+            n.prev = null;
+            n.next = null;
+            n = next;
+        }
+        first = last = null;
+        size = 0;
+    }
+
+    private void delete() {
+        if (last == null)
+            return;
+        last.val.recycle();
+        last.val = null;
+        last = last.prev;
+        if (last == null)
+            first = null;
+        else
+            last.next = null;
+        --size;
+    }
+
     Bitmap getCurrent() {
         return current.val;
     }
 
     void offer(Bitmap bitmap) {
-        if (!history.isEmpty()) {
-            Node node;
-            while ((node = history.peekFirst()) != current) {
-                if (node != null) {
-                    node.val.recycle();
-                    node.val = null;
-                    if (node.prev != null) {
-                        node.prev.next = null;
-                    }
-                }
-                history.removeFirst();
+        if (size > 0) {
+            while (last != current) {
+                delete();
             }
         }
         Bitmap bm = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
         new Canvas(bm).drawBitmap(bitmap, 0.0f, 0.0f, PAINT);
-        history.offerFirst(current = new Node(bm, current));
-        while (history.size() > MAX_SIZE) {
-            Node node = history.pollLast();
-            node.val.recycle();
-            node.val = null;
-            node.next.prev = null;
+        offer(current = new Node(bm, current));
+        while (size > MAX_SIZE) {
+            delete();
         }
     }
 
-    void recycle() {
-        Node node;
-        while (!history.isEmpty()) {
-            if ((node = history.peekFirst()) != null) {
-                node.val.recycle();
-                node.val = null;
-                if (node.prev != null) {
-                    node.prev.next = null;
-                }
-            }
-            history.removeFirst();
-        }
+    private void offer(Node node) {
+        if (last == null)
+            first = node;
+        else
+            last.next = node;
+        last = node;
+        ++size;
     }
 
     Bitmap redo() {

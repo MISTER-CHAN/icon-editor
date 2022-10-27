@@ -268,6 +268,7 @@ public class MainActivity extends AppCompatActivity {
     private int textX, textY;
     private int threshold;
     private int viewWidth, viewHeight;
+    private LayerTree layerTree;
     private LinearLayout llOptionsEraser;
     private LinearLayout llOptionsGradient;
     private LinearLayout llOptionsPatcher;
@@ -1633,8 +1634,6 @@ public class MainActivity extends AppCompatActivity {
             etPencilBlurRadius.setText(String.valueOf(blurRadius));
             etPencilStrokeWidth.setText(String.valueOf(strokeWidth));
             llOptionsPencil.setVisibility(View.VISIBLE);
-        } else {
-//            paint.setMaskFilter(null);
         }
     };
 
@@ -2023,6 +2022,11 @@ public class MainActivity extends AppCompatActivity {
         return draggingBound;
     }
 
+    private void calculateLayerTree() {
+        layerTree = new LayerTree();
+
+    }
+
     private void calculateStackingOrder() {
         stackingOrder = new int[tabs.size()];
         final int bg = tabs.size() - 1;
@@ -2076,7 +2080,7 @@ public class MainActivity extends AppCompatActivity {
         tabs.remove(position);
         tabLayout.removeTabAt(position);
         bm.recycle();
-        h.recycle();
+        h.clear();
     }
 
     private void createGraphic(int width, int height) {
