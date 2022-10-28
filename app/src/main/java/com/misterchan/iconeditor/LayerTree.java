@@ -6,7 +6,7 @@ class LayerTree {
         private LayerTree branch;
         private Node front;
 
-        private Node(Tab val) {
+        public Node(Tab val) {
             this.val = val;
         }
 
@@ -25,20 +25,27 @@ class LayerTree {
         public void setBranch(LayerTree branch) {
             this.branch = branch;
         }
-
-        public void setFront(Node front) {
-            this.front = front;
-        }
     }
 
-    private int size;
-    private Node background;
+    private int size = 0;
+    private Node background, foreground;
 
-    public void offer(Tab tab) {
+    public Node offer(Tab tab) {
+        final Node node = new Node(tab);
+        if (foreground == null)
+            background = node;
+        else
+            foreground.front = node;
+        foreground = node;
         ++size;
+        return node;
     }
 
     public Node peekBackground() {
         return background;
+    }
+
+    public int size() {
+        return size;
     }
 }

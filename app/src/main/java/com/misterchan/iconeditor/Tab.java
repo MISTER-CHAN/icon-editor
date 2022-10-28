@@ -6,7 +6,6 @@ import android.widget.CheckBox;
 import android.widget.TextView;
 
 class Tab {
-    public boolean sub;
     public boolean visible;
     public Bitmap bitmap;
     public Bitmap.CompressFormat compressFormat;

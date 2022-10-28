@@ -18,9 +18,7 @@
         android:textColor="?android:attr/textColorPrimary" />
 
     <TextView
-        android:id="@+id/tv_sub"
+        android:id="@+id/tv_level"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/rightwards_arrow"
-        android:visibility="invisible" />
+        android:layout_height="wrap_content" />
 </LinearLayout>

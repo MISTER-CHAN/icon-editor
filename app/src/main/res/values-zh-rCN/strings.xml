@@ -56,6 +56,7 @@
     <string name="eraser">胶擦</string>
     <string name="exception_merge_as_hidden">异常：请选中两张图像中第一个图像的分页。</string>
     <string name="eyedropper">滴管</string>
+    <string name="fast_add_a_mask">快速添加蒙版</string>
     <string name="file">文件</string>
     <string name="file_name">文件名</string>
     <string name="fill">填充</string>
@@ -82,7 +83,10 @@
     <string name="invert">反相</string>
     <string name="language">语言</string>
     <string name="layer">图层</string>
+    <string name="level">阶级</string>
     <string name="levels">色阶</string>
+    <string name="level_down">降级</string>
+    <string name="level_up">升级</string>
     <string name="lightness">明度</string>
     <string name="line">直线</string>
     <string name="locale">地区</string>

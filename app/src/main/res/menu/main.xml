@@ -344,9 +344,24 @@
             </item>
 
             <item
-                android:id="@+id/i_layer_sub"
-                android:checkable="true"
-                android:title="@string/sub" />
+                android:id="@+id/i_layer_level"
+                android:title="@string/level">
+
+                <menu>
+
+                    <item
+                        android:id="@+id/i_layer_level_up"
+                        android:title="@string/level_up" />
+
+                    <item
+                        android:id="@+id/i_layer_level_down"
+                        android:title="@string/level_down" />
+
+                    <item
+                        android:id="@+id/i_layer_add_mask"
+                        android:title="@string/fast_add_a_mask" />
+                </menu>
+            </item>
         </menu>
     </item>
 
