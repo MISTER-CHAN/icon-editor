@@ -2213,6 +2213,33 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void drawBmOnView1(Bitmap bitmap) {
+        clearCanvas(viewCanvas);
+        final Rect vp = getVisiblePart(bitmap, translationX, translationY);
+        if (vp.isEmpty()) {
+            return;
+        }
+        final int selected = tabLayout.getSelectedTabPosition();
+        final int w = vp.width(), h = vp.height();
+        final Rect relative = new Rect(0, 0, w, h);
+        final Bitmap bp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888); // p - Part
+        final Canvas cp = new Canvas(bp);
+
+        final Queue<LayerTree> queue = new LinkedList<>();
+        queue.offer(layerTree);
+        while (!queue.isEmpty()) {
+            final LayerTree branch = queue.poll();
+
+        }
+
+        drawBitmapOnCanvas(bp, viewCanvas,
+                translationX > -scale ? translationX : translationX % scale,
+                translationY > -scale ? translationY : translationY % scale,
+                relative);
+        bp.recycle();
+        runOnUiThread(() -> imageView.invalidate());
+    }
+
     private void drawBmOnView(Bitmap bitmap) {
         clearCanvas(viewCanvas);
         final Rect vp = getVisiblePart(bitmap, translationX, translationY);

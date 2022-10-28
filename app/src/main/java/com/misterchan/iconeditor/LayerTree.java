@@ -1,18 +1,44 @@
 package com.misterchan.iconeditor;
 
-import android.graphics.Bitmap;
+class LayerTree {
+    static class Node {
+        private Tab val;
+        private LayerTree branch;
+        private Node front;
 
-public class LayerTree {
-    private static class Node {
-        public Bitmap val;
-        public Node branch;
-        public Node next;
-
-        private Node(Bitmap val) {
+        private Node(Tab val) {
             this.val = val;
+        }
+
+        public LayerTree getBranch() {
+            return branch;
+        }
+
+        public Node getFront() {
+            return front;
+        }
+
+        public Tab getTab() {
+            return val;
+        }
+
+        public void setBranch(LayerTree branch) {
+            this.branch = branch;
+        }
+
+        public void setFront(Node front) {
+            this.front = front;
         }
     }
 
-    public void offer(Bitmap bitmap) {
+    private int size;
+    private Node background;
+
+    public void offer(Tab tab) {
+        ++size;
+    }
+
+    public Node peekBackground() {
+        return background;
     }
 }

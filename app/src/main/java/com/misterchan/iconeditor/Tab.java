@@ -15,6 +15,7 @@ class Tab {
     public CheckBox cbLayerVisible;
     public float scale;
     public float translationX, translationY;
+    public int level;
     public Paint paint;
     public String path;
     public TextView tvSub;

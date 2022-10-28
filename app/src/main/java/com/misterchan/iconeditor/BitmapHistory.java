@@ -1,7 +1,6 @@
 package com.misterchan.iconeditor;
 
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
 import android.graphics.Paint;
 
 class BitmapHistory {
@@ -12,90 +11,101 @@ class BitmapHistory {
 
     private static class Node {
         private Bitmap val;
-        private Node next;
-        private Node prev;
+        private Node later;
+        private Node earlier;
 
-        private Node(Bitmap val, Node prev) {
+        private Node(Node earlier, Bitmap val) {
             this.val = val;
-            this.prev = prev;
-            if (prev != null) {
-                prev.next = this;
+            this.earlier = earlier;
+            if (earlier != null) {
+                earlier.later = this;
             }
         }
     }
 
     private int size = 0;
     private Node current = null;
-    private Node first, last;
+    private Node earliest, latest;
 
-    boolean canRedo() {
-        return current != null && current.next != null;
+    public boolean canRedo() {
+        return current != null && current.later != null;
     }
 
-    boolean canUndo() {
-        return current != null && current.prev != null;
+    public boolean canUndo() {
+        return current != null && current.earlier != null;
     }
 
-    void clear() {
-        for (Node n = first; n != null; ) {
-            final Node next = n.next;
+    public void clear() {
+        for (Node n = earliest; n != null; ) {
+            final Node later = n.later;
             n.val.recycle();
             n.val = null;
-            n.prev = null;
-            n.next = null;
-            n = next;
+            n.earlier = null;
+            n.later = null;
+            n = later;
         }
-        first = last = null;
+        earliest = latest = null;
         size = 0;
     }
 
-    private void delete() {
-        if (last == null)
+    private void deleteEarliest() {
+        if (earliest == null)
             return;
-        last.val.recycle();
-        last.val = null;
-        last = last.prev;
-        if (last == null)
-            first = null;
+        earliest.val.recycle();
+        earliest.val = null;
+        earliest = earliest.later;
+        if (earliest == null)
+            latest = null;
         else
-            last.next = null;
+            earliest.earlier = null;
         --size;
     }
 
-    Bitmap getCurrent() {
+    private void deleteLatest() {
+        if (latest == null)
+            return;
+        latest.val.recycle();
+        latest.val = null;
+        latest = latest.earlier;
+        if (latest == null)
+            earliest = null;
+        else
+            latest.later = null;
+        --size;
+    }
+
+    public Bitmap getCurrent() {
         return current.val;
     }
 
-    void offer(Bitmap bitmap) {
+    public void offer(Bitmap bitmap) {
         if (size > 0) {
-            while (last != current) {
-                delete();
+            while (latest != current) {
+                deleteLatest();
             }
         }
-        Bitmap bm = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
-        new Canvas(bm).drawBitmap(bitmap, 0.0f, 0.0f, PAINT);
-        offer(current = new Node(bm, current));
+        offer(current = new Node(current, Bitmap.createBitmap(bitmap)));
         while (size > MAX_SIZE) {
-            delete();
+            deleteEarliest();
         }
     }
 
     private void offer(Node node) {
-        if (last == null)
-            first = node;
+        if (latest == null)
+            earliest = node;
         else
-            last.next = node;
-        last = node;
+            latest.later = node;
+        latest = node;
         ++size;
     }
 
-    Bitmap redo() {
-        current = current.next;
+    public Bitmap redo() {
+        current = current.later;
         return current.val;
     }
 
-    Bitmap undo() {
-        current = current.prev;
+    public Bitmap undo() {
+        current = current.earlier;
         return current.val;
     }
 }
