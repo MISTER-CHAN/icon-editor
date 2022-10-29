@@ -17,6 +17,6 @@ class Tab {
     public int level;
     public Paint paint;
     public String path;
-    public TextView tvSub;
+    public TextView tvLayerLevel;
     public TextView tvTitle;
 }

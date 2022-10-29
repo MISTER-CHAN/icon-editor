@@ -79,14 +79,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Queue;
+import java.util.Stack;
+import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class MainActivity extends AppCompatActivity {
-
-    private interface LayersMerger {
-        void run(Canvas canvas, Tab tab);
-    }
 
     private enum Position {
         LEFT("Left"),
@@ -1925,7 +1923,7 @@ public class MainActivity extends AppCompatActivity {
         tab.cbLayerVisible = customView.findViewById(R.id.cb_layer_visible);
         tab.cbLayerVisible.setChecked(tab.visible);
         tab.cbLayerVisible.setOnCheckedChangeListener(getOnLayerVisibleCheckBoxCheckedChangeListener(tab));
-        tab.tvSub = customView.findViewById(R.id.tv_level);
+        tab.tvLayerLevel = customView.findViewById(R.id.tv_layer_level);
         tab.tvTitle = customView.findViewById(R.id.tv_title);
         tab.tvTitle.setText(title);
         tabLayout.addTab(t, position, true);
@@ -2030,22 +2028,35 @@ public class MainActivity extends AppCompatActivity {
         final Tab tab = tabs.get(root);
         final Bitmap bitmap = tab.bitmap;
         final int w = bitmap.getWidth(), h = bitmap.getHeight();
-        LayerTree.Node prev = new LayerTree.Node(tab);
-        layerTree.offer(tab);
+        final Stack<LayerTree> stack = new Stack<>();
+        stack.push(layerTree);
+        LayerTree.Node prev = layerTree.offer(tab);
         for (int i = root - 1; i >= 0; --i) {
             final Tab t = tabs.get(i);
             if (!isSizeEqualTo(t.bitmap, w, h))
                 continue;
             final Tab prevTab = prev.getTab();
+            final int levelDiff = t.level - prevTab.level;
 
-            if (t.level == prevTab.level || prevTab == tab) {
-                prev = layerTree.offer(t);
+            if (levelDiff == 0) {
+                final LayerTree lt = stack.peek();
+                prev = lt.offer(t);
 
-            } else if (t.level > prevTab.level) {
-                prev.setBranch(calculateLayerTree(i + 1));
+            } else if (levelDiff > 0) {
+                LayerTree lt = null;
+                for (int j = 0; j < levelDiff; ++j) {
+                    lt = new LayerTree();
+                    prev.setBranch(lt);
+                    prev = lt.offer(prevTab);
+                    stack.push(lt);
+                }
+                prev = lt.offer(t);
 
-            } else /* if (t.level < prevTab.level) */ {
-                break;
+            } else /* if (levelDiff < 0) */ {
+                for (int j = 0; j > levelDiff; --j) {
+                    stack.pop();
+                }
+                prev = stack.peek().offer(t);
 
             }
         }
@@ -2220,7 +2231,7 @@ public class MainActivity extends AppCompatActivity {
         final int w = vp.width(), h = vp.height();
         final Rect relative = new Rect(0, 0, w, h);
 
-        final Bitmap bm = drawLayersOnBitmap(layerTree, w, h, (canvas, tab) -> {
+        final Bitmap bm = drawLayersOnBitmap(layerTree, w, h, (canvas, tab, paint) -> {
             if (tab == MainActivity.this.tab) {
                 if (transformer != null) {
                     final Bitmap b = Bitmap.createBitmap(bitmap, vp.left, vp.top, w, h);
@@ -2232,15 +2243,15 @@ public class MainActivity extends AppCompatActivity {
                             new Rect(intersect.left - vp.left, intersect.top - vp.top,
                                     intersect.right - vp.left, intersect.bottom - vp.top),
                             PAINT_SRC_OVER);
-                    canvas.drawBitmap(b, 0.0f, 0.0f, tab.paint);
+                    canvas.drawBitmap(b, 0.0f, 0.0f, paint);
                     b.recycle();
 //              } else if (isEditingText) {
 //
                 } else {
-                    canvas.drawBitmap(bitmap, vp, relative, tab.paint);
+                    canvas.drawBitmap(bitmap, vp, relative, paint);
                 }
             } else if (tab.visible) {
-                canvas.drawBitmap(tab.bitmap, vp, relative, tab.paint);
+                canvas.drawBitmap(tab.bitmap, vp, relative, paint);
             }
         });
 
@@ -2375,7 +2386,7 @@ public class MainActivity extends AppCompatActivity {
             final LayerTree branch = node.getBranch();
 
             if (branch == null) {
-                runner.run(canvas, tab);
+                runner.run(canvas, tab, node != background ? tab.paint : PAINT_SRC);
             } else {
                 final Bitmap bm = drawLayersOnBitmap(branch, w, h, runner);
                 canvas.drawBitmap(bm, 0.0f, 0.0f, tab.paint);
@@ -2803,7 +2814,7 @@ public class MainActivity extends AppCompatActivity {
         tab.cbLayerVisible = customView.findViewById(R.id.cb_layer_visible);
         tab.cbLayerVisible.setChecked(tab.visible);
         tab.cbLayerVisible.setOnCheckedChangeListener(getOnLayerVisibleCheckBoxCheckedChangeListener(tab));
-        tab.tvSub = customView.findViewById(R.id.tv_level);
+        tab.tvLayerLevel = customView.findViewById(R.id.tv_layer_level);
         tab.tvTitle = customView.findViewById(R.id.tv_title);
         tab.tvTitle.setText(R.string.untitled);
         tabLayout.addTab(t, true);
@@ -3509,9 +3520,8 @@ public class MainActivity extends AppCompatActivity {
                 final int selected = tabLayout.getSelectedTabPosition();
                 final int w = bitmap.getWidth(), h = bitmap.getHeight();
                 final Bitmap bm = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
-                final Canvas cv = new Canvas(bm);
-                drawLayersOnBitmap(layerTree, w, h, (canvas, tab) ->
-                        canvas.drawBitmap(tab.bitmap, 0.0f, 0.0f, tab.paint));
+                drawLayersOnBitmap(layerTree, w, h, (canvas, tab, paint) ->
+                        canvas.drawBitmap(tab.bitmap, 0.0f, 0.0f, paint));
                 addBitmap(bm, selected);
                 break;
             }
@@ -3541,6 +3551,7 @@ public class MainActivity extends AppCompatActivity {
                 calculateLayerTree();
                 drawBitmapOnView();
                 showLayerLevel();
+                miLayerLevelUp.setEnabled(true);
                 break;
 
             case R.id.i_layer_level_up:
@@ -3551,6 +3562,7 @@ public class MainActivity extends AppCompatActivity {
                 calculateLayerTree();
                 drawBitmapOnView();
                 showLayerLevel();
+                miLayerLevelUp.setEnabled(tab.level > 0);
                 break;
 
             case R.id.i_new: {
@@ -3917,7 +3929,7 @@ public class MainActivity extends AppCompatActivity {
         for (int i = 0; i < tab.level; ++i) {
             sb.append(ra);
         }
-        tab.tvSub.setText(sb);
+        tab.tvLayerLevel.setText(sb);
     }
 
     private void stretchByBound(float viewX, float viewY) {
