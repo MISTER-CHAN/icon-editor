@@ -343,9 +343,21 @@
                 </menu>
             </item>
 
-            <item
-                android:id="@+id/i_layer_level"
-                android:title="@string/level">
+            <item android:title="@string/color_filter">
+
+                <menu>
+
+                    <item
+                        android:id="@+id/i_layer_color_filter"
+                        android:title="@string/channel_mixer" />
+
+                    <item
+                        android:id="@+id/i_layer_color_filter_clear"
+                        android:title="@string/clear" />
+                </menu>
+            </item>
+
+            <item android:title="@string/level">
 
                 <menu>
 
@@ -362,6 +374,11 @@
                         android:title="@string/fast_add_a_mask" />
                 </menu>
             </item>
+
+            <item
+                android:id="@+id/i_layer_direction"
+                android:checkable="true"
+                android:title="@string/positive" />
         </menu>
     </item>
 

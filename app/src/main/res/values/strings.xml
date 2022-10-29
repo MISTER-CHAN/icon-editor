@@ -136,6 +136,7 @@
     <string name="pencil">Pencil</string>
     <string name="pen_with_filter">Filter</string>
     <string name="percent" translatable="false">%</string>
+    <string name="positive">Positive</string>
     <string name="preferences">Preferences</string>
     <string name="properties">Properties</string>
     <string name="r" translatable="false">R</string>

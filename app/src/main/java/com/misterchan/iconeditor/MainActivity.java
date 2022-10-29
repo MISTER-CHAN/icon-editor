@@ -80,7 +80,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Queue;
 import java.util.Stack;
-import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -287,6 +286,7 @@ public class MainActivity extends AppCompatActivity {
     private LinearLayout llOptionsTransformer;
     private LinkedList<Integer> palette;
     private final List<Tab> tabs = new ArrayList<>();
+    private MenuItem miLayerDirection;
     private MenuItem miLayerLevelUp;
     private Point cloneStampSrc;
     private final Point cloneStampSrcDist = new Point(0, 0); // Dist. - Distance
@@ -305,27 +305,6 @@ public class MainActivity extends AppCompatActivity {
     private Uri fileToBeOpened;
     private View vBackgroundColor;
     private View vForegroundColor;
-
-    @Size(20)
-    private float[] colorMatrix = new float[]{
-            1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-            0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
-            0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-            0.0f, 0.0f, 0.0f, 1.0f, 0.0f
-    };
-
-    /**
-     * Each layer has one of following values.<br />
-     * <table>
-     *     <tr><th>Value</th><th>Description</th></tr>
-     *     <tr><td>4</td><td>Layer</td></tr>
-     *     <tr><td>3</td><td>Layer with masks</td></tr>
-     *     <tr><td>2</td><td>Last mask</td></tr>
-     *     <tr><td>1</td><td>Mask</td></tr>
-     *     <tr><td>0</td><td>Layer that doesn't belong here</td></tr>
-     * </table>
-     */
-    private int[] stackingOrder;
 
     @ColorInt
     private int gradientColor0;
@@ -354,12 +333,6 @@ public class MainActivity extends AppCompatActivity {
             setAntiAlias(false);
             setColor(Color.BLACK);
             setStyle(Style.FILL_AND_STROKE);
-        }
-    };
-
-    private final Paint filter = new Paint() {
-        {
-            setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
         }
     };
 
@@ -644,6 +617,12 @@ public class MainActivity extends AppCompatActivity {
         drawBitmapOnView(preview.getBitmap());
     };
 
+    private final ColorMatrixManager.OnMatrixElementsChangeListener onLayerColorFilterChangeListener = matrix -> {
+        tab.colorMatrix = matrix;
+        tab.paint.setColorFilter(new ColorMatrixColorFilter(matrix));
+        drawBitmapOnView();
+    };
+
     private final OnSeekBarProgressChangeListener onThresholdChangeListener = (seekBar, progress) -> {
         threshold = progress;
         if (progress == 0xFF) {
@@ -665,20 +644,6 @@ public class MainActivity extends AppCompatActivity {
         }
         drawBitmapOnView(preview.getBitmap());
         tvStatus.setText(String.format(getString(R.string.state_threshold), progress));
-    };
-
-    private final ColorMatrixManager.OnMatrixElementsChangeListener onPaintFilterChangeListener = matrix -> {
-        colorMatrix = matrix;
-        filter.setColorFilter(new ColorMatrixColorFilter(matrix));
-    };
-
-    private final View.OnClickListener onColorFilterButtonClickListener = v -> {
-        ColorMatrixManager.make(this,
-                        R.string.color_filter,
-                        onPaintFilterChangeListener,
-                        null,
-                        colorMatrix)
-                .show();
     };
 
     private final DialogInterface.OnCancelListener onThresholdCancelListener = dialog -> {
@@ -737,6 +702,7 @@ public class MainActivity extends AppCompatActivity {
                 cloneStampSrc = null;
             }
 
+            miLayerDirection.setChecked(MainActivity.this.tab.direction);
             miLayerLevelUp.setEnabled(MainActivity.this.tab.level > 0);
             for (int i = 0; i < BLEND_MODES.length; ++i) {
                 final MenuItem mi = smBlendModes.getItem(i);
@@ -2024,11 +1990,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private LayerTree calculateLayerTree(int root) {
-        final LayerTree layerTree = new LayerTree();
         final Tab tab = tabs.get(root);
         final Bitmap bitmap = tab.bitmap;
         final int w = bitmap.getWidth(), h = bitmap.getHeight();
         final Stack<LayerTree> stack = new Stack<>();
+        LayerTree layerTree = new LayerTree();
         stack.push(layerTree);
         LayerTree.Node prev = layerTree.offer(tab);
         for (int i = root - 1; i >= 0; --i) {
@@ -2039,8 +2005,7 @@ public class MainActivity extends AppCompatActivity {
             final int levelDiff = t.level - prevTab.level;
 
             if (levelDiff == 0) {
-                final LayerTree lt = stack.peek();
-                prev = lt.offer(t);
+                prev = stack.peek().offer(t);
 
             } else if (levelDiff > 0) {
                 LayerTree lt = null;
@@ -2053,10 +2018,16 @@ public class MainActivity extends AppCompatActivity {
                 prev = lt.offer(t);
 
             } else /* if (levelDiff < 0) */ {
-                for (int j = 0; j > levelDiff; --j) {
-                    stack.pop();
+                if (-levelDiff < stack.size()) {
+                    for (int j = 0; j > levelDiff; --j) {
+                        stack.pop();
+                    }
+                    prev = stack.peek().offer(t);
+                } else {
+                    stack.clear();
+                    layerTree = stack.push(new LayerTree());
+                    prev = layerTree.offer(t);
                 }
-                prev = stack.peek().offer(t);
 
             }
         }
@@ -2231,7 +2202,7 @@ public class MainActivity extends AppCompatActivity {
         final int w = vp.width(), h = vp.height();
         final Rect relative = new Rect(0, 0, w, h);
 
-        final Bitmap bm = drawLayersOnBitmap(layerTree, w, h, (canvas, tab, paint) -> {
+        final Bitmap merged = mergeLayers(layerTree, w, h, (canvas, tab, paint) -> {
             if (tab == MainActivity.this.tab) {
                 if (transformer != null) {
                     final Bitmap b = Bitmap.createBitmap(bitmap, vp.left, vp.top, w, h);
@@ -2255,11 +2226,11 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        drawBitmapOnCanvas(bm, viewCanvas,
+        drawBitmapOnCanvas(merged, viewCanvas,
                 translationX > -scale ? translationX : translationX % scale,
                 translationY > -scale ? translationY : translationY % scale,
                 relative);
-        bm.recycle();
+        merged.recycle();
         runOnUiThread(() -> imageView.invalidate());
     }
 
@@ -2374,27 +2345,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
         ivGrid.invalidate();
-    }
-
-    private Bitmap drawLayersOnBitmap(final LayerTree tree, final int w, final int h, final LayersMerger runner) {
-        final LayerTree.Node background = tree.peekBackground();
-        final Bitmap bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
-        final Canvas canvas = new Canvas(bitmap);
-
-        for (LayerTree.Node node = background; node != null; node = node.getFront()) {
-            final Tab tab = node.getTab();
-            final LayerTree branch = node.getBranch();
-
-            if (branch == null) {
-                runner.run(canvas, tab, node != background ? tab.paint : PAINT_SRC);
-            } else {
-                final Bitmap bm = drawLayersOnBitmap(branch, w, h, runner);
-                canvas.drawBitmap(bm, 0.0f, 0.0f, tab.paint);
-                bm.recycle();
-            }
-        }
-
-        return bitmap;
     }
 
     private void drawLineOnCanvas(int startX, int startY, int stopX, int stopY, Paint paint) {
@@ -2843,6 +2793,45 @@ public class MainActivity extends AppCompatActivity {
         return Math.max(Math.max(Color.red(color), Color.green(color)), Color.blue(color));
     }
 
+    private static Bitmap mergeLayers(final LayerTree tree, final int w, final int h, final BitmapPrinter printer) {
+        final LayerTree.Node background = tree.peekBackground();
+        Bitmap bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+
+        for (LayerTree.Node node = background; node != null; node = node.getFront()) {
+            final Tab tab = node.getTab();
+            final LayerTree branch = node.getBranch();
+
+            if (branch == null) {
+                if (node == background) {
+                    printer.run(canvas, tab, PAINT_SRC);
+                } else if (tab.direction) {
+                    printer.run(canvas, tab, tab.paint);
+                } else {
+                    final Bitmap bm = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+                    canvas = new Canvas(bm);
+                    printer.run(canvas, tab, PAINT_SRC);
+                    canvas.drawBitmap(bitmap, 0.0f, 0.0f, tab.paint);
+                    bitmap.recycle();
+                    bitmap = bm;
+                }
+            } else {
+                final Bitmap bm = mergeLayers(branch, w, h, printer);
+                if (tab.direction) {
+                    canvas.drawBitmap(bm, 0.0f, 0.0f, tab.paint);
+                    bm.recycle();
+                } else {
+                    canvas = new Canvas(bm);
+                    canvas.drawBitmap(bitmap, 0.0f, 0.0f, tab.paint);
+                    bitmap.recycle();
+                    bitmap = bm;
+                }
+            }
+        }
+
+        return bitmap;
+    }
+
     @Override
     public void onBackPressed() {
         moveTaskToBack(true);
@@ -3073,6 +3062,7 @@ public class MainActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         final MenuInflater menuInflater = getMenuInflater();
         menuInflater.inflate(R.menu.main, menu);
+        miLayerDirection = menu.findItem(R.id.i_layer_direction);
         miLayerLevelUp = menu.findItem(R.id.i_layer_level_up);
         smBlendModes = menu.findItem(R.id.i_blend_modes).getSubMenu();
         return true;
@@ -3432,7 +3422,6 @@ public class MainActivity extends AppCompatActivity {
             }
             case R.id.i_layer_add_mask: {
                 drawFloatingLayers();
-//                tab.visible = true;
                 tab.cbLayerVisible.setChecked(true);
                 final Tab t = new Tab();
                 t.bitmap = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
@@ -3459,6 +3448,27 @@ public class MainActivity extends AppCompatActivity {
                         .setOnCancelListener(dialog -> tvStatus.setText(""), false)
                         .show();
                 tvStatus.setText("");
+                break;
+
+            case R.id.i_layer_color_filter:
+                ColorMatrixManager.make(this,
+                                R.string.color_filter,
+                                onLayerColorFilterChangeListener,
+                                null,
+                                tab.colorMatrix)
+                        .show();
+                break;
+
+            case R.id.i_layer_color_filter_clear:
+                tab.colorMatrix = Tab.COLOR_MATRIX_DEFAULT;
+                tab.paint.setColorFilter(null);
+                drawBitmapOnView();
+                break;
+
+            case R.id.i_layer_direction:
+                tab.direction = !tab.direction;
+                item.setChecked(tab.direction);
+                drawBitmapOnView();
                 break;
 
             case R.id.i_layer_duplicate: {
@@ -3519,9 +3529,10 @@ public class MainActivity extends AppCompatActivity {
                 drawFloatingLayers();
                 final int selected = tabLayout.getSelectedTabPosition();
                 final int w = bitmap.getWidth(), h = bitmap.getHeight();
-                final Bitmap bm = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
-                drawLayersOnBitmap(layerTree, w, h, (canvas, tab, paint) ->
-                        canvas.drawBitmap(tab.bitmap, 0.0f, 0.0f, paint));
+                final Bitmap bm = mergeLayers(layerTree, w, h, (canvas, tab, paint) -> {
+                    if (tab.visible)
+                        canvas.drawBitmap(tab.bitmap, 0.0f, 0.0f, paint);
+                });
                 addBitmap(bm, selected);
                 break;
             }
