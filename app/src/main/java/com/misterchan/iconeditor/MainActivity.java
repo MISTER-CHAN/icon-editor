@@ -1986,21 +1986,23 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void calculateLayerTree() {
-        layerTree = calculateLayerTree(tabs.size() - 1);
-    }
-
-    private LayerTree calculateLayerTree(int root) {
-        final Tab tab = tabs.get(root);
-        final Bitmap bitmap = tab.bitmap;
-        final int w = bitmap.getWidth(), h = bitmap.getHeight();
         final Stack<LayerTree> stack = new Stack<>();
+        final Tab background = tabs.get(tabs.size() - 1);
+        final int w = bitmap.getWidth(), h = bitmap.getHeight();
         LayerTree layerTree = new LayerTree();
+        LayerTree.Node prev = layerTree.offer(background);
+
         stack.push(layerTree);
-        LayerTree.Node prev = layerTree.offer(tab);
-        for (int i = root - 1; i >= 0; --i) {
+        background.cbLayerVisible
+                .setVisibility(isSizeEqualTo(background.bitmap, w, h) ? View.VISIBLE : View.GONE);
+        for (int i = tabs.size() - 2; i >= 0; --i) {
             final Tab t = tabs.get(i);
-            if (!isSizeEqualTo(t.bitmap, w, h))
+            if (isSizeEqualTo(t.bitmap, w, h)) {
+                t.cbLayerVisible.setVisibility(View.VISIBLE);
+            } else {
+                t.cbLayerVisible.setVisibility(View.GONE);
                 continue;
+            }
             final Tab prevTab = prev.getTab();
             final int levelDiff = t.level - prevTab.level;
 
@@ -2031,7 +2033,8 @@ public class MainActivity extends AppCompatActivity {
 
             }
         }
-        return layerTree;
+
+        this.layerTree = layerTree;
     }
 
     private boolean checkColorIsWithinThreshold(int r0, int g0, int b0, int r, int g, int b) {
@@ -2696,6 +2699,10 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean isScaledMuch() {
         return scale >= 16.0f;
+    }
+
+    private static boolean isSizeEqualTo(Bitmap a, Bitmap b) {
+        return a.getWidth() == b.getWidth() && a.getHeight() == b.getHeight();
     }
 
     private static boolean isSizeEqualTo(Bitmap bitmap, int w, int h) {
@@ -3460,7 +3467,7 @@ public class MainActivity extends AppCompatActivity {
                 break;
 
             case R.id.i_layer_color_filter_clear:
-                tab.colorMatrix = Tab.COLOR_MATRIX_DEFAULT;
+                tab.colorMatrix = Tab.COLOR_MATRIX_DEFAULT.clone();
                 tab.paint.setColorFilter(null);
                 drawBitmapOnView();
                 break;
