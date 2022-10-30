@@ -58,7 +58,6 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
-import androidx.annotation.Size;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatSpinner;
@@ -1932,7 +1931,7 @@ public class MainActivity extends AppCompatActivity {
             if (ignoreAlpha) {
                 if (threshold == 0 ?
                         rgb(px) == rgb(pixel) :
-                        checkColorIsWithinThreshold(
+                        checkIfColorIsWithinThreshold(
                                 Color.red(pixel), Color.green(pixel), Color.blue(pixel),
                                 Color.red(px), Color.green(px), Color.blue(px))) {
                     pixels[i] = px & 0xFF000000 | rgb(color);
@@ -1940,7 +1939,7 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 if (threshold == 0 ?
                         px == pixel :
-                        Color.alpha(px) == Color.alpha(pixel) && checkColorIsWithinThreshold(
+                        Color.alpha(px) == Color.alpha(pixel) && checkIfColorIsWithinThreshold(
                                 Color.red(pixel), Color.green(pixel), Color.blue(pixel),
                                 Color.red(px), Color.green(px), Color.blue(px))) {
                     pixels[i] = color;
@@ -2037,7 +2036,7 @@ public class MainActivity extends AppCompatActivity {
         this.layerTree = layerTree;
     }
 
-    private boolean checkColorIsWithinThreshold(int r0, int g0, int b0, int r, int g, int b) {
+    private boolean checkIfColorIsWithinThreshold(int r0, int g0, int b0, int r, int g, int b) {
         return Math.abs(r - r0) <= threshold
                 && Math.abs(g - g0) <= threshold
                 && Math.abs(b - b0) <= threshold;
@@ -2595,14 +2594,14 @@ public class MainActivity extends AppCompatActivity {
             if (ignoreAlpha) {
                 match = threshold == 0 ?
                         rgb(px) == rgb(pixel) :
-                        checkColorIsWithinThreshold(
+                        checkIfColorIsWithinThreshold(
                                 Color.red(pixel), Color.green(pixel), Color.blue(pixel),
                                 Color.red(px), Color.green(px), Color.blue(px));
                 newColor = px & 0xFF000000 | rgb(color);
             } else {
                 match = threshold == 0 ?
                         px == pixel :
-                        Color.alpha(px) == Color.alpha(pixel) && checkColorIsWithinThreshold(
+                        Color.alpha(px) == Color.alpha(pixel) && checkIfColorIsWithinThreshold(
                                 Color.red(pixel), Color.green(pixel), Color.blue(pixel),
                                 Color.red(px), Color.green(px), Color.blue(px));
                 newColor = color;
