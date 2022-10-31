@@ -352,8 +352,9 @@
                         android:title="@string/channel_mixer" />
 
                     <item
-                        android:id="@+id/i_layer_color_filter_clear"
-                        android:title="@string/clear" />
+                        android:id="@+id/i_layer_color_filter_enabled"
+                        android:checkable="true"
+                        android:title="@string/enabled" />
                 </menu>
             </item>
 

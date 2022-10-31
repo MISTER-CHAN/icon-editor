@@ -71,10 +71,6 @@ public class PreviewBitmap {
         return bm.getWidth();
     }
 
-    private int inRangeFrom0To255(int a) {
-        return Math.max(Math.min(a, 255), 0);
-    }
-
     public void recycle() {
         canvas = null;
         bitmap.recycle();
@@ -90,34 +86,13 @@ public class PreviewBitmap {
     }
 
     public void setFilter(@Size(20) float[] colorMatrix) {
-        final int w = bm.getWidth(), h = bm.getHeight(), area = w * h;
-        final int[] pixels = new int[area];
-        bm.getPixels(pixels, 0, w, 0, 0, w, h);
-        for (int i = 0; i < area; ++i) {
-            final int r = Color.red(pixels[i]), g = Color.green(pixels[i]), b = Color.blue(pixels[i]),
-                    a = Color.alpha(pixels[i]);
-            final int r_ = inRangeFrom0To255((int) (r * colorMatrix[0] + g * colorMatrix[1] + b * colorMatrix[2] + a * colorMatrix[3] + colorMatrix[4]));
-            final int g_ = inRangeFrom0To255((int) (r * colorMatrix[5] + g * colorMatrix[6] + b * colorMatrix[7] + a * colorMatrix[8] + colorMatrix[9]));
-            final int b_ = inRangeFrom0To255((int) (r * colorMatrix[10] + g * colorMatrix[11] + b * colorMatrix[12] + a * colorMatrix[13] + colorMatrix[14]));
-            final int a_ = inRangeFrom0To255((int) (r * colorMatrix[15] + g * colorMatrix[16] + b * colorMatrix[17] + a * colorMatrix[18] + colorMatrix[19]));
-            pixels[i] = Color.argb(a_, r_, g_, b_);
-        }
-        bitmap.setPixels(pixels, 0, w, rect.left, rect.top, w, h);
+        BitmapFilter.setFilter(bm, 0, 0, bitmap, rect.left, rect.top,
+                colorMatrix);
     }
 
     public void setFilter(float scale, float shift) {
-        final int w = bm.getWidth(), h = bm.getHeight(), area = w * h;
-        final int[] pixels = new int[area];
-        bm.getPixels(pixels, 0, w, 0, 0, w, h);
-        for (int i = 0; i < area; ++i) {
-            final int r = Color.red(pixels[i]), g = Color.green(pixels[i]), b = Color.blue(pixels[i]),
-                    a = Color.alpha(pixels[i]);
-            final int r_ = inRangeFrom0To255((int) (r * scale + shift));
-            final int g_ = inRangeFrom0To255((int) (g * scale + shift));
-            final int b_ = inRangeFrom0To255((int) (b * scale + shift));
-            pixels[i] = Color.argb(a, r_, g_, b_);
-        }
-        bitmap.setPixels(pixels, 0, w, rect.left, rect.top, w, h);
+        BitmapFilter.setFilter(bm, 0, 0, bitmap, rect.left, rect.top,
+                scale, shift);
     }
 
     public void setPixels(@ColorInt int[] pixels, int offset, int stride,

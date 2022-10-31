@@ -9,15 +9,8 @@ import androidx.annotation.Size;
 
 class Tab {
 
-    @Size(20)
-    public static final float[] COLOR_MATRIX_DEFAULT = new float[]{
-            1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-            0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
-            0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-            0.0f, 0.0f, 0.0f, 1.0f, 0.0f
-    };
-
     public boolean direction = true;
+    public boolean enableColorFilter = false;
     public boolean visible;
     public Bitmap bitmap;
     public Bitmap.CompressFormat compressFormat;

@@ -618,7 +618,6 @@ public class MainActivity extends AppCompatActivity {
 
     private final ColorMatrixManager.OnMatrixElementsChangeListener onLayerColorFilterChangeListener = matrix -> {
         tab.colorMatrix = matrix;
-        tab.paint.setColorFilter(new ColorMatrixColorFilter(matrix));
         drawBitmapOnView();
     };
 
@@ -2821,8 +2820,16 @@ public class MainActivity extends AppCompatActivity {
                     bitmap.recycle();
                     bitmap = bm;
                 }
+                if (tab.enableColorFilter) {
+                    BitmapFilter.setFilter(bitmap, 0, 0, bitmap, 0, 0,
+                            tab.colorMatrix);
+                }
             } else {
                 final Bitmap bm = mergeLayers(branch, w, h, printer);
+                if (tab.enableColorFilter) {
+                    BitmapFilter.setFilter(bitmap, 0, 0, bitmap, 0, 0,
+                            tab.colorMatrix);
+                }
                 if (tab.direction) {
                     canvas.drawBitmap(bm, 0.0f, 0.0f, tab.paint);
                     bm.recycle();
@@ -3465,18 +3472,20 @@ public class MainActivity extends AppCompatActivity {
                         .show();
                 break;
 
-            case R.id.i_layer_color_filter_clear:
-                tab.colorMatrix = Tab.COLOR_MATRIX_DEFAULT.clone();
-                tab.paint.setColorFilter(null);
+            case R.id.i_layer_color_filter_enabled: {
+                final boolean checked = !item.isChecked();
+                item.setChecked(checked);
+                tab.enableColorFilter = checked;
                 drawBitmapOnView();
                 break;
-
-            case R.id.i_layer_direction:
-                tab.direction = !tab.direction;
-                item.setChecked(tab.direction);
+            }
+            case R.id.i_layer_direction: {
+                final boolean checked = !item.isChecked();
+                item.setChecked(checked);
+                tab.direction = checked;
                 drawBitmapOnView();
                 break;
-
+            }
             case R.id.i_layer_duplicate: {
                 drawFloatingLayers();
                 Bitmap bm;
