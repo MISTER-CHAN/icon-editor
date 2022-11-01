@@ -2799,15 +2799,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private static Bitmap mergeLayers(final LayerTree tree, final int w, final int h,
-                                      final Tab visible,
-                                      final BitmapPrinter printer) {
+                                      final Tab visible, final BitmapPrinter printer) {
         return mergeLayers(tree, w, h, null, visible, printer);
     }
 
     private static Bitmap mergeLayers(final LayerTree tree,
                                       final int w, final int h, final Bitmap background,
-                                      final Tab visible,
-                                      final BitmapPrinter printer) {
+                                      final Tab visible, final BitmapPrinter printer) {
         final LayerTree.Node root = tree.peekBackground();
         Bitmap bitmap = background == null
                 ? Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
