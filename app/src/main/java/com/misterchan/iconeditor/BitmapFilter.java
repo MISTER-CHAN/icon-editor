@@ -7,13 +7,9 @@ import androidx.annotation.Size;
 
 public class BitmapFilter {
 
-    private static int inRangeFrom0To255(int a) {
-        return Math.max(Math.min(a, 255), 0);
-    }
-
-    public static void setFilter(final Bitmap src, final int srcX, final int srcY,
-                                 final Bitmap dst, final int dstX, final int dstY,
-                                 final float scale, final float shift) {
+    public static void addColorFilter(final Bitmap src, final int srcX, final int srcY,
+                                      final Bitmap dst, final int dstX, final int dstY,
+                                      final float scale, final float shift) {
         final int w = src.getWidth(), h = src.getHeight(), area = w * h;
         final int[] pixels = new int[area];
         src.getPixels(pixels, 0, w, srcX, srcY, w, h);
@@ -28,9 +24,9 @@ public class BitmapFilter {
         dst.setPixels(pixels, 0, w, dstX, dstY, w, h);
     }
 
-    public static void setFilter(final Bitmap src, final int srcX, final int srcY,
-                                 final Bitmap dst, final int dstX, final int dstY,
-                                 @Size(20) final float[] colorMatrix) {
+    public static void addColorFilter(final Bitmap src, final int srcX, final int srcY,
+                                      final Bitmap dst, final int dstX, final int dstY,
+                                      @Size(20) final float[] colorMatrix) {
         final int w = src.getWidth(), h = src.getHeight(), area = w * h;
         final int[] pixels = new int[area];
         src.getPixels(pixels, 0, w, srcX, srcY, w, h);
@@ -44,5 +40,9 @@ public class BitmapFilter {
             pixels[i] = android.graphics.Color.argb(a_, r_, g_, b_);
         }
         dst.setPixels(pixels, 0, w, dstX, dstY, w, h);
+    }
+
+    private static int inRangeFrom0To255(int a) {
+        return Math.max(Math.min(a, 255), 0);
     }
 }

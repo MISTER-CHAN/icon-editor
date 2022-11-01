@@ -2,7 +2,6 @@ package com.misterchan.iconeditor;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
@@ -33,6 +32,16 @@ public class PreviewBitmap {
         canvas = new Canvas(this.bitmap);
         cv = new Canvas(bm);
         this.rect = rect;
+    }
+
+    public void addColorFilter(@Size(20) float[] colorMatrix) {
+        BitmapFilter.addColorFilter(bm, 0, 0, bitmap, rect.left, rect.top,
+                colorMatrix);
+    }
+
+    public void addColorFilter(float scale, float shift) {
+        BitmapFilter.addColorFilter(bm, 0, 0, bitmap, rect.left, rect.top,
+                scale, shift);
     }
 
     public void clearFilter() {
@@ -83,16 +92,6 @@ public class PreviewBitmap {
 
     public void reset() {
         canvas.drawBitmap(bm, rect.left, rect.top, PAINT_SRC);
-    }
-
-    public void setFilter(@Size(20) float[] colorMatrix) {
-        BitmapFilter.setFilter(bm, 0, 0, bitmap, rect.left, rect.top,
-                colorMatrix);
-    }
-
-    public void setFilter(float scale, float shift) {
-        BitmapFilter.setFilter(bm, 0, 0, bitmap, rect.left, rect.top,
-                scale, shift);
     }
 
     public void setPixels(@ColorInt int[] pixels, int offset, int stride,

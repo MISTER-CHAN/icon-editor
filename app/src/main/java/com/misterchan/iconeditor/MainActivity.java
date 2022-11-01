@@ -607,12 +607,12 @@ public class MainActivity extends AppCompatActivity {
 
     private final LevelsDialog.OnLevelsChangeListener onFilterLevelsChangeListener = (inputShadows, inputHighlights, outputShadows, outputHighlights) -> {
         final float ratio = (float) (outputHighlights - outputShadows) / (float) (inputHighlights - inputShadows);
-        preview.setFilter(ratio, -inputShadows * ratio + outputShadows);
+        preview.addColorFilter(ratio, -inputShadows * ratio + outputShadows);
         drawBitmapOnView(preview.getBitmap());
     };
 
     private final ColorMatrixManager.OnMatrixElementsChangeListener onColorMatrixChangeListener = matrix -> {
-        preview.setFilter(matrix);
+        preview.addColorFilter(matrix);
         drawBitmapOnView(preview.getBitmap());
     };
 
@@ -1658,13 +1658,13 @@ public class MainActivity extends AppCompatActivity {
 
     private final OnSeekBarProgressChangeListener onFilterContrastSeekBarProgressChangeListener = (seekBar, progress) -> {
         final float scale = progress / 10.0f, shift = 0xFF / 2.0f * (1.0f - scale);
-        preview.setFilter(scale, shift);
+        preview.addColorFilter(scale, shift);
         drawBitmapOnView(preview.getBitmap());
         tvStatus.setText(String.format(getString(R.string.state_contrast), scale));
     };
 
     private final OnSeekBarProgressChangeListener onFilterLightnessSeekBarProgressChangeListener = (seekBar, progress) -> {
-        preview.setFilter(1.0f, progress);
+        preview.addColorFilter(1.0f, progress);
         drawBitmapOnView(preview.getBitmap());
         tvStatus.setText(String.format(getString(R.string.state_lightness), progress));
     };
@@ -1673,14 +1673,14 @@ public class MainActivity extends AppCompatActivity {
         final float f = progress / 10.0f;
         final ColorMatrix colorMatrix = new ColorMatrix();
         colorMatrix.setSaturation(f);
-        preview.setFilter(colorMatrix.getArray());
+        preview.addColorFilter(colorMatrix.getArray());
         drawBitmapOnView(preview.getBitmap());
         tvStatus.setText(String.format(getString(R.string.state_saturation), f));
     };
 
     private final OnSeekBarProgressChangeListener onFilterThresholdSeekBarProgressChangeListener = (seekBar, progress) -> {
         final float f = -0x100 * progress;
-        preview.setFilter(new float[]{
+        preview.addColorFilter(new float[]{
                 0.213f * 0x100, 0.715f * 0x100, 0.072f * 0x100, 0.0f, f,
                 0.213f * 0x100, 0.715f * 0x100, 0.072f * 0x100, 0.0f, f,
                 0.213f * 0x100, 0.715f * 0x100, 0.072f * 0x100, 0.0f, f,
@@ -2222,7 +2222,7 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     canvas.drawBitmap(bitmap, vp, relative, paint);
                 }
-            } else if (tab.visible) {
+            } else {
                 canvas.drawBitmap(tab.bitmap, vp, relative, paint);
             }
         });
@@ -2799,17 +2799,28 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private static Bitmap mergeLayers(final LayerTree tree, final int w, final int h, final BitmapPrinter printer) {
-        final LayerTree.Node background = tree.peekBackground();
-        Bitmap bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+        return mergeLayers(tree, w, h, null, printer);
+    }
+
+    private static Bitmap mergeLayers(final LayerTree tree, final int w, final  int h, final Bitmap background, final BitmapPrinter printer) {
+        final LayerTree.Node root = tree.peekBackground();
+        Bitmap bitmap = background == null
+                ? Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+                : Bitmap.createBitmap(background);
         Canvas canvas = new Canvas(bitmap);
 
-        for (LayerTree.Node node = background; node != null; node = node.getFront()) {
+        for (LayerTree.Node node = root; node != null; node = node.getFront()) {
             final Tab tab = node.getTab();
             final LayerTree branch = node.getBranch();
 
             if (branch == null) {
-                if (node == background) {
-                    printer.run(canvas, tab, PAINT_SRC);
+                if (!tab.visible) {
+                    continue;
+                }
+                if (node == root) {
+                    if (background == null) {
+                        printer.run(canvas, tab, PAINT_SRC);
+                    }
                 } else if (tab.direction) {
                     printer.run(canvas, tab, tab.paint);
                 } else {
@@ -2821,24 +2832,15 @@ public class MainActivity extends AppCompatActivity {
                     bitmap = bm;
                 }
                 if (tab.enableColorFilter) {
-                    BitmapFilter.setFilter(bitmap, 0, 0, bitmap, 0, 0,
+                    BitmapFilter.addColorFilter(bitmap, 0, 0, bitmap, 0, 0,
                             tab.colorMatrix);
                 }
             } else {
-                final Bitmap bm = mergeLayers(branch, w, h, printer);
-                if (tab.enableColorFilter) {
-                    BitmapFilter.setFilter(bitmap, 0, 0, bitmap, 0, 0,
-                            tab.colorMatrix);
-                }
-                if (tab.direction) {
-                    canvas.drawBitmap(bm, 0.0f, 0.0f, tab.paint);
-                    bm.recycle();
-                } else {
-                    canvas = new Canvas(bm);
-                    canvas.drawBitmap(bitmap, 0.0f, 0.0f, tab.paint);
-                    bitmap.recycle();
-                    bitmap = bm;
-                }
+                final Bitmap bm = tab.direction || !tab.visible
+                        ? mergeLayers(branch, w, h, printer)
+                        : mergeLayers(branch, w, h, bitmap, printer);
+                canvas.drawBitmap(bm, 0.0f, 0.0f, tab.paint);
+                bm.recycle();
             }
         }
 
