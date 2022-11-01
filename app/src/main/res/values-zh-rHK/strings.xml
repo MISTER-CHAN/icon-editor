@@ -49,6 +49,7 @@
     <string name="delete">刪除</string>
     <string name="deselect">不選取</string>
     <string name="draw">繪畫</string>
+    <string name="draw_below">畫底下圖層</string>
     <string name="draw_color">畫顏色</string>
     <string name="duplicate">複製</string>
     <string name="duplicate_by_color_range">複製顏色範圍</string>
@@ -117,7 +118,6 @@
     <string name="patch">修補</string>
     <string name="pencil">鉛筆</string>
     <string name="pen_with_filter">濾光筆</string>
-    <string name="positive">正向</string>
     <string name="preferences">偏好</string>
     <string name="properties">屬性</string>
     <string name="rectangle">矩形</string>

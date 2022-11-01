@@ -700,7 +700,7 @@ public class MainActivity extends AppCompatActivity {
                 cloneStampSrc = null;
             }
 
-            miLayerDirection.setChecked(MainActivity.this.tab.direction);
+            miLayerDirection.setChecked(!MainActivity.this.tab.ignore_below);
             miLayerLevelUp.setEnabled(MainActivity.this.tab.level > 0);
             for (int i = 0; i < BLEND_MODES.length; ++i) {
                 final MenuItem mi = smBlendModes.getItem(i);
@@ -2824,13 +2824,12 @@ public class MainActivity extends AppCompatActivity {
                     if (background == null) {
                         printer.run(canvas, tab, PAINT_SRC);
                     }
-                } else if (tab.direction) {
+                } else if (tab.ignore_below) {
                     printer.run(canvas, tab, tab.paint);
                 } else {
-                    final Bitmap bm = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+                    final Bitmap bm = Bitmap.createBitmap(bitmap);
                     canvas = new Canvas(bm);
-                    printer.run(canvas, tab, PAINT_SRC);
-                    canvas.drawBitmap(bitmap, 0.0f, 0.0f, tab.paint);
+                    printer.run(canvas, tab, tab.paint);
                     bitmap.recycle();
                     bitmap = bm;
                 }
@@ -2839,7 +2838,7 @@ public class MainActivity extends AppCompatActivity {
                             tab.colorMatrix);
                 }
             } else {
-                final Bitmap bm = tab.direction
+                final Bitmap bm = tab.ignore_below
                         ? mergeLayers(branch, w, h, visible, printer)
                         : mergeLayers(branch, w, h, bitmap, visible, printer);
                 canvas.drawBitmap(bm, 0.0f, 0.0f, tab.paint);
@@ -3080,7 +3079,7 @@ public class MainActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         final MenuInflater menuInflater = getMenuInflater();
         menuInflater.inflate(R.menu.main, menu);
-        miLayerDirection = menu.findItem(R.id.i_layer_direction);
+        miLayerDirection = menu.findItem(R.id.i_layer_draw_below);
         miLayerLevelUp = menu.findItem(R.id.i_layer_level_up);
         smBlendModes = menu.findItem(R.id.i_blend_modes).getSubMenu();
         return true;
@@ -3484,10 +3483,10 @@ public class MainActivity extends AppCompatActivity {
                 drawBitmapOnView();
                 break;
             }
-            case R.id.i_layer_direction: {
+            case R.id.i_layer_draw_below: {
                 final boolean checked = !item.isChecked();
                 item.setChecked(checked);
-                tab.direction = checked;
+                tab.ignore_below = !checked;
                 drawBitmapOnView();
                 break;
             }

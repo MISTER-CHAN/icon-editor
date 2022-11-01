@@ -9,8 +9,8 @@ import androidx.annotation.Size;
 
 class Tab {
 
-    public boolean direction = true;
     public boolean enableColorFilter = false;
+    public boolean ignore_below = true;
     public boolean visible;
     public Bitmap bitmap;
     public Bitmap.CompressFormat compressFormat;

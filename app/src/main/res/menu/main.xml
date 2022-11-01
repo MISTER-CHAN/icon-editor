@@ -377,9 +377,9 @@
             </item>
 
             <item
-                android:id="@+id/i_layer_direction"
+                android:id="@+id/i_layer_draw_below"
                 android:checkable="true"
-                android:title="@string/positive" />
+                android:title="@string/draw_below" />
         </menu>
     </item>
 
