@@ -2203,7 +2203,7 @@ public class MainActivity extends AppCompatActivity {
         final int w = vp.width(), h = vp.height();
         final Rect relative = new Rect(0, 0, w, h);
 
-        final Bitmap merged = mergeLayers(layerTree, w, h, (canvas, tab, paint) -> {
+        final Bitmap merged = mergeLayers(layerTree, w, h, tab, (canvas, tab, paint) -> {
             if (tab == MainActivity.this.tab) {
                 if (transformer != null) {
                     final Bitmap b = Bitmap.createBitmap(bitmap, vp.left, vp.top, w, h);
@@ -2222,7 +2222,7 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     canvas.drawBitmap(bitmap, vp, relative, paint);
                 }
-            } else {
+            } else if (tab.visible) {
                 canvas.drawBitmap(tab.bitmap, vp, relative, paint);
             }
         });
@@ -2798,11 +2798,16 @@ public class MainActivity extends AppCompatActivity {
         return Math.max(Math.max(Color.red(color), Color.green(color)), Color.blue(color));
     }
 
-    private static Bitmap mergeLayers(final LayerTree tree, final int w, final int h, final BitmapPrinter printer) {
-        return mergeLayers(tree, w, h, null, printer);
+    private static Bitmap mergeLayers(final LayerTree tree, final int w, final int h,
+                                      final Tab visible,
+                                      final BitmapPrinter printer) {
+        return mergeLayers(tree, w, h, null, visible, printer);
     }
 
-    private static Bitmap mergeLayers(final LayerTree tree, final int w, final  int h, final Bitmap background, final BitmapPrinter printer) {
+    private static Bitmap mergeLayers(final LayerTree tree,
+                                      final int w, final int h, final Bitmap background,
+                                      final Tab visible,
+                                      final BitmapPrinter printer) {
         final LayerTree.Node root = tree.peekBackground();
         Bitmap bitmap = background == null
                 ? Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
@@ -2811,12 +2816,12 @@ public class MainActivity extends AppCompatActivity {
 
         for (LayerTree.Node node = root; node != null; node = node.getFront()) {
             final Tab tab = node.getTab();
+            if (!tab.visible && tab != visible) {
+                continue;
+            }
             final LayerTree branch = node.getBranch();
 
             if (branch == null) {
-                if (!tab.visible) {
-                    continue;
-                }
                 if (node == root) {
                     if (background == null) {
                         printer.run(canvas, tab, PAINT_SRC);
@@ -2836,9 +2841,9 @@ public class MainActivity extends AppCompatActivity {
                             tab.colorMatrix);
                 }
             } else {
-                final Bitmap bm = tab.direction || !tab.visible
-                        ? mergeLayers(branch, w, h, printer)
-                        : mergeLayers(branch, w, h, bitmap, printer);
+                final Bitmap bm = tab.direction
+                        ? mergeLayers(branch, w, h, visible, printer)
+                        : mergeLayers(branch, w, h, bitmap, visible, printer);
                 canvas.drawBitmap(bm, 0.0f, 0.0f, tab.paint);
                 bm.recycle();
             }
@@ -3546,7 +3551,7 @@ public class MainActivity extends AppCompatActivity {
                 drawFloatingLayers();
                 final int selected = tabLayout.getSelectedTabPosition();
                 final int w = bitmap.getWidth(), h = bitmap.getHeight();
-                final Bitmap bm = mergeLayers(layerTree, w, h, (canvas, tab, paint) -> {
+                final Bitmap bm = mergeLayers(layerTree, w, h, null, (canvas, tab, paint) -> {
                     if (tab.visible)
                         canvas.drawBitmap(tab.bitmap, 0.0f, 0.0f, paint);
                 });
