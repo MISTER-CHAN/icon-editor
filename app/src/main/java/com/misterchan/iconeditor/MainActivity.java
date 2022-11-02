@@ -2817,19 +2817,18 @@ public class MainActivity extends AppCompatActivity {
                 continue;
             }
             final LayerTree branch = node.getBranch();
-
+            final Paint paint = node != root || background != null ? tab.paint : PAINT_SRC;
             if (branch == null) {
-                printer.run(canvas, tab,
-                        node != root || background != null ? tab.paint : PAINT_SRC);
+                printer.run(canvas, tab, paint);
                 if (tab.enableColorFilter) {
                     BitmapFilter.addColorFilter(bitmap, 0, 0, bitmap, 0, 0,
                             tab.colorMatrix);
                 }
             } else {
                 final Bitmap bm = mergeLayers(branch, w, h,
-                        tab.ignore_below ? null : bitmap,
+                        tab.ignore_below || node == root ? null : bitmap,
                         visible, printer);
-                canvas.drawBitmap(bm, 0.0f, 0.0f, tab.paint);
+                canvas.drawBitmap(bm, 0.0f, 0.0f, paint);
                 bm.recycle();
             }
         }
