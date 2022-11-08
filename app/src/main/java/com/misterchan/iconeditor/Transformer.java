@@ -21,27 +21,29 @@ public class Transformer {
     private double aspectRatio;
     private float centerX, centerY;
     private final RectF dpb = new RectF(); // Distance from point to bounds
+    private Rect rect;
 
-    public Transformer(Bitmap bitmap) {
+    public Transformer(Bitmap bitmap, Rect rect) {
         this.bitmap = bitmap;
+        this.rect = rect;
     }
 
     public Bitmap getBitmap() {
         return bitmap;
     }
 
-    public void calculateAspectRatio(Rect rect) {
+    public void calculateAspectRatio() {
         aspectRatio = (double) rect.width() / (double) rect.height();
     }
 
-    public void calculateByLocation(Rect rect) {
-        calculateAspectRatio(rect);
-        calculateCenter(rect);
+    public void calculateByLocation() {
+        calculateAspectRatio();
+        calculateCenter();
     }
 
-    public void calculateCenter(Rect rect) {
-        centerX = (rect.left + rect.right) / 2.0f;
-        centerY = (rect.top + rect.bottom) / 2.0f;
+    public void calculateCenter() {
+        centerX = rect.exactCenterX();
+        centerY = rect.exactCenterY();
     }
 
     public double getAspectRatio() {

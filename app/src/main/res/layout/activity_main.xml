@@ -131,18 +131,37 @@
                     android:orientation="horizontal"
                     android:visibility="invisible">
 
+                    <RadioGroup
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <RadioButton
+                            android:id="@+id/rb_transformer_translation"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:checked="true"
+                            android:text="@string/translate" />
+
+                        <RadioButton
+                            android:id="@+id/rb_transformer_scale"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/scale" />
+
+                        <RadioButton
+                            android:id="@+id/rb_transformer_rotation"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/rotate" />
+                    </RadioGroup>
+
                     <CheckBox
                         android:id="@+id/cb_transformer_lar"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/lock_aspect_ratio" />
-
-                    <Button
-                        android:id="@+id/b_transformer_rotate"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginHorizontal="2dp"
-                        android:text="@string/rotate" />
+                        android:text="@string/lock_aspect_ratio"
+                        android:visibility="gone" />
                 </LinearLayout>
 
                 <LinearLayout

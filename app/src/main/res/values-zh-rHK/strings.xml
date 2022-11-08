@@ -45,7 +45,7 @@
     <string name="cut">剪下</string>
     <string name="dec">十進制</string>
     <string name="default_">缺省</string>
-    <string name="degrees_">角度：%d°</string>
+    <string name="degrees_">角度：%f°</string>
     <string name="delete">刪除</string>
     <string name="deselect">不選取</string>
     <string name="draw">繪畫</string>
@@ -172,6 +172,7 @@
     <string name="tolerance">容許度</string>
     <string name="tool_options">工具選項</string>
     <string name="transform">變換</string>
+    <string name="translate">平移</string>
     <string name="tutorial_merge_as_hidden">Tutorial</string>
     <string name="two_seventy_degrees">270°</string>
     <string name="unified_transl_and_scale">統一各圖層之位置及縮放</string>

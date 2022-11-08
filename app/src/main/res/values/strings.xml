@@ -50,7 +50,7 @@
     <string name="dec">Dec</string>
     <string name="default_">Default</string>
     <string name="degree" translatable="false">°</string>
-    <string name="degrees_">Degrees: %d°</string>
+    <string name="degrees_">Degrees: %f°</string>
     <string name="delete">Delete</string>
     <string name="deselect">Deselect</string>
     <string name="double_zero" translatable="false">00</string>
@@ -199,6 +199,7 @@
     <string name="tolerance">Tolerance</string>
     <string name="tool_options">Tool Options</string>
     <string name="transform">Transform</string>
+    <string name="translate">Translate</string>
     <string name="tutorial_merge_as_hidden">Tutorial</string>
     <string name="two_seventy_degrees">270°</string>
     <string name="undo" translatable="false">↶</string>

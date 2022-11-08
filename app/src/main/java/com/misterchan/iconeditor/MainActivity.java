@@ -234,6 +234,7 @@ public class MainActivity extends AppCompatActivity {
     private CheckBox cbZoom;
     private ColorAdapter colorAdapter;
     private double prevDiagonal;
+    private double prevTheta;
     private EditText etCloneStampBlurRadius;
     private EditText etCloneStampStrokeWidth;
     private EditText etEraserBlurRadius;
@@ -1286,7 +1287,57 @@ public class MainActivity extends AppCompatActivity {
     };
 
     @SuppressLint({"ClickableViewAccessibility"})
-    private final View.OnTouchListener onImageViewTouchWithTransformerListener = (v, event) -> {
+    private final View.OnTouchListener onImageViewTouchWithTransformerOfRotationListener = (v, event) -> {
+        if (!hasSelection) {
+            return true;
+        }
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN: {
+                if (selection.isEmpty()) {
+                    break;
+                }
+                final float x = event.getX(), y = event.getY();
+                if (transformer == null) {
+                    createTransformer();
+                }
+                ivSelection.setPivotX(translationX + toScaled(selection.exactCenterX()));
+                ivSelection.setPivotY(translationY + toScaled(selection.exactCenterY()));
+                prevTheta = (float) Math.atan2(y - ivSelection.getPivotY(), x - ivSelection.getPivotX());
+                tvStatus.setText("");
+                break;
+            }
+            case MotionEvent.ACTION_MOVE: {
+                if (transformer == null) {
+                    break;
+                }
+                final float x = event.getX(), y = event.getY();
+                final float degrees = (float) Math.toDegrees(Math.atan2(y - ivSelection.getPivotY(), x - ivSelection.getPivotX()) - prevTheta);
+                ivSelection.setRotation(degrees);
+                drawSelectionOnView();
+                tvStatus.setText(String.format(getString(R.string.degrees_), degrees));
+                break;
+            }
+            case MotionEvent.ACTION_UP:
+            case MotionEvent.ACTION_CANCEL: {
+                final int w = transformer.getWidth(), h = transformer.getHeight();
+                transformer.rotate(ivSelection.getRotation());
+                ivSelection.setRotation(0.0f);
+                final int w_ = transformer.getWidth(), h_ = transformer.getHeight();
+                selection.left += w - w_ >> 1;
+                selection.top += h - h_ >> 1;
+                selection.right = selection.left + w_;
+                selection.bottom = selection.top + h_;
+                drawBitmapOnView();
+                drawSelectionOnView();
+                tvStatus.setText("");
+                break;
+            }
+        }
+        return true;
+    };
+
+    @SuppressLint({"ClickableViewAccessibility"})
+    private final View.OnTouchListener onImageViewTouchWithTransformerOfScaleListener = (v, event) -> {
         if (!hasSelection) {
             return true;
         }
@@ -1296,32 +1347,28 @@ public class MainActivity extends AppCompatActivity {
             case 1:
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN: {
-                        final float x = event.getX(), y = event.getY();
-                        if (!selection.isEmpty()) {
-                            if (transformer == null) {
-                                createTransformer();
-                            }
-                            drawBitmapOnView();
-                            drawSelectionOnView(false);
-                            if (draggingBound == Position.NULL) {
-                                if (checkDraggingBound(x, y) != Position.NULL) {
-                                    if (cbTransformerLar.isChecked()) {
-                                        transformer.calculateByLocation(selection);
-                                    }
-                                    tvStatus.setText(String.format(getString(R.string.state_selected_bound),
-                                            draggingBound.name));
-                                } else {
-                                    tvStatus.setText(String.format(getString(R.string.state_left_top),
-                                            selection.left, selection.top));
-                                }
-                            } else {
-                                stretchByBound(x, y);
-                                tvStatus.setText(String.format(getString(R.string.state_left_top),
-                                        selection.left, selection.top));
-                            }
+                        if (selection.isEmpty()) {
+                            break;
                         }
-                        prevX = x - translationX - toScaled(selection.left);
-                        prevY = y - translationY - toScaled(selection.top);
+                        final float x = event.getX(), y = event.getY();
+                        if (transformer == null) {
+                            createTransformer();
+                        }
+                        drawBitmapOnView();
+                        drawSelectionOnView(false);
+                        if (draggingBound == Position.NULL) {
+                            if (checkDraggingBound(x, y) != Position.NULL) {
+                                if (cbTransformerLar.isChecked()) {
+                                    transformer.calculateByLocation();
+                                }
+                                tvStatus.setText(String.format(getString(R.string.state_selected_bound),
+                                        draggingBound.name));
+                            }
+                        } else {
+                            stretchByBound(x, y);
+                            tvStatus.setText(String.format(getString(R.string.state_left_top),
+                                    selection.left, selection.top));
+                        }
                         break;
                     }
                     case MotionEvent.ACTION_MOVE: {
@@ -1329,14 +1376,7 @@ public class MainActivity extends AppCompatActivity {
                             break;
                         }
                         final float x = event.getX(), y = event.getY();
-                        if (draggingBound == Position.NULL) {
-                            selection.offsetTo(toUnscaled(x - translationX - prevX),
-                                    toUnscaled(y - translationY - prevY));
-                            drawBitmapOnView();
-                            drawSelectionOnView(true);
-                            tvStatus.setText(String.format(getString(R.string.state_left_top),
-                                    selection.left, selection.top));
-                        } else {
+                        if (draggingBound != Position.NULL) {
                             stretchByBound(x, y);
                             tvStatus.setText(String.format(getString(R.string.state_size),
                                     selection.width(), selection.height()));
@@ -1345,24 +1385,20 @@ public class MainActivity extends AppCompatActivity {
                     }
                     case MotionEvent.ACTION_UP:
                     case MotionEvent.ACTION_CANCEL:
-                        if (draggingBound != Position.NULL) {
-                            if (hasDragged) {
-                                draggingBound = Position.NULL;
-                                isDraggingCorner = false;
-                                hasDragged = false;
-                                final int width = selection.width(), height = selection.height();
-                                if (width > 0 && height > 0) {
-                                    transformer.stretch(width, height);
-                                } else if (transformer != null) {
-                                    hasSelection = false;
-                                    recycleTransformer();
-                                }
-                                drawBitmapOnView();
-                                drawSelectionOnView(false);
-                                tvStatus.setText("");
+                        if (draggingBound != Position.NULL && hasDragged) {
+                            draggingBound = Position.NULL;
+                            isDraggingCorner = false;
+                            hasDragged = false;
+                            final int width = selection.width(), height = selection.height();
+                            if (width > 0 && height > 0) {
+                                transformer.stretch(width, height);
+                            } else if (transformer != null) {
+                                hasSelection = false;
+                                recycleTransformer();
                             }
-                        } else {
+                            drawBitmapOnView();
                             drawSelectionOnView(false);
+                            tvStatus.setText("");
                         }
                         break;
                 }
@@ -1436,7 +1472,7 @@ public class MainActivity extends AppCompatActivity {
                                 Math.min(scaledSelection.right - x0, scaledSelection.right - x1),
                                 Math.min(scaledSelection.bottom - y0, scaledSelection.bottom - y1));
                         if (cbTransformerLar.isChecked()) {
-                            transformer.calculateByLocation(selection);
+                            transformer.calculateByLocation();
                         }
                         tvStatus.setText(String.format(getString(R.string.state_size),
                                 selection.width(), selection.height()));
@@ -1451,8 +1487,6 @@ public class MainActivity extends AppCompatActivity {
                         }
                         drawBitmapOnView();
                         drawSelectionOnView();
-                        prevX = event.getX(1 - event.getActionIndex()) - translationX - toScaled(selection.left);
-                        prevY = event.getY(1 - event.getActionIndex()) - translationY - toScaled(selection.top);
                         tvStatus.setText("");
                         break;
                     }
@@ -1461,6 +1495,50 @@ public class MainActivity extends AppCompatActivity {
         }
         return true;
     };
+
+    @SuppressLint({"ClickableViewAccessibility"})
+    private final View.OnTouchListener onImageViewTouchWithTransformerOfTranslationListener = (v, event) -> {
+        if (!hasSelection) {
+            return true;
+        }
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN: {
+                final float x = event.getX(), y = event.getY();
+                if (!selection.isEmpty()) {
+                    if (transformer == null) {
+                        createTransformer();
+                    }
+                    drawBitmapOnView();
+                    drawSelectionOnView(false);
+                    tvStatus.setText(String.format(getString(R.string.state_left_top),
+                            selection.left, selection.top));
+                }
+                prevX = x - translationX - toScaled(selection.left);
+                prevY = y - translationY - toScaled(selection.top);
+                break;
+            }
+            case MotionEvent.ACTION_MOVE: {
+                if (transformer == null) {
+                    break;
+                }
+                final float x = event.getX(), y = event.getY();
+                selection.offsetTo(toUnscaled(x - translationX - prevX),
+                        toUnscaled(y - translationY - prevY));
+                drawBitmapOnView();
+                drawSelectionOnView(true);
+                tvStatus.setText(String.format(getString(R.string.state_left_top),
+                        selection.left, selection.top));
+                break;
+            }
+            case MotionEvent.ACTION_UP:
+            case MotionEvent.ACTION_CANCEL:
+                drawSelectionOnView(false);
+                break;
+        }
+        return true;
+    };
+
+    private View.OnTouchListener onImageViewTouchWithTransformerListener = onImageViewTouchWithTransformerOfTranslationListener;
 
     @SuppressLint({"ClickableViewAccessibility"})
     private final View.OnTouchListener onImageViewTouchWithZoomToolListener = (v, event) -> {
@@ -1638,6 +1716,33 @@ public class MainActivity extends AppCompatActivity {
     };
 
     @SuppressLint("ClickableViewAccessibility")
+    private final CompoundButton.OnCheckedChangeListener onTransformerOfRotationRadioButtonCheckedChangeListener = (buttonView, isChecked) -> {
+        if (isChecked) {
+            cbTransformerLar.setVisibility(View.GONE);
+            onImageViewTouchWithTransformerListener = onImageViewTouchWithTransformerOfRotationListener;
+            flImageView.setOnTouchListener(onImageViewTouchWithTransformerListener);
+        }
+    };
+
+    @SuppressLint("ClickableViewAccessibility")
+    private final CompoundButton.OnCheckedChangeListener onTransformerOfScaleRadioButtonCheckedChangeListener = (buttonView, isChecked) -> {
+        if (isChecked) {
+            cbTransformerLar.setVisibility(View.VISIBLE);
+            onImageViewTouchWithTransformerListener = onImageViewTouchWithTransformerOfScaleListener;
+            flImageView.setOnTouchListener(onImageViewTouchWithTransformerListener);
+        }
+    };
+
+    @SuppressLint("ClickableViewAccessibility")
+    private final CompoundButton.OnCheckedChangeListener onTransformerOfTranslationRadioButtonCheckedChangeListener = (buttonView, isChecked) -> {
+        if (isChecked) {
+            cbTransformerLar.setVisibility(View.GONE);
+            onImageViewTouchWithTransformerListener = onImageViewTouchWithTransformerOfTranslationListener;
+            flImageView.setOnTouchListener(onImageViewTouchWithTransformerListener);
+        }
+    };
+
+    @SuppressLint("ClickableViewAccessibility")
     private final CompoundButton.OnCheckedChangeListener onTextRadioButtonCheckedChangeListener = (buttonView, isChecked) -> {
         if (isChecked) {
             onToolChange(onImageViewTouchWithTextListener);
@@ -1704,53 +1809,6 @@ public class MainActivity extends AppCompatActivity {
         tvStatus.setText(String.format(
                 String.format(getString(R.string.state_alpha), settings.getArgbChannelsFormat()),
                 progress));
-    };
-
-    private final OnSeekBarProgressChangeListener onRotateDegreeSeekBarProgressChangeListener = (seekBar, progress) -> {
-        ivSelection.setRotation(progress);
-        drawSelectionOnView();
-        tvStatus.setText(String.format(getString(R.string.degrees_), progress));
-    };
-
-    private final DialogInterface.OnCancelListener onRotateCancelListener = dialog -> {
-        ivSelection.setRotation(0.0f);
-        drawBitmapOnView();
-        drawSelectionOnView();
-        tvStatus.setText("");
-    };
-
-    private final DialogInterface.OnClickListener onRotateConfirmListener = (dialog, which) -> {
-        final int w = transformer.getWidth(), h = transformer.getHeight();
-        transformer.rotate(ivSelection.getRotation());
-        ivSelection.setRotation(0.0f);
-        final int w_ = transformer.getWidth(), h_ = transformer.getHeight();
-        selection.left += w - w_ >> 1;
-        selection.top += h - h_ >> 1;
-        selection.right = selection.left + w_;
-        selection.bottom = selection.top + h_;
-        drawBitmapOnView();
-        drawSelectionOnView();
-        tvStatus.setText("");
-    };
-
-    private final View.OnClickListener onRotateButtonClickListener = v -> {
-        if (!hasSelection) {
-            selectAll();
-            hasSelection = true;
-        }
-        if (transformer == null) {
-            createTransformer();
-            drawBitmapOnView();
-            drawSelectionOnView(false);
-        }
-        ivSelection.setPivotX(translationX + toScaled(selection.exactCenterX()));
-        ivSelection.setPivotY(translationY + toScaled(selection.exactCenterY()));
-        new SeekBarDialog(this).setTitle(R.string.rotate).setMin(0).setMax(360).setProgress(0)
-                .setOnCancelListener(onRotateCancelListener)
-                .setOnPositiveButtonClickListener(onRotateConfirmListener)
-                .setOnProgressChangeListener(onRotateDegreeSeekBarProgressChangeListener)
-                .show();
-        tvStatus.setText("");
     };
 
     private final Shape circle = new Shape() {
@@ -2094,7 +2152,8 @@ public class MainActivity extends AppCompatActivity {
     private void createTransformer() {
         transformer = new Transformer(
                 Bitmap.createBitmap(bitmap,
-                        selection.left, selection.top, selection.width(), selection.height()));
+                        selection.left, selection.top, selection.width(), selection.height()),
+                selection);
         canvas.drawRect(selection.left, selection.top, selection.right, selection.bottom,
                 eraser);
     }
@@ -2941,7 +3000,6 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.b_clone_stamp_src).setOnClickListener(onCloneStampSrcButtonClickListener);
         findViewById(R.id.b_magic_paint_tolerance).setOnClickListener(onThresholdButtonClickListener);
         findViewById(R.id.b_text_draw).setOnClickListener(v -> drawTextOnCanvas());
-        findViewById(R.id.b_transformer_rotate).setOnClickListener(onRotateButtonClickListener);
         cbCloneStampAntiAlias.setOnCheckedChangeListener(onAntiAliasCheckedChangeListener);
         cbMagicPaintAntiAlias.setOnCheckedChangeListener(onAntiAliasCheckedChangeListener);
         ((CompoundButton) findViewById(R.id.cb_magic_paint_clear)).setOnCheckedChangeListener(((buttonView, isChecked) -> magicPaint.setBlendMode(isChecked ? BlendMode.DST_OUT : null)));
@@ -2983,6 +3041,9 @@ public class MainActivity extends AppCompatActivity {
         ((CompoundButton) findViewById(R.id.rb_shape)).setOnCheckedChangeListener(onShapeRadioButtonCheckedChangeListener);
         ((CompoundButton) findViewById(R.id.rb_text)).setOnCheckedChangeListener(onTextRadioButtonCheckedChangeListener);
         rbTransformer.setOnCheckedChangeListener(onTransformerRadioButtonCheckedChangeListener);
+        ((CompoundButton) findViewById(R.id.rb_transformer_rotation)).setOnCheckedChangeListener(onTransformerOfRotationRadioButtonCheckedChangeListener);
+        ((CompoundButton) findViewById(R.id.rb_transformer_scale)).setOnCheckedChangeListener(onTransformerOfScaleRadioButtonCheckedChangeListener);
+        ((CompoundButton) findViewById(R.id.rb_transformer_translation)).setOnCheckedChangeListener(onTransformerOfTranslationRadioButtonCheckedChangeListener);
         tabLayout.addOnTabSelectedListener(onTabSelectedListener);
         findViewById(R.id.tv_color_add).setOnClickListener(onAddSwatchViewClickListener);
         vBackgroundColor.setOnClickListener(onBackgroundColorClickListener);
@@ -3193,7 +3254,7 @@ public class MainActivity extends AppCompatActivity {
                             selection.left, selection.top,
                             selection.width(), selection.height());
                     drawFloatingLayers();
-                    transformer = new Transformer(bm);
+                    transformer = new Transformer(bm, selection);
                     rbTransformer.setChecked(true);
                     drawBitmapOnView();
                     drawSelectionOnView();
@@ -3606,7 +3667,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 selection.right = selection.left + clipboard.getWidth();
                 selection.bottom = selection.top + clipboard.getHeight();
-                transformer = new Transformer(Bitmap.createBitmap(clipboard));
+                transformer = new Transformer(Bitmap.createBitmap(clipboard), selection);
                 rbTransformer.setChecked(true);
                 drawBitmapOnView();
                 drawSelectionOnView();
