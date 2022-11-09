@@ -1319,6 +1319,9 @@ public class MainActivity extends AppCompatActivity {
             }
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL: {
+                if (transformer == null) {
+                    break;
+                }
                 final int w = transformer.getWidth(), h = transformer.getHeight();
                 transformer.rotate(ivSelection.getRotation());
                 ivSelection.setRotation(0.0f);
@@ -1385,6 +1388,9 @@ public class MainActivity extends AppCompatActivity {
                     }
                     case MotionEvent.ACTION_UP:
                     case MotionEvent.ACTION_CANCEL:
+                        if (transformer == null) {
+                            break;
+                        }
                         if (draggingBound != Position.NULL && hasDragged) {
                             draggingBound = Position.NULL;
                             isDraggingCorner = false;
@@ -1392,7 +1398,7 @@ public class MainActivity extends AppCompatActivity {
                             final int width = selection.width(), height = selection.height();
                             if (width > 0 && height > 0) {
                                 transformer.stretch(width, height);
-                            } else if (transformer != null) {
+                            } else {
                                 hasSelection = false;
                                 recycleTransformer();
                             }
@@ -1532,6 +1538,9 @@ public class MainActivity extends AppCompatActivity {
             }
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
+                if (transformer == null) {
+                    break;
+                }
                 drawSelectionOnView(false);
                 break;
         }
@@ -3366,6 +3375,7 @@ public class MainActivity extends AppCompatActivity {
                 break;
 
             case R.id.i_draw_color:
+                drawFloatingLayers();
                 canvas.drawColor(paint.getColor());
                 drawBitmapOnView();
                 addHistory();

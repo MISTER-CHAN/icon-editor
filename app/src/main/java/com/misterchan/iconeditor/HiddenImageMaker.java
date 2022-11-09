@@ -21,10 +21,6 @@ public class HiddenImageMaker {
     private AlertDialog dialog;
     private SeekBar sbScaleToBlack, sbScaleToWhite;
 
-    private static float inRangeFrom0To1(float a) {
-        return Math.max(Math.min(a, (float) 1.0), (float) 0.0);
-    }
-
     public static void merge(Context context, @Size(2) final Bitmap[] bitmaps,
                              final OnFinishSettingListener listener) {
 
@@ -55,8 +51,8 @@ public class HiddenImageMaker {
         {
             final int iaw = width[0] >= width[1] ? 0 : 1, iiw = 1 - iaw, // iaw - Index of max width. i - Min.
                     iah = height[0] >= width[1] ? 0 : 1, iih = 1 - iah; // h - Height.
-            left[iiw] = (width[iaw] - width[iiw]) >> 1;
-            top[iih] = (height[iah] - height[iih]) >> 1;
+            left[iiw] = width[iaw] - width[iiw] >> 1;
+            top[iih] = height[iah] - height[iih] >> 1;
         }
         final Bitmap[] bitmaps_ = {
                 Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888),
@@ -65,14 +61,13 @@ public class HiddenImageMaker {
         {
             final Canvas[] canvases = {new Canvas(bitmaps_[0]), new Canvas(bitmaps_[1])};
             final Paint paint = new Paint();
-            float shift;
+            final float shift0 = (1.0f - scale[0]) * 0xFF;
 
             canvases[0].drawColor(Color.WHITE, BlendMode.DST_OVER);
-            shift = (1.0f - scale[0]) * 0xFF;
             paint.setColorFilter(new ColorMatrixColorFilter(new float[]{
-                    scale[0], 0.0f, 0.0f, 0.0f, shift,
-                    0.0f, scale[0], 0.0f, 0.0f, shift,
-                    0.0f, 0.0f, scale[0], 0.0f, shift,
+                    scale[0], 0.0f, 0.0f, 0.0f, shift0,
+                    0.0f, scale[0], 0.0f, 0.0f, shift0,
+                    0.0f, 0.0f, scale[0], 0.0f, shift0,
                     0.0f, 0.0f, 0.0f, 1.0f, 0.0f
             }));
             canvases[0].drawBitmap(bitmaps[0], left[0], top[0], paint);
@@ -99,19 +94,22 @@ public class HiddenImageMaker {
                     green = {Color.green(pixels[0][i]) / 255.0f, Color.green(pixels[1][i]) / 255.0f},
                     blue = {Color.blue(pixels[0][i]) / 255.0f, Color.blue(pixels[1][i]) / 255.0f};
             final float[] average = {(red[0] + green[0] + blue[0]) / 3.0f, (red[1] + green[1] + blue[1]) / 3.0f};
-            final float a = inRangeFrom0To1(1 + (average[1] - average[0]));
-            final float ar = inRangeFrom0To1(1 + (red[1] - red[0])),
-                    ag = inRangeFrom0To1(1 + (green[1] - green[0])),
-                    ab = inRangeFrom0To1(1 + (blue[1] - blue[0]));
-            pixels_[i] = Color.argb(
-                    a,
-                    inRangeFrom0To1(ar > 0.0f ? (red[1] / ar) : 1.0f),
-                    inRangeFrom0To1(ag > 0.0f ? (green[1] / ag) : 1.0f),
-                    inRangeFrom0To1(ab > 0.0f ? (blue[1] / ab) : 1.0f));
+            final float a = saturate(1 + (average[1] - average[0]));
+            final float ar = saturate(1 + (red[1] - red[0])),
+                    ag = saturate(1 + (green[1] - green[0])),
+                    ab = saturate(1 + (blue[1] - blue[0]));
+            pixels_[i] = Color.argb(a,
+                    saturate(ar > 0.0f ? (red[1] / ar) : 1.0f),
+                    saturate(ag > 0.0f ? (green[1] / ag) : 1.0f),
+                    saturate(ab > 0.0f ? (blue[1] / ab) : 1.0f));
         }
 
         final Bitmap bm = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
         bm.setPixels(pixels_, 0, w, 0, 0, w, h);
         return bm;
+    }
+
+    private static float saturate(float a) {
+        return Math.max(Math.min(a, 1.0f), 0.0f);
     }
 }
