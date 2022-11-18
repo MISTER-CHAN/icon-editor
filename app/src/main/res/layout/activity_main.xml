@@ -478,6 +478,57 @@
                     </LinearLayout>
                 </HorizontalScrollView>
 
+                <LinearLayout
+                    android:id="@+id/ll_options_magic_eraser"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:visibility="invisible">
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="96dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginHorizontal="2dp">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/et_magic_eraser_stroke_width"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="@color/transparent"
+                            android:hint="@string/stroke_width"
+                            android:inputType="numberDecimal"
+                            android:textAlignment="textEnd" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <CheckBox
+                        android:id="@+id/cb_magic_eraser_style"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/accurate" />
+
+                    <RadioGroup
+                        android:id="@+id/rg_magic_eraser_position"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <RadioButton
+                            android:id="@+id/rb_magic_eraser_left"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:checked="true"
+                            android:text="@string/left" />
+
+                        <RadioButton
+                            android:id="@+id/rb_magic_eraser_right"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/right" />
+                    </RadioGroup>
+                </LinearLayout>
+
                 <HorizontalScrollView
                     android:id="@+id/hsv_options_bucket_fill"
                     android:layout_width="match_parent"
@@ -733,6 +784,12 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/magic_paint" />
+
+                    <RadioButton
+                        android:id="@+id/rb_magic_eraser"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/magic_eraser" />
 
                     <RadioButton
                         android:id="@+id/rb_bucket_fill"

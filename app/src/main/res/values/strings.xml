@@ -1,6 +1,7 @@
 <resources>
     <string name="a" translatable="false">A</string>
     <string name="about">About</string>
+    <string name="accurate">Accurate</string>
     <string name="add">Add</string>
     <string name="add_symbol" translatable="false">+</string>
     <string name="alpha_value">Alpha Value</string>
@@ -98,6 +99,7 @@
     <string name="invert">Invert</string>
     <string name="language">Language</string>
     <string name="layer">Layer</string>
+    <string name="left">Left</string>
     <string name="level">Level</string>
     <string name="levels">Levels</string>
     <string name="level_down">Level Down</string>
@@ -108,6 +110,7 @@
     <string name="lock_aspect_ratio">Lock Aspect Ratio</string>
     <string name="lt" translatable="false"><![CDATA[<]]></string>
     <string name="m" translatable="false">M</string>
+    <string name="magic_eraser">Magic Eraser</string>
     <string name="magic_paint">Magic Paint</string>
     <string name="mask">Mask</string>
     <string name="mask_filter">Mask Filter</string>
@@ -145,6 +148,7 @@
     <string name="refit">Refit</string>
     <string name="rename">Rename</string>
     <string name="reset_source">Reset Source</string>
+    <string name="right">Right</string>
     <string name="rightwards_arrow" translatable="false">→</string>
     <string name="rotate">Rotate</string>
     <string name="rotate_around_r">Rotate Around R</string>

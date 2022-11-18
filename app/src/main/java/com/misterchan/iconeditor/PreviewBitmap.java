@@ -35,12 +35,12 @@ public class PreviewBitmap {
     }
 
     public void addColorFilter(@Size(20) float[] colorMatrix) {
-        BitmapFilter.addColorFilter(bm, 0, 0, bitmap, rect.left, rect.top,
+        BitmapUtil.addColorFilter(bm, 0, 0, bitmap, rect.left, rect.top,
                 colorMatrix);
     }
 
     public void addColorFilter(float scale, float shift) {
-        BitmapFilter.addColorFilter(bm, 0, 0, bitmap, rect.left, rect.top,
+        BitmapUtil.addColorFilter(bm, 0, 0, bitmap, rect.left, rect.top,
                 scale, shift);
     }
 

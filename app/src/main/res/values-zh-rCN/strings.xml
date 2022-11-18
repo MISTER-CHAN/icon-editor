@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="about">关于</string>
+    <string name="accurate">精准</string>
     <string name="add">添加</string>
     <string name="alpha_value">Alpha 值</string>
     <string name="anti_alias">抗锯齿</string>
@@ -84,6 +85,7 @@
     <string name="invert">反相</string>
     <string name="language">语言</string>
     <string name="layer">图层</string>
+    <string name="left">左</string>
     <string name="level">阶级</string>
     <string name="levels">色阶</string>
     <string name="level_down">降级</string>
@@ -92,6 +94,7 @@
     <string name="line">直线</string>
     <string name="locale">地区</string>
     <string name="lock_aspect_ratio">锁定宽高比</string>
+    <string name="magic_eraser">魔术擦</string>
     <string name="magic_paint">魔术笔</string>
     <string name="mask">蒙版</string>
     <string name="mask_filter">遮罩滤镜</string>
@@ -123,6 +126,7 @@
     <string name="refit">重新适应</string>
     <string name="rename">重命名</string>
     <string name="reset_source">重设来源</string>
+    <string name="right">Right</string>
     <string name="rotate">旋转</string>
     <string name="rotate_around_r">绕 R 轴旋转</string>
     <string name="rotate_around_g">绕 G 轴旋转</string>

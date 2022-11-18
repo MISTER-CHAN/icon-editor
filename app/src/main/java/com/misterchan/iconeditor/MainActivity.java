@@ -50,6 +50,7 @@ import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -241,6 +242,7 @@ public class MainActivity extends AppCompatActivity {
     private EditText etEraserStrokeWidth;
     private EditText etGradientBlurRadius;
     private EditText etGradientStrokeWidth;
+    private EditText etMagicEraserStrokeWidth;
     private EditText etMagicPaintBlurRadius;
     private EditText etMagicPaintStrokeWidth;
     private EditText etPatcherBlurRadius;
@@ -279,6 +281,7 @@ public class MainActivity extends AppCompatActivity {
     private LayerTree layerTree;
     private LinearLayout llOptionsEraser;
     private LinearLayout llOptionsGradient;
+    private LinearLayout llOptionsMagicEraser;
     private LinearLayout llOptionsPatcher;
     private LinearLayout llOptionsPencil;
     private LinearLayout llOptionsShape;
@@ -292,6 +295,8 @@ public class MainActivity extends AppCompatActivity {
     private final Point cloneStampSrcDist = new Point(0, 0); // Dist. - Distance
     private Position draggingBound = Position.NULL;
     private RadioButton rbCloneStamp;
+    private RadioButton rbMagicEraserLeft, rbMagicEraserRight;
+    private CompoundButton cbMagicEraserPosition;
     private RadioButton rbTransformer;
     private final Rect selection = new Rect();
     private Settings settings;
@@ -307,7 +312,7 @@ public class MainActivity extends AppCompatActivity {
     private View vForegroundColor;
 
     @ColorInt
-    private int gradientColor0;
+    private int color0;
 
     private final Paint colorPaint = new Paint() {
         {
@@ -700,6 +705,10 @@ public class MainActivity extends AppCompatActivity {
             if (rbCloneStamp.isChecked()) {
                 cloneStampSrc = null;
             }
+            if (bitmapOriginal != null) {
+                bitmapOriginal.recycle();
+                bitmapOriginal = Bitmap.createBitmap(bitmap);
+            }
 
             miLayerDirection.setChecked(!MainActivity.this.tab.ignore_below);
             miLayerLevelUp.setEnabled(MainActivity.this.tab.level > 0);
@@ -942,9 +951,8 @@ public class MainActivity extends AppCompatActivity {
                     drawPointOnView(unscaledX, unscaledY);
                     shapeStartX = unscaledX;
                     shapeStartY = unscaledY;
-                    gradientColor0 =
-                            bitmap.getPixel(inRange(unscaledX, 0, bitmap.getWidth() - 1),
-                                    inRange(unscaledY, 0, bitmap.getHeight() - 1));
+                    color0 = bitmap.getPixel(inRange(unscaledX, 0, bitmap.getWidth() - 1),
+                            inRange(unscaledY, 0, bitmap.getHeight() - 1));
                     tvStatus.setText(String.format(getString(R.string.coordinate), unscaledX, unscaledY));
                     break;
                 }
@@ -956,7 +964,7 @@ public class MainActivity extends AppCompatActivity {
                         stopX = translationX + toScaled(unscaledX + 0.5f),
                         stopY = translationY + toScaled(unscaledY + 0.5f);
                 paint.setShader(new LinearGradient(startX, startY, stopX, stopY,
-                        gradientColor0,
+                        color0,
                         bitmap.getPixel(inRange(unscaledX, 0, bitmap.getWidth() - 1),
                                 inRange(unscaledY, 0, bitmap.getHeight() - 1)),
                         Shader.TileMode.CLAMP));
@@ -973,7 +981,7 @@ public class MainActivity extends AppCompatActivity {
                 paint.setStrokeWidth(strokeWidth);
                 if (unscaledX != shapeStartX || unscaledY != shapeStartY) {
                     paint.setShader(new LinearGradient(shapeStartX, shapeStartY, unscaledX, unscaledY,
-                            gradientColor0,
+                            color0,
                             bitmap.getPixel(inRange(unscaledX, 0, bitmap.getWidth() - 1),
                                     inRange(unscaledY, 0, bitmap.getHeight() - 1)),
                             Shader.TileMode.CLAMP));
@@ -989,6 +997,134 @@ public class MainActivity extends AppCompatActivity {
         }
         return true;
     };
+
+    @SuppressLint("ClickableViewAccessibility")
+    private final View.OnTouchListener onImageViewTouchWithMagicEraserAccurateListener = (v, event) -> {
+        final float x = event.getX(), y = event.getY();
+        final int unscaledX = toUnscaled(x - translationX), unscaledY = toUnscaled(y - translationY);
+        switch (event.getAction()) {
+
+            case MotionEvent.ACTION_DOWN:
+                if (isShapeStopped) {
+                    isShapeStopped = false;
+                    shapeStartX = unscaledX;
+                    shapeStartY = unscaledY;
+                    color0 = bitmapOriginal.getPixel(inRange(unscaledX, 0, bitmapOriginal.getWidth() - 1),
+                            inRange(unscaledY, 0, bitmapOriginal.getHeight() - 1));
+                    tvStatus.setText(String.format(getString(R.string.coordinate), unscaledX, unscaledY));
+                    break;
+                }
+
+            case MotionEvent.ACTION_MOVE:
+                tvStatus.setText(String.format(getString(R.string.state_start_stop),
+                        shapeStartX, shapeStartY, unscaledX, unscaledY));
+                break;
+
+            case MotionEvent.ACTION_UP:
+            case MotionEvent.ACTION_CANCEL: {
+                if (unscaledX == shapeStartX && unscaledY == shapeStartY) {
+                    break;
+                }
+                isShapeStopped = true;
+                final int color = bitmapOriginal.getPixel(inRange(unscaledX, 0, bitmapOriginal.getWidth() - 1),
+                        inRange(unscaledY, 0, bitmapOriginal.getHeight() - 1));
+                final int rad = (int) (strokeWidth / 2.0f + blurRadius);
+                final int left = Math.min(shapeStartX, unscaledX) - rad,
+                        top = Math.min(shapeStartY, unscaledY) - rad,
+                        right = Math.max(shapeStartX, unscaledX) + rad + 1,
+                        bottom = Math.max(shapeStartY, unscaledY) + rad + 1;
+                final int width = right - left, height = bottom - top;
+                final int relativeX = unscaledX - left, relativeY = unscaledY - top;
+                final Bitmap bLine = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+                final Canvas cLine = new Canvas(bLine);
+                cLine.drawLine(shapeStartX - left, shapeStartY - top,
+                        relativeX, relativeY,
+                        paint);
+                canvas.drawBitmap(bLine, left, top, PAINT_DST_OUT);
+                final Bitmap bm = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+                new Canvas(bm).drawBitmap(bitmapOriginal,
+                        new Rect(left, top, right, bottom),
+                        new Rect(0, 0, width, height),
+                        PAINT_SRC);
+                BitmapUtil.removeBackground(bm, color, color0);
+                cLine.drawBitmap(bm, 0.0f, 0.0f, PAINT_SRC_IN);
+                bm.recycle();
+                canvas.drawBitmap(bLine, left, top, PAINT_SRC_OVER);
+                bLine.recycle();
+
+                drawBitmapOnView();
+                addHistory();
+                tvStatus.setText("");
+                break;
+            }
+        }
+        return true;
+    };
+
+    @SuppressLint("ClickableViewAccessibility")
+    private final View.OnTouchListener onImageViewTouchWithMagicEraserConvenientListener = (v, event) -> {
+        final float x = event.getX(), y = event.getY();
+        switch (event.getAction()) {
+
+            case MotionEvent.ACTION_DOWN:
+                prevX = x;
+                prevY = y;
+                break;
+
+            case MotionEvent.ACTION_MOVE: {
+                final int unscaledX = toUnscaled(x - translationX), unscaledY = toUnscaled(y - translationY);
+                final int unscaledPrevX = toUnscaled(prevX - translationX), unscaledPrevY = toUnscaled(prevY - translationY);
+                final int rad = (int) (strokeWidth / 2.0f);
+                final float radF = toScaled(rad);
+                final double theta = Math.atan2(y - prevY, x - prevX);
+                final int colorLeft = bitmapOriginal.getPixel(
+                        inRange(toUnscaled(x + radF * (float) Math.sin(theta) - translationX), 0, bitmapOriginal.getWidth() - 1),
+                        inRange(toUnscaled(y - radF * (float) Math.cos(theta) - translationY), 0, bitmapOriginal.getHeight() - 1));
+                final int colorRight = bitmapOriginal.getPixel(
+                        inRange(toUnscaled(x - radF * (float) Math.sin(theta) - translationX), 0, bitmapOriginal.getWidth() - 1),
+                        inRange(toUnscaled(y + radF * (float) Math.cos(theta) - translationY), 0, bitmapOriginal.getHeight() - 1));
+                final int backgroundColor = cbMagicEraserPosition == rbMagicEraserLeft ? colorLeft : colorRight;
+                final int foregroundColor = backgroundColor == colorLeft ? colorRight : colorLeft;
+
+                final int left = Math.min(unscaledPrevX, unscaledX) - rad,
+                        top = Math.min(unscaledPrevY, unscaledY) - rad,
+                        right = Math.max(unscaledPrevX, unscaledX) + rad + 1,
+                        bottom = Math.max(unscaledPrevY, unscaledY) + rad + 1;
+                final int width = right - left, height = bottom - top;
+                final Bitmap bLine = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+                final Canvas cLine = new Canvas(bLine);
+                cLine.drawLine(unscaledPrevX - left, unscaledPrevY - top,
+                        unscaledX - left, unscaledY - top,
+                        paint);
+                canvas.drawBitmap(bLine, left, top, PAINT_DST_OUT);
+                final Bitmap bm = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+                new Canvas(bm).drawBitmap(bitmapOriginal,
+                        new Rect(left, top, right, bottom),
+                        new Rect(0, 0, width, height),
+                        PAINT_SRC);
+                BitmapUtil.removeBackground(bm, foregroundColor, backgroundColor);
+                cLine.drawBitmap(bm, 0.0f, 0.0f, PAINT_SRC_IN);
+                bm.recycle();
+                canvas.drawBitmap(bLine, left, top, PAINT_SRC_OVER);
+                bLine.recycle();
+
+                drawBitmapOnView();
+                tvStatus.setText(String.format(getString(R.string.coordinate), unscaledX, unscaledY));
+                prevX = x;
+                prevY = y;
+                break;
+            }
+
+            case MotionEvent.ACTION_UP:
+            case MotionEvent.ACTION_CANCEL:
+                addHistory();
+                tvStatus.setText("");
+                break;
+        }
+        return true;
+    };
+
+    private View.OnTouchListener onImageViewTouchWithMagicEraserListener = onImageViewTouchWithMagicEraserConvenientListener;
 
     @SuppressLint({"ClickableViewAccessibility"})
     private final View.OnTouchListener onImageViewTouchWithMagicPaintListener = (v, event) -> {
@@ -1009,10 +1145,8 @@ public class MainActivity extends AppCompatActivity {
                         top = Math.min(unscaledPrevY, unscaledY) - rad,
                         right = Math.max(unscaledPrevX, unscaledX) + rad + 1,
                         bottom = Math.max(unscaledPrevY, unscaledY) + rad + 1;
-                final int width = right - left + 1, height = bottom - top + 1;
+                final int width = right - left, height = bottom - top;
                 final int relativeX = unscaledX - left, relativeY = unscaledY - top;
-                final Rect absolute = new Rect(left, top, right + 1, bottom + 1),
-                        relative = new Rect(0, 0, width, height);
                 final Bitmap bLine = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
                 final Canvas cLine = new Canvas(bLine);
                 cLine.drawLine(unscaledPrevX - left, unscaledPrevY - top,
@@ -1020,6 +1154,8 @@ public class MainActivity extends AppCompatActivity {
                         paint);
                 if (threshold < 0xFF) {
                     final Bitmap bm = Bitmap.createBitmap(bLine);
+                    final Rect absolute = new Rect(left, top, right, bottom),
+                            relative = new Rect(0, 0, width, height);
                     new Canvas(bm).drawBitmap(bitmapOriginal, absolute, relative, PAINT_SRC_IN);
                     final Bitmap bThr = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_4444); // Threshold
                     floodFill(bm, bThr, relativeX, relativeY, Color.BLACK, true, threshold);
@@ -1661,6 +1797,18 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    private final CompoundButton.OnCheckedChangeListener onMagicEraserRadioButtonCheckedChangeListener = (buttonView, isChecked) -> {
+        if (isChecked) {
+            drawFloatingLayers();
+            onToolChange(onImageViewTouchWithMagicEraserListener);
+            bitmapOriginal = Bitmap.createBitmap(bitmap);
+            paint.setAntiAlias(false);
+            paint.setMaskFilter(null);
+            etMagicEraserStrokeWidth.setText(String.valueOf(strokeWidth));
+            llOptionsMagicEraser.setVisibility(View.VISIBLE);
+        }
+    };
+
     @SuppressLint("ClickableViewAccessibility")
     private final CompoundButton.OnCheckedChangeListener onMagicPaintRadioButtonCheckedChangeListener = (buttonView, isChecked) -> {
         if (isChecked) {
@@ -1721,33 +1869,6 @@ public class MainActivity extends AppCompatActivity {
             isDraggingCorner = false;
             selector.setColor(Color.DKGRAY);
             drawSelectionOnView();
-        }
-    };
-
-    @SuppressLint("ClickableViewAccessibility")
-    private final CompoundButton.OnCheckedChangeListener onTransformerOfRotationRadioButtonCheckedChangeListener = (buttonView, isChecked) -> {
-        if (isChecked) {
-            cbTransformerLar.setVisibility(View.GONE);
-            onImageViewTouchWithTransformerListener = onImageViewTouchWithTransformerOfRotationListener;
-            flImageView.setOnTouchListener(onImageViewTouchWithTransformerListener);
-        }
-    };
-
-    @SuppressLint("ClickableViewAccessibility")
-    private final CompoundButton.OnCheckedChangeListener onTransformerOfScaleRadioButtonCheckedChangeListener = (buttonView, isChecked) -> {
-        if (isChecked) {
-            cbTransformerLar.setVisibility(View.VISIBLE);
-            onImageViewTouchWithTransformerListener = onImageViewTouchWithTransformerOfScaleListener;
-            flImageView.setOnTouchListener(onImageViewTouchWithTransformerListener);
-        }
-    };
-
-    @SuppressLint("ClickableViewAccessibility")
-    private final CompoundButton.OnCheckedChangeListener onTransformerOfTranslationRadioButtonCheckedChangeListener = (buttonView, isChecked) -> {
-        if (isChecked) {
-            cbTransformerLar.setVisibility(View.GONE);
-            onImageViewTouchWithTransformerListener = onImageViewTouchWithTransformerOfTranslationListener;
-            flImageView.setOnTouchListener(onImageViewTouchWithTransformerListener);
         }
     };
 
@@ -2889,7 +3010,7 @@ public class MainActivity extends AppCompatActivity {
             if (branch == null) {
                 printer.run(canvas, tab, paint);
                 if (tab.enableColorFilter) {
-                    BitmapFilter.addColorFilter(bitmap, 0, 0, bitmap, 0, 0,
+                    BitmapUtil.addColorFilter(bitmap, 0, 0, bitmap, 0, 0,
                             tab.colorMatrix);
                 }
             } else {
@@ -2967,6 +3088,7 @@ public class MainActivity extends AppCompatActivity {
         etEraserStrokeWidth = findViewById(R.id.et_eraser_stroke_width);
         etGradientBlurRadius = findViewById(R.id.et_gradient_blur_radius);
         etGradientStrokeWidth = findViewById(R.id.et_gradient_stroke_width);
+        etMagicEraserStrokeWidth = findViewById(R.id.et_magic_eraser_stroke_width);
         etMagicPaintBlurRadius = findViewById(R.id.et_magic_paint_blur_radius);
         etMagicPaintStrokeWidth = findViewById(R.id.et_magic_paint_stroke_width);
         etPatcherBlurRadius = findViewById(R.id.et_patcher_blur_radius);
@@ -2991,6 +3113,7 @@ public class MainActivity extends AppCompatActivity {
         ivSelection = findViewById(R.id.iv_selection);
         llOptionsEraser = findViewById(R.id.ll_options_eraser);
         llOptionsGradient = findViewById(R.id.ll_options_gradient);
+        llOptionsMagicEraser = findViewById(R.id.ll_options_magic_eraser);
         llOptionsPatcher = findViewById(R.id.ll_options_patcher);
         llOptionsPencil = findViewById(R.id.ll_options_pencil);
         llOptionsShape = findViewById(R.id.ll_options_shape);
@@ -2998,8 +3121,12 @@ public class MainActivity extends AppCompatActivity {
         llOptionsTransformer = findViewById(R.id.ll_options_transformer);
         final RecyclerView rvSwatches = findViewById(R.id.rv_swatches);
         rbCloneStamp = findViewById(R.id.rb_clone_stamp);
+        rbMagicEraserLeft = findViewById(R.id.rb_magic_eraser_left);
+        rbMagicEraserRight = findViewById(R.id.rb_magic_eraser_right);
+        cbMagicEraserPosition = rbMagicEraserLeft;
         final RadioButton rbPencil = findViewById(R.id.rb_pencil);
         rbTransformer = findViewById(R.id.rb_transformer);
+        final RadioGroup rgMagicEraserPosition = findViewById(R.id.rg_magic_eraser_position);
         tabLayout = findViewById(R.id.tl);
         tvStatus = findViewById(R.id.tv_status);
         vBackgroundColor = findViewById(R.id.v_background_color);
@@ -3022,6 +3149,7 @@ public class MainActivity extends AppCompatActivity {
         cbZoom.setTag(onImageViewTouchWithPencilListener);
         etCloneStampBlurRadius.addTextChangedListener(onBlurRadiusTextChangedListener);
         etCloneStampStrokeWidth.addTextChangedListener(onStrokeWidthTextChangedListener);
+        etMagicEraserStrokeWidth.addTextChangedListener(onStrokeWidthTextChangedListener);
         etMagicPaintBlurRadius.addTextChangedListener(onBlurRadiusTextChangedListener);
         etMagicPaintStrokeWidth.addTextChangedListener(onStrokeWidthTextChangedListener);
         etGradientBlurRadius.addTextChangedListener(onBlurRadiusTextChangedListener);
@@ -3037,6 +3165,7 @@ public class MainActivity extends AppCompatActivity {
         ((RadioButton) findViewById(R.id.rb_bucket_fill)).setOnCheckedChangeListener(onBucketFillRadioButtonCheckedChangeListener);
         ((CompoundButton) findViewById(R.id.rb_circle)).setOnCheckedChangeListener((OnCheckedListener) () -> shape = circle);
         rbCloneStamp.setOnCheckedChangeListener(onCloneStampRadioButtonCheckedChangeListener);
+        ((RadioButton) findViewById(R.id.rb_magic_eraser)).setOnCheckedChangeListener(onMagicEraserRadioButtonCheckedChangeListener);
         ((RadioButton) findViewById(R.id.rb_magic_paint)).setOnCheckedChangeListener(onMagicPaintRadioButtonCheckedChangeListener);
         ((CompoundButton) findViewById(R.id.rb_eraser)).setOnCheckedChangeListener((buttonView, isChecked) -> onToolChange(isChecked, onImageViewTouchWithEraserListener, llOptionsEraser));
         ((CompoundButton) findViewById(R.id.rb_eyedropper)).setOnCheckedChangeListener((buttonView, isChecked) -> onToolChange(isChecked, onImageViewTouchWithEyedropperListener));
@@ -3050,9 +3179,9 @@ public class MainActivity extends AppCompatActivity {
         ((CompoundButton) findViewById(R.id.rb_shape)).setOnCheckedChangeListener(onShapeRadioButtonCheckedChangeListener);
         ((CompoundButton) findViewById(R.id.rb_text)).setOnCheckedChangeListener(onTextRadioButtonCheckedChangeListener);
         rbTransformer.setOnCheckedChangeListener(onTransformerRadioButtonCheckedChangeListener);
-        ((CompoundButton) findViewById(R.id.rb_transformer_rotation)).setOnCheckedChangeListener(onTransformerOfRotationRadioButtonCheckedChangeListener);
-        ((CompoundButton) findViewById(R.id.rb_transformer_scale)).setOnCheckedChangeListener(onTransformerOfScaleRadioButtonCheckedChangeListener);
-        ((CompoundButton) findViewById(R.id.rb_transformer_translation)).setOnCheckedChangeListener(onTransformerOfTranslationRadioButtonCheckedChangeListener);
+        ((CompoundButton) findViewById(R.id.rb_transformer_rotation)).setOnCheckedChangeListener((OnCheckedListener) () -> onTransformerChange(onImageViewTouchWithTransformerOfRotationListener));
+        ((CompoundButton) findViewById(R.id.rb_transformer_scale)).setOnCheckedChangeListener((OnCheckedListener) () -> onTransformerChange(onImageViewTouchWithTransformerOfScaleListener));
+        ((CompoundButton) findViewById(R.id.rb_transformer_translation)).setOnCheckedChangeListener((OnCheckedListener) () -> onTransformerChange(onImageViewTouchWithTransformerOfTranslationListener));
         tabLayout.addOnTabSelectedListener(onTabSelectedListener);
         findViewById(R.id.tv_color_add).setOnClickListener(onAddSwatchViewClickListener);
         vBackgroundColor.setOnClickListener(onBackgroundColorClickListener);
@@ -3077,6 +3206,25 @@ public class MainActivity extends AppCompatActivity {
             } catch (NumberFormatException e) {
             }
         });
+
+        ((CompoundButton) findViewById(R.id.cb_magic_eraser_style)).setOnCheckedChangeListener((buttonView, isChecked) -> {
+            rgMagicEraserPosition.setVisibility(isChecked ? View.GONE : View.VISIBLE);
+            onImageViewTouchWithMagicEraserListener = isChecked ? onImageViewTouchWithMagicEraserAccurateListener : onImageViewTouchWithMagicEraserConvenientListener;
+            cbZoom.setTag(onImageViewTouchWithMagicEraserListener);
+            if (!cbZoom.isChecked()) {
+                flImageView.setOnTouchListener(onImageViewTouchWithMagicEraserListener);
+            }
+        });
+
+        {
+            final CompoundButton.OnCheckedChangeListener l = (buttonView, isChecked) -> {
+                if (isChecked) {
+                    cbMagicEraserPosition = buttonView;
+                }
+            };
+            rbMagicEraserLeft.setOnCheckedChangeListener(l);
+            rbMagicEraserRight.setOnCheckedChangeListener(l);
+        }
 
         rvSwatches.setItemAnimator(new DefaultItemAnimator());
         final LinearLayoutManager layoutManager = new LinearLayoutManager(this);
@@ -3768,6 +3916,8 @@ public class MainActivity extends AppCompatActivity {
             bitmapOriginal.recycle();
             bitmapOriginal = null;
         }
+        paint.setAntiAlias(antiAlias);
+        setBlurRadius(blurRadius);
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -3783,6 +3933,16 @@ public class MainActivity extends AppCompatActivity {
             if (toolOption != null) {
                 toolOption.setVisibility(View.VISIBLE);
             }
+        }
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    private void onTransformerChange(View.OnTouchListener l) {
+        cbTransformerLar.setVisibility(l == onImageViewTouchWithTransformerOfScaleListener ? View.VISIBLE : View.GONE);
+        onImageViewTouchWithTransformerListener = l;
+        cbZoom.setTag(l);
+        if (!cbZoom.isChecked()) {
+            flImageView.setOnTouchListener(l);
         }
     }
 

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="about">關於</string>
+    <string name="accurate">精準</string>
     <string name="add">新增</string>
     <string name="alpha_value">Alpha 値</string>
     <string name="anti_alias">抗鋸齒</string>
@@ -84,6 +85,7 @@
     <string name="invert">反相</string>
     <string name="language">語言</string>
     <string name="layer">圖層</string>
+    <string name="left">左</string>
     <string name="level">階級</string>
     <string name="levels">色階</string>
     <string name="level_down">降級</string>
@@ -92,6 +94,7 @@
     <string name="line">直線</string>
     <string name="locale">地區</string>
     <string name="lock_aspect_ratio">鎖定寬高比</string>
+    <string name="magic_eraser">魔術擦</string>
     <string name="magic_paint">魔術筆</string>
     <string name="mask">遮色片</string>
     <string name="mask_filter">遮罩濾鏡</string>
@@ -124,6 +127,7 @@
     <string name="refit">重新適應</string>
     <string name="rename">重命名</string>
     <string name="reset_source">重設來源</string>
+    <string name="right">右</string>
     <string name="rotate">旋轉</string>
     <string name="rotate_around_r">繞 R 軸旋轉</string>
     <string name="rotate_around_g">繞 G 軸旋轉</string>
