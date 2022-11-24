@@ -19,6 +19,7 @@
     <string name="blend_modes">Blend Modes</string>
     <string name="blocking">Blocking (Recommended)</string>
     <string name="blur_radius">Blur</string>
+    <string name="bottom">Bottom</string>
     <string name="bucket_fill">Bucket Fill</string>
     <string name="c" translatable="false">C</string>
     <string name="cancel">Cancel</string>
@@ -132,6 +133,7 @@
     <string name="one" translatable="false">1</string>
     <string name="one_eighty_degrees">180°</string>
     <string name="open">Open</string>
+    <string name="open_from_clipboard">Open from Clipboard</string>
     <string name="output">Output</string>
     <string name="oval">Oval</string>
     <string name="palette">Palette</string>
@@ -140,11 +142,13 @@
     <string name="pencil">Pencil</string>
     <string name="pen_with_filter">Filter</string>
     <string name="percent" translatable="false">%</string>
+    <string name="please_save_first">Please save first.</string>
     <string name="preferences">Preferences</string>
     <string name="properties">Properties</string>
     <string name="r" translatable="false">R</string>
     <string name="rectangle">Rectangle</string>
     <string name="redo" translatable="false">↷</string>
+    <string name="refer_to_clipboard">Refer to Clipboard</string>
     <string name="refit">Refit</string>
     <string name="rename">Rename</string>
     <string name="reset_source">Reset Source</string>
@@ -202,6 +206,7 @@
     <string name="threshold">Threshold</string>
     <string name="tolerance">Tolerance</string>
     <string name="tool_options">Tool Options</string>
+    <string name="top">Top</string>
     <string name="transform">Transform</string>
     <string name="translate">Translate</string>
     <string name="tutorial_merge_as_hidden">Tutorial</string>

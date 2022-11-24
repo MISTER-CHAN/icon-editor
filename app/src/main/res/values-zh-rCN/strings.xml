@@ -17,6 +17,7 @@
     <string name="blend_modes">混合模式</string>
     <string name="blocking">阻塞（推荐）</string>
     <string name="blur_radius">模糊半径</string>
+    <string name="bottom">底</string>
     <string name="bucket_fill">油漆桶</string>
     <string name="cancel">取消</string>
     <string name="cell_grid">网格</string>
@@ -113,6 +114,7 @@
     <string name="ok">确定</string>
     <string name="one_eighty_degrees">180°</string>
     <string name="open">打开</string>
+    <string name="open_from_clipboard">打开自剪贴簿</string>
     <string name="output">输出</string>
     <string name="oval">椭圆</string>
     <string name="palette">调色板</string>
@@ -120,13 +122,15 @@
     <string name="patch">修补</string>
     <string name="pencil">铅笔</string>
     <string name="pen_with_filter">滤光笔</string>
+    <string name="please_save_first">请先保存。</string>
     <string name="preferences">偏好</string>
     <string name="properties">属性</string>
     <string name="rectangle">矩形</string>
+    <string name="refer_to_clipboard">引用至剪贴簿</string>
     <string name="refit">重新适应</string>
     <string name="rename">重命名</string>
     <string name="reset_source">重设来源</string>
-    <string name="right">Right</string>
+    <string name="right">右</string>
     <string name="rotate">旋转</string>
     <string name="rotate_around_r">绕 R 轴旋转</string>
     <string name="rotate_around_g">绕 G 轴旋转</string>
@@ -174,6 +178,7 @@
     <string name="threshold">阈值</string>
     <string name="tolerance">容差</string>
     <string name="tool_options">工具选项</string>
+    <string name="top">顶</string>
     <string name="transform">变换</string>
     <string name="translate">平移</string>
     <string name="tutorial_merge_as_hidden">Tutorial</string>

@@ -4,6 +4,8 @@ import static com.misterchan.iconeditor.Color.HSVToColor;
 import static com.misterchan.iconeditor.Color.colorToHSV;
 
 import android.annotation.SuppressLint;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -59,9 +61,11 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
+import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatSpinner;
+import androidx.core.content.FileProvider;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.DefaultItemAnimator;
@@ -86,18 +90,19 @@ import java.util.regex.Pattern;
 public class MainActivity extends AppCompatActivity {
 
     private enum Position {
-        LEFT("Left"),
-        TOP("Top"),
-        RIGHT("Right"),
-        BOTTOM("Bottom"),
+        LEFT(R.string.left),
+        TOP(R.string.top),
+        RIGHT(R.string.right),
+        BOTTOM(R.string.bottom),
         NULL;
 
-        private String name;
+        @StringRes
+        private int name;
 
         Position() {
         }
 
-        Position(String name) {
+        Position(@StringRes int name) {
             this.name = name;
         }
     }
@@ -415,7 +420,7 @@ public class MainActivity extends AppCompatActivity {
         }
         tab.path = Environment.getExternalStorageDirectory().getPath() + File.separator + tree + File.separator + fileName;
         tab.compressFormat = COMPRESS_FORMATS[sFileType.getSelectedItemPosition()];
-        save(tab.path);
+        save();
         tab.tvTitle.setText(fileName);
     };
 
@@ -710,7 +715,7 @@ public class MainActivity extends AppCompatActivity {
                 bitmapOriginal = Bitmap.createBitmap(bitmap);
             }
 
-            miLayerDirection.setChecked(!MainActivity.this.tab.ignore_below);
+            miLayerDirection.setChecked(MainActivity.this.tab.draw_below);
             miLayerLevelUp.setEnabled(MainActivity.this.tab.level > 0);
             for (int i = 0; i < BLEND_MODES.length; ++i) {
                 final MenuItem mi = smBlendModes.getItem(i);
@@ -1271,7 +1276,7 @@ public class MainActivity extends AppCompatActivity {
                 if (draggingBound == Position.NULL) {
                     if (hasSelection && checkDraggingBound(x, y) != Position.NULL) {
                         tvStatus.setText(String.format(getString(R.string.state_selected_bound),
-                                draggingBound.name));
+                                getString(draggingBound.name)));
                     } else {
                         if (hasSelection && selectionStartX == selectionEndX - 1 && selectionStartY == selectionEndY - 1) {
                             selectionEndX = toUnscaled(x - translationX) + 1;
@@ -1501,7 +1506,7 @@ public class MainActivity extends AppCompatActivity {
                                     transformer.calculateByLocation();
                                 }
                                 tvStatus.setText(String.format(getString(R.string.state_selected_bound),
-                                        draggingBound.name));
+                                        getString(draggingBound.name)));
                             }
                         } else {
                             stretchByBound(x, y);
@@ -2173,18 +2178,19 @@ public class MainActivity extends AppCompatActivity {
 
     private void calculateLayerTree() {
         final Stack<LayerTree> stack = new Stack<>();
-        final Tab background = tabs.get(tabs.size() - 1);
         final int w = bitmap.getWidth(), h = bitmap.getHeight();
         LayerTree layerTree = new LayerTree();
-        LayerTree.Node prev = layerTree.offer(background);
+        LayerTree.Node prev = null;
 
         stack.push(layerTree);
-        background.cbLayerVisible
-                .setVisibility(isSizeEqualTo(background.bitmap, w, h) ? View.VISIBLE : View.GONE);
-        for (int i = tabs.size() - 2; i >= 0; --i) {
+        for (int i = tabs.size() - 1; i >= 0; --i) {
             final Tab t = tabs.get(i);
             if (isSizeEqualTo(t.bitmap, w, h)) {
                 t.cbLayerVisible.setVisibility(View.VISIBLE);
+                if (prev == null) {
+                    prev = layerTree.offer(t);
+                    continue;
+                }
             } else {
                 t.cbLayerVisible.setVisibility(View.GONE);
                 continue;
@@ -3015,7 +3021,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             } else {
                 final Bitmap bm = mergeLayers(branch, w, h,
-                        tab.ignore_below || node == root ? null : bitmap,
+                        !tab.draw_below || node == root ? null : bitmap,
                         visible, printer);
                 canvas.drawBitmap(bm, 0.0f, 0.0f, paint);
                 bm.recycle();
@@ -3692,7 +3698,7 @@ public class MainActivity extends AppCompatActivity {
             case R.id.i_layer_draw_below: {
                 final boolean checked = !item.isChecked();
                 item.setChecked(checked);
-                tab.ignore_below = !checked;
+                tab.draw_below = checked;
                 drawBitmapOnView();
                 break;
             }
@@ -3812,6 +3818,20 @@ public class MainActivity extends AppCompatActivity {
                 getImage.launch("image/*");
                 break;
 
+            case R.id.i_open_from_clipboard: {
+                final ClipboardManager clipboardManager = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+                if (!clipboardManager.hasPrimaryClip()) {
+                    break;
+                }
+
+                final ClipData clipData = clipboardManager.getPrimaryClip();
+                if (clipData == null || clipData.getItemCount() < 1) {
+                    break;
+                }
+
+                openFile(clipData.getItemAt(0).getUri());
+                break;
+            }
             case R.id.i_paste:
                 if (clipboard == null) {
                     break;
@@ -3837,6 +3857,18 @@ public class MainActivity extends AppCompatActivity {
                 }
                 break;
 
+            case R.id.i_refer_to_clipboard: {
+                if (tab.path == null) {
+                    Toast.makeText(this, getString(R.string.please_save_first), Toast.LENGTH_SHORT).show();
+                    break;
+                }
+                ((ClipboardManager) getSystemService(CLIPBOARD_SERVICE))
+                        .setPrimaryClip(ClipData.newUri(getContentResolver(), "Image",
+                                FileProvider.getUriForFile(this,
+                                        getApplicationContext().getPackageName() + ".provider",
+                                        new File(tab.path))));
+                break;
+            }
             case R.id.i_rotate_90:
                 drawFloatingLayers();
                 rotate(90.0f, false);
@@ -3960,30 +3992,35 @@ public class MainActivity extends AppCompatActivity {
         new Canvas(bm).drawBitmap(bitmap, 0.0f, 0.0f, PAINT_SRC);
         bitmap.recycle();
         final DocumentFile documentFile = DocumentFile.fromSingleUri(this, uri);
-        String path = null;
-        Bitmap.CompressFormat compressFormat = null;
-        switch (documentFile.getType()) {
-            case "image/jpeg":
-                compressFormat = Bitmap.CompressFormat.JPEG;
-                path = UriToPathUtil.getRealFilePath(this, uri);
-                break;
-            case "image/png":
-                compressFormat = Bitmap.CompressFormat.PNG;
-                path = UriToPathUtil.getRealFilePath(this, uri);
-                break;
-            case "image/gif":
-            default:
-                Toast.makeText(this, R.string.not_supported_file_type, Toast.LENGTH_SHORT).show();
-                break;
+        final String type = documentFile.getType();
+        if (type != null) {
+            String path = null;
+            Bitmap.CompressFormat compressFormat = null;
+            switch (type) {
+                case "image/jpeg":
+                    compressFormat = Bitmap.CompressFormat.JPEG;
+                    path = UriToPathUtil.getRealFilePath(this, uri);
+                    break;
+                case "image/png":
+                    compressFormat = Bitmap.CompressFormat.PNG;
+                    path = UriToPathUtil.getRealFilePath(this, uri);
+                    break;
+                case "image/gif":
+                default:
+                    Toast.makeText(this, R.string.not_supported_file_type, Toast.LENGTH_SHORT).show();
+                    break;
+            }
+            addBitmap(bm, tabs.size(), documentFile.getName(), path, compressFormat);
+        } else {
+            addBitmap(bm, tabs.size());
         }
-        addBitmap(bm, tabs.size(), documentFile.getName(), path, compressFormat);
     }
 
     private void openFile(Uri uri) {
         if (uri == null) {
             return;
         }
-        try (InputStream inputStream = getContentResolver().openInputStream(uri)) {
+        try (final InputStream inputStream = getContentResolver().openInputStream(uri)) {
             final Bitmap bm = BitmapFactory.decodeStream(inputStream);
             openBitmap(bm, uri);
             bm.recycle();
@@ -4094,18 +4131,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void save() {
-        save(tab.path);
-    }
-
-    private void save(String path) {
-        if (path == null) {
+        if (tab.path == null) {
             getTree.launch(null);
             return;
         }
 
         drawFloatingLayers();
 
-        final File file = new File(path);
+        final File file = new File(tab.path);
         try (FileOutputStream fos = new FileOutputStream(file)) {
             bitmap.compress(tab.compressFormat, 100, fos);
             fos.flush();

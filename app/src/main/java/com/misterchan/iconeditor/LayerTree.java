@@ -30,6 +30,10 @@ class LayerTree {
     private int size = 0;
     private Node background, foreground;
 
+    public boolean isEmpty() {
+        return size == 0;
+    }
+
     public Node offer(Tab tab) {
         final Node node = new Node(tab);
         if (foreground == null)

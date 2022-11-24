@@ -10,7 +10,7 @@ import androidx.annotation.Size;
 class Tab {
 
     public boolean enableColorFilter = false;
-    public boolean ignore_below = true;
+    public boolean draw_below = false;
     public boolean visible;
     public Bitmap bitmap;
     public Bitmap.CompressFormat compressFormat;

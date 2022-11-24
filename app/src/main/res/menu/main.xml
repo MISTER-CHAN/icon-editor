@@ -32,8 +32,16 @@
                 android:title="@string/open" />
 
             <item
+                android:id="@+id/i_open_from_clipboard"
+                android:title="@string/open_from_clipboard" />
+
+            <item
                 android:id="@+id/i_save_as"
                 android:title="@string/save_as" />
+
+            <item
+                android:id="@+id/i_refer_to_clipboard"
+                android:title="@string/refer_to_clipboard" />
 
             <item
                 android:id="@+id/i_close"
