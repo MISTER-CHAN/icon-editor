@@ -2344,7 +2344,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void drawBitmapOnCanvas(Bitmap bitmap, Canvas canvas, float translX, float translY) {
-        final Rect vp = getVisiblePart(bitmap, translX, translY);
+        final Rect vp = getVisiblePart(translX, translY, bitmap.getWidth(), bitmap.getHeight());
         drawBitmapOnCanvas(bitmap, canvas, translX, translY, vp);
     }
 
@@ -2391,7 +2391,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void drawBmOnView(final Bitmap bitmap) {
         clearCanvas(viewCanvas);
-        final Rect vp = getVisiblePart(bitmap, translationX, translationY);
+        final Rect vp = getVisiblePart(translationX, translationY, bitmap.getWidth(), bitmap.getHeight());
         if (vp.isEmpty()) {
             return;
         }
@@ -2842,13 +2842,16 @@ public class MainActivity extends AppCompatActivity {
         return i == -1 ? s : s.substring(0, i);
     }
 
-    private Rect getVisiblePart(Bitmap bitmap, float translX, float translY) {
-        final int bitmapWidth = bitmap.getWidth(), bitmapHeight = bitmap.getHeight();
-        final int scaledBitmapW = (int) toScaled(bitmapWidth), scaledBitmapH = (int) toScaled(bitmapHeight);
+    private Rect getVisiblePart() {
+        return getVisiblePart(translationX, translationY, bitmap.getWidth(), bitmap.getHeight());
+    }
+
+    private Rect getVisiblePart(float translX, float translY, int width, int height) {
+        final int scaledBitmapW = (int) toScaled(width), scaledBitmapH = (int) toScaled(height);
         final int startX = translX >= 0.0f ? 0 : toUnscaled(-translX);
         final int startY = translY >= 0.0f ? 0 : toUnscaled(-translY);
-        final int endX = Math.min(toUnscaled(translX + scaledBitmapW <= viewWidth ? scaledBitmapW : viewWidth - translX) + 1, bitmapWidth);
-        final int endY = Math.min(toUnscaled(translY + scaledBitmapH <= viewHeight ? scaledBitmapH : viewHeight - translY) + 1, bitmapHeight);
+        final int endX = Math.min(toUnscaled(translX + scaledBitmapW <= viewWidth ? scaledBitmapW : viewWidth - translX) + 1, width);
+        final int endY = Math.min(toUnscaled(translY + scaledBitmapH <= viewHeight ? scaledBitmapH : viewHeight - translY) + 1, height);
         return new Rect(startX, startY, endX, endY);
     }
 
@@ -3832,13 +3835,19 @@ public class MainActivity extends AppCompatActivity {
                 openFile(clipData.getItemAt(0).getUri());
                 break;
             }
-            case R.id.i_paste:
+            case R.id.i_paste: {
                 if (clipboard == null) {
                     break;
                 }
                 drawFloatingLayers();
 
-                if (!hasSelection) {
+                boolean si = !hasSelection; // Is selection invisible
+                if (hasSelection) {
+                    final Rect vp = getVisiblePart();
+                    si = !(vp.left < selection.right && selection.left < vp.right
+                            && vp.top < selection.bottom && selection.top < vp.bottom);
+                }
+                if (si) {
                     hasSelection = true;
                     selection.left = translationX >= 0.0f ? 0 : toUnscaled(-translationX) + 1;
                     selection.top = translationY >= 0.0f ? 0 : toUnscaled(-translationY) + 1;
@@ -3850,7 +3859,7 @@ public class MainActivity extends AppCompatActivity {
                 drawBitmapOnView();
                 drawSelectionOnView();
                 break;
-
+            }
             case R.id.i_redo:
                 if (tab.history.canRedo()) {
                     undoOrRedo(tab.history.redo());
