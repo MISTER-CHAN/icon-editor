@@ -591,12 +591,6 @@
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <CheckBox
-                        android:id="@+id/cb_shape_anti_alias"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/anti_alias" />
-
-                    <CheckBox
                         android:id="@+id/cb_shape_fill"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"

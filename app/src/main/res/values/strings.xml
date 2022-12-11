@@ -31,6 +31,7 @@
     <string name="clear">Clear</string>
     <string name="clear_destination">Clear Destination</string>
     <string name="clone">Clone</string>
+    <string name="clone_as_new">Clone as New</string>
     <string name="cloner">Cloner</string>
     <string name="close">Close</string>
     <string name="color_balance">Color Balance</string>
@@ -44,7 +45,6 @@
     <string name="convert_from_hsv_u"><u>Convert from HSV</u></string>
     <string name="coordinate" translatable="false">(%d, %d)</string>
     <string name="copy">Copy</string>
-    <string name="copy_as_new">Copy as New</string>
     <string name="crop">Crop</string>
     <string name="custom">Custom</string>
     <string name="custom_color_filter">Custom Color Filter</string>
@@ -215,6 +215,7 @@
     <string name="unified_transl_and_scale">Unified Location and Scale of Each Layer</string>
     <string name="untitled">Untitled</string>
     <string name="v" translatable="false">V</string>
+    <string name="version">Version (Release Date)</string>
     <string name="vertically">Vertically</string>
     <string name="view">View</string>
     <string name="visible">Visible</string>

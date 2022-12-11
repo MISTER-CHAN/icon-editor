@@ -64,16 +64,16 @@
                 android:title="@string/copy" />
 
             <item
-                android:id="@+id/i_copy_as_new"
-                android:title="@string/copy_as_new" />
-
-            <item
                 android:id="@+id/i_paste"
                 android:title="@string/paste" />
 
             <item
                 android:id="@+id/i_clone"
                 android:title="@string/clone" />
+
+            <item
+                android:id="@+id/i_clone_as_new"
+                android:title="@string/clone_as_new" />
 
             <item
                 android:id="@+id/i_delete"

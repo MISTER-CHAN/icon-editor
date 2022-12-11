@@ -1,9 +1,15 @@
 package com.misterchan.iconeditor;
 
+import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentActivity;
+import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
 
@@ -42,6 +48,28 @@ public class SettingsActivity extends AppCompatActivity {
         @Override
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
             setPreferencesFromResource(R.xml.root_preferences, rootKey);
+            final Context context = getContext();
+            String versionName = null;
+
+            try {
+                versionName = context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionName;
+            } catch (PackageManager.NameNotFoundException e) {
+            }
+
+            findPreference(Settings.KEY_CFU).setSummary(versionName);
+        }
+
+        @Override
+        public boolean onPreferenceTreeClick(Preference preference) {
+            final String key = preference.getKey();
+            if (key != null) {
+                switch (key) {
+                    case Settings.KEY_CFU:
+                        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.homepage_address))));
+                        break;
+                }
+            }
+            return super.onPreferenceTreeClick(preference);
         }
     }
 }

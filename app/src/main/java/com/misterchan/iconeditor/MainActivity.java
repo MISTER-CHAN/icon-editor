@@ -233,7 +233,6 @@ public class MainActivity extends AppCompatActivity {
     private CheckBox cbMagicPaintAntiAlias;
     private CheckBox cbPatcherAntiAlias;
     private CheckBox cbPencilAntiAlias;
-    private CheckBox cbShapeAntiAlias;
     private CheckBox cbShapeFill;
     private CheckBox cbTextFill;
     private CheckBox cbTransformerLar;
@@ -1809,8 +1808,11 @@ public class MainActivity extends AppCompatActivity {
             bitmapOriginal = Bitmap.createBitmap(bitmap);
             paint.setAntiAlias(false);
             paint.setMaskFilter(null);
+            paint.setStrokeCap(Paint.Cap.BUTT);
             etMagicEraserStrokeWidth.setText(String.valueOf(strokeWidth));
             llOptionsMagicEraser.setVisibility(View.VISIBLE);
+        } else {
+            paint.setStrokeCap(Paint.Cap.ROUND);
         }
     };
 
@@ -1854,7 +1856,6 @@ public class MainActivity extends AppCompatActivity {
     private final CompoundButton.OnCheckedChangeListener onShapeRadioButtonCheckedChangeListener = (buttonView, isChecked) -> {
         if (isChecked) {
             onToolChange(onImageViewTouchWithShapeListener);
-            cbShapeAntiAlias.setChecked(antiAlias);
             cbShapeFill.setChecked(isPaintStyleFill());
             etShapeStrokeWidth.setText(String.valueOf(paint.getStrokeWidth()));
             llOptionsShape.setVisibility(View.VISIBLE);
@@ -3057,7 +3058,7 @@ public class MainActivity extends AppCompatActivity {
         settings.update(this, preferences);
 
         // Locale
-        final String loc = preferences.getString("loc", "def");
+        final String loc = preferences.getString(Settings.KEY_LOC, "def");
         if (!"def".equals(loc)) {
             Locale locale;
             final int i = loc.indexOf('_');
@@ -3086,7 +3087,6 @@ public class MainActivity extends AppCompatActivity {
         cbMagicPaintAntiAlias = findViewById(R.id.cb_magic_paint_anti_alias);
         cbPatcherAntiAlias = findViewById(R.id.cb_patcher_anti_alias);
         cbPencilAntiAlias = findViewById(R.id.cb_pencil_anti_alias);
-        cbShapeAntiAlias = findViewById(R.id.cb_shape_anti_alias);
         cbShapeFill = findViewById(R.id.cb_shape_fill);
         cbTextFill = findViewById(R.id.cb_text_fill);
         cbTransformerLar = findViewById(R.id.cb_transformer_lar);
@@ -3152,7 +3152,6 @@ public class MainActivity extends AppCompatActivity {
         cbGradientAntiAlias.setOnCheckedChangeListener(onAntiAliasCheckedChangeListener);
         cbPatcherAntiAlias.setOnCheckedChangeListener(onAntiAliasCheckedChangeListener);
         cbPencilAntiAlias.setOnCheckedChangeListener(onAntiAliasCheckedChangeListener);
-        cbShapeAntiAlias.setOnCheckedChangeListener(onAntiAliasCheckedChangeListener);
         cbShapeFill.setOnCheckedChangeListener((buttonView, isChecked) -> paint.setStyle(isChecked ? Paint.Style.FILL_AND_STROKE : Paint.Style.STROKE));
         cbZoom.setOnCheckedChangeListener(onZoomToolCheckBoxCheckedChangeListener);
         cbZoom.setTag(onImageViewTouchWithPencilListener);
@@ -3433,6 +3432,17 @@ public class MainActivity extends AppCompatActivity {
                 }
                 break;
 
+            case R.id.i_clone_as_new: {
+                if (!hasSelection) {
+                    break;
+                }
+                final Bitmap bm = transformer == null
+                        ? Bitmap.createBitmap(bitmap, selection.left, selection.top, selection.width(), selection.height())
+                        : Bitmap.createBitmap(transformer.getBitmap());
+                addBitmap(bm, tabLayout.getSelectedTabPosition() + 1);
+                break;
+            }
+
             case R.id.i_close:
             case R.id.i_layer_delete:
                 if (tabs.size() == 1) {
@@ -3459,22 +3469,6 @@ public class MainActivity extends AppCompatActivity {
                     clipboard = Bitmap.createBitmap(transformer.getBitmap());
                 }
                 break;
-
-            case R.id.i_copy_as_new: {
-                if (!hasSelection) {
-                    break;
-                }
-                Bitmap bm;
-                if (transformer == null) {
-                    bm = Bitmap.createBitmap(bitmap,
-                            selection.left, selection.top,
-                            selection.width(), selection.height());
-                } else {
-                    bm = Bitmap.createBitmap(transformer.getBitmap());
-                }
-                addBitmap(bm, tabLayout.getSelectedTabPosition() + 1);
-                break;
-            }
             case R.id.i_crop: {
                 if (!hasSelection) {
                     break;
@@ -4008,16 +4002,20 @@ public class MainActivity extends AppCompatActivity {
             switch (type) {
                 case "image/jpeg":
                     compressFormat = Bitmap.CompressFormat.JPEG;
-                    path = UriToPathUtil.getRealFilePath(this, uri);
                     break;
                 case "image/png":
                     compressFormat = Bitmap.CompressFormat.PNG;
-                    path = UriToPathUtil.getRealFilePath(this, uri);
+                    break;
+                case "image/webp":
+                    compressFormat = Bitmap.CompressFormat.WEBP_LOSSLESS;
                     break;
                 case "image/gif":
                 default:
                     Toast.makeText(this, R.string.not_supported_file_type, Toast.LENGTH_SHORT).show();
                     break;
+            }
+            if (compressFormat != null) {
+                path = UriToPathUtil.getRealFilePath(this, uri);
             }
             addBitmap(bm, tabs.size(), documentFile.getName(), path, compressFormat);
         } else {

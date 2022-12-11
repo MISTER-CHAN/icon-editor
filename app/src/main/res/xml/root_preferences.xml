@@ -43,8 +43,8 @@
             app:title="@string/author" />
 
         <Preference
-            app:summary="@string/homepage_address"
-            app:title="@string/check_for_updates" />
+            app:key="cfu"
+            app:title="@string/version" />
 
     </PreferenceCategory>
 

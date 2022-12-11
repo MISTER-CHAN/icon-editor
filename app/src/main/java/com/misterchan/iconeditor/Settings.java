@@ -8,10 +8,11 @@ public class Settings {
     private static final String FORMAT_02X = "%02X";
     private static final String FORMAT_D = "%d";
 
-    private static final String KEY_ACR = "acr";
-    private static final String KEY_ITS = "its";
-    private static final String KEY_LOC = "loc";
-    private static final String KEY_MT = "mt";
+    static final String KEY_ACR = "acr";
+    static final String KEY_CFU = "cfu";
+    static final String KEY_ITS = "its";
+    static final String KEY_LOC = "loc";
+    static final String KEY_MT = "mt";
 
     private boolean independentTranslAndScale = false;
     private boolean multithreaded = false;
