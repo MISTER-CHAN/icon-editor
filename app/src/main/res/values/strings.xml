@@ -199,7 +199,7 @@
     <string name="state_threshold">Threshold: %d</string>
     <string name="stretch">Stretch</string>
     <string name="stroke_width">Width</string>
-    <string name="sub">Stacking Order of Mask</string>
+    <string name="swap">Swap</string>
     <string name="swatch">Swatch</string>
     <string name="text">Text</string>
     <string name="threaded">Threaded</string>

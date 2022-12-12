@@ -171,7 +171,7 @@
     <string name="state_threshold">阈值：%d</string>
     <string name="stretch">拉伸</string>
     <string name="stroke_width">笔划宽度</string>
-    <string name="sub">蒙版堆叠次序</string>
+    <string name="swap">交换</string>
     <string name="swatch">颜色</string>
     <string name="text">文本</string>
     <string name="threaded">线程</string>

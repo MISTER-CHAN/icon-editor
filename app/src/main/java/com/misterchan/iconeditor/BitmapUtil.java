@@ -52,7 +52,7 @@ public class BitmapUtil {
      * @param bc Background color
      */
     public static void removeBackground(final Bitmap bitmap, @ColorInt final int fc, @ColorInt final int bc) {
-        final float fr = Color.red(fc) / 255.0f, fg = Color.green(fc) / 255.0f, fb = Color.blue(fc) / 255.0f;
+        final float fr = Color.red(fc) / 255.0f, fg = Color.green(fc) / 255.0f, fb = Color.blue(fc) / 255.0f, fa = Color.alpha(fc) / 255.0f;
         final float br = Color.red(bc) / 255.0f, bg = Color.green(bc) / 255.0f, bb = Color.blue(bc) / 255.0f;
         final float dr = fr - br, dg = fg - bg, db = fb - bb, sd = dr + dg + db; // Differences
         final float rr = dr / sd, rg = dg / sd, rb = db / sd; // Ratios
@@ -65,15 +65,15 @@ public class BitmapUtil {
                     b = Color.blue(pixels[i]) / 255.0f;
 
             /*
-             * c = a * f + (1 - a) * b => a = (c - b) / (f - b)
+             * c = a * f + (1 - a) * b => a = (c - 1 * b) / (f - b)
              * Where c - Output RGB channel
-             *       a - Foreground alpha channel. Then (1 - a) is Background alpha channel.
+             *       a - Foreground alpha channel
              *       f - Foreground RGB channel
              *       b - Background RGB channel
              */
-            final float a_ = (dr == 0.0f ? 0.0f : (r - br) / dr * rr)
-                    + (dg == 0.0f ? 0.0f : (g - bg) / dg * rg)
-                    + (db == 0.0f ? 0.0f : (b - bb) / db * rb);
+            final float a_ = (dr == 0.0f ? 0.0f : (r - fa * br) / dr * rr)
+                    + (dg == 0.0f ? 0.0f : (g - fa * bg) / dg * rg)
+                    + (db == 0.0f ? 0.0f : (b - fa * bb) / db * rb);
 
             pixels[i] = Color.argb(saturate(a_), fr, fg, fb);
         }

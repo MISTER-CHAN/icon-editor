@@ -7,8 +7,6 @@ class BitmapHistory {
 
     private static final int MAX_SIZE = 50;
 
-    private static final Paint PAINT = new Paint();
-
     private static class Node {
         private Bitmap val;
         private Node later;

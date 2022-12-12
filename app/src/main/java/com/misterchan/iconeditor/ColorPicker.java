@@ -7,6 +7,8 @@ import android.widget.EditText;
 import android.widget.SeekBar;
 
 import androidx.annotation.ColorInt;
+import androidx.annotation.IdRes;
+import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
 
 public class ColorPicker {
@@ -14,8 +16,6 @@ public class ColorPicker {
     public interface OnColorPickListener {
         void onPick(Integer oldColor, Integer newColor);
     }
-
-    private static final String FORMAT_02X = "%02X";
 
     private AlertDialog.Builder dialogBuilder;
     private Context context;
@@ -28,7 +28,7 @@ public class ColorPicker {
     private SeekBar sbBlue;
     private SeekBar sbGreen;
     private SeekBar sbRed;
-    private String format = FORMAT_02X;
+    private String format;
     private View vPreview;
 
     @ColorInt
@@ -40,29 +40,31 @@ public class ColorPicker {
         etBlue.setText(String.format(format, Color.blue(color)));
     }
 
-    public static ColorPicker make(Context context, int titleId, Settings settings, final OnColorPickListener onColorPickListener) {
-        return make(context, titleId, settings, onColorPickListener, null, false);
+    public static ColorPicker make(Context context, int titleId, Settings settings,
+                                   final OnColorPickListener onColorPickListener, @ColorInt final Integer oldColor) {
+        return make(context, titleId, settings,
+                onColorPickListener, oldColor, 0);
     }
 
-    public static ColorPicker make(Context context, int titleId, Settings settings, final OnColorPickListener onColorPickListener, @ColorInt final Integer oldColor) {
-        return make(context, titleId, settings, onColorPickListener, oldColor, false);
-    }
-
-    public static ColorPicker make(Context context, int titleId, Settings settings, final OnColorPickListener onColorPickListener, @ColorInt final Integer oldColor, boolean canDeleteOld) {
+    public static ColorPicker make(Context context, int titleId, Settings settings,
+                                   final OnColorPickListener onColorPickListener,
+                                   @ColorInt final Integer oldColor, @StringRes int neutralFunction) {
         final ColorPicker picker = new ColorPicker();
         picker.context = context;
         picker.format = settings.getArgbChannelsFormat();
         picker.radix = settings.getArgbChannelsRadix();
         picker.dialogBuilder = new AlertDialog.Builder(context)
                 .setNegativeButton(R.string.cancel, null)
-                .setPositiveButton(R.string.ok, (dialog, which) -> onColorPickListener.onPick(oldColor, picker.newColor))
+                .setPositiveButton(R.string.ok,
+                        (dialog, which) -> onColorPickListener.onPick(oldColor, picker.newColor))
                 .setTitle(titleId)
                 .setView(R.layout.color_picker);
 
         if (oldColor != null) {
             picker.oldColor = oldColor;
-            if (canDeleteOld) {
-                picker.dialogBuilder.setNeutralButton(R.string.delete, (dialog, which) -> onColorPickListener.onPick(oldColor, null));
+            if (neutralFunction != 0) {
+                picker.dialogBuilder.setNeutralButton(neutralFunction,
+                        (dialog, which) -> onColorPickListener.onPick(oldColor, null));
             }
         } else {
             picker.oldColor = Color.BLACK;

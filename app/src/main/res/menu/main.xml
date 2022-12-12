@@ -24,27 +24,31 @@
         <menu>
 
             <item
-                android:id="@+id/i_new"
+                android:id="@+id/i_file_new"
                 android:title="@string/new_" />
 
             <item
-                android:id="@+id/i_open"
+                android:id="@+id/i_file_open"
                 android:title="@string/open" />
 
             <item
-                android:id="@+id/i_open_from_clipboard"
+                android:id="@+id/i_file_open_from_clipboard"
                 android:title="@string/open_from_clipboard" />
 
             <item
-                android:id="@+id/i_save_as"
+                android:id="@+id/i_file_save"
+                android:title="@string/save" />
+
+            <item
+                android:id="@+id/i_file_save_as"
                 android:title="@string/save_as" />
 
             <item
-                android:id="@+id/i_refer_to_clipboard"
+                android:id="@+id/i_file_refer_to_clipboard"
                 android:title="@string/refer_to_clipboard" />
 
             <item
-                android:id="@+id/i_close"
+                android:id="@+id/i_file_close"
                 android:title="@string/close" />
         </menu>
     </item>
@@ -76,6 +80,10 @@
                 android:title="@string/clone_as_new" />
 
             <item
+                android:id="@+id/i_draw_color"
+                android:title="@string/draw_color" />
+
+            <item
                 android:id="@+id/i_delete"
                 android:title="@string/delete" />
 
@@ -86,10 +94,6 @@
             <item
                 android:id="@+id/i_deselect"
                 android:title="@string/deselect" />
-
-            <item
-                android:id="@+id/i_draw_color"
-                android:title="@string/draw_color" />
         </menu>
     </item>
 

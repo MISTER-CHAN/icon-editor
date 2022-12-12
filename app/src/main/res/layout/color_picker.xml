@@ -42,7 +42,7 @@
                 android:hint="@string/a"
                 android:inputType="text"
                 android:text="@string/ff"
-                android:textAlignment="center" />
+                android:textAlignment="textEnd" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <SeekBar
@@ -61,7 +61,7 @@
                 android:hint="@string/r"
                 android:inputType="text"
                 android:text="@string/double_zero"
-                android:textAlignment="center" />
+                android:textAlignment="textEnd" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <SeekBar
@@ -79,7 +79,7 @@
                 android:hint="@string/g"
                 android:inputType="text"
                 android:text="@string/double_zero"
-                android:textAlignment="center" />
+                android:textAlignment="textEnd" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <SeekBar
@@ -97,7 +97,7 @@
                 android:hint="@string/b"
                 android:inputType="text"
                 android:text="@string/double_zero"
-                android:textAlignment="center" />
+                android:textAlignment="textEnd" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <SeekBar

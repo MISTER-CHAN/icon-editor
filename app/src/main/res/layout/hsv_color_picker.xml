@@ -30,7 +30,7 @@
                 android:background="@color/transparent"
                 android:hint="@string/h"
                 android:inputType="numberDecimal"
-                android:textAlignment="center" />
+                android:textAlignment="textEnd" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <TextView
@@ -51,7 +51,7 @@
                 android:background="@color/transparent"
                 android:hint="@string/s"
                 android:inputType="numberDecimal"
-                android:textAlignment="center" />
+                android:textAlignment="textEnd" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <TextView
@@ -72,7 +72,7 @@
                 android:background="@color/transparent"
                 android:hint="@string/v"
                 android:inputType="numberDecimal"
-                android:textAlignment="center" />
+                android:textAlignment="textEnd" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <TextView
