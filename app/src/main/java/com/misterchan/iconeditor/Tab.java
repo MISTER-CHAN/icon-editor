@@ -8,9 +8,8 @@ import android.widget.TextView;
 import androidx.annotation.Size;
 
 class Tab {
-
     public boolean enableColorFilter = false;
-    public boolean draw_below = false;
+    public boolean drawBelow = false;
     public boolean visible;
     public Bitmap bitmap;
     public Bitmap.CompressFormat compressFormat;

@@ -166,7 +166,7 @@
                 android:title="@string/duplicate" />
 
             <item
-                android:id="@+id/i_layer_duplicate_by_hue"
+                android:id="@+id/i_layer_duplicate_by_color_range"
                 android:title="@string/duplicate_by_color_range" />
 
             <item

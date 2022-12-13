@@ -1,6 +1,7 @@
 package com.misterchan.iconeditor;
 
 import android.graphics.Bitmap;
+import android.graphics.BlendMode;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
@@ -58,17 +59,21 @@ public class PreviewBitmap {
 
     public void drawColor(@ColorInt int color) {
         final Paint paint = new Paint();
+        paint.setBlendMode(BlendMode.SRC_IN);
         paint.setColor(color);
-        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
         canvas.drawRect(rect, paint);
     }
 
-    public Bitmap getBitmap() {
+    public Bitmap getEntire() {
         return bitmap;
     }
 
     public int getHeight() {
         return bm.getHeight();
+    }
+
+    public Bitmap getOriginal() {
+        return bm;
     }
 
     public void getPixels(@ColorInt int[] pixels, int offset, int stride,
