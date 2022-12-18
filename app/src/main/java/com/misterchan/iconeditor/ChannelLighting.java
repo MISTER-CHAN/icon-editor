@@ -10,7 +10,7 @@ import android.widget.SeekBar;
 import androidx.annotation.Size;
 import androidx.appcompat.app.AlertDialog;
 
-public class ChannelMixer {
+public class ChannelLighting {
 
     private final AlertDialog.Builder builder;
     private ColorMatrixManager.OnMatrixElementsChangeListener onMatrixElementsChangeListener;
@@ -23,10 +23,10 @@ public class ChannelMixer {
             0.0f, 0.0f, 0.0f, 1.0f, 0.0f
     };
 
-    public ChannelMixer(Context context) {
+    public ChannelLighting(Context context) {
         builder = new AlertDialog.Builder(context)
-                .setTitle(R.string.channels)
-                .setView(R.layout.channels);
+                .setTitle(R.string.channel_lighting)
+                .setView(R.layout.channel_lighting);
     }
 
     private void setElement(int index, float e) {
@@ -34,19 +34,19 @@ public class ChannelMixer {
         onMatrixElementsChangeListener.onChanged(a);
     }
 
-    public ChannelMixer setOnCancelListener(DialogInterface.OnCancelListener listener) {
+    public ChannelLighting setOnCancelListener(DialogInterface.OnCancelListener listener) {
         builder.setOnCancelListener(listener);
         builder.setNegativeButton(R.string.cancel,
                 (dialog, which) -> listener.onCancel(dialog));
         return this;
     }
 
-    public ChannelMixer setOnPositiveButtonClickListener(DialogInterface.OnClickListener listener) {
+    public ChannelLighting setOnPositiveButtonClickListener(DialogInterface.OnClickListener listener) {
         builder.setPositiveButton(R.string.ok, listener);
         return this;
     }
 
-    public ChannelMixer setOnMatrixChangeListener(ColorMatrixManager.OnMatrixElementsChangeListener listener) {
+    public ChannelLighting setOnMatrixChangeListener(ColorMatrixManager.OnMatrixElementsChangeListener listener) {
         onMatrixElementsChangeListener = listener;
         return this;
     }

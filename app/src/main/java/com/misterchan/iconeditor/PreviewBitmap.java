@@ -27,11 +27,17 @@ public class PreviewBitmap {
     private Canvas cv;
     private final Rect rect;
 
+    @ColorInt
+    private int[] pixels;
+
     public PreviewBitmap(Bitmap bitmap, Rect rect) {
+        final int w = rect.width(), h = rect.height();
         this.bitmap = Bitmap.createBitmap(bitmap);
-        bm = Bitmap.createBitmap(bitmap, rect.left, rect.top, rect.width(), rect.height());
+        bm = Bitmap.createBitmap(bitmap, rect.left, rect.top, w, h);
         canvas = new Canvas(this.bitmap);
         cv = new Canvas(bm);
+        pixels = new int[w * h];
+        bm.getPixels(pixels, 0, w, 0, 0, w, h);
         this.rect = rect;
     }
 
@@ -76,6 +82,11 @@ public class PreviewBitmap {
         return bm;
     }
 
+    @ColorInt
+    public int[] getPixels() {
+        return pixels;
+    }
+
     public void getPixels(@ColorInt int[] pixels, int offset, int stride,
                           int x, int y, int width, int height) {
         bm.getPixels(pixels, offset, stride, x, y, width, height);
@@ -97,6 +108,10 @@ public class PreviewBitmap {
 
     public void reset() {
         canvas.drawBitmap(bm, rect.left, rect.top, PAINT_SRC);
+    }
+
+    public void setPixels(@ColorInt int[] pixels, int width, int height) {
+        setPixels(pixels, 0, width, 0, 0, width, height);
     }
 
     public void setPixels(@ColorInt int[] pixels, int offset, int stride,

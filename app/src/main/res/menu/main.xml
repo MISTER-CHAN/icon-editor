@@ -148,6 +148,10 @@
                     </item>
                 </menu>
             </item>
+
+            <item
+                android:id="@+id/i_information"
+                android:title="@string/information" />
         </menu>
     </item>
 
@@ -176,6 +180,10 @@
             <item
                 android:id="@+id/i_layer_delete"
                 android:title="@string/delete" />
+
+            <item
+                android:id="@+id/i_layer_delete_invisible"
+                android:title="@string/delete_invisible" />
 
             <item
                 android:id="@+id/i_layer_merge"
@@ -355,18 +363,29 @@
                 </menu>
             </item>
 
-            <item android:title="@string/color_filter">
+            <item android:title="@string/filters">
 
                 <menu>
 
                     <item
+                        android:id="@+id/i_layer_hsv_enabled"
+                        android:checkable="true"
+                        android:title="@string/enable_hsv" />
+
+                    <item
+                        android:id="@+id/i_layer_hsv"
+                        android:enabled="false"
+                        android:title="@string/set_hsv" />
+
+                    <item
                         android:id="@+id/i_layer_color_filter_enabled"
                         android:checkable="true"
-                        android:title="@string/enabled" />
+                        android:title="@string/enable_color_filter" />
 
                     <item
                         android:id="@+id/i_layer_color_filter"
-                        android:title="@string/channel_mixer" />
+                        android:enabled="false"
+                        android:title="@string/set_color_filter" />
                 </menu>
             </item>
 
@@ -430,8 +449,8 @@
                 android:title="@string/threshold" />
 
             <item
-                android:id="@+id/i_filter_channels"
-                android:title="@string/channels" />
+                android:id="@+id/i_filter_channel_lighting"
+                android:title="@string/channel_lighting" />
 
             <item
                 android:id="@+id/i_filter_matrix"

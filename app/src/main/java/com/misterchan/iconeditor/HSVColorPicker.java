@@ -1,7 +1,6 @@
 package com.misterchan.iconeditor;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.SeekBar;
@@ -23,7 +22,7 @@ public class HSVColorPicker {
     private View vPreview;
 
     @Size(3)
-    private float[] hsv;
+    private final float[] hsv = new float[3];
 
     @ColorInt
     private int newColor, oldColor;
@@ -50,8 +49,8 @@ public class HSVColorPicker {
     }
 
     private void onChannelChanged() {
-        newColor = com.misterchan.iconeditor.Color.HSVToColor(hsv);
-        vPreview.setBackgroundColor(0xFF000000 | newColor);
+        newColor = Color.HSVToColor(hsv);
+        vPreview.setBackgroundColor(Color.BLACK | newColor);
     }
 
     private void onHueChanged(String s) {
@@ -93,7 +92,7 @@ public class HSVColorPicker {
         etSaturation.addTextChangedListener((AfterTextChangedListener) s -> onSatOrValChanged(1, s, sbSaturation));
         etValue.addTextChangedListener((AfterTextChangedListener) s -> onSatOrValChanged(2, s, sbValue));
 
-        hsv = com.misterchan.iconeditor.Color.colorToHSV(oldColor);
+        Color.colorToHSV(oldColor, hsv);
         etHue.setText(String.valueOf(hsv[0]));
         etSaturation.setText(String.valueOf(hsv[1] * 100.0f));
         etValue.setText(String.valueOf(hsv[2] * 100.0f));

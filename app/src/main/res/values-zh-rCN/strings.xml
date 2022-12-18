@@ -22,6 +22,7 @@
     <string name="cancel">取消</string>
     <string name="cell_grid">网格</string>
     <string name="channels">通道</string>
+    <string name="channel_lighting">通道照明</string>
     <string name="channel_mixer">通道混合器</string>
     <string name="check_for_updates">检査更新</string>
     <string name="circle">圆</string>
@@ -36,6 +37,8 @@
     <string name="color_picker">拾色器</string>
     <string name="color_range">颜色范围</string>
     <string name="color_replace">颜色替换</string>
+    <string name="color_space">色彩空间</string>
+    <string name="config">配置</string>
     <string name="contiguous">连续</string>
     <string name="contrast">对比度</string>
     <string name="convert_from_hsv">由 HSV 转换</string>
@@ -49,12 +52,15 @@
     <string name="default_">缺省</string>
     <string name="degrees_">角度：%f°</string>
     <string name="delete">删除</string>
+    <string name="delete_invisible">删除不可见</string>
     <string name="deselect">不选择</string>
     <string name="draw">绘画</string>
     <string name="draw_below">画底下图层</string>
     <string name="draw_color">画颜色</string>
     <string name="duplicate">复制</string>
     <string name="duplicate_by_color_range">复制颜色范围</string>
+    <string name="enable_color_filter">启用颜色滤镜</string>
+    <string name="enable_hsv">启用 HSV</string>
     <string name="enabled">启用</string>
     <string name="eraser">胶擦</string>
     <string name="exception_merge_as_hidden">异常：请选中两张图像中第一个图像的分页。</string>
@@ -69,6 +75,7 @@
     <string name="foreground_color">画笔颜色</string>
     <string name="general">一般</string>
     <string name="gradient">渐变</string>
+    <string name="has_alpha">有 Alpha</string>
     <string name="height">高度</string>
     <string name="help">帮助</string>
     <string name="hex">十六进制</string>
@@ -82,6 +89,7 @@
     <string name="image_size">图像尺寸</string>
     <string name="independent_layer">独立图层</string>
     <string name="independent_transl_and_scale">独立各图层的位置及缩放</string>
+    <string name="information">资讯</string>
     <string name="input">输入</string>
     <string name="invert">反相</string>
     <string name="language">语言</string>
@@ -144,6 +152,8 @@
     <string name="select">选择</string>
     <string name="select_all">全选</string>
     <string name="send_to_back">置底</string>
+    <string name="set_color_filter">设置颜色滤镜</string>
+    <string name="set_hsv">设置 HSV</string>
     <string name="settings">设置</string>
     <string name="shadows">阴影</string>
     <string name="shape">形状</string>

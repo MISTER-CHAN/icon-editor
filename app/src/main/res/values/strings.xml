@@ -25,6 +25,7 @@
     <string name="cancel">Cancel</string>
     <string name="cell_grid">Cell Grid</string>
     <string name="channels">Channels</string>
+    <string name="channel_lighting">Channel Lighting</string>
     <string name="channel_mixer">Channel Mixer</string>
     <string name="check_for_updates">Check for Updates</string>
     <string name="circle">Circle</string>
@@ -39,6 +40,8 @@
     <string name="color_picker">Color Picker</string>
     <string name="color_range">Color Range</string>
     <string name="color_replace">Color Replace</string>
+    <string name="color_space">Color Space</string>
+    <string name="config">Config</string>
     <string name="contiguous">Contiguous</string>
     <string name="contrast">Contrast</string>
     <string name="convert_from_hsv">Convert from HSV</string>
@@ -54,6 +57,7 @@
     <string name="degree" translatable="false">°</string>
     <string name="degrees_">Degrees: %f°</string>
     <string name="delete">Delete</string>
+    <string name="delete_invisible">Delete Invisible</string>
     <string name="deselect">Deselect</string>
     <string name="double_zero" translatable="false">00</string>
     <string name="draw">Draw</string>
@@ -62,6 +66,8 @@
     <string name="duplicate">Duplicate</string>
     <string name="duplicate_by_color_range">Duplicate by Color Range</string>
     <string name="edit" translatable="false">✎</string>
+    <string name="enable_color_filter">Enable Color Filter</string>
+    <string name="enable_hsv">Enable HSV</string>
     <string name="enabled">Enabled</string>
     <string name="eraser">Eraser</string>
     <string name="exception_merge_as_hidden">Exception: Please select the first tab of two images.</string>
@@ -81,6 +87,7 @@
     <string name="gradient">Gradient</string>
     <string name="gt" translatable="false"><![CDATA[>]]></string>
     <string name="h" translatable="false">H</string>
+    <string name="has_alpha">Has Alpha</string>
     <string name="height">Height</string>
     <string name="help">Help</string>
     <string name="hex">Hex</string>
@@ -96,6 +103,7 @@
     <string name="image_size">Image Size</string>
     <string name="independent_layer">Independent Layer</string>
     <string name="independent_transl_and_scale">Independent Location and Scale of Each Layer</string>
+    <string name="information">Information</string>
     <string name="input">Input</string>
     <string name="invert">Invert</string>
     <string name="language">Language</string>
@@ -168,6 +176,8 @@
     <string name="select">Select</string>
     <string name="select_all">Select All</string>
     <string name="send_to_back">Send to Back</string>
+    <string name="set_color_filter">Set Color Filter</string>
+    <string name="set_hsv">Set HSV</string>
     <string name="settings">Settings</string>
     <string name="shadows">Shadows</string>
     <string name="shape">Shape</string>

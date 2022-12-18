@@ -8,7 +8,8 @@ import android.widget.TextView;
 import androidx.annotation.Size;
 
 class Tab {
-    public boolean enableColorFilter = false;
+    public boolean colorFilterEnabled = false;
+    public boolean HSVEnabled = false;
     public boolean drawBelow = false;
     public boolean visible;
     public Bitmap bitmap;
@@ -31,4 +32,7 @@ class Tab {
             0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
             0.0f, 0.0f, 0.0f, 1.0f, 0.0f
     };
+
+    @Size(3)
+    public float[] deltaHSV = new float[]{0.0f, 0.0f, 0.0f};
 }

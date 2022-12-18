@@ -21,12 +21,17 @@ public class HSVDialog {
     private OnHSVChangeListener listener;
 
     @Size(3)
-    private final float[] deltaHSV = new float[3];
+    private float[] deltaHSV = new float[3];
 
     public HSVDialog(Context context) {
         builder = new AlertDialog.Builder(context)
                 .setTitle(R.string.hsv)
                 .setView(R.layout.hsv);
+    }
+
+    public HSVDialog setDefaultDeltaHSV(float[] deltaHSV) {
+        this.deltaHSV = deltaHSV;
+        return this;
     }
 
     public HSVDialog setOnCancelListener(DialogInterface.OnCancelListener listener) {
@@ -59,31 +64,35 @@ public class HSVDialog {
         lp.gravity = Gravity.BOTTOM;
         window.setAttributes(lp);
 
-        ((SeekBar) dialog.findViewById(R.id.sb_hue))
-                .setOnSeekBarChangeListener(new OnSeekBarChangeListener(when) {
-                    @Override
-                    void onChanged(SeekBar seekBar, int progress) {
-                        deltaHSV[0] = progress;
-                        listener.onChange(deltaHSV);
-                    }
-                });
+        final SeekBar sbHue = dialog.findViewById(R.id.sb_hue);
+        final SeekBar sbSaturation = dialog.findViewById(R.id.sb_saturation);
+        final SeekBar sbValue = dialog.findViewById(R.id.sb_value);
 
-        ((SeekBar) dialog.findViewById(R.id.sb_saturation))
-                .setOnSeekBarChangeListener(new OnSeekBarChangeListener(when) {
-                    @Override
-                    void onChanged(SeekBar seekBar, int progress) {
-                        deltaHSV[1] = progress / 100.0f;
-                        listener.onChange(deltaHSV);
-                    }
-                });
+        sbHue.setProgress((int) deltaHSV[0]);
+        sbHue.setOnSeekBarChangeListener(new OnSeekBarChangeListener(when) {
+            @Override
+            void onChanged(SeekBar seekBar, int progress) {
+                deltaHSV[0] = progress;
+                listener.onChange(deltaHSV);
+            }
+        });
 
-        ((SeekBar) dialog.findViewById(R.id.sb_value))
-                .setOnSeekBarChangeListener(new OnSeekBarChangeListener(when) {
-                    @Override
-                    void onChanged(SeekBar seekBar, int progress) {
-                        deltaHSV[2] = progress / 100.0f;
-                        listener.onChange(deltaHSV);
-                    }
-                });
+        sbSaturation.setProgress((int) deltaHSV[1] * 100);
+        sbSaturation.setOnSeekBarChangeListener(new OnSeekBarChangeListener(when) {
+            @Override
+            void onChanged(SeekBar seekBar, int progress) {
+                deltaHSV[1] = progress / 100.0f;
+                listener.onChange(deltaHSV);
+            }
+        });
+
+        sbValue.setProgress((int) deltaHSV[2] * 100);
+        sbValue.setOnSeekBarChangeListener(new OnSeekBarChangeListener(when) {
+            @Override
+            void onChanged(SeekBar seekBar, int progress) {
+                deltaHSV[2] = progress / 100.0f;
+                listener.onChange(deltaHSV);
+            }
+        });
     }
 }

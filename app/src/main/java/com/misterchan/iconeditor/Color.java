@@ -6,24 +6,22 @@ import androidx.annotation.Size;
 public class Color extends android.graphics.Color {
 
     @Size(3)
-    public static float[] colorToHSV(@ColorInt int color) {
+    public static void colorToHSV(@ColorInt int color, @Size(3) float[] hsv) {
         final float r = Color.red(color) / 255.0f,
                 g = Color.green(color) / 255.0f,
                 b = Color.blue(color) / 255.0f;
         final float max = Math.max(Math.max(r, g), b), min = Math.min(Math.min(r, g), b);
-        float h = 0.0f, s, v;
         if (max == min) {
-            h = 0.0f;
+            hsv[0] = 0.0f;
         } else if (max == r) {
-            h = 60.0f * (g - b) / (max - min) + (g >= b ? 0.0f : 360.0f);
+            hsv[0] = 60.0f * (g - b) / (max - min) + (g >= b ? 0.0f : 360.0f);
         } else if (max == g) {
-            h = 60.0f * (b - r) / (max - min) + 120.0f;
+            hsv[0] = 60.0f * (b - r) / (max - min) + 120.0f;
         } else if (max == b) {
-            h = 60.0f * (r - g) / (max - min) + 240.0f;
+            hsv[0] = 60.0f * (r - g) / (max - min) + 240.0f;
         }
-        s = max == 0.0f ? 0.0f : 1.0f - min / max;
-        v = max;
-        return new float[]{h, s, v};
+        hsv[1] = max == 0.0f ? 0.0f : 1.0f - min / max;
+        hsv[2] = max;
     }
 
     public static float hue(@ColorInt int color) {
@@ -37,19 +35,18 @@ public class Color extends android.graphics.Color {
             return 60.0f * (b - r) / (max - min) + 120.0f;
         } else if (max == b) {
             return 60.0f * (r - g) / (max - min) + 240.0f;
-        } else {
-            return 0.0f;
         }
+        return 0.0f;
     }
 
     @ColorInt
     public static int HSVToColor(@Size(3) float[] hsv) {
         float h = hsv[0], s = hsv[1], v = hsv[2];
-        int hi = (int) (h / 60.0f);
-        float f = h / 60.0f - hi;
-        float p = saturate(v * (1.0f - s));
-        float q = saturate(v * (1.0f - f * s));
-        float t = saturate(v * (1.0f - (1.0f - f) * s));
+        final int hi = (int) (h / 60.0f);
+        final float f = h / 60.0f - hi;
+        final float p = saturate(v * (1.0f - s));
+        final float q = saturate(v * (1.0f - f * s));
+        final float t = saturate(v * (1.0f - (1.0f - f) * s));
         v = saturate(v);
         switch (hi) {
             case 0:
@@ -65,7 +62,7 @@ public class Color extends android.graphics.Color {
             case 5:
                 return Color.argb(0.0f, v, p, q);
         }
-        return 0x00000000;
+        return Color.TRANSPARENT;
     }
 
     public static float luminance(@ColorInt int color) {
@@ -78,7 +75,11 @@ public class Color extends android.graphics.Color {
         return Math.max(Math.max(Color.red(color), Color.green(color)), Color.blue(color));
     }
 
-    private static float saturate(float v) {
+    public static float saturate(float v) {
         return v <= 0.0f ? 0.0f : v >= 1.0f ? 1.0f : v;
+    }
+
+    public static int saturate(int v) {
+        return Math.max(Math.min(v, 0xFF), 0x00);
     }
 }
