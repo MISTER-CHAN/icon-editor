@@ -50,11 +50,6 @@ public class HSVDialog {
         return this;
     }
 
-    public HSVDialog setOnHSVChangeListener(OnHSVChangeListener listener, boolean when) {
-        this.when = when;
-        return setOnHSVChangeListener(listener);
-    }
-
     public void show() {
         final AlertDialog dialog = builder.show();
 
@@ -69,30 +64,21 @@ public class HSVDialog {
         final SeekBar sbValue = dialog.findViewById(R.id.sb_value);
 
         sbHue.setProgress((int) deltaHSV[0]);
-        sbHue.setOnSeekBarChangeListener(new OnSeekBarChangeListener(when) {
-            @Override
-            void onChanged(SeekBar seekBar, int progress) {
-                deltaHSV[0] = progress;
-                listener.onChange(deltaHSV);
-            }
+        sbHue.setOnSeekBarChangeListener((OnSeekBarProgressChangeListener) (seekBar, progress) -> {
+            deltaHSV[0] = progress;
+            listener.onChange(deltaHSV);
         });
 
         sbSaturation.setProgress((int) deltaHSV[1] * 100);
-        sbSaturation.setOnSeekBarChangeListener(new OnSeekBarChangeListener(when) {
-            @Override
-            void onChanged(SeekBar seekBar, int progress) {
-                deltaHSV[1] = progress / 100.0f;
-                listener.onChange(deltaHSV);
-            }
+        sbSaturation.setOnSeekBarChangeListener((OnSeekBarProgressChangeListener) (seekBar, progress) -> {
+            deltaHSV[1] = progress / 100.0f;
+            listener.onChange(deltaHSV);
         });
 
         sbValue.setProgress((int) deltaHSV[2] * 100);
-        sbValue.setOnSeekBarChangeListener(new OnSeekBarChangeListener(when) {
-            @Override
-            void onChanged(SeekBar seekBar, int progress) {
-                deltaHSV[2] = progress / 100.0f;
-                listener.onChange(deltaHSV);
-            }
+        sbValue.setOnSeekBarChangeListener((OnSeekBarProgressChangeListener) (seekBar, progress) -> {
+            deltaHSV[2] = progress / 100.0f;
+            listener.onChange(deltaHSV);
         });
     }
 }
