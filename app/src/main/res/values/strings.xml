@@ -166,6 +166,7 @@
     <string name="rotate_around_r">Rotate Around R</string>
     <string name="rotate_around_g">Rotate Around G</string>
     <string name="rotate_around_b">Rotate Around B</string>
+    <string name="ruler">Ruler</string>
     <string name="s" translatable="false">S</string>
     <string name="saturation">Saturation</string>
     <string name="save">Save</string>
@@ -199,6 +200,7 @@
     <string name="state_l_t_r_b_size">L: %d, T: %d, R: %d, B: %d, Size: %d × %d"</string>
     <string name="state_radius">Radius: %.1f</string>
     <string name="state_rotate" translatable="false">%d°</string>
+    <string name="state_ruler">(%d, %d) – (%d, %d), Proj: (%d, %d), Length: %f</string>
     <string name="state_saturation">Saturation: %.1f</string>
     <string name="state_selected_bound">Selected bound: %s</string>
     <string name="state_size">Size: %d × %d</string>

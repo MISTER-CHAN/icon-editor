@@ -143,6 +143,7 @@
     <string name="rotate_around_r">绕 R 轴旋转</string>
     <string name="rotate_around_g">绕 G 轴旋转</string>
     <string name="rotate_around_b">绕 B 轴旋转</string>
+    <string name="ruler">间尺</string>
     <string name="saturation">饱和度</string>
     <string name="save">保存</string>
     <string name="save_as">另存为</string>
@@ -171,6 +172,7 @@
     <string name="state_lightness">明度：%d</string>
     <string name="state_l_t_r_b_size">左：%d，上：%d，右：%d，下：%d，尺寸：%d × %d</string>
     <string name="state_radius">半径：%.1f</string>
+    <string name="state_ruler">(%d, %d) – (%d, %d)，投影：(%d, %d)，长：%f</string>
     <string name="state_saturation">饱和度：%.1f</string>
     <string name="state_selected_bound">选定边界：%s</string>
     <string name="state_size">尺寸：%d × %d</string>
