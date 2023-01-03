@@ -1,19 +1,22 @@
 <resources>
     <string name="a" translatable="false">A</string>
+    <string name="a_" translatable="false">a*</string>
     <string name="about">About</string>
     <string name="accurate">Accurate</string>
     <string name="add">Add</string>
     <string name="add_symbol" translatable="false">+</string>
+    <string name="all_layers">All Layers</string>
     <string name="alpha_value">Alpha Value</string>
     <string name="anti_alias">Anti-alias</string>
     <string name="app_name">Icon Editor</string>
-    <string name="argb_channels_radix">ARGB Channels Radix</string>
+    <string name="argb_components_radix">ARGB Components Radix</string>
     <string name="around_r">Around R</string>
     <string name="around_g">Around G</string>
     <string name="around_b">Around B</string>
     <string name="author">Author</string>
     <string name="automatic">Automatic</string>
     <string name="b" translatable="false">B</string>
+    <string name="b_" translatable="false">b*</string>
     <string name="background_color">Background Color</string>
     <string name="below_background">Below Background</string>
     <string name="blend_modes">Blend Modes</string>
@@ -44,11 +47,18 @@
     <string name="config">Config</string>
     <string name="contiguous">Contiguous</string>
     <string name="contrast">Contrast</string>
+    <string name="convert_from_cmyk">Convert from CMYK</string>
+    <string name="convert_from_cmyk_u"><u>Convert from CMYK</u></string>
     <string name="convert_from_hsv">Convert from HSV</string>
     <string name="convert_from_hsv_u"><u>Convert from HSV</u></string>
+    <string name="convert_from_lab">Convert from L*a*b*</string>
+    <string name="convert_from_lab_u"><u>Convert from L*a*b*</u></string>
+    <string name="convert_from_xyz">Convert from XYZ</string>
+    <string name="convert_from_xyz_u"><u>Convert from XYZ</u></string>
     <string name="coordinate" translatable="false">(%d, %d)</string>
     <string name="copy">Copy</string>
     <string name="crop">Crop</string>
+    <string name="current_layer">Current Layer</string>
     <string name="custom">Custom</string>
     <string name="custom_color_filter">Custom Color Filter</string>
     <string name="cut">Cut</string>
@@ -98,7 +108,7 @@
     <string name="horizontally">Horizontally</string>
     <string name="hsv" translatable="false">HSV</string>
     <string name="hue_only">Hue Only</string>
-    <string name="ignore_alpha_channel">Ignore Alpha Channel</string>
+    <string name="ignore_alpha">Ignore Alpha</string>
     <string name="image">Image</string>
     <string name="image_size">Image Size</string>
     <string name="independent_layer">Independent Layer</string>
@@ -106,6 +116,8 @@
     <string name="information">Information</string>
     <string name="input">Input</string>
     <string name="invert">Invert</string>
+    <string name="k" translatable="false">K</string>
+    <string name="l_" translatable="false">L*</string>
     <string name="language">Language</string>
     <string name="layer">Layer</string>
     <string name="left">Left</string>
@@ -235,6 +247,7 @@
     <string name="width">Width</string>
     <string name="x" translatable="false">X</string>
     <string name="y" translatable="false">Y</string>
+    <string name="z" translatable="false">Z</string>
     <string name="zero" translatable="false">0</string>
     <string name="zoom">Zoom</string>
 

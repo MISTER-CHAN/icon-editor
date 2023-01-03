@@ -83,7 +83,7 @@ public class Transformer {
         final float diagonal = (float) Math.sqrt(w * w + h * h), semiDiag = diagonal / 2.0f;
         final Bitmap bm = Bitmap.createBitmap((int) Math.ceil(diagonal), (int) Math.ceil(diagonal), Bitmap.Config.ARGB_8888);
         final Matrix matrix = new Matrix();
-        matrix.setTranslate((float) Math.floor(semiDiag - semiWidth), (float) Math.floor(semiDiag - semiHeight));
+        matrix.setTranslate((float) Math.ceil(semiDiag - semiWidth), (float) Math.ceil(semiDiag - semiHeight));
         matrix.postRotate(degrees, semiDiag, semiDiag);
         new Canvas(bm).drawBitmap(bitmap, matrix, PAINT);
         bitmap.recycle();

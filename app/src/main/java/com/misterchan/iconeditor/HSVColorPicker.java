@@ -10,28 +10,19 @@ import androidx.annotation.IntRange;
 import androidx.annotation.Size;
 import androidx.appcompat.app.AlertDialog;
 
-public class HSVColorPicker {
+public class HSVColorPicker extends ColorPicker {
 
-    private AlertDialog.Builder dialogBuilder;
     private EditText etHue;
     private EditText etSaturation;
     private EditText etValue;
     private SeekBar sbHue;
     private SeekBar sbSaturation;
     private SeekBar sbValue;
-    private View vPreview;
 
     @Size(3)
     private final float[] hsv = new float[3];
 
-    @ColorInt
-    private int newColor, oldColor;
-
-    public static HSVColorPicker make(Context context, final ColorPicker.OnColorPickListener onColorPickListener) {
-        return make(context, onColorPickListener, null);
-    }
-
-    public static HSVColorPicker make(Context context, final ColorPicker.OnColorPickListener onColorPickListener, @ColorInt final Integer oldColor) {
+    public static ColorPicker make(Context context, final OnColorPickListener onColorPickListener, @ColorInt final Integer oldColor) {
         final HSVColorPicker picker = new HSVColorPicker();
         picker.dialogBuilder = new AlertDialog.Builder(context)
                 .setNegativeButton(R.string.cancel, null)
@@ -39,16 +30,12 @@ public class HSVColorPicker {
                 .setTitle(R.string.convert_from_hsv)
                 .setView(R.layout.hsv_color_picker);
 
-        if (oldColor != null) {
-            picker.oldColor = oldColor;
-        } else {
-            picker.oldColor = Color.BLACK;
-        }
+        picker.oldColor = oldColor;
 
         return picker;
     }
 
-    private void onChannelChanged() {
+    private void onComponentChanged() {
         newColor = Color.HSVToColor(hsv);
         vPreview.setBackgroundColor(Color.BLACK | newColor);
     }
@@ -60,21 +47,21 @@ public class HSVColorPicker {
             hsv[0] = f % 360.0f;
         } catch (NumberFormatException e) {
         }
-        onChannelChanged();
+        onComponentChanged();
     }
 
-    private void onSatOrValChanged(@IntRange(from = 1, to = 2) int channel, String s, SeekBar seekBar) {
+    private void onSatOrValChanged(@IntRange(from = 1, to = 2) int index, String s, SeekBar seekBar) {
         try {
             float f = Float.parseFloat(s);
             seekBar.setProgress((int) f);
-            hsv[channel] = f / 100.0f;
+            hsv[index] = f / 100.0f;
         } catch (NumberFormatException e) {
         }
-        onChannelChanged();
+        onComponentChanged();
     }
 
+    @Override
     public void show() {
-
         final AlertDialog dialog = dialogBuilder.show();
 
         etHue = dialog.findViewById(R.id.et_hue);

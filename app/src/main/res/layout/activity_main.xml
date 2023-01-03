@@ -165,6 +165,34 @@
                 </LinearLayout>
 
                 <LinearLayout
+                    android:id="@+id/ll_options_eyedropper"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:visibility="invisible">
+
+                    <RadioGroup
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <RadioButton
+                            android:id="@+id/rb_eyedropper_current_layer"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:checked="true"
+                            android:text="@string/current_layer" />
+
+                        <RadioButton
+                            android:id="@+id/rb_eyedropper_all_layers"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:checked="false"
+                            android:text="@string/all_layers" />
+                    </RadioGroup>
+                </LinearLayout>
+
+                <LinearLayout
                     android:id="@+id/ll_options_pencil"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -567,7 +595,7 @@
                             android:id="@+id/cb_bucket_fill_ignore_alpha"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@string/ignore_alpha_channel" />
+                            android:text="@string/ignore_alpha" />
 
                         <Button
                             android:id="@+id/b_bucket_fill_threshold"

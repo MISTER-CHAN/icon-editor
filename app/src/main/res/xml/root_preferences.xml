@@ -15,7 +15,7 @@
             app:entries="@array/radix_entries"
             app:entryValues="@array/radix_values"
             app:key="acr"
-            app:title="@string/argb_channels_radix"
+            app:title="@string/argb_components_radix"
             app:useSimpleSummaryProvider="true" />
 
         <SwitchPreferenceCompat

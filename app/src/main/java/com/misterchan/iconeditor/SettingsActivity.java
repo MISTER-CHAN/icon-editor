@@ -8,7 +8,6 @@ import android.os.Bundle;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.FragmentActivity;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
@@ -35,7 +34,7 @@ public class SettingsActivity extends AppCompatActivity {
         PreferenceManager
                 .getDefaultSharedPreferences(this)
                 .registerOnSharedPreferenceChangeListener((sharedPreferences, key) ->
-                        settings.update(this, sharedPreferences, key));
+                        settings.update(sharedPreferences, key));
     }
 
     @Override

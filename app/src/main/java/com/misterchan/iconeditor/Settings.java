@@ -1,6 +1,5 @@
 package com.misterchan.iconeditor;
 
-import android.content.Context;
 import android.content.SharedPreferences;
 
 public class Settings {
@@ -17,13 +16,14 @@ public class Settings {
     private boolean independentTranslAndScale = false;
     private boolean multithreaded = false;
     private int argbChannelsRadix = 16;
+    private MainActivity mainActivity;
     private String argbChannelsFormat = FORMAT_02X;
 
-    public int getArgbChannelsRadix() {
+    public int getArgbComponentsRadix() {
         return argbChannelsRadix;
     }
 
-    public String getArgbChannelsFormat() {
+    public String getArgbComponentsFormat() {
         return argbChannelsFormat;
     }
 
@@ -31,17 +31,17 @@ public class Settings {
         return independentTranslAndScale;
     }
 
-    public boolean getMultithreaded() {
-        return multithreaded;
+    public void setMainActivity(MainActivity mainActivity) {
+        this.mainActivity = mainActivity;
     }
 
-    public void update(Context context, SharedPreferences preferences) {
-        update(context, preferences, KEY_ACR);
-        update(context, preferences, KEY_ITS);
-        update(context, preferences, KEY_MT);
+    public void update(SharedPreferences preferences) {
+        update(preferences, KEY_ACR);
+        update(preferences, KEY_ITS);
+        update(preferences, KEY_MT);
     }
 
-    public void update(Context context, SharedPreferences preferences, String key) {
+    public void update(SharedPreferences preferences, String key) {
         switch (key) {
             case KEY_ACR:
                 try {
@@ -61,6 +61,7 @@ public class Settings {
 
             case KEY_MT:
                 multithreaded = preferences.getBoolean(KEY_MT, false);
+                mainActivity.setRunnableRunner(multithreaded);
                 break;
         }
     }
