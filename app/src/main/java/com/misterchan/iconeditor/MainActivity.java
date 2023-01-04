@@ -800,6 +800,105 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    private final Shape circle = new Shape() {
+        @Override
+        public void drawBitmapOnView(int x0, int y0, int x1, int y1) {
+            final int radius = (int) Math.ceil(Math.sqrt(Math.pow(x1 - x0, 2.0) + Math.pow(y1 - y0, 2.0)));
+            MainActivity.this.drawBitmapOnView(x0 - radius, y0 - radius, x1 + radius, y1 + radius,
+                    strokeWidth / 2.0f + blurRadius);
+        }
+
+        @Override
+        public void drawShapeOnCanvas(int x0, int y0, int x1, int y1) {
+            canvas.drawCircle(x0 + 0.5f, y0 + 0.5f,
+                    (int) Math.sqrt(Math.pow(x1 - x0, 2.0) + Math.pow(y1 - y0, 2.0)),
+                    paint);
+        }
+
+        @Override
+        public String drawShapeOnView(int x0, int y0, int x1, int y1) {
+            final int radius = (int) Math.sqrt(Math.pow(x1 - x0, 2.0) + Math.pow(y1 - y0, 2.0));
+            previewCanvas.drawCircle(
+                    toViewX(x0 + 0.5f), toViewY(y0 + 0.5f),
+                    toScaled(radius),
+                    paint);
+            return String.format(getString(R.string.state_radius), radius + 0.5f);
+        }
+    };
+
+    private final Shape line = new Shape() {
+        @Override
+        public void drawBitmapOnView(int x0, int y0, int x1, int y1) {
+            MainActivity.this.drawBitmapOnView(x0, y0, x1, y1, strokeWidth / 2.0f + blurRadius);
+        }
+
+        @Override
+        public void drawShapeOnCanvas(int x0, int y0, int x1, int y1) {
+            if (x0 <= x1) ++x1;
+            else ++x0;
+            if (y0 <= y1) ++y1;
+            else ++y0;
+            canvas.drawLine(x0, y0, x1, y1, paint);
+        }
+
+        @Override
+        public String drawShapeOnView(int x0, int y0, int x1, int y1) {
+            previewCanvas.drawLine(
+                    toViewX(x0 + 0.5f), toViewY(y0 + 0.5f),
+                    toViewX(x1 + 0.5f), toViewY(y1 + 0.5f),
+                    paint);
+            return String.format(getString(R.string.state_length), Math.sqrt(Math.pow(x1 - x0, 2.0) + Math.pow(y1 - y0, 2.0)) + 1);
+        }
+    };
+
+    private final Shape oval = new Shape() {
+        @Override
+        public void drawBitmapOnView(int x0, int y0, int x1, int y1) {
+            MainActivity.this.drawBitmapOnView(x0, y0, x1, y1, strokeWidth / 2.0f + blurRadius);
+        }
+
+        @Override
+        public void drawShapeOnCanvas(int x0, int y0, int x1, int y1) {
+            final float left = Math.min(x0, x1) + 0.5f, top = Math.min(y0, y1) + 0.5f,
+                    right = Math.max(x0, x1) + 0.5f, bottom = Math.max(y0, y1) + 0.5f;
+            canvas.drawOval(left, top, right, bottom, paint);
+        }
+
+        @Override
+        public String drawShapeOnView(int x0, int y0, int x1, int y1) {
+            previewCanvas.drawOval(
+                    toViewX(x0 + 0.5f), toViewY(y0 + 0.5f),
+                    toViewX(x1 + 0.5f), toViewY(y1 + 0.5f),
+                    paint);
+            return String.format(getString(R.string.state_axes), Math.abs(x1 - x0) + 1, Math.abs(y1 - y0) + 1);
+        }
+    };
+
+    private final Shape rect = new Shape() {
+        @Override
+        public void drawBitmapOnView(int x0, int y0, int x1, int y1) {
+            MainActivity.this.drawBitmapOnView(x0, y0, x1, y1, strokeWidth / 2.0f + blurRadius);
+        }
+
+        @Override
+        public void drawShapeOnCanvas(int x0, int y0, int x1, int y1) {
+            final float left = Math.min(x0, x1), top = Math.min(y0, y1),
+                    right = Math.max(x0, x1) + 0.5f, bottom = Math.max(y0, y1) + 0.5f;
+            canvas.drawRect(left, top, right, bottom, paint);
+        }
+
+        @Override
+        public String drawShapeOnView(int x0, int y0, int x1, int y1) {
+            previewCanvas.drawRect(
+                    toViewX(x0 + 0.5f), toViewY(y0 + 0.5f),
+                    toViewX(x1 + 0.5f), toViewY(y1 + 0.5f),
+                    paint);
+            return String.format(getString(R.string.state_size), Math.abs(x1 - x0) + 1, Math.abs(y1 - y0) + 1);
+        }
+    };
+
+    private Shape shape = rect;
+
     @SuppressLint("ClickableViewAccessibility")
     private final View.OnTouchListener onImageViewTouchWithBucketListener = (v, event) -> {
         switch (event.getAction()) {
@@ -903,7 +1002,7 @@ public class MainActivity extends AppCompatActivity {
                 final int prevBX = toBitmapX(prevX), prevBY = toBitmapY(prevY);
                 final int bx = toBitmapX(x), by = toBitmapY(y);
                 drawLineOnCanvas(prevBX, prevBY, bx, by, eraser);
-                drawBitmapOnView(prevBX, prevBY, bx, by, (int) (strokeHalfWidthEraser + blurRadiusEraser));
+                drawBitmapOnView(prevBX, prevBY, bx, by, strokeHalfWidthEraser + blurRadiusEraser);
                 tvStatus.setText(String.format(getString(R.string.coordinate), bx, by));
                 prevX = x;
                 prevY = y;
@@ -1018,7 +1117,7 @@ public class MainActivity extends AppCompatActivity {
                             Shader.TileMode.CLAMP));
                     drawLineOnCanvas(shapeStartX, shapeStartY, bx, by, paint);
                     isShapeStopped = true;
-                    drawBitmapOnView(shapeStartX, shapeStartY, bx, by, (int) (strokeWidth / 2.0f + blurRadius));
+                    drawBitmapOnView(shapeStartX, shapeStartY, bx, by, strokeWidth / 2.0f + blurRadius);
                     eraseBitmapAndInvalidateView(previewBitmap, ivPreview);
                     addHistory();
                     clearStatus();
@@ -1292,7 +1391,7 @@ public class MainActivity extends AppCompatActivity {
                 final int prevBX = toBitmapX(prevX), prevBY = toBitmapY(prevY);
                 final int bx = toBitmapX(x), by = toBitmapY(y);
                 drawLineOnCanvas(prevBX, prevBY, bx, by, paint);
-                drawBitmapOnView(prevBX, prevBY, bx, by, (int) (strokeWidth / 2.0f + blurRadius));
+                drawBitmapOnView(prevBX, prevBY, bx, by, strokeWidth / 2.0f + blurRadius);
                 tvStatus.setText(String.format(getString(R.string.coordinate), bx, by));
                 prevX = x;
                 prevY = y;
@@ -1453,7 +1552,7 @@ public class MainActivity extends AppCompatActivity {
                 if (bx != shapeStartX || by != shapeStartY) {
                     drawShapeOnCanvas(shapeStartX, shapeStartY, bx, by);
                     isShapeStopped = true;
-                    drawBitmapOnView(shapeStartX, shapeStartY, bx, by, (int) (strokeWidth / 2.0f + blurRadius));
+                    shape.drawBitmapOnView(shapeStartX, shapeStartY, bx, by);
                     eraseBitmapAndInvalidateView(previewBitmap, ivPreview);
                     addHistory();
                     clearStatus();
@@ -2049,88 +2148,6 @@ public class MainActivity extends AppCompatActivity {
 
     private RunnableRunnable runnableRunner;
 
-    private final Shape circle = new Shape() {
-        @Override
-        public void drawShapeOnCanvas(int x0, int y0, int x1, int y1) {
-            canvas.drawCircle(x0 + 0.5f, y0 + 0.5f,
-                    (int) Math.sqrt(Math.pow(x1 - x0, 2.0) + Math.pow(y1 - y0, 2.0)),
-                    paint);
-        }
-
-        @Override
-        public String drawShapeOnView(int x0, int y0, int x1, int y1) {
-            final int radius =
-                    (int) Math.sqrt(Math.pow(x1 - x0, 2.0) + Math.pow(y1 - y0, 2.0));
-            previewCanvas.drawCircle(
-                    toViewX(x0 + 0.5f), toViewY(y0 + 0.5f),
-                    toScaled(radius),
-                    paint);
-            return String.format(getString(R.string.state_radius), radius + 0.5f);
-        }
-    };
-
-    private final Shape line = new Shape() {
-        @Override
-        public void drawShapeOnCanvas(int x0, int y0, int x1, int y1) {
-            if (x0 <= x1) ++x1;
-            else ++x0;
-            if (y0 <= y1) ++y1;
-            else ++y0;
-            canvas.drawLine(x0, y0, x1, y1, paint);
-        }
-
-        @Override
-        public String drawShapeOnView(int x0, int y0, int x1, int y1) {
-            previewCanvas.drawLine(
-                    toViewX(x0 + 0.5f), toViewY(y0 + 0.5f),
-                    toViewX(x1 + 0.5f), toViewY(y1 + 0.5f),
-                    paint);
-            return String.format(getString(R.string.state_length), Math.sqrt(Math.pow(x1 - x0, 2.0) + Math.pow(y1 - y0, 2.0)) + 1);
-        }
-    };
-
-    private final Shape oval = new Shape() {
-        @Override
-        public void drawShapeOnCanvas(int x0, int y0, int x1, int y1) {
-            if (x0 <= x1) ++x1;
-            else ++x0;
-            if (y0 <= y1) ++y1;
-            else ++y0;
-            canvas.drawOval(x0, y0, x1, y1, paint);
-        }
-
-        @Override
-        public String drawShapeOnView(int x0, int y0, int x1, int y1) {
-            previewCanvas.drawOval(
-                    toViewX(x0 + 0.5f), toViewY(y0 + 0.5f),
-                    toViewX(x1 + 0.5f), toViewY(y1 + 0.5f),
-                    paint);
-            return String.format(getString(R.string.state_axes), Math.abs(x1 - x0) + 1, Math.abs(y1 - y0) + 1);
-        }
-    };
-
-    private final Shape rect = new Shape() {
-        @Override
-        public void drawShapeOnCanvas(int x0, int y0, int x1, int y1) {
-            if (x0 <= x1) ++x1;
-            else ++x0;
-            if (y0 <= y1) ++y1;
-            else ++y0;
-            canvas.drawRect(x0, y0, x1, y1, paint);
-        }
-
-        @Override
-        public String drawShapeOnView(int x0, int y0, int x1, int y1) {
-            previewCanvas.drawRect(
-                    toViewX(x0 + 0.5f), toViewY(y0 + 0.5f),
-                    toViewX(x1 + 0.5f), toViewY(y1 + 0.5f),
-                    paint);
-            return String.format(getString(R.string.state_size), Math.abs(x1 - x0) + 1, Math.abs(y1 - y0) + 1);
-        }
-    };
-
-    private Shape shape = rect;
-
     private void addBitmap(Bitmap bitmap, int position) {
         final Tab t = new Tab();
         t.bitmap = bitmap;
@@ -2516,8 +2533,9 @@ public class MainActivity extends AppCompatActivity {
                         false, false));
     }
 
-    private void drawBitmapOnView(final int x0, final int y0, final int x1, final int y1, final int rad) {
+    private void drawBitmapOnView(final int x0, final int y0, final int x1, final int y1, final float radius) {
         final boolean x = x0 <= x1, y = y0 <= y1;
+        final int rad = (int) Math.ceil(radius);
         final int left = (x ? x0 : x1) - rad, top = (y ? y0 : y1) - rad,
                 right = (x ? x1 : x0) + rad + 1, bottom = (y ? y1 : y0) + rad + 1;
         runOrStart(() ->
