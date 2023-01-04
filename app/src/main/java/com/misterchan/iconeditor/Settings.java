@@ -8,23 +8,29 @@ public class Settings {
     private static final String FORMAT_D = "%d";
 
     static final String KEY_ACR = "acr";
+    static final String KEY_ACT = "act";
     static final String KEY_CFU = "cfu";
     static final String KEY_ITS = "its";
     static final String KEY_LOC = "loc";
     static final String KEY_MT = "mt";
 
+    private boolean argbComponentType = true;
     private boolean independentTranslAndScale = false;
     private boolean multithreaded = false;
-    private int argbChannelsRadix = 16;
+    private int argbComponentRadix = 16;
     private MainActivity mainActivity;
-    private String argbChannelsFormat = FORMAT_02X;
+    private String argbComponentFormat = FORMAT_02X;
 
-    public int getArgbComponentsRadix() {
-        return argbChannelsRadix;
+    public String getArgbComponentFormat() {
+        return argbComponentFormat;
     }
 
-    public String getArgbComponentsFormat() {
-        return argbChannelsFormat;
+    public int getArgbComponentRadix() {
+        return argbComponentRadix;
+    }
+
+    public boolean getArgbComponentType() {
+        return argbComponentType;
     }
 
     public boolean getIndependentTranslAndScale() {
@@ -37,6 +43,7 @@ public class Settings {
 
     public void update(SharedPreferences preferences) {
         update(preferences, KEY_ACR);
+        update(preferences, KEY_ACT);
         update(preferences, KEY_ITS);
         update(preferences, KEY_MT);
     }
@@ -45,11 +52,16 @@ public class Settings {
         switch (key) {
             case KEY_ACR:
                 try {
-                    argbChannelsRadix = Integer.parseUnsignedInt(preferences.getString(KEY_ACR, "16"));
+                    argbComponentRadix = Integer.parseUnsignedInt(preferences.getString(KEY_ACR, "16"));
                 } catch (NumberFormatException e) {
-                    argbChannelsRadix = 16;
+                    argbComponentRadix = 16;
                 }
-                argbChannelsFormat = argbChannelsRadix == 16 ? FORMAT_02X : FORMAT_D;
+                argbComponentFormat = argbComponentRadix == 16 ? FORMAT_02X : FORMAT_D;
+                break;
+
+            case KEY_ACT:
+                argbComponentType = Boolean.parseBoolean(preferences.getString(KEY_ACT, "true"));
+                mainActivity.setArgbComponentType();
                 break;
 
             case KEY_ITS:

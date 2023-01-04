@@ -1,11 +1,10 @@
 package com.misterchan.iconeditor;
 
 import android.content.Context;
-import android.view.View;
 import android.widget.EditText;
 import android.widget.SeekBar;
 
-import androidx.annotation.ColorInt;
+import androidx.annotation.ColorLong;
 import androidx.annotation.IntRange;
 import androidx.annotation.Size;
 import androidx.appcompat.app.AlertDialog;
@@ -22,12 +21,12 @@ public class HSVColorPicker extends ColorPicker {
     @Size(3)
     private final float[] hsv = new float[3];
 
-    public static ColorPicker make(Context context, final OnColorPickListener onColorPickListener, @ColorInt final Integer oldColor) {
+    public static ColorPicker make(Context context, final OnColorPickListener onColorPickListener, @ColorLong final Long oldColor) {
         final HSVColorPicker picker = new HSVColorPicker();
         picker.dialogBuilder = new AlertDialog.Builder(context)
                 .setNegativeButton(R.string.cancel, null)
                 .setPositiveButton(R.string.ok, (dialog, which) -> onColorPickListener.onPick(oldColor, picker.newColor))
-                .setTitle(R.string.convert_from_hsv)
+                .setTitle(R.string.convert_hsv_to_rgb)
                 .setView(R.layout.hsv_color_picker);
 
         picker.oldColor = oldColor;
@@ -36,8 +35,9 @@ public class HSVColorPicker extends ColorPicker {
     }
 
     private void onComponentChanged() {
-        newColor = Color.HSVToColor(hsv);
-        vPreview.setBackgroundColor(Color.BLACK | newColor);
+        final int color = Color.HSVToColor(hsv);
+        newColor = Color.pack(color);
+        vPreview.setBackgroundColor(Color.BLACK | color);
     }
 
     private void onHueChanged(String s) {
@@ -79,7 +79,7 @@ public class HSVColorPicker extends ColorPicker {
         etSaturation.addTextChangedListener((AfterTextChangedListener) s -> onSatOrValChanged(1, s, sbSaturation));
         etValue.addTextChangedListener((AfterTextChangedListener) s -> onSatOrValChanged(2, s, sbValue));
 
-        Color.colorToHSV(oldColor, hsv);
+        Color.colorToHSV(Color.toArgb(oldColor), hsv);
         etHue.setText(String.valueOf(hsv[0]));
         etSaturation.setText(String.valueOf(hsv[1] * 100.0f));
         etValue.setText(String.valueOf(hsv[2] * 100.0f));

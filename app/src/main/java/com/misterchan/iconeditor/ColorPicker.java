@@ -8,14 +8,14 @@ import androidx.appcompat.app.AlertDialog;
 public abstract class ColorPicker {
 
     public interface OnColorPickListener {
-        void onPick(Integer oldColor, Integer newColor);
+        void onPick(Long oldColor, Long newColor);
     }
 
     protected AlertDialog.Builder dialogBuilder;
     protected View vPreview;
 
     @ColorInt
-    protected int newColor, oldColor;
+    protected long newColor, oldColor;
 
     public abstract void show();
 }

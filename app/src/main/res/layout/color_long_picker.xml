@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <FrameLayout
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_marginHorizontal="8dp">
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="center"
+            android:src="@mipmap/chessboard" />
+
+        <View
+            android:id="@+id/v_color_preview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/black" />
+    </FrameLayout>
+
+    <GridLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:columnCount="2"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:rowCount="4">
+
+        <com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_alpha"
+                android:layout_width="64dp"
+                android:layout_height="wrap_content"
+                android:background="@color/transparent"
+                android:hint="@string/a"
+                android:inputType="numberDecimal"
+                android:textAlignment="textEnd" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <SeekBar
+            android:id="@+id/sb_alpha"
+            android:layout_gravity="center_vertical|fill_horizontal"
+            android:max="100" />
+
+        <com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_red"
+                android:layout_width="64dp"
+                android:layout_height="wrap_content"
+                android:background="@color/transparent"
+                android:hint="@string/r"
+                android:inputType="numberDecimal"
+                android:textAlignment="textEnd" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <SeekBar
+            android:id="@+id/sb_red"
+            android:layout_gravity="center_vertical|fill_horizontal"
+            android:max="100" />
+
+        <com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_green"
+                android:layout_width="64dp"
+                android:layout_height="wrap_content"
+                android:background="@color/transparent"
+                android:hint="@string/g"
+                android:inputType="numberDecimal"
+                android:textAlignment="textEnd" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <SeekBar
+            android:id="@+id/sb_green"
+            android:layout_gravity="center_vertical|fill_horizontal"
+            android:max="100" />
+
+        <com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_blue"
+                android:layout_width="64dp"
+                android:layout_height="wrap_content"
+                android:background="@color/transparent"
+                android:hint="@string/b"
+                android:inputType="numberDecimal"
+                android:textAlignment="textEnd" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <SeekBar
+            android:id="@+id/sb_blue"
+            android:layout_gravity="center_vertical|fill_horizontal"
+            android:max="100" />
+    </GridLayout>
+
+    <include layout="@layout/other_color_pickers" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:text="@string/color_space" />
+
+        <TextView
+            android:id="@+id/tv_color_space"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:layout_weight="1"
+            android:textAlignment="textEnd" />
+    </LinearLayout>
+</LinearLayout>

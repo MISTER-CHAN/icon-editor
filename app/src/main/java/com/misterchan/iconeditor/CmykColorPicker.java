@@ -1,11 +1,10 @@
 package com.misterchan.iconeditor;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.widget.EditText;
 import android.widget.SeekBar;
 
-import androidx.annotation.ColorInt;
+import androidx.annotation.ColorLong;
 import androidx.appcompat.app.AlertDialog;
 
 public class CmykColorPicker extends ColorPicker {
@@ -15,15 +14,15 @@ public class CmykColorPicker extends ColorPicker {
     private SeekBar sbCyan, sbMagenta, sbYellow, sbKey;
     private String format;
 
-    public static ColorPicker make(Context context, final OnColorPickListener onColorPickListener, @ColorInt final Integer oldColor) {
+    public static ColorPicker make(Context context, final OnColorPickListener onColorPickListener, @ColorLong final Long oldColor) {
         final Settings settings = ((MainApplication) context.getApplicationContext()).getSettings();
         final CmykColorPicker picker = new CmykColorPicker();
-        picker.format = settings.getArgbComponentsFormat();
-        picker.radix = settings.getArgbComponentsRadix();
+        picker.format = settings.getArgbComponentFormat();
+        picker.radix = settings.getArgbComponentRadix();
         picker.dialogBuilder = new AlertDialog.Builder(context)
                 .setNegativeButton(R.string.cancel, null)
                 .setPositiveButton(R.string.ok, (dialog, which) -> onColorPickListener.onPick(oldColor, picker.newColor))
-                .setTitle(R.string.convert_from_cmyk)
+                .setTitle(R.string.convert_cmyk_to_rgb)
                 .setView(R.layout.cmyk_color_picker);
 
         picker.oldColor = oldColor;
@@ -39,8 +38,9 @@ public class CmykColorPicker extends ColorPicker {
         final int c = sbCyan.getProgress(), m = sbMagenta.getProgress(), y = sbYellow.getProgress(), k = sbKey.getProgress();
         final int invK = 0xFF - k;
         final int r = 0xFF - c * invK / 0xFF - k, g = 0xFF - m * invK / 0xFF - k, b = 0xFF - y * invK / 0xFF - k;
-        newColor = Color.argb(0xFF, r, g, b);
-        vPreview.setBackgroundColor(newColor);
+        final int color = Color.argb(0xFF, r, g, b);
+        newColor = Color.pack(color);
+        vPreview.setBackgroundColor(color);
     }
 
     @Override
@@ -66,7 +66,8 @@ public class CmykColorPicker extends ColorPicker {
         etYellow.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(s, sbYellow));
         etKey.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(s, sbKey));
 
-        final int r = Color.red(oldColor), g = Color.green(oldColor), b = Color.blue(oldColor);
+        final int color = Color.toArgb(oldColor);
+        final int r = Color.red(color), g = Color.green(color), b = Color.blue(color);
         final int c_ = 0xFF - r, m_ = 0xFF - g, y_ = 0xFF - b;
         final int k = Math.min(Math.min(c_, m_), y_), invK = 0xFF - k;
         final int c = k == 0xFF ? 0x00 : (c_ - k) * 0xFF / invK,

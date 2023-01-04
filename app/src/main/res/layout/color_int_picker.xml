@@ -106,35 +106,5 @@
             android:max="255" />
     </GridLayout>
 
-    <TextView
-        android:id="@+id/tv_cmyk"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="8dp"
-        android:text="@string/convert_from_cmyk_u"
-        android:textColor="@color/blue" />
-
-    <TextView
-        android:id="@+id/tv_hsv"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="8dp"
-        android:text="@string/convert_from_hsv_u"
-        android:textColor="@color/blue" />
-
-    <TextView
-        android:id="@+id/tv_lab"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="8dp"
-        android:text="@string/convert_from_lab_u"
-        android:textColor="@color/blue" />
-
-    <TextView
-        android:id="@+id/tv_xyz"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="8dp"
-        android:text="@string/convert_from_xyz_u"
-        android:textColor="@color/blue" />
+    <include layout="@layout/other_color_pickers" />
 </LinearLayout>

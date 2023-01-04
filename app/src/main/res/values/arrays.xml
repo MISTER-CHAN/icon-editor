@@ -1,6 +1,6 @@
 <resources>
 
-    <!-- ARGB Channels Radix Preference -->
+    <!-- ARGB Component Radix Preference -->
     <string-array name="radix_entries">
         <item>@string/hex</item>
         <item>@string/dec</item>
@@ -9,6 +9,17 @@
     <string-array name="radix_values">
         <item>16</item>
         <item>10</item>
+    </string-array>
+
+    <!-- ARGB Component Type Preference -->
+    <string-array name="type_entries">
+        <item>@string/integer</item>
+        <item>@string/long_integer</item>
+    </string-array>
+
+    <string-array name="type_values">
+        <item>true</item>
+        <item>false</item>
     </string-array>
 
     <!-- Blend Modes -->

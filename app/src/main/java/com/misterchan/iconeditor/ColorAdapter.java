@@ -20,11 +20,11 @@ public class ColorAdapter extends RecyclerView.Adapter<ColorAdapter.ViewHolder> 
         }
     }
 
-    private final List<Integer> colors;
+    private final List<Long> colors;
     private View.OnClickListener onItemClickListener;
     private View.OnLongClickListener onItemLongClickListener;
 
-    public ColorAdapter(List<Integer> colors) {
+    public ColorAdapter(List<Long> colors) {
         this.colors = colors;
     }
 
@@ -35,8 +35,8 @@ public class ColorAdapter extends RecyclerView.Adapter<ColorAdapter.ViewHolder> 
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        Integer color = colors.get(position);
-        holder.view.setBackgroundColor(color);
+        final Long color = colors.get(position);
+        holder.view.setBackgroundColor(Color.toArgb(color));
         holder.view.setOnClickListener(onItemClickListener);
         holder.view.setOnLongClickListener(onItemLongClickListener);
         holder.view.setTag(color);

@@ -10,14 +10,6 @@
             app:summaryOn="@string/independent_transl_and_scale"
             app:title="@string/independent_layer" />
 
-        <ListPreference
-            app:defaultValue="hex"
-            app:entries="@array/radix_entries"
-            app:entryValues="@array/radix_values"
-            app:key="acr"
-            app:title="@string/argb_components_radix"
-            app:useSimpleSummaryProvider="true" />
-
         <SwitchPreferenceCompat
             app:defaultValue="false"
             app:key="mt"
@@ -34,6 +26,25 @@
             app:title="@string/language"
             app:useSimpleSummaryProvider="true" />
 
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/argb_color_picker">
+
+        <ListPreference
+            app:defaultValue="true"
+            app:entries="@array/type_entries"
+            app:entryValues="@array/type_values"
+            app:key="act"
+            app:title="@string/color_type"
+            app:useSimpleSummaryProvider="true" />
+
+        <ListPreference
+            app:defaultValue="16"
+            app:entries="@array/radix_entries"
+            app:entryValues="@array/radix_values"
+            app:key="acr"
+            app:title="@string/color_component_int_radix"
+            app:useSimpleSummaryProvider="true" />
     </PreferenceCategory>
 
     <PreferenceCategory app:title="@string/about">

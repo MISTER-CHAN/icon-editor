@@ -6,24 +6,27 @@ import android.widget.EditText;
 import android.widget.SeekBar;
 
 import androidx.annotation.ColorInt;
-import androidx.annotation.Size;
+import androidx.annotation.ColorLong;
 import androidx.appcompat.app.AlertDialog;
 
 public class LabColorPicker extends ColorPicker {
 
     private static final ColorSpace LAB = ColorSpace.get(ColorSpace.Named.CIE_LAB);
-    private static final ColorSpace.Connector CONNECTOR_RGB_LAB =
-            ColorSpace.connect(ColorSpace.get(ColorSpace.Named.SRGB), LAB);
 
+    private ColorSpace oldColorSpace;
+    private ColorSpace.Connector connectorFromLab, connectorToLab;
     private EditText etL, etA, etB;
     private SeekBar sbL, sbA, sbB;
 
-    public static ColorPicker make(Context context, final OnColorPickListener onColorPickListener, @ColorInt final Integer oldColor) {
+    public static ColorPicker make(Context context, final OnColorPickListener onColorPickListener, @ColorLong final Long oldColor) {
         final LabColorPicker picker = new LabColorPicker();
+        picker.oldColorSpace = Color.colorSpace(oldColor);
+        picker.connectorFromLab = ColorSpace.connect(LAB, picker.oldColorSpace);
+        picker.connectorToLab = ColorSpace.connect(picker.oldColorSpace, LAB);
         picker.dialogBuilder = new AlertDialog.Builder(context)
                 .setNegativeButton(R.string.cancel, null)
                 .setPositiveButton(R.string.ok, (dialog, which) -> onColorPickListener.onPick(oldColor, picker.newColor))
-                .setTitle(R.string.convert_from_lab)
+                .setTitle(R.string.convert_lab_to_rgb)
                 .setView(R.layout.lab_color_picker);
 
         picker.oldColor = oldColor;
@@ -36,9 +39,9 @@ public class LabColorPicker extends ColorPicker {
             seekBar.setProgress((int) Float.parseFloat(s));
         } catch (NumberFormatException e) {
         }
-        newColor = Color.toArgb(Color.pack(
-                sbL.getProgress(), sbA.getProgress(), sbB.getProgress(), 1.0f, LAB));
-        vPreview.setBackgroundColor(Color.BLACK | newColor);
+        final float l = sbL.getProgress(), a = sbA.getProgress(), b = sbB.getProgress();
+        newColor = Color.pack(l, a, b, 1.0f, LAB);
+        vPreview.setBackgroundColor(toArgb(l, a, b));
     }
 
     @Override
@@ -60,10 +63,19 @@ public class LabColorPicker extends ColorPicker {
         etA.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(s, sbA));
         etB.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(s, sbB));
 
-        final float[] lab = CONNECTOR_RGB_LAB.transform(
-                Color.red(oldColor) / 255.0f, Color.green(oldColor) / 255.0f, Color.blue(oldColor) / 255.0f);
+        final float[] lab = connectorToLab.transform(
+                Color.red(oldColor), Color.green(oldColor), Color.blue(oldColor));
         etL.setText(String.valueOf(lab[0]));
         etA.setText(String.valueOf(lab[1]));
         etB.setText(String.valueOf(lab[2]));
+    }
+
+    @ColorInt
+    public int toArgb(float l, float a, float b) {
+        float[] c = connectorFromLab.transform(l, a, b);
+        return Color.BLACK |
+                ((int) (c[0] * 255.0f + 0.5f) << 16) |
+                ((int) (c[1] * 255.0f + 0.5f) << 8) |
+                (int) (c[2] * 255.0f + 0.5f);
     }
 }

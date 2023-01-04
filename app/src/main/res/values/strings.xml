@@ -9,7 +9,7 @@
     <string name="alpha_value">Alpha Value</string>
     <string name="anti_alias">Anti-alias</string>
     <string name="app_name">Icon Editor</string>
-    <string name="argb_components_radix">ARGB Components Radix</string>
+    <string name="argb_color_picker">ARGB Color Picker</string>
     <string name="around_r">Around R</string>
     <string name="around_g">Around G</string>
     <string name="around_b">Around B</string>
@@ -39,22 +39,26 @@
     <string name="cloner">Cloner</string>
     <string name="close">Close</string>
     <string name="color_balance">Color Balance</string>
+    <string name="color_component_int_radix">Color Component Integer Radix</string>
     <string name="color_filter">Color Filter</string>
     <string name="color_picker">Color Picker</string>
     <string name="color_range">Color Range</string>
     <string name="color_replace">Color Replace</string>
     <string name="color_space">Color Space</string>
+    <string name="color_type">Color Type</string>
     <string name="config">Config</string>
     <string name="contiguous">Contiguous</string>
     <string name="contrast">Contrast</string>
-    <string name="convert_from_cmyk">Convert from CMYK</string>
-    <string name="convert_from_cmyk_u"><u>Convert from CMYK</u></string>
-    <string name="convert_from_hsv">Convert from HSV</string>
-    <string name="convert_from_hsv_u"><u>Convert from HSV</u></string>
-    <string name="convert_from_lab">Convert from L*a*b*</string>
-    <string name="convert_from_lab_u"><u>Convert from L*a*b*</u></string>
-    <string name="convert_from_xyz">Convert from XYZ</string>
-    <string name="convert_from_xyz_u"><u>Convert from XYZ</u></string>
+    <string name="convert_cmyk_to_rgb">Convert CMYK to RGB</string>
+    <string name="convert_from_cmyk"><u>Convert from CMYK</u></string>
+    <string name="convert_hsv_to_rgb">Convert HSV to RGB</string>
+    <string name="convert_from_hsv"><u>Convert from HSV</u></string>
+    <string name="convert_lab_to_rgb">Convert CIE L*a*b* to RGB</string>
+    <string name="convert_from_lab"><u>Convert from CIE L*a*b*</u></string>
+    <string name="convert_xyy_to_rgb">Convert CIE xyY to RGB</string>
+    <string name="convert_from_xyy"><u>Convert from CIE xyY</u></string>
+    <string name="convert_xyz_to_rgb">Convert CIE XYZ to RGB</string>
+    <string name="convert_from_xyz"><u>Convert from CIE XYZ</u></string>
     <string name="coordinate" translatable="false">(%d, %d)</string>
     <string name="copy">Copy</string>
     <string name="crop">Crop</string>
@@ -90,6 +94,7 @@
     <string name="filter">Filter</string>
     <string name="filters">Filters</string>
     <string name="flip">Flip</string>
+    <string name="float_">Float</string>
     <string name="foreground_color">Foreground Color</string>
     <string name="forty_eight" translatable="false">48</string>
     <string name="g" translatable="false">G</string>
@@ -115,6 +120,7 @@
     <string name="independent_transl_and_scale">Independent Location and Scale of Each Layer</string>
     <string name="information">Information</string>
     <string name="input">Input</string>
+    <string name="integer">Integer</string>
     <string name="invert">Invert</string>
     <string name="k" translatable="false">K</string>
     <string name="l_" translatable="false">L*</string>
@@ -129,6 +135,7 @@
     <string name="line">Line</string>
     <string name="locale">Locale</string>
     <string name="lock_aspect_ratio">Lock Aspect Ratio</string>
+    <string name="long_integer">Long Integer</string>
     <string name="lt" translatable="false"><![CDATA[<]]></string>
     <string name="m" translatable="false">M</string>
     <string name="magic_eraser">Magic Eraser</string>
@@ -203,7 +210,8 @@
     <string name="state_axes">"Axes: %d, %d"</string>
     <string name="state_color_range">Hue: %d° – %d°, Luminosity: %d – %d</string>
     <string name="state_contrast">Contrast: %.1f</string>
-    <string name="state_eyedropper" translatable="false">(%%d, %%d) A: %1$s, R: %1$s, G: %1$s, B: %1$s</string>
+    <string name="state_eyedropper_imprecise" translatable="false">(%%d, %%d) A: %1$s, R: %1$s, G: %1$s, B: %1$s</string>
+    <string name="state_eyedropper_precise" translatable="false">(%d, %d) A: %s, R: %s, G: %s, B: %s</string>
     <string name="state_hsv" translatable="false">H: %+.0f°, S: %+.2f, V: %+.2f</string>
     <string name="state_invert">Invert: %.1f</string>
     <string name="state_left_top">Left: %d, Top: %d</string>
@@ -246,7 +254,9 @@
     <string name="when_resizing">When resizing</string>
     <string name="width">Width</string>
     <string name="x" translatable="false">X</string>
+    <string name="x_" translatable="false">x</string>
     <string name="y" translatable="false">Y</string>
+    <string name="y_" translatable="false">y</string>
     <string name="z" translatable="false">Z</string>
     <string name="zero" translatable="false">0</string>
     <string name="zoom">Zoom</string>

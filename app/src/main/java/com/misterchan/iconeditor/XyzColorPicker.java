@@ -6,6 +6,7 @@ import android.widget.EditText;
 import android.widget.SeekBar;
 
 import androidx.annotation.ColorInt;
+import androidx.annotation.ColorLong;
 import androidx.annotation.IntRange;
 import androidx.annotation.Size;
 import androidx.appcompat.app.AlertDialog;
@@ -13,21 +14,24 @@ import androidx.appcompat.app.AlertDialog;
 public class XyzColorPicker extends ColorPicker {
 
     private static final ColorSpace XYZ = ColorSpace.get(ColorSpace.Named.CIE_XYZ);
-    private static final ColorSpace.Connector CONNECTOR_RGB_XYZ =
-            ColorSpace.connect(ColorSpace.get(ColorSpace.Named.SRGB), XYZ);
 
+    private ColorSpace oldColorSpace;
+    private ColorSpace.Connector connectorFromXyz, connectorToXyz;
     private EditText etX, etY, etZ;
     private SeekBar sbX, sbY, sbZ;
 
     @Size(3)
     private float[] xyz;
 
-    public static ColorPicker make(Context context, final OnColorPickListener onColorPickListener, @ColorInt final Integer oldColor) {
+    public static ColorPicker make(Context context, final OnColorPickListener onColorPickListener, @ColorLong final Long oldColor) {
         final XyzColorPicker picker = new XyzColorPicker();
+        picker.oldColorSpace = Color.colorSpace(oldColor);
+        picker.connectorFromXyz = ColorSpace.connect(XYZ, picker.oldColorSpace);
+        picker.connectorToXyz = ColorSpace.connect(picker.oldColorSpace, XYZ);
         picker.dialogBuilder = new AlertDialog.Builder(context)
                 .setNegativeButton(R.string.cancel, null)
                 .setPositiveButton(R.string.ok, (dialog, which) -> onColorPickListener.onPick(oldColor, picker.newColor))
-                .setTitle(R.string.convert_from_xyz)
+                .setTitle(R.string.convert_xyz_to_rgb)
                 .setView(R.layout.xyz_color_picker);
 
         picker.oldColor = oldColor;
@@ -42,8 +46,8 @@ public class XyzColorPicker extends ColorPicker {
             xyz[index] = f;
         } catch (NumberFormatException e) {
         }
-        newColor = Color.toArgb(Color.pack(xyz[0], xyz[1], xyz[2], 1.0f, XYZ));
-        vPreview.setBackgroundColor(Color.BLACK | newColor);
+        newColor = Color.pack(xyz[0], xyz[1], xyz[2], 1.0f, XYZ);
+        vPreview.setBackgroundColor(toArgb());
     }
 
     @Override
@@ -65,10 +69,19 @@ public class XyzColorPicker extends ColorPicker {
         etY.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(1, s, sbY));
         etZ.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(2, s, sbZ));
 
-        xyz = CONNECTOR_RGB_XYZ.transform(
-                Color.red(oldColor) / 255.0f, Color.green(oldColor) / 255.0f, Color.blue(oldColor) / 255.0f);
+        xyz = connectorToXyz.transform(
+                Color.red(oldColor), Color.green(oldColor), Color.blue(oldColor));
         etX.setText(String.valueOf(xyz[0]));
         etY.setText(String.valueOf(xyz[1]));
         etZ.setText(String.valueOf(xyz[2]));
+    }
+
+    @ColorInt
+    public int toArgb() {
+        float[] c = connectorFromXyz.transform(xyz[0], xyz[1], xyz[2]);
+        return Color.BLACK |
+                ((int) (c[0] * 255.0f + 0.5f) << 16) |
+                ((int) (c[1] * 255.0f + 0.5f) << 8) |
+                (int) (c[2] * 255.0f + 0.5f);
     }
 }
