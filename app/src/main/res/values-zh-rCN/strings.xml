@@ -57,6 +57,7 @@
     <string name="copy">复制</string>
     <string name="crop">裁剪</string>
     <string name="current_layer">当前图层</string>
+    <string name="curves">曲线</string>
     <string name="custom">自定义</string>
     <string name="custom_color_filter">自定义颜色滤镜</string>
     <string name="cut">剪切</string>
@@ -129,9 +130,10 @@
     <string name="merge_as_new">合并为新图层</string>
     <string name="min">最小</string>
     <string name="move_layer">移动图层</string>
-    <string name="multithreaded_drawing_on_view">多线程绘画于视件</string>
+    <string name="multithreaded_drawing">多线程绘画</string>
     <string name="new_">新建</string>
     <string name="ninety_degrees">90°</string>
+    <string name="noise">噪音</string>
     <string name="not_supported_file_type">不支持的文件类型</string>
     <string name="offset">偏移量</string>
     <string name="ok">确定</string>
@@ -152,6 +154,7 @@
     <string name="refer_to_clipboard">引用至剪贴簿</string>
     <string name="refit">重新适应</string>
     <string name="rename">重命名</string>
+    <string name="reset"><u>重设</u></string>
     <string name="reset_source">重设来源</string>
     <string name="right">右</string>
     <string name="rotate">旋转</string>
@@ -187,7 +190,7 @@
     <string name="state_lightness">明度：%d</string>
     <string name="state_l_t_r_b_size">左：%d，上：%d，右：%d，下：%d，尺寸：%d × %d</string>
     <string name="state_radius">半径：%.1f</string>
-    <string name="state_ruler">(%d, %d) – (%d, %d)，投影：(%d, %d)，长：%f</string>
+    <string name="state_ruler">(%d, %d) – (%d, %d)，投影：(%d, %d)，长：%s</string>
     <string name="state_saturation">饱和度：%.1f</string>
     <string name="state_selected_bound">选定边界：%s</string>
     <string name="state_size">尺寸：%d × %d</string>
@@ -218,6 +221,7 @@
     <string name="visible">可见</string>
     <string name="when_resizing">当重设尺寸时</string>
     <string name="width">宽度</string>
+    <string name="with_eraser">带胶擦</string>
     <string name="zoom">缩放</string>
 
     <!-- Blend Modes -->

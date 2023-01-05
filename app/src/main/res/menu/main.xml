@@ -108,6 +108,11 @@
                 android:title="@string/size" />
 
             <item
+                android:id="@+id/i_has_alpha"
+                android:checkable="true"
+                android:title="@string/has_alpha" />
+
+            <item
                 android:id="@+id/i_crop"
                 android:title="@string/crop" />
 
@@ -148,6 +153,10 @@
                     </item>
                 </menu>
             </item>
+
+            <item
+                android:id="@+id/i_noise"
+                android:title="@string/noise" />
 
             <item
                 android:id="@+id/i_information"
@@ -435,6 +444,10 @@
             <item
                 android:id="@+id/i_filter_levels"
                 android:title="@string/levels" />
+
+            <item
+                android:id="@+id/i_filter_curves"
+                android:title="@string/curves" />
 
             <item
                 android:id="@+id/i_filter_saturation"

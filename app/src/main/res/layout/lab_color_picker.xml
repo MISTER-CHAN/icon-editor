@@ -47,7 +47,7 @@
                 android:layout_height="wrap_content"
                 android:background="@color/transparent"
                 android:hint="@string/a_"
-                android:inputType="numberDecimal"
+                android:inputType="numberDecimal|numberSigned"
                 android:textAlignment="textEnd" />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -65,7 +65,7 @@
                 android:layout_height="wrap_content"
                 android:background="@color/transparent"
                 android:hint="@string/b_"
-                android:inputType="numberDecimal"
+                android:inputType="numberDecimal|numberSigned"
                 android:textAlignment="textEnd" />
         </com.google.android.material.textfield.TextInputLayout>
 

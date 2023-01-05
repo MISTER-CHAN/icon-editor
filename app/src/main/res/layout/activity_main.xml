@@ -168,6 +168,8 @@
                     android:id="@+id/ll_options_eyedropper"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:gravity="center_vertical"
                     android:orientation="horizontal"
                     android:visibility="invisible">
 
@@ -192,51 +194,63 @@
                     </RadioGroup>
                 </LinearLayout>
 
-                <LinearLayout
-                    android:id="@+id/ll_options_pencil"
+                <HorizontalScrollView
+                    android:id="@+id/hsv_options_pencil"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
+                    android:scrollbars="none"
                     android:visibility="invisible">
 
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:layout_width="96dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginHorizontal="2dp">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/et_pencil_stroke_width"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:background="@color/transparent"
-                            android:hint="@string/stroke_width"
-                            android:inputType="numberDecimal"
-                            android:textAlignment="textEnd" />
-                    </com.google.android.material.textfield.TextInputLayout>
-
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:layout_width="96dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginHorizontal="2dp">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/et_pencil_blur_radius"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:background="@color/transparent"
-                            android:hint="@string/blur_radius"
-                            android:inputType="numberDecimal"
-                            android:textAlignment="textEnd" />
-                    </com.google.android.material.textfield.TextInputLayout>
-
-                    <CheckBox
-                        android:id="@+id/cb_pencil_anti_alias"
+                    <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/anti_alias" />
-                </LinearLayout>
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:layout_width="96dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginHorizontal="2dp">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/et_pencil_stroke_width"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:background="@color/transparent"
+                                android:hint="@string/stroke_width"
+                                android:inputType="numberDecimal"
+                                android:textAlignment="textEnd" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:layout_width="96dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginHorizontal="2dp">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/et_pencil_blur_radius"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:background="@color/transparent"
+                                android:hint="@string/blur_radius"
+                                android:inputType="numberDecimal"
+                                android:textAlignment="textEnd" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <CheckBox
+                            android:id="@+id/cb_pencil_anti_alias"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/anti_alias" />
+
+                        <CheckBox
+                            android:id="@+id/cb_pencil_with_eraser"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/with_eraser" />
+                    </LinearLayout>
+                </HorizontalScrollView>
 
                 <LinearLayout
                     android:id="@+id/ll_options_eraser"
@@ -775,6 +789,13 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/eyedropper" />
+
+                    <RadioButton
+                        android:id="@+id/rb_ruler"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/ruler"
+                        android:visibility="gone" />
 
                     <RadioButton
                         android:id="@+id/rb_pencil"

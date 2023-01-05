@@ -57,7 +57,7 @@
                 android:layout_height="wrap_content"
                 android:background="@color/transparent"
                 android:hint="@string/r"
-                android:inputType="numberDecimal"
+                android:inputType="numberDecimal|numberSigned"
                 android:textAlignment="textEnd" />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -74,7 +74,7 @@
                 android:layout_height="wrap_content"
                 android:background="@color/transparent"
                 android:hint="@string/g"
-                android:inputType="numberDecimal"
+                android:inputType="numberDecimal|numberSigned"
                 android:textAlignment="textEnd" />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -91,7 +91,7 @@
                 android:layout_height="wrap_content"
                 android:background="@color/transparent"
                 android:hint="@string/b"
-                android:inputType="numberDecimal"
+                android:inputType="numberDecimal|numberSigned"
                 android:textAlignment="textEnd" />
         </com.google.android.material.textfield.TextInputLayout>
 

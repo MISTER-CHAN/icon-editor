@@ -63,6 +63,7 @@
     <string name="copy">Copy</string>
     <string name="crop">Crop</string>
     <string name="current_layer">Current Layer</string>
+    <string name="curves">Curves</string>
     <string name="custom">Custom</string>
     <string name="custom_color_filter">Custom Color Filter</string>
     <string name="cut">Cut</string>
@@ -151,9 +152,10 @@
     <string name="min">Min</string>
     <string name="mister_chan" translatable="false">MISTER_CHAN</string>
     <string name="move_layer">Move Layer</string>
-    <string name="multithreaded_drawing_on_view">Multi-thread Drawing on View</string>
+    <string name="multithreaded_drawing">Multi-thread Drawing</string>
     <string name="new_">New</string>
     <string name="ninety_degrees">90°</string>
+    <string name="noise">Noise</string>
     <string name="not_supported_file_type">Not supported file type</string>
     <string name="offset">Offset</string>
     <string name="ok">OK</string>
@@ -178,6 +180,7 @@
     <string name="refer_to_clipboard">Refer to Clipboard</string>
     <string name="refit">Refit</string>
     <string name="rename">Rename</string>
+    <string name="reset"><u>Reset</u></string>
     <string name="reset_source">Reset Source</string>
     <string name="right">Right</string>
     <string name="rightwards_arrow" translatable="false">→</string>
@@ -220,7 +223,7 @@
     <string name="state_l_t_r_b_size">L: %d, T: %d, R: %d, B: %d, Size: %d × %d"</string>
     <string name="state_radius">Radius: %.1f</string>
     <string name="state_rotate" translatable="false">%d°</string>
-    <string name="state_ruler">(%d, %d) – (%d, %d), Proj: (%d, %d), Length: %f</string>
+    <string name="state_ruler">(%d, %d) – (%d, %d), Proj: (%d, %d), Length: %s</string>
     <string name="state_saturation">Saturation: %.1f</string>
     <string name="state_selected_bound">Selected bound: %s</string>
     <string name="state_size">Size: %d × %d</string>
@@ -253,6 +256,7 @@
     <string name="visible">Visible</string>
     <string name="when_resizing">When resizing</string>
     <string name="width">Width</string>
+    <string name="with_eraser">With Eraser</string>
     <string name="x" translatable="false">X</string>
     <string name="x_" translatable="false">x</string>
     <string name="y" translatable="false">Y</string>

@@ -5,9 +5,7 @@ import android.content.DialogInterface;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.PorterDuff;
 import android.view.Gravity;
 import android.view.Window;
 import android.view.WindowManager;
@@ -34,24 +32,25 @@ public class LevelsDialog {
     private SeekBar sbOutputHighlights, sbOutputShadows;
 
     public LevelsDialog(Context context) {
-        final DialogInterface.OnDismissListener onDismissListener = dialog -> {
+        builder = new AlertDialog.Builder(context)
+                .setTitle(R.string.levels)
+                .setView(R.layout.levels);
+
+        builder.setOnDismissListener(dialog -> {
             bitmap.recycle();
             bitmap = null;
             progressCanvas = null;
             progressBitmap.recycle();
             progressBitmap = null;
-        };
-        builder = new AlertDialog.Builder(context)
-                .setOnDismissListener(onDismissListener)
-                .setTitle(R.string.levels)
-                .setView(R.layout.levels);
+        });
+
         final TypedArray typedArray = context.getTheme().obtainStyledAttributes(new int[]{android.R.attr.textColorPrimary});
-        paint.setColor(typedArray.getColor(0, 0xFF000000));
+        paint.setColor(typedArray.getColor(0, Color.BLACK));
         typedArray.recycle();
     }
 
     private void drawProgress() {
-        progressCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+        progressBitmap.eraseColor(Color.TRANSPARENT);
         progressCanvas.drawLine(sbInputShadows.getProgress(), 0.0f, sbInputShadows.getProgress(), 100.0f, paint);
         progressCanvas.drawLine(sbInputHighlights.getProgress(), 0.0f, sbInputHighlights.getProgress(), 100.0f, paint);
         ivProgress.invalidate();
@@ -109,16 +108,21 @@ public class LevelsDialog {
     }
 
     private void update() {
+        drawProgress();
         listener.onChange(sbInputShadows.getProgress(), sbInputHighlights.getProgress(),
                 sbOutputShadows.getProgress(), sbOutputHighlights.getProgress());
-        drawProgress();
     }
 
-    public void updateImage(Bitmap bitmap) {
-        Canvas cv = new Canvas(this.bitmap);
-        final int w = bitmap.getWidth(), h = bitmap.getHeight(), area = w * h;
+    public void updateLevelGraphics(Bitmap src) {
+        updateLevelGraphics(src, bitmap, 100.0f, paint);
+        iv.invalidate();
+    }
+
+    public static void updateLevelGraphics(Bitmap src, Bitmap dst, float maxHeight, Paint paint) {
+        final Canvas cv = new Canvas(dst);
+        final int w = src.getWidth(), h = src.getHeight(), area = w * h;
         final int[] pixels = new int[area];
-        bitmap.getPixels(pixels, 0, w, 0, 0, w, h);
+        src.getPixels(pixels, 0, w, 0, 0, w, h);
         final int[] numValue = new int[0x100];
         int max = 1;
         for (int i = 0; i < area; ++i) {
@@ -131,11 +135,10 @@ public class LevelsDialog {
         }
         for (int i = 0x0; i < 0x100; ) {
             cv.drawRect(i,
-                    100.0f - (float) numValue[i] / (float) max * 100.0f,
+                    maxHeight - (float) numValue[i] / (float) max * maxHeight,
                     ++i,
-                    100.0f,
+                    maxHeight,
                     paint);
         }
-        iv.invalidate();
     }
 }

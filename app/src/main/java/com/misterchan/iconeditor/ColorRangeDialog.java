@@ -60,7 +60,7 @@ public class ColorRangeDialog {
         sbHueMax = dialog.findViewById(R.id.sb_hue_max);
         sbValueMin = dialog.findViewById(R.id.sb_value_min);
         sbValueMax = dialog.findViewById(R.id.sb_value_max);
-        final OnSeekBarProgressChangeListener l = (OnSeekBarProgressChangeListener) (seekBar, progress) ->
+        final OnSeekBarProgressChangeListener l = (seekBar, progress) ->
                 listener.onChange(sbHueMin.getProgress(), sbHueMax.getProgress(),
                         sbValueMin.getProgress(), sbValueMax.getProgress());
 

@@ -16,7 +16,7 @@
             app:singleLineTitle="false"
             app:summaryOff="@string/blocking"
             app:summaryOn="@string/threaded"
-            app:title="@string/multithreaded_drawing_on_view" />
+            app:title="@string/multithreaded_drawing" />
 
         <ListPreference
             app:defaultValue="def"

@@ -5,16 +5,18 @@ import android.graphics.Bitmap;
 import androidx.annotation.ColorInt;
 import androidx.annotation.Size;
 
+import java.util.Random;
+
 public class BitmapUtil {
-    private static void addColorFilter(@ColorInt final int[] pixels, final int area,
-                                       final float scale, final float shift) {
+    public static void addColorFilter(@ColorInt final int[] src, @ColorInt final int[] dst,
+                                       final int area, final float scale, final float shift) {
         for (int i = 0; i < area; ++i) {
-            final int r = Color.red(pixels[i]), g = Color.green(pixels[i]), b = Color.blue(pixels[i]),
-                    a = Color.alpha(pixels[i]);
+            final int r = Color.red(src[i]), g = Color.green(src[i]), b = Color.blue(src[i]),
+                    a = Color.alpha(src[i]);
             final int r_ = Color.saturate((int) (r * scale + shift));
             final int g_ = Color.saturate((int) (g * scale + shift));
             final int b_ = Color.saturate((int) (b * scale + shift));
-            pixels[i] = Color.argb(a, r_, g_, b_);
+            dst[i] = Color.argb(a, r_, g_, b_);
         }
     }
 
@@ -24,19 +26,20 @@ public class BitmapUtil {
         final int w = src.getWidth(), h = src.getHeight(), area = w * h;
         final int[] pixels = new int[area];
         src.getPixels(pixels, 0, w, srcX, srcY, w, h);
-        addColorFilter(pixels, area, scale, shift);
+        addColorFilter(pixels, pixels, area, scale, shift);
         dst.setPixels(pixels, 0, w, dstX, dstY, w, h);
     }
 
-    private static void addColorFilter(@ColorInt final int[] pixels, final int area, @Size(20) final float[] colorMatrix) {
+    public static void addColorFilter(@ColorInt final int[] src, @ColorInt final int[] dst,
+                                       final int area, @Size(20) final float[] colorMatrix) {
         for (int i = 0; i < area; ++i) {
-            final int r = Color.red(pixels[i]), g = Color.green(pixels[i]), b = Color.blue(pixels[i]),
-                    a = Color.alpha(pixels[i]);
+            final int r = Color.red(src[i]), g = Color.green(src[i]), b = Color.blue(src[i]),
+                    a = Color.alpha(src[i]);
             final int r_ = Color.saturate((int) (r * colorMatrix[0] + g * colorMatrix[1] + b * colorMatrix[2] + a * colorMatrix[3] + colorMatrix[4]));
             final int g_ = Color.saturate((int) (r * colorMatrix[5] + g * colorMatrix[6] + b * colorMatrix[7] + a * colorMatrix[8] + colorMatrix[9]));
             final int b_ = Color.saturate((int) (r * colorMatrix[10] + g * colorMatrix[11] + b * colorMatrix[12] + a * colorMatrix[13] + colorMatrix[14]));
             final int a_ = Color.saturate((int) (r * colorMatrix[15] + g * colorMatrix[16] + b * colorMatrix[17] + a * colorMatrix[18] + colorMatrix[19]));
-            pixels[i] = Color.argb(a_, r_, g_, b_);
+            dst[i] = Color.argb(a_, r_, g_, b_);
         }
     }
 
@@ -46,12 +49,22 @@ public class BitmapUtil {
         final int w = src.getWidth(), h = src.getHeight(), area = w * h;
         final int[] pixels = new int[area];
         src.getPixels(pixels, 0, w, srcX, srcY, w, h);
-        addColorFilter(pixels, area, colorMatrix);
+        addColorFilter(pixels, pixels, area, colorMatrix);
         dst.setPixels(pixels, 0, w, dstX, dstY, w, h);
     }
 
     private static Bitmap edgeDetection(final Bitmap bitmap) {
         return null;
+    }
+
+    public static void generateNoise(@ColorInt final int[] pixels, final int area, @ColorInt final int color,
+                                     final float noisy, final Long seed) {
+        final Random random = seed == null ? new Random() : new Random(seed);
+        for (int i = 0; i < area; ++i) {
+            if (random.nextFloat() < noisy) {
+                pixels[i] = color;
+            }
+        }
     }
 
     /**
@@ -67,16 +80,17 @@ public class BitmapUtil {
         final int[] pixels = new int[area];
         bitmap.getPixels(pixels, 0, w, 0, 0, w, h);
         for (int i = 0; i < area; ++i) {
-            final float r = Color.red(pixels[i]) / 255.0f, // Channels
+            // Color
+            final float r = Color.red(pixels[i]) / 255.0f,
                     g = Color.green(pixels[i]) / 255.0f,
                     b = Color.blue(pixels[i]) / 255.0f;
 
             /*
              * c = a * f + (1 - a) * b => a = (c - 1 * b) / (f - b)
-             * Where c - Output RGB channel
-             *       a - Foreground alpha channel
-             *       f - Foreground RGB channel
-             *       b - Background RGB channel
+             * Where c - Output color value
+             *       a - Foreground alpha value
+             *       f - Foreground color value
+             *       b - Background color value
              */
             final float a_ = (dr == 0.0f ? 0.0f : (r - fa * br) / dr * rr)
                     + (dg == 0.0f ? 0.0f : (g - fa * bg) / dg * rg)

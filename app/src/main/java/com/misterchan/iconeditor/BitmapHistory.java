@@ -73,7 +73,7 @@ class BitmapHistory {
     }
 
     public Bitmap getCurrent() {
-        return current.val;
+        return Bitmap.createBitmap(current.val);
     }
 
     public void offer(Bitmap bitmap) {
@@ -99,11 +99,11 @@ class BitmapHistory {
 
     public Bitmap redo() {
         current = current.later;
-        return current.val;
+        return Bitmap.createBitmap(current.val);
     }
 
     public Bitmap undo() {
         current = current.earlier;
-        return current.val;
+        return Bitmap.createBitmap(current.val);
     }
 }
