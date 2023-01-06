@@ -14,6 +14,8 @@ import android.widget.SeekBar;
 
 import androidx.appcompat.app.AlertDialog;
 
+import java.util.function.Function;
+
 public class LevelsDialog {
 
     public interface OnLevelsChangeListener {
@@ -47,6 +49,38 @@ public class LevelsDialog {
         final TypedArray typedArray = context.getTheme().obtainStyledAttributes(new int[]{android.R.attr.textColorPrimary});
         paint.setColor(typedArray.getColor(0, Color.BLACK));
         typedArray.recycle();
+    }
+
+    static final Function<Integer, Integer> valueFunc =
+            pixel -> Math.max(Math.max(Color.red(pixel), Color.green(pixel)), Color.blue(pixel));
+
+    public void drawHistogram(int[] src) {
+        drawHistogram(src, bitmap, iv, valueFunc, 100.0f, paint);
+    }
+
+    public static void drawHistogram(int[] src, Bitmap dst, ImageView iv,
+                                     Function<Integer, Integer> f, float maxHeight, Paint paint) {
+        new Thread(() -> {
+            dst.eraseColor(Color.TRANSPARENT);
+            final Canvas cv = new Canvas(dst);
+            final int[] numValue = new int[0x100];
+            int max = 1;
+            for (int i = 0; i < src.length; ++i) {
+                int pixel = src[i];
+                int n = ++numValue[f.apply(pixel)];
+                if (n > max) {
+                    max = n;
+                }
+            }
+            for (int i = 0x0; i < 0x100; ) {
+                cv.drawRect(i,
+                        maxHeight - (float) numValue[i] / (float) max * maxHeight,
+                        ++i,
+                        maxHeight,
+                        paint);
+            }
+            iv.invalidate();
+        }).start();
     }
 
     private void drawProgress() {
@@ -111,34 +145,5 @@ public class LevelsDialog {
         drawProgress();
         listener.onChange(sbInputShadows.getProgress(), sbInputHighlights.getProgress(),
                 sbOutputShadows.getProgress(), sbOutputHighlights.getProgress());
-    }
-
-    public void updateLevelGraphics(Bitmap src) {
-        updateLevelGraphics(src, bitmap, 100.0f, paint);
-        iv.invalidate();
-    }
-
-    public static void updateLevelGraphics(Bitmap src, Bitmap dst, float maxHeight, Paint paint) {
-        final Canvas cv = new Canvas(dst);
-        final int w = src.getWidth(), h = src.getHeight(), area = w * h;
-        final int[] pixels = new int[area];
-        src.getPixels(pixels, 0, w, 0, 0, w, h);
-        final int[] numValue = new int[0x100];
-        int max = 1;
-        for (int i = 0; i < area; ++i) {
-            int pixel = pixels[i];
-            int r = Color.red(pixel), g = Color.green(pixel), b = Color.blue(pixel);
-            int n = ++numValue[Math.max(Math.max(r, g), b)];
-            if (n > max) {
-                max = n;
-            }
-        }
-        for (int i = 0x0; i < 0x100; ) {
-            cv.drawRect(i,
-                    maxHeight - (float) numValue[i] / (float) max * maxHeight,
-                    ++i,
-                    maxHeight,
-                    paint);
-        }
     }
 }

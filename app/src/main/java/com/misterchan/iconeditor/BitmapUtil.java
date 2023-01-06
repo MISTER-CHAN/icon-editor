@@ -8,9 +8,20 @@ import androidx.annotation.Size;
 import java.util.Random;
 
 public class BitmapUtil {
+
+    public static void addColorFilter(final Bitmap src, final int srcX, final int srcY,
+                                      final Bitmap dst, final int dstX, final int dstY,
+                                      final float scale, final float shift) {
+        final int w = src.getWidth(), h = src.getHeight();
+        final int[] pixels = new int[w * h];
+        src.getPixels(pixels, 0, w, srcX, srcY, w, h);
+        addColorFilter(pixels, pixels, scale, shift);
+        dst.setPixels(pixels, 0, w, dstX, dstY, w, h);
+    }
+
     public static void addColorFilter(@ColorInt final int[] src, @ColorInt final int[] dst,
-                                       final int area, final float scale, final float shift) {
-        for (int i = 0; i < area; ++i) {
+                                      final float scale, final float shift) {
+        for (int i = 0; i < src.length; ++i) {
             final int r = Color.red(src[i]), g = Color.green(src[i]), b = Color.blue(src[i]),
                     a = Color.alpha(src[i]);
             final int r_ = Color.saturate((int) (r * scale + shift));
@@ -22,17 +33,17 @@ public class BitmapUtil {
 
     public static void addColorFilter(final Bitmap src, final int srcX, final int srcY,
                                       final Bitmap dst, final int dstX, final int dstY,
-                                      final float scale, final float shift) {
-        final int w = src.getWidth(), h = src.getHeight(), area = w * h;
-        final int[] pixels = new int[area];
+                                      @Size(20) final float[] colorMatrix) {
+        final int w = src.getWidth(), h = src.getHeight();
+        final int[] pixels = new int[w * h];
         src.getPixels(pixels, 0, w, srcX, srcY, w, h);
-        addColorFilter(pixels, pixels, area, scale, shift);
+        addColorFilter(pixels, pixels, colorMatrix);
         dst.setPixels(pixels, 0, w, dstX, dstY, w, h);
     }
 
     public static void addColorFilter(@ColorInt final int[] src, @ColorInt final int[] dst,
-                                       final int area, @Size(20) final float[] colorMatrix) {
-        for (int i = 0; i < area; ++i) {
+                                      @Size(20) final float[] colorMatrix) {
+        for (int i = 0; i < src.length; ++i) {
             final int r = Color.red(src[i]), g = Color.green(src[i]), b = Color.blue(src[i]),
                     a = Color.alpha(src[i]);
             final int r_ = Color.saturate((int) (r * colorMatrix[0] + g * colorMatrix[1] + b * colorMatrix[2] + a * colorMatrix[3] + colorMatrix[4]));
@@ -43,14 +54,22 @@ public class BitmapUtil {
         }
     }
 
-    public static void addColorFilter(final Bitmap src, final int srcX, final int srcY,
-                                      final Bitmap dst, final int dstX, final int dstY,
-                                      @Size(20) final float[] colorMatrix) {
-        final int w = src.getWidth(), h = src.getHeight(), area = w * h;
-        final int[] pixels = new int[area];
-        src.getPixels(pixels, 0, w, srcX, srcY, w, h);
-        addColorFilter(pixels, pixels, area, colorMatrix);
-        dst.setPixels(pixels, 0, w, dstX, dstY, w, h);
+    public static void applyCurves(final Bitmap bitmap, @Size(5) int[][] curves) {
+        final int w = bitmap.getWidth(), h = bitmap.getHeight();
+        final int[] pixels = new int[w * h];
+        bitmap.getPixels(pixels, 0, w, 0, 0, w, h);
+        applyCurves(pixels, pixels, curves);
+        bitmap.setPixels(pixels, 0, w, 0, 0, w, h);
+    }
+
+    public static void applyCurves(@ColorInt final int[] src, @ColorInt final int[] dst, @Size(5) int[][] curves) {
+        for (int i = 0; i < src.length; ++i) {
+            final int pixel = src[i];
+            final int a = Color.alpha(pixel),
+                    r = Color.red(pixel), g = Color.green(pixel), b = Color.blue(pixel);
+            dst[i] = Color.argb(curves[3][a],
+                    curves[4][curves[0][r]], curves[4][curves[1][g]], curves[4][curves[2][b]]);
+        }
     }
 
     private static Bitmap edgeDetection(final Bitmap bitmap) {

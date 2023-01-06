@@ -42,16 +42,16 @@ public class PreviewBitmap {
     }
 
     public void addColorFilter(@Size(20) float[] colorMatrix) {
-        final int w = bm.getWidth(), h = bm.getHeight(), area = w * h;
-        final int[] src = getPixels(), dst = new int[area];
-        BitmapUtil.addColorFilter(src, dst, area, colorMatrix);
+        final int w = bm.getWidth(), h = bm.getHeight();
+        final int[] src = getPixels(), dst = new int[w * h];
+        BitmapUtil.addColorFilter(src, dst, colorMatrix);
         setPixels(dst, w, h);
     }
 
     public void addColorFilter(float scale, float shift) {
-        final int w = bm.getWidth(), h = bm.getHeight(), area = w * h;
-        final int[] src = getPixels(), dst = new int[area];
-        BitmapUtil.addColorFilter(src, dst, area, scale, shift);
+        final int w = bm.getWidth(), h = bm.getHeight();
+        final int[] src = getPixels(), dst = new int[w * h];
+        BitmapUtil.addColorFilter(src, dst, scale, shift);
         setPixels(dst, w, h);
     }
 

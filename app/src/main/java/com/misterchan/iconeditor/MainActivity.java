@@ -285,6 +285,8 @@ public class MainActivity extends AppCompatActivity {
     private MenuItem miHasAlpha;
     private MenuItem miLayerColorFilter;
     private MenuItem miLayerColorFilterEnabled;
+    private MenuItem miLayerCurves;
+    private MenuItem miLayerCurvesEnabled;
     private MenuItem miLayerDrawBelow;
     private MenuItem miLayerHSV;
     private MenuItem miLayerHSVEnabled;
@@ -485,16 +487,11 @@ public class MainActivity extends AppCompatActivity {
         drawTextOnView();
     };
 
-    private final CurvesDialog.OnCurvesChangeListener onFilterCurvesChangeListener = (f) -> {
+    private final CurvesDialog.OnCurvesChangeListener onFilterCurvesChangeListener = curves -> {
         runOrStart(() -> {
             final int width = preview.getWidth(), height = preview.getHeight(), area = width * height;
             final int[] src = preview.getPixels(), dst = new int[area];
-            for (int i = 0; i < area; ++i) {
-                final int pixel = src[i];
-                final int a = Color.alpha(pixel),
-                        r = Color.red(pixel), g = Color.green(pixel), b = Color.blue(pixel);
-                dst[i] = Color.argb(a, f[r], f[g], f[b]);
-            }
+            BitmapUtil.applyCurves(src, dst, curves);
             preview.setPixels(dst, width, height);
             drawPreviewBitmapOnView();
         });
@@ -741,6 +738,8 @@ public class MainActivity extends AppCompatActivity {
             miHasAlpha.setChecked(bitmap.hasAlpha());
             miLayerColorFilterEnabled.setChecked(MainActivity.this.tab.colorFilterEnabled);
             miLayerColorFilter.setEnabled(MainActivity.this.tab.colorFilterEnabled);
+            miLayerCurvesEnabled.setChecked(MainActivity.this.tab.curvesEnabled);
+            miLayerCurves.setEnabled(MainActivity.this.tab.curvesEnabled);
             miLayerDrawBelow.setChecked(MainActivity.this.tab.drawBelow);
             miLayerHSVEnabled.setChecked(MainActivity.this.tab.HSVEnabled);
             miLayerHSV.setEnabled(MainActivity.this.tab.HSVEnabled);
@@ -2446,6 +2445,18 @@ public class MainActivity extends AppCompatActivity {
                 eraser);
     }
 
+    private void disableAllLayerFilters() {
+        tab.colorFilterEnabled = false;
+        tab.curvesEnabled = false;
+        tab.HSVEnabled = false;
+        miLayerColorFilterEnabled.setChecked(false);
+        miLayerColorFilter.setEnabled(false);
+        miLayerCurvesEnabled.setChecked(false);
+        miLayerCurves.setEnabled(false);
+        miLayerHSVEnabled.setChecked(false);
+        miLayerHSV.setEnabled(false);
+    }
+
     private void dragBound(float viewX, float viewY) {
         final float halfScale = scale / 2.0f;
         switch (draggingBound) {
@@ -2635,11 +2646,11 @@ public class MainActivity extends AppCompatActivity {
         final Rect vs = mergeEntire
                 ? new Rect(0, 0, width, height)
                 : getVisibleSubset(translationX, translationY, bitmap.getWidth(), bitmap.getHeight());
-        if (!mergeEntire && !vs.intersect(left, top, right, bottom)) {
-            return;
-        }
         if (vs.isEmpty()) {
             eraseBitmap(viewBitmap);
+            return;
+        }
+        if (!mergeEntire && !vs.intersect(left, top, right, bottom)) {
             return;
         }
         final int w = vs.width(), h = vs.height();
@@ -3286,6 +3297,9 @@ public class MainActivity extends AppCompatActivity {
                     BitmapUtil.addColorFilter(bitmap, 0, 0, bitmap, 0, 0,
                             tab.colorMatrix);
                 }
+                if (tab.curvesEnabled) {
+                    BitmapUtil.applyCurves(bitmap, tab.curves);
+                }
                 if (tab.HSVEnabled) {
                     BitmapUtil.shiftHSV(bitmap, tab.deltaHSV);
                 }
@@ -3437,11 +3451,11 @@ public class MainActivity extends AppCompatActivity {
         etText.addTextChangedListener((AfterTextChangedListener) s -> drawTextOnView());
         etTextSize.addTextChangedListener(onTextSizeChangedListener);
         flImageView.setOnTouchListener(onImageViewTouchWithPencilListener);
-        ((RadioButton) findViewById(R.id.rb_bucket_fill)).setOnCheckedChangeListener(onBucketFillRadioButtonCheckedChangeListener);
+        ((CompoundButton) findViewById(R.id.rb_bucket_fill)).setOnCheckedChangeListener(onBucketFillRadioButtonCheckedChangeListener);
         ((CompoundButton) findViewById(R.id.rb_circle)).setOnCheckedChangeListener((OnCheckedListener) () -> shape = circle);
         rbCloneStamp.setOnCheckedChangeListener(onCloneStampRadioButtonCheckedChangeListener);
-        ((RadioButton) findViewById(R.id.rb_magic_eraser)).setOnCheckedChangeListener(onMagicEraserRadioButtonCheckedChangeListener);
-        ((RadioButton) findViewById(R.id.rb_magic_paint)).setOnCheckedChangeListener(onMagicPaintRadioButtonCheckedChangeListener);
+        ((CompoundButton) findViewById(R.id.rb_magic_eraser)).setOnCheckedChangeListener(onMagicEraserRadioButtonCheckedChangeListener);
+        ((CompoundButton) findViewById(R.id.rb_magic_paint)).setOnCheckedChangeListener(onMagicPaintRadioButtonCheckedChangeListener);
         ((CompoundButton) findViewById(R.id.rb_eraser)).setOnCheckedChangeListener((buttonView, isChecked) -> onToolChange(isChecked, onImageViewTouchWithEraserListener, llOptionsEraser));
         rbEyedropper.setOnCheckedChangeListener((buttonView, isChecked) -> onToolChange(isChecked, onImageViewTouchWithEyedropperListener, llOptionsEyedropper));
         ((CompoundButton) findViewById(R.id.rb_gradient)).setOnCheckedChangeListener(onGradientRadioButtonCheckedChangeListener);
@@ -3585,6 +3599,8 @@ public class MainActivity extends AppCompatActivity {
         miHasAlpha = menu.findItem(R.id.i_has_alpha);
         miLayerColorFilter = menu.findItem(R.id.i_layer_color_filter);
         miLayerColorFilterEnabled = menu.findItem(R.id.i_layer_color_filter_enabled);
+        miLayerCurves = menu.findItem(R.id.i_layer_curves);
+        miLayerCurvesEnabled = menu.findItem(R.id.i_layer_curves_enabled);
         miLayerDrawBelow = menu.findItem(R.id.i_layer_draw_below);
         miLayerHSV = menu.findItem(R.id.i_layer_hsv);
         miLayerHSVEnabled = menu.findItem(R.id.i_layer_hsv_enabled);
@@ -3928,11 +3944,11 @@ public class MainActivity extends AppCompatActivity {
                 drawFloatingLayers();
                 createPreviewBitmap();
                 new CurvesDialog(this)
-                        .setOnLevelsChangeListener(onFilterCurvesChangeListener)
+                        .setSource(preview.getPixels())
+                        .setOnCurvesChangeListener(onFilterCurvesChangeListener)
                         .setOnPositiveButtonClickListener(onPreviewConfirmListener)
                         .setOnCancelListener(onPreviewCancelListener)
-                        .show()
-                        .updateLevelGraphics(preview.getOriginal());
+                        .show();
                 clearStatus();
                 break;
 
@@ -3955,7 +3971,7 @@ public class MainActivity extends AppCompatActivity {
                         .setOnPositiveButtonClickListener(onPreviewConfirmListener)
                         .setOnCancelListener(onPreviewCancelListener)
                         .show()
-                        .updateLevelGraphics(preview.getOriginal());
+                        .drawHistogram(preview.getPixels());
                 clearStatus();
                 break;
 
@@ -4076,13 +4092,32 @@ public class MainActivity extends AppCompatActivity {
 
             case R.id.i_layer_color_filter_enabled: {
                 final boolean checked = !item.isChecked();
+                if (checked) {
+                    disableAllLayerFilters();
+                }
                 item.setChecked(checked);
                 tab.colorFilterEnabled = checked;
                 miLayerColorFilter.setEnabled(checked);
+                drawBitmapOnView();
+                break;
+            }
+            case R.id.i_layer_curves:
+                new CurvesDialog(this)
+                        .setSource(bitmap)
+                        .setDefaultCurves(tab.curves)
+                        .setOnCurvesChangeListener(curves -> drawBitmapOnView())
+                        .setOnPositiveButtonClickListener(null)
+                        .show();
+                break;
+
+            case R.id.i_layer_curves_enabled: {
+                final boolean checked = !item.isChecked();
                 if (checked) {
-                    tab.HSVEnabled = false;
-                    miLayerHSV.setEnabled(false);
+                    disableAllLayerFilters();
                 }
+                item.setChecked(checked);
+                tab.curvesEnabled = checked;
+                miLayerCurves.setEnabled(checked);
                 drawBitmapOnView();
                 break;
             }
@@ -4139,13 +4174,12 @@ public class MainActivity extends AppCompatActivity {
 
             case R.id.i_layer_hsv_enabled: {
                 final boolean checked = !item.isChecked();
+                if (checked) {
+                    disableAllLayerFilters();
+                }
                 item.setChecked(checked);
                 tab.HSVEnabled = checked;
                 miLayerHSV.setEnabled(checked);
-                if (checked) {
-                    tab.colorFilterEnabled = false;
-                    miLayerColorFilter.setEnabled(false);
-                }
                 drawBitmapOnView();
                 break;
             }
@@ -4624,10 +4658,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showLayerLevel() {
-        final String ra = getString(R.string.rightwards_arrow);
         final StringBuilder sb = new StringBuilder();
         for (int i = 0; i < tab.level; ++i) {
-            sb.append(ra);
+            sb.append('→');
         }
         tab.tvLayerLevel.setText(sb);
     }

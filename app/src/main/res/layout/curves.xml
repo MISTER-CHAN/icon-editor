@@ -5,6 +5,42 @@
     android:orientation="vertical"
     android:padding="16dp">
 
+    <RadioGroup
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <RadioButton
+            android:id="@+id/rb_rgb_outputs"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/rgb_outputs" />
+
+        <RadioButton
+            android:id="@+id/rb_red"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/r" />
+
+        <RadioButton
+            android:id="@+id/rb_green"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/g" />
+
+        <RadioButton
+            android:id="@+id/rb_blue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/b" />
+
+        <RadioButton
+            android:id="@+id/rb_alpha"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/a" />
+    </RadioGroup>
+
     <FrameLayout
         android:id="@+id/fl"
         android:layout_width="match_parent"
@@ -12,7 +48,13 @@
         android:layout_margin="8dp">
 
         <ImageView
-            android:id="@+id/iv_levels"
+            android:id="@+id/iv_grid"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="fitXY" />
+
+        <ImageView
+            android:id="@+id/iv_histogram"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:scaleType="fitXY" />

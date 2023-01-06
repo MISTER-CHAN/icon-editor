@@ -377,6 +377,16 @@
                 <menu>
 
                     <item
+                        android:id="@+id/i_layer_curves_enabled"
+                        android:checkable="true"
+                        android:title="@string/enable_curves" />
+
+                    <item
+                        android:id="@+id/i_layer_curves"
+                        android:enabled="false"
+                        android:title="@string/set_curves" />
+
+                    <item
                         android:id="@+id/i_layer_hsv_enabled"
                         android:checkable="true"
                         android:title="@string/enable_hsv" />

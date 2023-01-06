@@ -4,12 +4,12 @@ import android.widget.CompoundButton;
 
 public interface OnCheckedListener extends CompoundButton.OnCheckedChangeListener {
 
-    void onCheckedChange();
+    void onChecked();
 
     @Override
     default void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
         if (isChecked) {
-            onCheckedChange();
+            onChecked();
         }
     }
 }
