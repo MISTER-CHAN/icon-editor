@@ -31,6 +31,7 @@ import android.os.Environment;
 import android.os.Looper;
 import android.text.Editable;
 import android.text.InputFilter;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -82,6 +83,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Queue;
 import java.util.Stack;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -2618,9 +2622,10 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        drawBitmapOnCanvas(lastMerged, viewCanvas,
-                translationX, translationY, vs);
-        imageView.invalidate();
+        runOnUiThread(() -> {
+            drawBitmapOnCanvas(lastMerged, viewCanvas, translationX, translationY, vs);
+            imageView.invalidate();
+        });
     }
 
     private void drawBitmapSubsetOnView(final Bitmap bitmap,
@@ -2647,24 +2652,29 @@ public class MainActivity extends AppCompatActivity {
         final int w = vs.width(), h = vs.height();
         final Rect relative = new Rect(0, 0, w, h);
 
-        final Bitmap excludedBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
-        final Canvas excludedCanvas = new Canvas(excludedBitmap);
+        Bitmap excludedBitmap;
+        boolean excludedIntegrity;
         if (transformer != null) {
-            final Bitmap bm = Bitmap.createBitmap(bitmap, vs.left, vs.top, w, h);
+            excludedBitmap = Bitmap.createBitmap(bitmap, vs.left, vs.top, w, h);
             final Rect intersect = new Rect(Math.max(vs.left, selection.left), Math.max(vs.top, selection.top),
                     Math.min(vs.right, selection.right), Math.min(vs.bottom, selection.bottom));
-            new Canvas(bm).drawBitmap(transformer.getBitmap(),
+            new Canvas(excludedBitmap).drawBitmap(transformer.getBitmap(),
                     new Rect(intersect.left - selection.left, intersect.top - selection.top,
                             intersect.right - selection.left, intersect.bottom - selection.top),
                     new Rect(intersect.left - vs.left, intersect.top - vs.top,
                             intersect.right - vs.left, intersect.bottom - vs.top),
                     PAINT_SRC_OVER);
-            excludedCanvas.drawBitmap(bm, 0.0f, 0.0f, PAINT_SRC);
+            excludedIntegrity = false;
         } else {
-            excludedCanvas.drawBitmap(bitmap, vs, relative, PAINT_SRC);
+            excludedBitmap = bitmap;
+            excludedIntegrity = true;
         }
 
-        final Bitmap merged = mergeLayers(layerTree, vs, tab, excludedBitmap);
+        final Bitmap merged = mergeLayers(layerTree, vs,
+                tab, excludedBitmap, excludedIntegrity);
+        if (!excludedIntegrity) {
+            excludedBitmap.recycle();
+        }
         if (mergeEntire) {
             recycleBitmap(lastMerged);
             lastMerged = merged;
@@ -2673,12 +2683,14 @@ public class MainActivity extends AppCompatActivity {
                 eraseBitmap(viewBitmap);
             }
             final float translLeft = toViewX(left), translTop = toViewY(top);
-            drawBitmapOnCanvas(merged, viewCanvas,
-                    translLeft > -scale ? translLeft : translLeft % scale,
-                    translTop > -scale ? translTop : translTop % scale,
-                    relative);
-            merged.recycle();
-            imageView.invalidate();
+            runOnUiThread(() -> {
+                drawBitmapOnCanvas(merged, viewCanvas,
+                        translLeft > -scale ? translLeft : translLeft % scale,
+                        translTop > -scale ? translTop : translTop % scale,
+                        relative);
+                merged.recycle();
+                imageView.invalidate();
+            });
         }
     }
 
@@ -3252,17 +3264,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private static Bitmap mergeLayers(final LayerTree tree, final Rect rect) {
-        return mergeLayers(tree, rect, null, null);
+        return mergeLayers(tree, rect, null, null, true);
     }
 
     private static Bitmap mergeLayers(final LayerTree tree, final Rect rect,
-                                      final Tab excludedTab, final Bitmap excludedBitmap) {
-        return mergeLayers(tree, rect, null, excludedTab, excludedBitmap);
+                                      final Tab excludedTab, final Bitmap excludedBitmap, final boolean excludedIntegrity) {
+        return mergeLayers(tree, rect,
+                null, excludedTab, excludedBitmap, excludedIntegrity);
     }
 
-    private static Bitmap mergeLayers(final LayerTree tree,
-                                      final Rect rect, final Bitmap background,
-                                      final Tab excludedTab, final Bitmap excludedBitmap) {
+    private static Bitmap mergeLayers(final LayerTree tree, final Rect rect, final Bitmap background,
+                                      final Tab excludedTab, final Bitmap excludedBitmap, final boolean excludedIntegrity) {
         final int w = rect.width(), h = rect.height();
         final Rect relative = new Rect(0, 0, w, h);
         final LayerTree.Node root = tree.peekBackground();
@@ -3283,7 +3295,11 @@ public class MainActivity extends AppCompatActivity {
                     if (tab.drawBelow) {
                         canvas.drawBitmap(bitmap, 0.0f, 0.0f, paint);
                     } else if (tab == excludedTab) {
-                        canvas.drawBitmap(excludedBitmap, 0.0f, 0.0f, paint);
+                        if (excludedIntegrity) {
+                            canvas.drawBitmap(excludedBitmap, rect, relative, paint);
+                        } else {
+                            canvas.drawBitmap(excludedBitmap, 0.0f, 0.0f, paint);
+                        }
                     } else {
                         canvas.drawBitmap(tab.bitmap, rect, relative, paint);
                     }
@@ -3293,7 +3309,11 @@ public class MainActivity extends AppCompatActivity {
                     if (tab.drawBelow) {
                         cv.drawBitmap(bitmap, 0.0f, 0.0f, PAINT_SRC);
                     } else if (tab == excludedTab) {
-                        cv.drawBitmap(excludedBitmap, 0.0f, 0.0f, PAINT_SRC);
+                        if (excludedIntegrity) {
+                            cv.drawBitmap(excludedBitmap, rect, relative, PAINT_SRC);
+                        } else {
+                            cv.drawBitmap(excludedBitmap, 0.0f, 0.0f, PAINT_SRC);
+                        }
                     } else {
                         cv.drawBitmap(tab.bitmap, rect, relative, PAINT_SRC);
                     }
@@ -3315,7 +3335,7 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 final Bitmap branchBitmap = mergeLayers(branch, rect,
                         !tab.drawBelow || node == root ? null : bitmap,
-                        excludedTab, excludedBitmap);
+                        excludedTab, excludedBitmap, excludedIntegrity);
                 canvas.drawBitmap(branchBitmap, 0.0f, 0.0f, tab.paint);
                 branchBitmap.recycle();
             }

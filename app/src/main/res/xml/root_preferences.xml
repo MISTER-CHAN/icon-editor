@@ -14,9 +14,9 @@
             app:defaultValue="false"
             app:key="mt"
             app:singleLineTitle="false"
-            app:summaryOff="@string/blocking"
-            app:summaryOn="@string/threaded"
-            app:title="@string/multithreaded_drawing" />
+            app:summaryOff="@string/synchronous"
+            app:summaryOn="@string/asynchronous"
+            app:title="@string/draw_on_not_ui_thread" />
 
         <ListPreference
             app:defaultValue="def"

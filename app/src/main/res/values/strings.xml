@@ -13,6 +13,7 @@
     <string name="around_r">Around R</string>
     <string name="around_g">Around G</string>
     <string name="around_b">Around B</string>
+    <string name="asynchronous">Asynchronous</string>
     <string name="author">Author</string>
     <string name="automatic">Automatic</string>
     <string name="b" translatable="false">B</string>
@@ -20,7 +21,6 @@
     <string name="background_color">Background Color</string>
     <string name="below_background">Below Background</string>
     <string name="blend_modes">Blend Modes</string>
-    <string name="blocking">Blocking (Recommended)</string>
     <string name="blur_radius">Blur</string>
     <string name="bottom">Bottom</string>
     <string name="bucket_fill">Bucket Fill</string>
@@ -78,6 +78,7 @@
     <string name="draw">Draw</string>
     <string name="draw_below">Draw Layers below</string>
     <string name="draw_color">Draw Color</string>
+    <string name="draw_on_not_ui_thread">Draw on Not U.I. Thread</string>
     <string name="duplicate">Duplicate</string>
     <string name="duplicate_by_color_range">Duplicate by Color Range</string>
     <string name="edit" translatable="false">✎</string>
@@ -150,7 +151,6 @@
     <string name="min">Min</string>
     <string name="mister_chan" translatable="false">MISTER_CHAN</string>
     <string name="move_layer">Move Layer</string>
-    <string name="multithreaded_drawing">Multi-thread Drawing</string>
     <string name="new_">New</string>
     <string name="ninety_degrees">90°</string>
     <string name="noise">Noise</string>
@@ -233,8 +233,8 @@
     <string name="stroke_width">Width</string>
     <string name="swap">Swap</string>
     <string name="swatch">Swatch</string>
+    <string name="synchronous">Synchronous</string>
     <string name="text">Text</string>
-    <string name="threaded">Threaded</string>
     <string name="threshold">Threshold</string>
     <string name="tolerance">Tolerance</string>
     <string name="tool_options">Tool Options</string>

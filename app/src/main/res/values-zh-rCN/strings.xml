@@ -11,12 +11,12 @@
     <string name="around_r">绕 R 轴</string>
     <string name="around_g">绕 G 轴</string>
     <string name="around_b">绕 B 轴</string>
+    <string name="asynchronous">异步</string>
     <string name="author">作者</string>
     <string name="automatic">自动</string>
     <string name="background_color">底色</string>
     <string name="below_background">背景底下</string>
     <string name="blend_modes">混合模式</string>
-    <string name="blocking">阻塞（推荐）</string>
     <string name="blur_radius">模糊半径</string>
     <string name="bottom">底</string>
     <string name="bucket_fill">油漆桶</string>
@@ -70,11 +70,9 @@
     <string name="draw">绘画</string>
     <string name="draw_below">画底下图层</string>
     <string name="draw_color">画颜色</string>
+    <string name="draw_on_not_ui_thread">绘画于非 U.I. 线程</string>
     <string name="duplicate">复制</string>
     <string name="duplicate_by_color_range">复制颜色范围</string>
-    <string name="enable_color_filter">启用颜色滤镜</string>
-    <string name="enable_curves">启用曲线</string>
-    <string name="enable_hsv">启用 HSV</string>
     <string name="enabled">启用</string>
     <string name="eraser">胶擦</string>
     <string name="exception_merge_as_hidden">异常：请选中两张图像中第一个图像的分页。</string>
@@ -129,9 +127,9 @@
     <string name="merge_as">合并为</string>
     <string name="merge_as_a_hidden_image">合并为隐藏图</string>
     <string name="merge_as_new">合并为新图层</string>
+    <string name="merge_visible">合并可见</string>
     <string name="min">最小</string>
     <string name="move_layer">移动图层</string>
-    <string name="multithreaded_drawing">多线程绘画</string>
     <string name="new_">新建</string>
     <string name="ninety_degrees">90°</string>
     <string name="noise">噪音</string>
@@ -204,8 +202,8 @@
     <string name="stroke_width">笔划宽度</string>
     <string name="swap">交换</string>
     <string name="swatch">颜色</string>
+    <string name="synchronous">同步</string>
     <string name="text">文本</string>
-    <string name="threaded">线程</string>
     <string name="threshold">阈值</string>
     <string name="tolerance">容差</string>
     <string name="tool_options">工具选项</string>
@@ -253,7 +251,6 @@
     <string name="hue">色相</string>
     <string name="color">颜色</string>
     <string name="luminosity">明度</string>
-    <string name="merge_visible">合并可见</string>
 
     <!-- Locales -->
     <string name="en">英文</string>
