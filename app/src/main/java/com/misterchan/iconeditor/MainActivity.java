@@ -31,7 +31,6 @@ import android.os.Environment;
 import android.os.Looper;
 import android.text.Editable;
 import android.text.InputFilter;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -83,9 +82,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Queue;
 import java.util.Stack;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -2599,34 +2595,36 @@ public class MainActivity extends AppCompatActivity {
                         false, false));
     }
 
-    private final Runnable drawBitmapEntireOnViewRunnable = () ->
+    private final Runnable drawBitmapEntireOnViewRunner = () ->
             drawBitmapSubsetOnView(bitmap,
                     0, 0, bitmap.getWidth(), bitmap.getHeight(),
                     true, true);
 
     private void drawBitmapEntireOnView() {
-        runOrStart(drawBitmapEntireOnViewRunnable);
+        runOrStart(drawBitmapEntireOnViewRunner);
     }
 
-    private final Runnable drawBitmapLastOnViewRunnable = () -> drawBitmapLastOnView(bitmap);
+    private final Runnable drawBitmapLastOnViewRunner = () -> drawBitmapLastOnView(bitmap);
 
     private void drawBitmapLastOnView() {
-        runOrStart(drawBitmapLastOnViewRunnable);
+        runOrStart(drawBitmapLastOnViewRunner);
     }
 
     private void drawBitmapLastOnView(final Bitmap bitmap) {
         final Rect vs = getVisibleSubset(translationX, translationY,
                 bitmap.getWidth(), bitmap.getHeight());
-        eraseBitmap(viewBitmap);
-        if (vs.isEmpty()) {
-            return;
-        }
 
         runOnUiThread(() -> {
+            eraseBitmap(viewBitmap);
+            if (vs.isEmpty()) {
+                return;
+            }
             drawBitmapOnCanvas(lastMerged, viewCanvas, translationX, translationY, vs);
             imageView.invalidate();
         });
     }
+
+    private final Runnable erasingViewRunner = () -> eraseBitmap(viewBitmap);
 
     private void drawBitmapSubsetOnView(final Bitmap bitmap,
                                         int left, int top, int right, int bottom,
@@ -2643,7 +2641,7 @@ public class MainActivity extends AppCompatActivity {
                 ? new Rect(0, 0, width, height)
                 : getVisibleSubset(translationX, translationY, bitmap.getWidth(), bitmap.getHeight());
         if (vs.isEmpty()) {
-            eraseBitmap(viewBitmap);
+            runOnUiThread(erasingViewRunner);
             return;
         }
         if (!mergeEntire && !vs.intersect(left, top, right, bottom)) {
@@ -2679,11 +2677,11 @@ public class MainActivity extends AppCompatActivity {
             recycleBitmap(lastMerged);
             lastMerged = merged;
         } else {
-            if (eraseVisible) {
-                eraseBitmap(viewBitmap);
-            }
             final float translLeft = toViewX(left), translTop = toViewY(top);
             runOnUiThread(() -> {
+                if (eraseVisible) {
+                    eraseBitmap(viewBitmap);
+                }
                 drawBitmapOnCanvas(merged, viewCanvas,
                         translLeft > -scale ? translLeft : translLeft % scale,
                         translTop > -scale ? translTop : translTop % scale,
