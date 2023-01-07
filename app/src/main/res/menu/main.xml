@@ -377,34 +377,23 @@
                 <menu>
 
                     <item
-                        android:id="@+id/i_layer_curves_enabled"
-                        android:checkable="true"
-                        android:title="@string/enable_curves" />
-
-                    <item
                         android:id="@+id/i_layer_curves"
-                        android:enabled="false"
-                        android:title="@string/set_curves" />
-
-                    <item
-                        android:id="@+id/i_layer_hsv_enabled"
                         android:checkable="true"
-                        android:title="@string/enable_hsv" />
+                        android:title="@string/curves" />
 
                     <item
                         android:id="@+id/i_layer_hsv"
-                        android:enabled="false"
-                        android:title="@string/set_hsv" />
-
-                    <item
-                        android:id="@+id/i_layer_color_filter_enabled"
                         android:checkable="true"
-                        android:title="@string/enable_color_filter" />
+                        android:title="@string/hsv" />
 
                     <item
                         android:id="@+id/i_layer_color_filter"
-                        android:enabled="false"
-                        android:title="@string/set_color_filter" />
+                        android:checkable="true"
+                        android:title="@string/color_filter" />
+
+                    <item
+                        android:id="@+id/i_layer_filter_set"
+                        android:title="@string/set" />
                 </menu>
             </item>
 

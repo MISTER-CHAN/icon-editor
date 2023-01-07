@@ -284,12 +284,10 @@ public class MainActivity extends AppCompatActivity {
     private final List<Tab> tabs = new ArrayList<>();
     private MenuItem miHasAlpha;
     private MenuItem miLayerColorFilter;
-    private MenuItem miLayerColorFilterEnabled;
     private MenuItem miLayerCurves;
-    private MenuItem miLayerCurvesEnabled;
     private MenuItem miLayerDrawBelow;
-    private MenuItem miLayerHSV;
-    private MenuItem miLayerHSVEnabled;
+    private MenuItem miLayerFilterSet;
+    private MenuItem miLayerHsv;
     private MenuItem miLayerLevelUp;
     private Point cloneStampSrc;
     private final Point cloneStampSrcDist = new Point(0, 0); // Distance
@@ -616,7 +614,7 @@ public class MainActivity extends AppCompatActivity {
 
     private final NewGraphicPropertiesDialog.OnFinishSettingListener onFinishSettingNewGraphicPropertiesListener = this::createGraphic;
 
-    private final HSVDialog.OnHSVChangeListener onFilterHSVChangeListener = deltaHSV -> {
+    private final HsvDialog.OnHSVChangeListener onFilterHSVChangeListener = deltaHSV -> {
         runOrStart(() -> {
             if (deltaHSV[0] == 0.0f && deltaHSV[1] == 0.0f && deltaHSV[2] == 0.0f) {
                 preview.clearFilter();
@@ -631,7 +629,7 @@ public class MainActivity extends AppCompatActivity {
         tvStatus.setText(String.format(getString(R.string.state_hsv), deltaHSV[0], deltaHSV[1], deltaHSV[2]));
     };
 
-    private final HSVDialog.OnHSVChangeListener onLayerHSVChangeListener = deltaHSV -> {
+    private final HsvDialog.OnHSVChangeListener onLayerHSVChangeListener = deltaHSV -> {
         tab.deltaHSV = deltaHSV;
         drawBitmapOnView();
         tvStatus.setText(String.format(getString(R.string.state_hsv), deltaHSV[0], deltaHSV[1], deltaHSV[2]));
@@ -736,13 +734,11 @@ public class MainActivity extends AppCompatActivity {
             }
 
             miHasAlpha.setChecked(bitmap.hasAlpha());
-            miLayerColorFilterEnabled.setChecked(MainActivity.this.tab.colorFilterEnabled);
-            miLayerColorFilter.setEnabled(MainActivity.this.tab.colorFilterEnabled);
-            miLayerCurvesEnabled.setChecked(MainActivity.this.tab.curvesEnabled);
-            miLayerCurves.setEnabled(MainActivity.this.tab.curvesEnabled);
+            miLayerColorFilter.setChecked(MainActivity.this.tab.filter == Tab.Filter.COLOR_FILTER);
+            miLayerCurves.setChecked(MainActivity.this.tab.filter == Tab.Filter.CURVES);
             miLayerDrawBelow.setChecked(MainActivity.this.tab.drawBelow);
-            miLayerHSVEnabled.setChecked(MainActivity.this.tab.HSVEnabled);
-            miLayerHSV.setEnabled(MainActivity.this.tab.HSVEnabled);
+            miLayerFilterSet.setEnabled(MainActivity.this.tab.filter != null);
+            miLayerHsv.setChecked(MainActivity.this.tab.filter == Tab.Filter.HSV);
             miLayerLevelUp.setEnabled(MainActivity.this.tab.level > 0);
             for (int i = 0; i < BLEND_MODES.length; ++i) {
                 final MenuItem mi = smBlendModes.getItem(i);
@@ -2446,15 +2442,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void disableAllLayerFilters() {
-        tab.colorFilterEnabled = false;
-        tab.curvesEnabled = false;
-        tab.HSVEnabled = false;
-        miLayerColorFilterEnabled.setChecked(false);
-        miLayerColorFilter.setEnabled(false);
-        miLayerCurvesEnabled.setChecked(false);
-        miLayerCurves.setEnabled(false);
-        miLayerHSVEnabled.setChecked(false);
-        miLayerHSV.setEnabled(false);
+        tab.filter = null;
+        miLayerColorFilter.setChecked(false);
+        miLayerCurves.setChecked(false);
+        miLayerHsv.setChecked(false);
     }
 
     private void dragBound(float viewX, float viewY) {
@@ -2656,29 +2647,24 @@ public class MainActivity extends AppCompatActivity {
         final int w = vs.width(), h = vs.height();
         final Rect relative = new Rect(0, 0, w, h);
 
-        final Bitmap merged = mergeLayers(layerTree, w, h, tab, (canvas, tab, paint) -> {
-            if (tab == MainActivity.this.tab) {
-                if (transformer != null) {
-                    final Bitmap b = Bitmap.createBitmap(bitmap, vs.left, vs.top, w, h);
-                    final Rect intersect = new Rect(Math.max(vs.left, selection.left), Math.max(vs.top, selection.top),
-                            Math.min(vs.right, selection.right), Math.min(vs.bottom, selection.bottom));
-                    new Canvas(b).drawBitmap(transformer.getBitmap(),
-                            new Rect(intersect.left - selection.left, intersect.top - selection.top,
-                                    intersect.right - selection.left, intersect.bottom - selection.top),
-                            new Rect(intersect.left - vs.left, intersect.top - vs.top,
-                                    intersect.right - vs.left, intersect.bottom - vs.top),
-                            PAINT_SRC_OVER);
-                    canvas.drawBitmap(b, 0.0f, 0.0f, paint);
-                    b.recycle();
-//              } else if (isEditingText) {
-//
-                } else {
-                    canvas.drawBitmap(bitmap, vs, relative, paint);
-                }
-            } else if (tab.visible) {
-                canvas.drawBitmap(tab.bitmap, vs, relative, paint);
-            }
-        });
+        final Bitmap excludedBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+        final Canvas excludedCanvas = new Canvas(excludedBitmap);
+        if (transformer != null) {
+            final Bitmap bm = Bitmap.createBitmap(bitmap, vs.left, vs.top, w, h);
+            final Rect intersect = new Rect(Math.max(vs.left, selection.left), Math.max(vs.top, selection.top),
+                    Math.min(vs.right, selection.right), Math.min(vs.bottom, selection.bottom));
+            new Canvas(bm).drawBitmap(transformer.getBitmap(),
+                    new Rect(intersect.left - selection.left, intersect.top - selection.top,
+                            intersect.right - selection.left, intersect.bottom - selection.top),
+                    new Rect(intersect.left - vs.left, intersect.top - vs.top,
+                            intersect.right - vs.left, intersect.bottom - vs.top),
+                    PAINT_SRC_OVER);
+            excludedCanvas.drawBitmap(bm, 0.0f, 0.0f, PAINT_SRC);
+        } else {
+            excludedCanvas.drawBitmap(bitmap, vs, relative, PAINT_SRC);
+        }
+
+        final Bitmap merged = mergeLayers(layerTree, vs, tab, excludedBitmap);
         if (mergeEntire) {
             recycleBitmap(lastMerged);
             lastMerged = merged;
@@ -3265,18 +3251,20 @@ public class MainActivity extends AppCompatActivity {
         rbPencil.setChecked(true);
     }
 
-    private static Bitmap mergeLayers(final LayerTree tree, final int w, final int h, final BitmapPrinter printer) {
-        return mergeLayers(tree, w, h, null, null, printer);
+    private static Bitmap mergeLayers(final LayerTree tree, final Rect rect) {
+        return mergeLayers(tree, rect, null, null);
     }
 
-    private static Bitmap mergeLayers(final LayerTree tree, final int w, final int h,
-                                      final Tab visible, final BitmapPrinter printer) {
-        return mergeLayers(tree, w, h, null, visible, printer);
+    private static Bitmap mergeLayers(final LayerTree tree, final Rect rect,
+                                      final Tab excludedTab, final Bitmap excludedBitmap) {
+        return mergeLayers(tree, rect, null, excludedTab, excludedBitmap);
     }
 
     private static Bitmap mergeLayers(final LayerTree tree,
-                                      final int w, final int h, final Bitmap background,
-                                      final Tab visible, final BitmapPrinter printer) {
+                                      final Rect rect, final Bitmap background,
+                                      final Tab excludedTab, final Bitmap excludedBitmap) {
+        final int w = rect.width(), h = rect.height();
+        final Rect relative = new Rect(0, 0, w, h);
         final LayerTree.Node root = tree.peekBackground();
         final Bitmap bitmap = background == null
                 ? Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
@@ -3285,30 +3273,51 @@ public class MainActivity extends AppCompatActivity {
 
         for (LayerTree.Node node = root; node != null; node = node.getFront()) {
             final Tab tab = node.getTab();
-            if (!tab.visible && tab != visible) {
+            if (!tab.visible && tab != excludedTab) {
                 continue;
             }
             final LayerTree branch = node.getBranch();
-            final boolean isNotRoot = node != root || background != null;
-            final Paint paint = isNotRoot ? tab.paint : PAINT_SRC;
             if (branch == null) {
-                printer.run(canvas, tab, paint);
-                if (tab.colorFilterEnabled) {
-                    BitmapUtil.addColorFilter(bitmap, 0, 0, bitmap, 0, 0,
-                            tab.colorMatrix);
-                }
-                if (tab.curvesEnabled) {
-                    BitmapUtil.applyCurves(bitmap, tab.curves);
-                }
-                if (tab.HSVEnabled) {
-                    BitmapUtil.shiftHSV(bitmap, tab.deltaHSV);
+                final Paint paint = node == root && background != null ? PAINT_SRC : tab.paint;
+                if (tab.filter == null) {
+                    if (tab.drawBelow) {
+                        canvas.drawBitmap(bitmap, 0.0f, 0.0f, paint);
+                    } else if (tab == excludedTab) {
+                        canvas.drawBitmap(excludedBitmap, 0.0f, 0.0f, paint);
+                    } else {
+                        canvas.drawBitmap(tab.bitmap, rect, relative, paint);
+                    }
+                } else {
+                    final Bitmap bm = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+                    final Canvas cv = new Canvas(bm);
+                    if (tab.drawBelow) {
+                        cv.drawBitmap(bitmap, 0.0f, 0.0f, PAINT_SRC);
+                    } else if (tab == excludedTab) {
+                        cv.drawBitmap(excludedBitmap, 0.0f, 0.0f, PAINT_SRC);
+                    } else {
+                        cv.drawBitmap(tab.bitmap, rect, relative, PAINT_SRC);
+                    }
+                    switch (tab.filter) {
+                        case COLOR_FILTER:
+                            BitmapUtil.addColorFilter(bm, 0, 0, bm, 0, 0,
+                                    tab.colorMatrix);
+                            break;
+                        case CURVES:
+                            BitmapUtil.applyCurves(bm, tab.curves);
+                            break;
+                        case HSV:
+                            BitmapUtil.shiftHSV(bm, tab.deltaHSV);
+                            break;
+                    }
+                    canvas.drawBitmap(bm, 0.0f, 0.0f, paint);
+                    bm.recycle();
                 }
             } else {
-                final Bitmap bm = mergeLayers(branch, w, h,
+                final Bitmap branchBitmap = mergeLayers(branch, rect,
                         !tab.drawBelow || node == root ? null : bitmap,
-                        visible, printer);
-                canvas.drawBitmap(bm, 0.0f, 0.0f, paint);
-                bm.recycle();
+                        excludedTab, excludedBitmap);
+                canvas.drawBitmap(branchBitmap, 0.0f, 0.0f, tab.paint);
+                branchBitmap.recycle();
             }
         }
 
@@ -3598,12 +3607,10 @@ public class MainActivity extends AppCompatActivity {
         menuInflater.inflate(R.menu.main, menu);
         miHasAlpha = menu.findItem(R.id.i_has_alpha);
         miLayerColorFilter = menu.findItem(R.id.i_layer_color_filter);
-        miLayerColorFilterEnabled = menu.findItem(R.id.i_layer_color_filter_enabled);
         miLayerCurves = menu.findItem(R.id.i_layer_curves);
-        miLayerCurvesEnabled = menu.findItem(R.id.i_layer_curves_enabled);
         miLayerDrawBelow = menu.findItem(R.id.i_layer_draw_below);
-        miLayerHSV = menu.findItem(R.id.i_layer_hsv);
-        miLayerHSVEnabled = menu.findItem(R.id.i_layer_hsv_enabled);
+        miLayerFilterSet = menu.findItem(R.id.i_layer_filter_set);
+        miLayerHsv = menu.findItem(R.id.i_layer_hsv);
         miLayerLevelUp = menu.findItem(R.id.i_layer_level_up);
         smBlendModes = menu.findItem(R.id.i_blend_modes).getSubMenu();
         return true;
@@ -3955,7 +3962,7 @@ public class MainActivity extends AppCompatActivity {
             case R.id.i_filter_hsv:
                 drawFloatingLayers();
                 createPreviewBitmap();
-                new HSVDialog(this)
+                new HsvDialog(this)
                         .setOnHSVChangeListener(onFilterHSVChangeListener)
                         .setOnPositiveButtonClickListener(onPreviewConfirmListener)
                         .setOnCancelListener(onPreviewCancelListener)
@@ -4081,43 +4088,25 @@ public class MainActivity extends AppCompatActivity {
                 clearStatus();
                 break;
 
-            case R.id.i_layer_color_filter:
-                ColorMatrixManager.make(this,
-                                R.string.channel_mixer,
-                                onLayerColorFilterChangeListener,
-                                null,
-                                tab.colorMatrix)
-                        .show();
-                break;
-
-            case R.id.i_layer_color_filter_enabled: {
+            case R.id.i_layer_color_filter: {
                 final boolean checked = !item.isChecked();
                 if (checked) {
                     disableAllLayerFilters();
                 }
                 item.setChecked(checked);
-                tab.colorFilterEnabled = checked;
-                miLayerColorFilter.setEnabled(checked);
+                tab.filter = checked ? Tab.Filter.COLOR_FILTER : null;
+                miLayerFilterSet.setEnabled(checked);
                 drawBitmapOnView();
                 break;
             }
-            case R.id.i_layer_curves:
-                new CurvesDialog(this)
-                        .setSource(bitmap)
-                        .setDefaultCurves(tab.curves)
-                        .setOnCurvesChangeListener(curves -> drawBitmapOnView())
-                        .setOnPositiveButtonClickListener(null)
-                        .show();
-                break;
-
-            case R.id.i_layer_curves_enabled: {
+            case R.id.i_layer_curves: {
                 final boolean checked = !item.isChecked();
                 if (checked) {
                     disableAllLayerFilters();
                 }
                 item.setChecked(checked);
-                tab.curvesEnabled = checked;
-                miLayerCurves.setEnabled(checked);
+                tab.filter = checked ? Tab.Filter.CURVES : null;
+                miLayerFilterSet.setEnabled(checked);
                 drawBitmapOnView();
                 break;
             }
@@ -4164,25 +4153,48 @@ public class MainActivity extends AppCompatActivity {
                         .show();
                 break;
             }
-            case R.id.i_layer_hsv:
-                new HSVDialog(this)
-                        .setOnHSVChangeListener(onLayerHSVChangeListener)
-                        .setOnPositiveButtonClickListener(null)
-                        .setDefaultDeltaHSV(tab.deltaHSV)
-                        .show();
-                break;
-
-            case R.id.i_layer_hsv_enabled: {
+            case R.id.i_layer_hsv: {
                 final boolean checked = !item.isChecked();
                 if (checked) {
                     disableAllLayerFilters();
                 }
                 item.setChecked(checked);
-                tab.HSVEnabled = checked;
-                miLayerHSV.setEnabled(checked);
+                tab.filter = checked ? Tab.Filter.HSV : null;
+                miLayerFilterSet.setEnabled(checked);
                 drawBitmapOnView();
                 break;
             }
+            case R.id.i_layer_filter_set:
+                if (tab.filter == null) {
+                    break;
+                }
+                switch (tab.filter) {
+                    case COLOR_FILTER:
+                        ColorMatrixManager.make(this,
+                                        R.string.channel_mixer,
+                                        onLayerColorFilterChangeListener,
+                                        null,
+                                        tab.colorMatrix)
+                                .show();
+                        break;
+                    case CURVES:
+                        new CurvesDialog(this)
+                                .setSource(bitmap)
+                                .setDefaultCurves(tab.curves)
+                                .setOnCurvesChangeListener(curves -> drawBitmapOnView())
+                                .setOnPositiveButtonClickListener(null)
+                                .show();
+                        break;
+                    case HSV:
+                        new HsvDialog(this)
+                                .setOnHSVChangeListener(onLayerHSVChangeListener)
+                                .setOnPositiveButtonClickListener(null)
+                                .setDefaultDeltaHSV(tab.deltaHSV)
+                                .show();
+                        break;
+                }
+                break;
+
             case R.id.i_layer_merge: {
                 drawFloatingLayers();
                 final int pos = tabLayout.getSelectedTabPosition(), next = pos + 1, size = tabs.size();
@@ -4217,8 +4229,7 @@ public class MainActivity extends AppCompatActivity {
                 drawFloatingLayers();
                 final int selected = tabLayout.getSelectedTabPosition();
                 final int w = bitmap.getWidth(), h = bitmap.getHeight();
-                final Bitmap bm = mergeLayers(layerTree, w, h, (canvas, tab, paint) ->
-                        canvas.drawBitmap(tab.bitmap, 0.0f, 0.0f, paint));
+                final Bitmap bm = mergeLayers(layerTree, new Rect(0, 0, w, h));
                 addBitmap(bm, selected);
                 break;
             }

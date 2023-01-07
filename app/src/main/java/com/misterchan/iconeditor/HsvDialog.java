@@ -10,7 +10,7 @@ import android.widget.SeekBar;
 import androidx.annotation.Size;
 import androidx.appcompat.app.AlertDialog;
 
-public class HSVDialog {
+public class HsvDialog {
 
     public interface OnHSVChangeListener {
         void onChange(@Size(3) float[] deltaHSV);
@@ -23,29 +23,29 @@ public class HSVDialog {
     @Size(3)
     private float[] deltaHSV = new float[3];
 
-    public HSVDialog(Context context) {
+    public HsvDialog(Context context) {
         builder = new AlertDialog.Builder(context)
                 .setTitle(R.string.hsv)
                 .setView(R.layout.hsv);
     }
 
-    public HSVDialog setDefaultDeltaHSV(float[] deltaHSV) {
+    public HsvDialog setDefaultDeltaHSV(float[] deltaHSV) {
         this.deltaHSV = deltaHSV;
         return this;
     }
 
-    public HSVDialog setOnCancelListener(DialogInterface.OnCancelListener listener) {
+    public HsvDialog setOnCancelListener(DialogInterface.OnCancelListener listener) {
         builder.setOnCancelListener(listener);
         builder.setNegativeButton(R.string.cancel, (dialog, which) -> listener.onCancel(dialog));
         return this;
     }
 
-    public HSVDialog setOnPositiveButtonClickListener(DialogInterface.OnClickListener listener) {
+    public HsvDialog setOnPositiveButtonClickListener(DialogInterface.OnClickListener listener) {
         builder.setPositiveButton(R.string.ok, listener);
         return this;
     }
 
-    public HSVDialog setOnHSVChangeListener(OnHSVChangeListener listener) {
+    public HsvDialog setOnHSVChangeListener(OnHSVChangeListener listener) {
         this.listener = listener;
         return this;
     }

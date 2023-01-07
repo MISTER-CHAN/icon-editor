@@ -81,9 +81,6 @@
     <string name="duplicate">Duplicate</string>
     <string name="duplicate_by_color_range">Duplicate by Color Range</string>
     <string name="edit" translatable="false">✎</string>
-    <string name="enable_color_filter">Enable Color Filter</string>
-    <string name="enable_curves">Enable Curves</string>
-    <string name="enable_hsv">Enable HSV</string>
     <string name="enabled">Enabled</string>
     <string name="eraser">Eraser</string>
     <string name="exception_merge_as_hidden">Exception: Please select the first tab of two images.</string>
@@ -200,9 +197,7 @@
     <string name="select">Select</string>
     <string name="select_all">Select All</string>
     <string name="send_to_back">Send to Back</string>
-    <string name="set_color_filter">Set Color Filter</string>
-    <string name="set_curves">Set Curves</string>
-    <string name="set_hsv">Set HSV</string>
+    <string name="set">Set</string>
     <string name="settings">Settings</string>
     <string name="shadows">Shadows</string>
     <string name="shape">Shape</string>

@@ -8,16 +8,18 @@ import android.widget.TextView;
 import androidx.annotation.Size;
 
 class Tab {
-    public boolean colorFilterEnabled = false;
-    public boolean curvesEnabled = false;
+    public enum Filter {
+        COLOR_FILTER, CURVES, HSV
+    }
+
     public boolean drawBelow = false;
-    public boolean HSVEnabled = false;
     public boolean visible;
     public Bitmap bitmap;
     public Bitmap.CompressFormat compressFormat;
     public BitmapHistory history;
     public CellGrid cellGrid;
     public CheckBox cbLayerVisible;
+    public Filter filter;
     public float scale;
     public float translationX, translationY;
     public int level = 0;

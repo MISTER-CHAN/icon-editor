@@ -173,9 +173,7 @@
     <string name="select">选择</string>
     <string name="select_all">全选</string>
     <string name="send_to_back">置底</string>
-    <string name="set_color_filter">设置颜色滤镜</string>
-    <string name="set_curves">设置曲线</string>
-    <string name="set_hsv">设置 HSV</string>
+    <string name="set">设定</string>
     <string name="settings">设置</string>
     <string name="shadows">阴影</string>
     <string name="shape">形状</string>
