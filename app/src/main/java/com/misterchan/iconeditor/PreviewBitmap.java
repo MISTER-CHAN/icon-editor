@@ -74,6 +74,10 @@ public class PreviewBitmap {
         canvas.drawRect(rect, paint);
     }
 
+    public int getArea() {
+        return bm.getWidth() * bm.getHeight();
+    }
+
     public Bitmap getEntire() {
         return bitmap;
     }

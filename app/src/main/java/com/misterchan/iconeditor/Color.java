@@ -1,15 +1,14 @@
 package com.misterchan.iconeditor;
 
 import androidx.annotation.ColorInt;
+import androidx.annotation.IntRange;
 import androidx.annotation.Size;
 
 public class Color extends android.graphics.Color {
 
     @Size(3)
     public static void colorToHSV(@ColorInt int color, @Size(3) float[] hsv) {
-        final float r = Color.red(color) / 255.0f,
-                g = Color.green(color) / 255.0f,
-                b = Color.blue(color) / 255.0f;
+        final float r = red(color) / 255.0f, g = green(color) / 255.0f, b = blue(color) / 255.0f;
         final float max = Math.max(Math.max(r, g), b), min = Math.min(Math.min(r, g), b);
         if (max == min) {
             hsv[0] = 0.0f;
@@ -25,7 +24,7 @@ public class Color extends android.graphics.Color {
     }
 
     public static float hue(@ColorInt int color) {
-        final float r = Color.red(color), g = Color.green(color), b = Color.blue(color);
+        final float r = red(color), g = green(color), b = blue(color);
         final float max = Math.max(Math.max(r, g), b), min = Math.min(Math.min(r, g), b);
         if (max == min) {
             return 0.0f;
@@ -44,42 +43,49 @@ public class Color extends android.graphics.Color {
         float h = hsv[0], s = hsv[1], v = hsv[2];
         final int hi = (int) (h / 60.0f);
         final float f = h / 60.0f - hi;
-        final float p = saturate(v * (1.0f - s));
-        final float q = saturate(v * (1.0f - f * s));
-        final float t = saturate(v * (1.0f - (1.0f - f) * s));
-        v = saturate(v);
+        final float p = sat(v * (1.0f - s));
+        final float q = sat(v * (1.0f - f * s));
+        final float t = sat(v * (1.0f - (1.0f - f) * s));
+        v = sat(v);
         switch (hi) {
             case 0:
-                return Color.argb(0.0f, v, t, p);
+                return argb(0.0f, v, t, p);
             case 1:
-                return Color.argb(0.0f, q, v, p);
+                return argb(0.0f, q, v, p);
             case 2:
-                return Color.argb(0.0f, p, v, t);
+                return argb(0.0f, p, v, t);
             case 3:
-                return Color.argb(0.0f, p, q, v);
+                return argb(0.0f, p, q, v);
             case 4:
-                return Color.argb(0.0f, t, p, v);
+                return argb(0.0f, t, p, v);
             case 5:
-                return Color.argb(0.0f, v, p, q);
+                return argb(0.0f, v, p, q);
         }
-        return Color.TRANSPARENT;
+        return TRANSPARENT;
     }
 
     public static float luminance(@ColorInt int color) {
-        return 0.2126f * Color.red(color) / 255.0f
-                + 0.7152f * Color.green(color) / 255.0f
-                + 0.0722f * Color.blue(color) / 255.0f;
+        return 0.2126f * red(color) / 255.0f
+                + 0.7152f * green(color) / 255.0f
+                + 0.0722f * blue(color) / 255.0f;
     }
 
     public static int luminosity(@ColorInt int color) {
-        return Math.max(Math.max(Color.red(color), Color.green(color)), Color.blue(color));
+        return Math.max(Math.max(red(color), green(color)), blue(color));
     }
 
-    public static float saturate(float v) {
+    @ColorInt
+    public static int rgb(@IntRange(from = 0, to = 255) int red,
+                          @IntRange(from = 0, to = 255) int green,
+                          @IntRange(from = 0, to = 255) int blue) {
+        return red << 16 | green << 8 | blue;
+    }
+
+    public static float sat(float v) {
         return v <= 0.0f ? 0.0f : v >= 1.0f ? 1.0f : v;
     }
 
-    public static int saturate(int v) {
-        return Math.max(Math.min(v, 0xFF), 0x00);
+    public static int sat(int v) {
+        return v <= 0x00 ? 0x00 : v >= 0xFF ? 0xFF : v;
     }
 }

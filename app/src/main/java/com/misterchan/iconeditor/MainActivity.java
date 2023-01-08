@@ -621,7 +621,7 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 final int w = preview.getWidth(), h = preview.getHeight(), area = w * h;
                 final int[] src = preview.getPixels(), dst = new int[area];
-                BitmapUtil.shiftHSV(src, dst, area, deltaHSV);
+                BitmapUtil.shiftHSV(src, dst, deltaHSV);
                 preview.setPixels(dst, w, h);
             }
             drawPreviewBitmapOnView();
@@ -664,16 +664,15 @@ public class MainActivity extends AppCompatActivity {
                 preview.clearFilter();
             } else {
                 final int w = preview.getWidth(), h = preview.getHeight(), area = w * h;
-                final int[] pixels = new int[area];
-                preview.getPixels(pixels, 0, w, 0, 0, w, h);
+                final int[] src = preview.getPixels(), dst = new int[area];
                 for (int i = 0; i < area; ++i) {
-                    final int pixel = pixels[i];
-                    pixels[i] = Color.argb(Color.alpha(pixel),
+                    final int pixel = src[i];
+                    dst[i] = pixel & Color.BLACK | Color.rgb(
                             Color.red(pixel) / progress * progress,
                             Color.green(pixel) / progress * progress,
                             Color.blue(pixel) / progress * progress);
                 }
-                preview.setPixels(pixels, 0, w, 0, 0, w, h);
+                preview.setPixels(dst, 0, w, 0, 0, w, h);
             }
             drawPreviewBitmapOnView();
         });
@@ -4024,6 +4023,17 @@ public class MainActivity extends AppCompatActivity {
                 clearStatus();
                 break;
 
+            case R.id.i_filter_saturation:
+                drawFloatingLayers();
+                createPreviewBitmap();
+                new SeekBarDialog(this).setTitle(R.string.saturation).setMin(0).setMax(100).setProgress(10)
+                        .setOnProgressChangeListener(onFilterSaturationSeekBarProgressChangeListener)
+                        .setOnPositiveButtonClickListener(onPreviewConfirmListener)
+                        .setOnCancelListener(onPreviewCancelListener)
+                        .show();
+                clearStatus();
+                break;
+
             case R.id.i_filter_threshold:
                 drawFloatingLayers();
                 createPreviewBitmap();
@@ -4036,17 +4046,32 @@ public class MainActivity extends AppCompatActivity {
                 clearStatus();
                 break;
 
-            case R.id.i_filter_saturation:
+            case R.id.i_filter_white_balance: {
                 drawFloatingLayers();
                 createPreviewBitmap();
-                new SeekBarDialog(this).setTitle(R.string.saturation).setMin(0).setMax(100).setProgress(10)
-                        .setOnProgressChangeListener(onFilterSaturationSeekBarProgressChangeListener)
-                        .setOnPositiveButtonClickListener(onPreviewConfirmListener)
+                final AlertDialog dialog = new AlertDialog.Builder(this).setTitle(R.string.white_balance)
+                        .setPositiveButton(R.string.ok, onPreviewConfirmListener)
+                        .setNegativeButton(R.string.cancel,
+                                ((d, which) -> onPreviewCancelListener.onCancel(d)))
                         .setOnCancelListener(onPreviewCancelListener)
                         .show();
+
+                final Window window = dialog.getWindow();
+                final WindowManager.LayoutParams lp = window.getAttributes();
+                lp.flags &= ~WindowManager.LayoutParams.FLAG_DIM_BEHIND;
+                lp.gravity = Gravity.BOTTOM;
+                window.setAttributes(lp);
+
+                final int w = preview.getWidth(), h = preview.getHeight();
+                final int[] src = preview.getPixels(), dst = new int[w * h];
+                runOrStart(() -> {
+                    BitmapUtil.whiteBalance(src, dst, paint.getColor());
+                    preview.setPixels(dst, w, h);
+                    drawBitmapOnView(preview.getEntire(), selection);
+                });
                 clearStatus();
                 break;
-
+            }
             case R.id.i_flip_horizontally: {
                 drawFloatingLayers();
                 scale(-1.0f, 1.0f, false);
@@ -4080,7 +4105,8 @@ public class MainActivity extends AppCompatActivity {
                 drawFloatingLayers();
                 tab.cbLayerVisible.setChecked(true);
                 final Tab t = new Tab();
-                t.bitmap = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
+                t.bitmap = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(),
+                        bitmap.getConfig(), bitmap.hasAlpha(), bitmap.getColorSpace());
                 t.level = tab.level + 1;
                 t.paint = new Paint();
                 t.paint.setBlendMode(BlendMode.DST_IN);
@@ -4526,7 +4552,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void resizeBitmap(int width, int height, boolean stretch) {
-        final Bitmap bm = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        final Bitmap bm = Bitmap.createBitmap(width, height,
+                bitmap.getConfig(), bitmap.hasAlpha(), bitmap.getColorSpace());
         final Canvas cv = new Canvas(bm);
         if (stretch) {
             cv.drawBitmap(bitmap,

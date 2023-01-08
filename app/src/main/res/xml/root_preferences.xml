@@ -43,7 +43,7 @@
             app:entries="@array/radix_entries"
             app:entryValues="@array/radix_values"
             app:key="acr"
-            app:title="@string/color_component_int_radix"
+            app:title="@string/color_int_component_radix"
             app:useSimpleSummaryProvider="true" />
     </PreferenceCategory>
 

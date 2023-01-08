@@ -11,12 +11,13 @@ import androidx.appcompat.app.AlertDialog;
 
 public class ArgbColorLongPicker extends ArgbColorPicker {
 
-    private TextView tvColorSpace;
+    private ColorSpace colorSpace;
 
     @Size(4)
     private final float[] argb = new float[4];
 
     private void loadColor(@ColorLong long color) {
+        color = Color.convert(color, colorSpace);
         etRed.setText(String.valueOf(argb[1] = Color.red(color)));
         etGreen.setText(String.valueOf(argb[2] = Color.green(color)));
         etBlue.setText(String.valueOf(argb[3] = Color.blue(color)));
@@ -37,9 +38,9 @@ public class ArgbColorLongPicker extends ArgbColorPicker {
     public void show() {
         final AlertDialog dialog = dialogBuilder.show();
 
-        final ColorSpace colorSpace = Color.colorSpace(oldColor);
+        colorSpace = Color.colorSpace(oldColor);
         initViews(dialog);
-        tvColorSpace = dialog.findViewById(R.id.tv_color_space);
+        final TextView tvColorSpace = dialog.findViewById(R.id.tv_color_space);
 
         sbAlpha.setMin((int) (colorSpace.getMinValue(3) * 100.0f));
         sbAlpha.setMax((int) (colorSpace.getMaxValue(3) * 100.0f));

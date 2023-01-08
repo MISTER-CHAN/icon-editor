@@ -23,11 +23,11 @@ public class BitmapUtil {
                                       final float scale, final float shift) {
         for (int i = 0; i < src.length; ++i) {
             final int r = Color.red(src[i]), g = Color.green(src[i]), b = Color.blue(src[i]),
-                    a = Color.alpha(src[i]);
-            final int r_ = Color.saturate((int) (r * scale + shift));
-            final int g_ = Color.saturate((int) (g * scale + shift));
-            final int b_ = Color.saturate((int) (b * scale + shift));
-            dst[i] = Color.argb(a, r_, g_, b_);
+                    a = src[i] & Color.BLACK;
+            final int r_ = Color.sat((int) (r * scale + shift));
+            final int g_ = Color.sat((int) (g * scale + shift));
+            final int b_ = Color.sat((int) (b * scale + shift));
+            dst[i] = a | Color.rgb(r_, g_, b_);
         }
     }
 
@@ -46,10 +46,10 @@ public class BitmapUtil {
         for (int i = 0; i < src.length; ++i) {
             final int r = Color.red(src[i]), g = Color.green(src[i]), b = Color.blue(src[i]),
                     a = Color.alpha(src[i]);
-            final int r_ = Color.saturate((int) (r * colorMatrix[0] + g * colorMatrix[1] + b * colorMatrix[2] + a * colorMatrix[3] + colorMatrix[4]));
-            final int g_ = Color.saturate((int) (r * colorMatrix[5] + g * colorMatrix[6] + b * colorMatrix[7] + a * colorMatrix[8] + colorMatrix[9]));
-            final int b_ = Color.saturate((int) (r * colorMatrix[10] + g * colorMatrix[11] + b * colorMatrix[12] + a * colorMatrix[13] + colorMatrix[14]));
-            final int a_ = Color.saturate((int) (r * colorMatrix[15] + g * colorMatrix[16] + b * colorMatrix[17] + a * colorMatrix[18] + colorMatrix[19]));
+            final int r_ = Color.sat((int) (r * colorMatrix[0] + g * colorMatrix[1] + b * colorMatrix[2] + a * colorMatrix[3] + colorMatrix[4]));
+            final int g_ = Color.sat((int) (r * colorMatrix[5] + g * colorMatrix[6] + b * colorMatrix[7] + a * colorMatrix[8] + colorMatrix[9]));
+            final int b_ = Color.sat((int) (r * colorMatrix[10] + g * colorMatrix[11] + b * colorMatrix[12] + a * colorMatrix[13] + colorMatrix[14]));
+            final int a_ = Color.sat((int) (r * colorMatrix[15] + g * colorMatrix[16] + b * colorMatrix[17] + a * colorMatrix[18] + colorMatrix[19]));
             dst[i] = Color.argb(a_, r_, g_, b_);
         }
     }
@@ -115,29 +115,32 @@ public class BitmapUtil {
                     + (dg == 0.0f ? 0.0f : (g - fa * bg) / dg * rg)
                     + (db == 0.0f ? 0.0f : (b - fa * bb) / db * rb);
 
-            pixels[i] = Color.argb(Color.saturate(a_), fr, fg, fb);
+            pixels[i] = Color.argb(Color.sat(a_), fr, fg, fb);
         }
         bitmap.setPixels(pixels, 0, w, 0, 0, w, h);
     }
 
     public static void shiftHSV(@ColorInt final int[] src, @ColorInt final int[] dst,
-                                final int area, @Size(3) final float[] deltaHSV) {
+                                @Size(3) final float[] deltaHSV) {
         final float[] hsv = new float[3];
-        for (int i = 0; i < area; ++i) {
+        for (int i = 0; i < src.length; ++i) {
             final int pixel = src[i];
             Color.colorToHSV(pixel, hsv);
             hsv[0] = (hsv[0] + deltaHSV[0] + 360.0f) % 360.0f;
-            hsv[1] = Color.saturate(hsv[1] + deltaHSV[1]);
-            hsv[2] = Color.saturate(hsv[2] + deltaHSV[2]);
+            hsv[1] = Color.sat(hsv[1] + deltaHSV[1]);
+            hsv[2] = Color.sat(hsv[2] + deltaHSV[2]);
             dst[i] = pixel & Color.BLACK | Color.HSVToColor(hsv);
         }
     }
 
     public static void shiftHSV(final Bitmap bitmap, @Size(3) final float[] deltaHSV) {
-        final int w = bitmap.getWidth(), h = bitmap.getHeight(), area = w * h;
-        final int[] pixels = new int[area];
+        final int w = bitmap.getWidth(), h = bitmap.getHeight();
+        final int[] pixels = new int[w * h];
         bitmap.getPixels(pixels, 0, w, 0, 0, w, h);
-        shiftHSV(pixels, pixels, area, deltaHSV);
+        shiftHSV(pixels, pixels, deltaHSV);
         bitmap.setPixels(pixels, 0, w, 0, 0, w, h);
+    }
+
+    public static void whiteBalance(@ColorInt final int[] src, @ColorInt int[] dst, @ColorInt int white) {
     }
 }

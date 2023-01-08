@@ -39,8 +39,8 @@
     <string name="cloner">Cloner</string>
     <string name="close">Close</string>
     <string name="color_balance">Color Balance</string>
-    <string name="color_component_int_radix">Color Component Integer Radix</string>
     <string name="color_filter">Color Filter</string>
+    <string name="color_int_component_radix">Color Integer Component Radix</string>
     <string name="color_picker">Color Picker</string>
     <string name="color_range">Color Range</string>
     <string name="color_replace">Color Replace</string>
@@ -50,15 +50,15 @@
     <string name="contiguous">Contiguous</string>
     <string name="contrast">Contrast</string>
     <string name="convert_cmyk_to_rgb">Convert CMYK to RGB</string>
-    <string name="convert_from_cmyk"><u>Convert from CMYK</u></string>
+    <string name="convert_from_cmyk">Convert from CMYK</string>
     <string name="convert_hsv_to_rgb">Convert HSV to RGB</string>
-    <string name="convert_from_hsv"><u>Convert from HSV</u></string>
+    <string name="convert_from_hsv">Convert from HSV</string>
     <string name="convert_lab_to_rgb">Convert CIE L*a*b* to RGB</string>
-    <string name="convert_from_lab"><u>Convert from CIE L*a*b*</u></string>
+    <string name="convert_from_lab">Convert from CIE L*a*b*</string>
     <string name="convert_xyy_to_rgb">Convert CIE xyY to RGB</string>
-    <string name="convert_from_xyy"><u>Convert from CIE xyY</u></string>
+    <string name="convert_from_xyy">Convert from CIE xyY</string>
     <string name="convert_xyz_to_rgb">Convert CIE XYZ to RGB</string>
-    <string name="convert_from_xyz"><u>Convert from CIE XYZ</u></string>
+    <string name="convert_from_xyz">Convert from CIE XYZ</string>
     <string name="coordinate" translatable="false">(%d, %d)</string>
     <string name="copy">Copy</string>
     <string name="crop">Crop</string>
@@ -178,8 +178,9 @@
     <string name="refer_to_clipboard">Refer to Clipboard</string>
     <string name="refit">Refit</string>
     <string name="rename">Rename</string>
-    <string name="reset"><u>Reset</u></string>
+    <string name="reset">Reset</string>
     <string name="reset_source">Reset Source</string>
+    <string name="reset_this_curve">Reset This Curve</string>
     <string name="rgb_outputs">RGB Outputs</string>
     <string name="right">Right</string>
     <string name="rotate">Rotate</string>
@@ -252,6 +253,7 @@
     <string name="view">View</string>
     <string name="visible">Visible</string>
     <string name="when_resizing">When resizing</string>
+    <string name="white_balance">White Balance</string>
     <string name="width">Width</string>
     <string name="with_eraser">With Eraser</string>
     <string name="x" translatable="false">X</string>

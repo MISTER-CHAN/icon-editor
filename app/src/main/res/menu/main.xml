@@ -457,6 +457,11 @@
                 android:title="@string/hsv" />
 
             <item
+                android:id="@+id/i_filter_white_balance"
+                android:title="@string/white_balance"
+                android:visible="false" />
+
+            <item
                 android:id="@+id/i_filter_threshold"
                 android:title="@string/threshold" />
 
