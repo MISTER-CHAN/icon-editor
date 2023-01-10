@@ -185,6 +185,7 @@
     <string name="state_color_range">色相：%d° – %d°，明度：%d – %d</string>
     <string name="state_contrast">对比度：%.1f</string>
     <string name="state_invert">反相：%.1f</string>
+    <string name="state_hue">色相：%.0f°</string>
     <string name="state_left_top">左：%d，上：%d</string>
     <string name="state_length">长度：%f</string>
     <string name="state_lightness">明度：%d</string>

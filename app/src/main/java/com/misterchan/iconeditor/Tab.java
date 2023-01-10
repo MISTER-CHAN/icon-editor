@@ -40,7 +40,7 @@ class Tab {
     public int[][] curves = {new int[0x100], new int[0x100], new int[0x100], new int[0x100], new int[0x100]};
 
     @Size(3)
-    public float[] deltaHSV = new float[]{0.0f, 0.0f, 0.0f};
+    public float[] deltaHsv = new float[]{0.0f, 0.0f, 0.0f};
 
     {
         for (int i = 0; i <= 4; ++i) {

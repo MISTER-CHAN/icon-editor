@@ -75,6 +75,11 @@ public class Color extends android.graphics.Color {
     }
 
     @ColorInt
+    public static int rgb(@ColorInt int color) {
+        return color & 0x00FFFFFF;
+    }
+
+    @ColorInt
     public static int rgb(@IntRange(from = 0, to = 255) int red,
                           @IntRange(from = 0, to = 255) int green,
                           @IntRange(from = 0, to = 255) int blue) {

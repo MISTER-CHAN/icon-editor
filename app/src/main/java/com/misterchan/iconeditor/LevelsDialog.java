@@ -19,7 +19,7 @@ import java.util.function.Function;
 public class LevelsDialog {
 
     public interface OnLevelsChangeListener {
-        void onChange(int inputShadows, int inputHighlights, int outputShadows, int outputHighlights);
+        void onChange(int inputShadows, int inputHighlights, int outputShadows, int outputHighlights, boolean stopped);
     }
 
     private Bitmap bitmap;
@@ -122,7 +122,7 @@ public class LevelsDialog {
         sbOutputHighlights = dialog.findViewById(R.id.sb_output_highlights);
         sbOutputShadows = dialog.findViewById(R.id.sb_output_shadows);
 
-        final OnSeekBarProgressChangeListener l = (seekBar, progress) -> update();
+        final OnSeekBarChangeListener l = (progress, stopped) -> update(stopped);
 
         sbInputHighlights.setOnSeekBarChangeListener(l);
         sbInputShadows.setOnSeekBarChangeListener(l);
@@ -141,9 +141,10 @@ public class LevelsDialog {
         return this;
     }
 
-    private void update() {
+    private void update(boolean stopped) {
         drawProgress();
         listener.onChange(sbInputShadows.getProgress(), sbInputHighlights.getProgress(),
-                sbOutputShadows.getProgress(), sbOutputHighlights.getProgress());
+                sbOutputShadows.getProgress(), sbOutputHighlights.getProgress(),
+                stopped);
     }
 }

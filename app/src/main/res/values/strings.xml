@@ -214,6 +214,7 @@
     <string name="state_eyedropper_imprecise" translatable="false">(%%d, %%d) A: %1$s, R: %1$s, G: %1$s, B: %1$s</string>
     <string name="state_eyedropper_precise" translatable="false">(%d, %d) A: %s, R: %s, G: %s, B: %s</string>
     <string name="state_hsv" translatable="false">H: %+.0f°, S: %+.2f, V: %+.2f</string>
+    <string name="state_hue">色相：%.0f°</string>
     <string name="state_invert">Invert: %.1f</string>
     <string name="state_left_top">Left: %d, Top: %d</string>
     <string name="state_length">Length: %f</string>

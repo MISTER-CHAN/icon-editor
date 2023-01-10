@@ -1,5 +1,5 @@
 package com.misterchan.iconeditor;
 
 public interface RunnableRunnable {
-    void runRunnable(final Runnable runnable);
+    void runRunnable(final Runnable target, final boolean wait);
 }

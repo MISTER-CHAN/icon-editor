@@ -27,7 +27,7 @@ import java.util.function.Function;
 public class CurvesDialog {
 
     public interface OnCurvesChangeListener {
-        void onChange(int[][] curves);
+        void onChange(int[][] curves, boolean stopped);
     }
 
     private Bitmap bitmap;
@@ -137,9 +137,13 @@ public class CurvesDialog {
                 }
                 prevBX = bx;
                 prevBY = by;
-                update();
+                update(false);
                 break;
             }
+            case MotionEvent.ACTION_UP:
+            case MotionEvent.ACTION_CANCEL:
+                update(true);
+                break;
         }
         return true;
     };
@@ -311,7 +315,7 @@ public class CurvesDialog {
             bitmap.eraseColor(Color.TRANSPARENT);
             canvas.drawLine(0.0f, 256.0f, 256.0f, 0.0f, paint);
             iv.invalidate();
-            update();
+            update(true);
         });
 
         bitmap = Bitmap.createBitmap(0x100, 0x100, Bitmap.Config.ARGB_4444);
@@ -338,7 +342,7 @@ public class CurvesDialog {
         return (int) (coo / density);
     }
 
-    private void update() {
-        listener.onChange(curves);
+    private void update(boolean stopped) {
+        listener.onChange(curves, stopped);
     }
 }

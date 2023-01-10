@@ -9,18 +9,18 @@ import java.util.Random;
 
 public class BitmapUtil {
 
-    public static void addColorFilter(final Bitmap src, final int srcX, final int srcY,
-                                      final Bitmap dst, final int dstX, final int dstY,
-                                      final float scale, final float shift) {
+    public static void addLightingColorFilter(final Bitmap src, final int srcX, final int srcY,
+                                              final Bitmap dst, final int dstX, final int dstY,
+                                              final float scale, final float shift) {
         final int w = src.getWidth(), h = src.getHeight();
         final int[] pixels = new int[w * h];
         src.getPixels(pixels, 0, w, srcX, srcY, w, h);
-        addColorFilter(pixels, pixels, scale, shift);
+        addLightingColorFilter(pixels, pixels, scale, shift);
         dst.setPixels(pixels, 0, w, dstX, dstY, w, h);
     }
 
-    public static void addColorFilter(@ColorInt final int[] src, @ColorInt final int[] dst,
-                                      final float scale, final float shift) {
+    public static void addLightingColorFilter(@ColorInt final int[] src, @ColorInt final int[] dst,
+                                              final float scale, final float shift) {
         for (int i = 0; i < src.length; ++i) {
             final int r = Color.red(src[i]), g = Color.green(src[i]), b = Color.blue(src[i]),
                     a = src[i] & Color.BLACK;
@@ -31,18 +31,31 @@ public class BitmapUtil {
         }
     }
 
-    public static void addColorFilter(final Bitmap src, final int srcX, final int srcY,
-                                      final Bitmap dst, final int dstX, final int dstY,
-                                      @Size(20) final float[] colorMatrix) {
+    public static void addLightingColorFilter(@ColorInt final int[] src, @ColorInt final int[] dst,
+                                              @Size(8) float[] lighting) {
+        for (int i = 0; i < src.length; ++i) {
+            final int r = Color.red(src[i]), g = Color.green(src[i]), b = Color.blue(src[i]),
+                    a = Color.alpha(src[i]);
+            final int r_ = Color.sat((int) (r * lighting[0] + lighting[1]));
+            final int g_ = Color.sat((int) (g * lighting[2] + lighting[3]));
+            final int b_ = Color.sat((int) (b * lighting[4] + lighting[5]));
+            final int a_ = Color.sat((int) (a * lighting[6] + lighting[7]));
+            dst[i] = Color.argb(a_, r_, g_, b_);
+        }
+    }
+
+    public static void addColorMatrixColorFilter(final Bitmap src, final int srcX, final int srcY,
+                                                 final Bitmap dst, final int dstX, final int dstY,
+                                                 @Size(20) final float[] colorMatrix) {
         final int w = src.getWidth(), h = src.getHeight();
         final int[] pixels = new int[w * h];
         src.getPixels(pixels, 0, w, srcX, srcY, w, h);
-        addColorFilter(pixels, pixels, colorMatrix);
+        addColorMatrixColorFilter(pixels, pixels, colorMatrix);
         dst.setPixels(pixels, 0, w, dstX, dstY, w, h);
     }
 
-    public static void addColorFilter(@ColorInt final int[] src, @ColorInt final int[] dst,
-                                      @Size(20) final float[] colorMatrix) {
+    public static void addColorMatrixColorFilter(@ColorInt final int[] src, @ColorInt final int[] dst,
+                                                 @Size(20) final float[] colorMatrix) {
         for (int i = 0; i < src.length; ++i) {
             final int r = Color.red(src[i]), g = Color.green(src[i]), b = Color.blue(src[i]),
                     a = Color.alpha(src[i]);
@@ -120,7 +133,19 @@ public class BitmapUtil {
         bitmap.setPixels(pixels, 0, w, 0, 0, w, h);
     }
 
-    public static void shiftHSV(@ColorInt final int[] src, @ColorInt final int[] dst,
+    public static void setAlphaByHue(@ColorInt final int[] src, @ColorInt final int[] dst,
+                                     final float opaquePoint) {
+        final float op = opaquePoint % 360.0f;
+        for (int i = 0; i < src.length; ++i) {
+            final int pixel = src[i];
+            final float hue = Color.hue(pixel);
+            final float smaller = Math.min(op, hue), greater = Math.max(op, hue);
+            final float majorArc = Math.max(greater - smaller, 360.0f + smaller - greater);
+            dst[i] = (int) ((majorArc - 180.0f) / 180.0f * 0xFF) << 24 | Color.rgb(pixel);
+        }
+    }
+
+    public static void shiftHsv(@ColorInt final int[] src, @ColorInt final int[] dst,
                                 @Size(3) final float[] deltaHSV) {
         final float[] hsv = new float[3];
         for (int i = 0; i < src.length; ++i) {
@@ -133,11 +158,11 @@ public class BitmapUtil {
         }
     }
 
-    public static void shiftHSV(final Bitmap bitmap, @Size(3) final float[] deltaHSV) {
+    public static void shiftHsv(final Bitmap bitmap, @Size(3) final float[] deltaHSV) {
         final int w = bitmap.getWidth(), h = bitmap.getHeight();
         final int[] pixels = new int[w * h];
         bitmap.getPixels(pixels, 0, w, 0, 0, w, h);
-        shiftHSV(pixels, pixels, deltaHSV);
+        shiftHsv(pixels, pixels, deltaHSV);
         bitmap.setPixels(pixels, 0, w, 0, 0, w, h);
     }
 

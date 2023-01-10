@@ -7,6 +7,7 @@ import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
+import android.graphics.RectF;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.Size;
@@ -28,30 +29,44 @@ public class PreviewBitmap {
     private final Rect rect;
 
     @ColorInt
-    private int[] pixels;
+    private final int[] pixels;
+
+    private final Paint paint = new Paint() {
+        {
+            setBlendMode(BlendMode.SRC);
+        }
+    };
 
     public PreviewBitmap(Bitmap bitmap, Rect rect) {
         final int w = rect.width(), h = rect.height();
         this.bitmap = Bitmap.createBitmap(bitmap);
-        bm = Bitmap.createBitmap(bitmap, rect.left, rect.top, w, h);
+        bm = Bitmap.createBitmap(w, h, bitmap.getConfig(), true, bitmap.getColorSpace());
         canvas = new Canvas(this.bitmap);
         cv = new Canvas(bm);
+        cv.drawBitmap(bitmap, rect, new RectF(0.0f, 0.0f, w, h), paint);
         pixels = new int[w * h];
         bm.getPixels(pixels, 0, w, 0, 0, w, h);
         this.rect = rect;
     }
 
-    public void addColorFilter(@Size(20) float[] colorMatrix) {
+    public void addLightingColorFilter(float scale, float shift) {
         final int w = bm.getWidth(), h = bm.getHeight();
         final int[] src = getPixels(), dst = new int[w * h];
-        BitmapUtil.addColorFilter(src, dst, colorMatrix);
+        BitmapUtil.addLightingColorFilter(src, dst, scale, shift);
         setPixels(dst, w, h);
     }
 
-    public void addColorFilter(float scale, float shift) {
+    public void addLightingColorFilter(@Size(8) float[] lighting) {
         final int w = bm.getWidth(), h = bm.getHeight();
         final int[] src = getPixels(), dst = new int[w * h];
-        BitmapUtil.addColorFilter(src, dst, scale, shift);
+        BitmapUtil.addLightingColorFilter(src, dst, lighting);
+        setPixels(dst, w, h);
+    }
+
+    public void addColorMatrixColorFilter(@Size(20) float[] colorMatrix) {
+        final int w = bm.getWidth(), h = bm.getHeight();
+        final int[] src = getPixels(), dst = new int[w * h];
+        BitmapUtil.addColorMatrixColorFilter(src, dst, colorMatrix);
         setPixels(dst, w, h);
     }
 

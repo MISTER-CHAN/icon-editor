@@ -12,16 +12,16 @@ import androidx.appcompat.app.AlertDialog;
 
 public class HsvDialog {
 
-    public interface OnHSVChangeListener {
-        void onChange(@Size(3) float[] deltaHSV);
+    public interface OnHsvChangeListener {
+        void onChange(@Size(3) float[] deltaHsv, boolean stopped);
     }
 
     private final AlertDialog.Builder builder;
     private boolean when = false;
-    private OnHSVChangeListener listener;
+    private OnHsvChangeListener listener;
 
     @Size(3)
-    private float[] deltaHSV = new float[3];
+    private float[] deltaHsv = new float[3];
 
     public HsvDialog(Context context) {
         builder = new AlertDialog.Builder(context)
@@ -30,7 +30,7 @@ public class HsvDialog {
     }
 
     public HsvDialog setDefaultDeltaHSV(float[] deltaHSV) {
-        this.deltaHSV = deltaHSV;
+        this.deltaHsv = deltaHSV;
         return this;
     }
 
@@ -45,7 +45,7 @@ public class HsvDialog {
         return this;
     }
 
-    public HsvDialog setOnHSVChangeListener(OnHSVChangeListener listener) {
+    public HsvDialog setOnHSVChangeListener(OnHsvChangeListener listener) {
         this.listener = listener;
         return this;
     }
@@ -63,22 +63,22 @@ public class HsvDialog {
         final SeekBar sbSaturation = dialog.findViewById(R.id.sb_saturation);
         final SeekBar sbValue = dialog.findViewById(R.id.sb_value);
 
-        sbHue.setProgress((int) deltaHSV[0]);
-        sbHue.setOnSeekBarChangeListener((OnSeekBarProgressChangeListener) (seekBar, progress) -> {
-            deltaHSV[0] = progress;
-            listener.onChange(deltaHSV);
+        sbHue.setProgress((int) deltaHsv[0]);
+        sbHue.setOnSeekBarChangeListener((OnSeekBarChangeListener) (progress, stopped) -> {
+            deltaHsv[0] = progress;
+            listener.onChange(deltaHsv, stopped);
         });
 
-        sbSaturation.setProgress((int) deltaHSV[1] * 100);
-        sbSaturation.setOnSeekBarChangeListener((OnSeekBarProgressChangeListener) (seekBar, progress) -> {
-            deltaHSV[1] = progress / 100.0f;
-            listener.onChange(deltaHSV);
+        sbSaturation.setProgress((int) (deltaHsv[1] * 100.0f));
+        sbSaturation.setOnSeekBarChangeListener((OnSeekBarChangeListener) (progress, stopped) -> {
+            deltaHsv[1] = progress / 100.0f;
+            listener.onChange(deltaHsv, stopped);
         });
 
-        sbValue.setProgress((int) deltaHSV[2] * 100);
-        sbValue.setOnSeekBarChangeListener((OnSeekBarProgressChangeListener) (seekBar, progress) -> {
-            deltaHSV[2] = progress / 100.0f;
-            listener.onChange(deltaHSV);
+        sbValue.setProgress((int) (deltaHsv[2] * 100.0f));
+        sbValue.setOnSeekBarChangeListener((OnSeekBarChangeListener) (progress, stopped) -> {
+            deltaHsv[2] = progress / 100.0f;
+            listener.onChange(deltaHsv, stopped);
         });
     }
 }

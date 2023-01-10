@@ -13,7 +13,7 @@ public class SeekBarDialog {
 
     private final AlertDialog.Builder builder;
     private int max, min, progress;
-    private OnSeekBarProgressChangeListener onProgressChangeListener;
+    private OnSeekBarChangeListener onChangeListener;
 
     public SeekBarDialog(Context context) {
         builder = new AlertDialog.Builder(context)
@@ -42,13 +42,13 @@ public class SeekBarDialog {
         return this;
     }
 
-    public SeekBarDialog setOnPositiveButtonClickListener(DialogInterface.OnClickListener listener) {
-        builder.setPositiveButton(R.string.ok, listener);
+    public SeekBarDialog setOnChangeListener(OnSeekBarChangeListener listener) {
+        onChangeListener = listener;
         return this;
     }
 
-    public SeekBarDialog setOnProgressChangeListener(OnSeekBarProgressChangeListener listener) {
-        onProgressChangeListener = listener;
+    public SeekBarDialog setOnPositiveButtonClickListener(DialogInterface.OnClickListener listener) {
+        builder.setPositiveButton(R.string.ok, listener);
         return this;
     }
 
@@ -75,6 +75,6 @@ public class SeekBarDialog {
         seekBar.setMax(max);
         seekBar.setMin(min);
         seekBar.setProgress(progress);
-        seekBar.setOnSeekBarChangeListener(onProgressChangeListener);
+        seekBar.setOnSeekBarChangeListener(onChangeListener);
     }
 }
