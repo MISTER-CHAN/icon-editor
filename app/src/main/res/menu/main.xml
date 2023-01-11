@@ -437,10 +437,6 @@
                 android:title="@string/contrast" />
 
             <item
-                android:id="@+id/i_filter_color_balance"
-                android:title="@string/color_balance" />
-
-            <item
                 android:id="@+id/i_filter_levels"
                 android:title="@string/levels" />
 
@@ -457,17 +453,13 @@
                 android:title="@string/hsv" />
 
             <item
-                android:id="@+id/i_filter_hue"
-                android:title="@string/hue" />
+                android:id="@+id/i_filter_color_balance"
+                android:title="@string/color_balance" />
 
             <item
                 android:id="@+id/i_filter_white_balance"
                 android:title="@string/white_balance"
                 android:visible="false" />
-
-            <item
-                android:id="@+id/i_filter_threshold"
-                android:title="@string/threshold" />
 
             <item
                 android:id="@+id/i_filter_channel_lighting"
@@ -476,6 +468,20 @@
             <item
                 android:id="@+id/i_filter_matrix"
                 android:title="@string/channel_mixer" />
+
+            <item
+                android:id="@+id/i_filter_threshold"
+                android:title="@string/threshold" />
+
+            <item android:title="@string/more">
+
+                <menu>
+
+                    <item
+                        android:id="@+id/i_filter_hue_to_alpha"
+                        android:title="@string/hue_to_alpha" />
+                </menu>
+            </item>
         </menu>
     </item>
 

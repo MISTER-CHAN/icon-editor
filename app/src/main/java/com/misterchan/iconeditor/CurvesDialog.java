@@ -218,7 +218,7 @@ public class CurvesDialog {
     }
 
     private static int sat(int v) {
-        return v < 0x0 ? 0x0 : v >= 0x100 ? 0xFF : v;
+        return v <= 0x0 ? 0x0 : v >= 0x100 ? 0xFF : v;
     }
 
     public CurvesDialog setDefaultCurves(@Size(5) int[][] curves) {

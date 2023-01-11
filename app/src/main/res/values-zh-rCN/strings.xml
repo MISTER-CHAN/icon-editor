@@ -44,16 +44,17 @@
     <string name="config">配置</string>
     <string name="contiguous">连续</string>
     <string name="contrast">对比度</string>
-    <string name="convert_cmyk_to_rgb">转换 CMYK 至 RGB</string>
+    <string name="conversions">转换</string>
     <string name="convert_from_cmyk">由 CMYK 转换</string>
-    <string name="convert_hsv_to_rgb">转换 HSV 至 RGB</string>
     <string name="convert_from_hsv">由 HSV 转换</string>
-    <string name="convert_lab_to_rgb">转换 CIE L*a*b* 至 RGB</string>
     <string name="convert_from_lab">由 CIE L*a*b* 转换</string>
-    <string name="convert_xyy_to_rgb">转换 CIE xyY 至 RGB</string>
     <string name="convert_from_xyy">由 CIE xyY 转换</string>
-    <string name="convert_xyz_to_rgb">转换 CIE XYZ 至 RGB</string>
     <string name="convert_from_xyz">由 CIE XYZ 转换</string>
+    <string name="convert_cmyk_to_rgb">转换 CMYK 至 RGB</string>
+    <string name="convert_hsv_to_rgb">转换 HSV 至 RGB</string>
+    <string name="convert_lab_to_rgb">转换 CIE L*a*b* 至 RGB</string>
+    <string name="convert_xyy_to_rgb">转换 CIE xyY 至 RGB</string>
+    <string name="convert_xyz_to_rgb">转换 CIE XYZ 至 RGB</string>
     <string name="copy">复制</string>
     <string name="crop">裁剪</string>
     <string name="current_layer">当前图层</string>
@@ -96,7 +97,7 @@
     <string name="highlights">亮点</string>
     <string name="homepage">主页</string>
     <string name="horizontally">水平</string>
-    <string name="hue_only">仅色相</string>
+    <string name="hue_to_alpha">色相转 Alpha</string>
     <string name="ignore_alpha">忽略 Alpha</string>
     <string name="image">图像</string>
     <string name="image_size">图像尺寸</string>
@@ -129,6 +130,7 @@
     <string name="merge_as_new">合并为新图层</string>
     <string name="merge_visible">合并可见</string>
     <string name="min">最小</string>
+    <string name="more">更多</string>
     <string name="move_layer">移动图层</string>
     <string name="new_">新建</string>
     <string name="ninety_degrees">90°</string>
@@ -146,6 +148,7 @@
     <string name="patch">修补</string>
     <string name="pencil">铅笔</string>
     <string name="pen_with_filter">滤光笔</string>
+    <string name="performance">性能</string>
     <string name="please_save_first">请先保存。</string>
     <string name="preferences">偏好</string>
     <string name="properties">属性</string>

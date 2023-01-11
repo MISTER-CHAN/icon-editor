@@ -10,14 +10,6 @@
             app:summaryOn="@string/independent_transl_and_scale"
             app:title="@string/independent_layer" />
 
-        <SwitchPreferenceCompat
-            app:defaultValue="false"
-            app:key="mt"
-            app:singleLineTitle="false"
-            app:summaryOff="@string/synchronous"
-            app:summaryOn="@string/asynchronous"
-            app:title="@string/draw_on_not_ui_thread" />
-
         <ListPreference
             app:defaultValue="def"
             app:entries="@array/locales_entries"
@@ -45,6 +37,18 @@
             app:key="acr"
             app:title="@string/color_int_component_radix"
             app:useSimpleSummaryProvider="true" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/performance">
+
+        <SwitchPreferenceCompat
+            app:defaultValue="false"
+            app:key="mt"
+            app:singleLineTitle="false"
+            app:summaryOff="@string/synchronous"
+            app:summaryOn="@string/asynchronous"
+            app:title="@string/draw_on_not_ui_thread" />
     </PreferenceCategory>
 
     <PreferenceCategory app:title="@string/about">

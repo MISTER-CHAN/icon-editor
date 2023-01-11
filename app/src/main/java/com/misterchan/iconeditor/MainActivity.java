@@ -2115,7 +2115,7 @@ public class MainActivity extends AppCompatActivity {
         tvStatus.setText(String.format(getString(R.string.state_contrast), scale));
     };
 
-    private final OnSeekBarChangeListener onFilterHueSeekBarProgressChangeListener = (progress, stopped) -> {
+    private final OnSeekBarChangeListener onFilterHToASeekBarProgressChangeListener = (progress, stopped) -> {
         runOrStart(() -> {
             final int w = preview.getWidth(), h = preview.getHeight();
             final int[] src = preview.getPixels(), dst = new int[w * h];
@@ -2414,6 +2414,14 @@ public class MainActivity extends AppCompatActivity {
         return Math.abs(r - r0) <= threshold
                 && Math.abs(g - g0) <= threshold
                 && Math.abs(b - b0) <= threshold;
+    }
+
+    private static float clamp(float a, float min, float max) {
+        return a <= min ? min : a >= max ? max : a;
+    }
+
+    private static int clamp(int a, int min, int max) {
+        return a <= min ? min : a >= max ? max : a;
     }
 
     private void clearStatus() {
@@ -3193,24 +3201,6 @@ public class MainActivity extends AppCompatActivity {
         return paint.getStyle() != Paint.Style.STROKE;
     }
 
-    private static float clamp(float a, float min, float max) {
-        return a <= min ? min : a >= max ? max : a;
-    }
-
-    private static int clamp(int a, int min, int max) {
-        return Math.max(Math.min(a, max), min);
-    }
-
-    private static int satX(Bitmap bitmap, int x) {
-        final int w = bitmap.getWidth();
-        return x <= 0 ? 0 : x >= w ? w - 1 : x;
-    }
-
-    private static int satY(Bitmap bitmap, int y) {
-        final int h = bitmap.getHeight();
-        return y <= 0 ? 0 : y >= h ? h - 1 : y;
-    }
-
     private boolean isScaledMuch() {
         return scale >= 16.0f;
     }
@@ -3978,15 +3968,15 @@ public class MainActivity extends AppCompatActivity {
                 clearStatus();
                 break;
 
-            case R.id.i_filter_hue:
+            case R.id.i_filter_hue_to_alpha:
                 drawFloatingLayers();
                 createPreviewBitmap();
                 new SeekBarDialog(this).setTitle(R.string.hue).setMin(0).setMax(360).setProgress(0)
-                        .setOnChangeListener(onFilterHueSeekBarProgressChangeListener)
+                        .setOnChangeListener(onFilterHToASeekBarProgressChangeListener)
                         .setOnPositiveButtonClickListener(onPreviewConfirmListener)
                         .setOnCancelListener(onPreviewCancelListener)
                         .show();
-                onFilterHueSeekBarProgressChangeListener.onChanged(0, true);
+                onFilterHToASeekBarProgressChangeListener.onChanged(0, true);
                 break;
 
             case R.id.i_filter_levels:
@@ -4628,6 +4618,16 @@ public class MainActivity extends AppCompatActivity {
 
     private void runOrStart(final Runnable target, final boolean wait) {
         runnableRunner.runRunnable(target, wait);
+    }
+
+    private static int satX(Bitmap bitmap, int x) {
+        final int w = bitmap.getWidth();
+        return x <= 0 ? 0 : x >= w ? w - 1 : x;
+    }
+
+    private static int satY(Bitmap bitmap, int y) {
+        final int h = bitmap.getHeight();
+        return y <= 0 ? 0 : y >= h ? h - 1 : y;
     }
 
     private static float saturate(float v) {
