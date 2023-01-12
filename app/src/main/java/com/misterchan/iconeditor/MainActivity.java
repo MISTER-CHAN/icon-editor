@@ -2698,6 +2698,7 @@ public class MainActivity extends AppCompatActivity {
 
         Bitmap excludedBitmap = null;
         boolean excludedIntegrity = true;
+        Bitmap merged;
         try {
             if (transformer != null) {
                 excludedBitmap = Bitmap.createBitmap(bitmap, vs.left, vs.top, w, h);
@@ -2714,32 +2715,30 @@ public class MainActivity extends AppCompatActivity {
                 excludedBitmap = bitmap;
             }
 
-            final Bitmap merged = mergeLayers(layerTree, vs,
+            merged = mergeLayers(layerTree, vs,
                     tab, excludedBitmap, excludedIntegrity);
-            recycleBitmap(lastMerged);
-            if (mergeEntire) {
-                lastMerged = merged;
-            } else {
-                lastMerged = null;
-                final float translLeft = toViewX(left), translTop = toViewY(top);
-                runOnUiThread(() -> {
-                    if (eraseVisible) {
-                        eraseBitmap(viewBitmap);
-                    }
-                    drawBitmapOnCanvas(merged, viewCanvas,
-                            translLeft > -scale ? translLeft : translLeft % scale,
-                            translTop > -scale ? translTop : translTop % scale,
-                            relative);
-                    merged.recycle();
-                    imageView.invalidate();
-                });
-            }
-
-        } catch (RuntimeException e) {
+        } finally {
             if (!excludedIntegrity) {
                 excludedBitmap.recycle();
             }
-            throw e;
+        }
+        recycleBitmap(lastMerged);
+        if (mergeEntire) {
+            lastMerged = merged;
+        } else {
+            lastMerged = null;
+            final float translLeft = toViewX(left), translTop = toViewY(top);
+            runOnUiThread(() -> {
+                if (eraseVisible) {
+                    eraseBitmap(viewBitmap);
+                }
+                drawBitmapOnCanvas(merged, viewCanvas,
+                        translLeft > -scale ? translLeft : translLeft % scale,
+                        translTop > -scale ? translTop : translTop % scale,
+                        relative);
+                merged.recycle();
+                imageView.invalidate();
+            });
         }
     }
 
