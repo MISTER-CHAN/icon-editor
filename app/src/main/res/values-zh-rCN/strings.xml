@@ -11,7 +11,7 @@
     <string name="around_r">绕 R 轴</string>
     <string name="around_g">绕 G 轴</string>
     <string name="around_b">绕 B 轴</string>
-    <string name="asynchronous">异步</string>
+    <string name="asynchronously_draw_image_and_ui">异步绘画图像与用户界面</string>
     <string name="author">作者</string>
     <string name="automatic">自动</string>
     <string name="background_color">底色</string>
@@ -71,7 +71,7 @@
     <string name="draw">绘画</string>
     <string name="draw_below">画底下图层</string>
     <string name="draw_color">画颜色</string>
-    <string name="draw_on_not_ui_thread">绘画于非 U.I. 线程</string>
+    <string name="draw_on_not_ui_thread">绘画于非用户界面线程</string>
     <string name="duplicate">复制</string>
     <string name="duplicate_by_color_range">复制颜色范围</string>
     <string name="enabled">启用</string>
@@ -207,7 +207,7 @@
     <string name="stroke_width">笔划宽度</string>
     <string name="swap">交换</string>
     <string name="swatch">颜色</string>
-    <string name="synchronous">同步</string>
+    <string name="synchronously_draw_image_and_ui">同步绘画图像与用户界面</string>
     <string name="text">文本</string>
     <string name="threshold">阈值</string>
     <string name="tolerance">容差</string>

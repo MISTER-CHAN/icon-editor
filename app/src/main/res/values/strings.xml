@@ -13,7 +13,7 @@
     <string name="around_r">Around R</string>
     <string name="around_g">Around G</string>
     <string name="around_b">Around B</string>
-    <string name="asynchronous">Asynchronous</string>
+    <string name="asynchronously_draw_image_and_ui">Asynchronously draw image and U.I.</string>
     <string name="author">Author</string>
     <string name="automatic">Automatic</string>
     <string name="b" translatable="false">B</string>
@@ -238,7 +238,7 @@
     <string name="stroke_width">Width</string>
     <string name="swap">Swap</string>
     <string name="swatch">Swatch</string>
-    <string name="synchronous">Synchronous</string>
+    <string name="synchronously_draw_image_and_ui">Synchronously draw image and U.I.</string>
     <string name="text">Text</string>
     <string name="threshold">Threshold</string>
     <string name="tolerance">Tolerance</string>

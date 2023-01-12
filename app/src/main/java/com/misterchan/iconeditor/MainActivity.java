@@ -754,8 +754,8 @@ public class MainActivity extends AppCompatActivity {
                 mi.setChecked(blendMode == BLEND_MODES[i]);
             }
 
-            drawChessboardOnView();
             drawBitmapOnView(true, true);
+            drawChessboardOnView();
             drawGridOnView();
             drawSelectionOnView();
             eraseBitmapAndInvalidateView(previewBitmap, ivPreview);
@@ -2521,12 +2521,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void drawAfterTranslatingOrScaling(boolean doNotMerge) {
-        drawChessboardOnView();
         if (doNotMerge) {
             drawBitmapLastOnView(false);
         } else {
             drawBitmapOnView(true, false);
         }
+        drawChessboardOnView();
         drawGridOnView();
         if (transformer != null) {
 
@@ -2696,46 +2696,50 @@ public class MainActivity extends AppCompatActivity {
         final int w = vs.width(), h = vs.height();
         final Rect relative = new Rect(0, 0, w, h);
 
-        Bitmap excludedBitmap;
-        boolean excludedIntegrity;
-        if (transformer != null) {
-            excludedBitmap = Bitmap.createBitmap(bitmap, vs.left, vs.top, w, h);
-            final Rect intersect = new Rect(Math.max(vs.left, selection.left), Math.max(vs.top, selection.top),
-                    Math.min(vs.right, selection.right), Math.min(vs.bottom, selection.bottom));
-            new Canvas(excludedBitmap).drawBitmap(transformer.getBitmap(),
-                    new Rect(intersect.left - selection.left, intersect.top - selection.top,
-                            intersect.right - selection.left, intersect.bottom - selection.top),
-                    new Rect(intersect.left - vs.left, intersect.top - vs.top,
-                            intersect.right - vs.left, intersect.bottom - vs.top),
-                    PAINT_SRC_OVER);
-            excludedIntegrity = false;
-        } else {
-            excludedBitmap = bitmap;
-            excludedIntegrity = true;
-        }
+        Bitmap excludedBitmap = null;
+        boolean excludedIntegrity = true;
+        try {
+            if (transformer != null) {
+                excludedBitmap = Bitmap.createBitmap(bitmap, vs.left, vs.top, w, h);
+                excludedIntegrity = false;
+                final Rect intersect = new Rect(Math.max(vs.left, selection.left), Math.max(vs.top, selection.top),
+                        Math.min(vs.right, selection.right), Math.min(vs.bottom, selection.bottom));
+                new Canvas(excludedBitmap).drawBitmap(transformer.getBitmap(),
+                        new Rect(intersect.left - selection.left, intersect.top - selection.top,
+                                intersect.right - selection.left, intersect.bottom - selection.top),
+                        new Rect(intersect.left - vs.left, intersect.top - vs.top,
+                                intersect.right - vs.left, intersect.bottom - vs.top),
+                        PAINT_SRC_OVER);
+            } else {
+                excludedBitmap = bitmap;
+            }
 
-        final Bitmap merged = mergeLayers(layerTree, vs,
-                tab, excludedBitmap, excludedIntegrity);
-        if (!excludedIntegrity) {
-            excludedBitmap.recycle();
-        }
-        recycleBitmap(lastMerged);
-        if (mergeEntire) {
-            lastMerged = merged;
-        } else {
-            lastMerged = null;
-            final float translLeft = toViewX(left), translTop = toViewY(top);
-            runOnUiThread(() -> {
-                if (eraseVisible) {
-                    eraseBitmap(viewBitmap);
-                }
-                drawBitmapOnCanvas(merged, viewCanvas,
-                        translLeft > -scale ? translLeft : translLeft % scale,
-                        translTop > -scale ? translTop : translTop % scale,
-                        relative);
-                merged.recycle();
-                imageView.invalidate();
-            });
+            final Bitmap merged = mergeLayers(layerTree, vs,
+                    tab, excludedBitmap, excludedIntegrity);
+            recycleBitmap(lastMerged);
+            if (mergeEntire) {
+                lastMerged = merged;
+            } else {
+                lastMerged = null;
+                final float translLeft = toViewX(left), translTop = toViewY(top);
+                runOnUiThread(() -> {
+                    if (eraseVisible) {
+                        eraseBitmap(viewBitmap);
+                    }
+                    drawBitmapOnCanvas(merged, viewCanvas,
+                            translLeft > -scale ? translLeft : translLeft % scale,
+                            translTop > -scale ? translTop : translTop % scale,
+                            relative);
+                    merged.recycle();
+                    imageView.invalidate();
+                });
+            }
+
+        } catch (RuntimeException e) {
+            if (!excludedIntegrity) {
+                excludedBitmap.recycle();
+            }
+            throw e;
         }
     }
 
@@ -3242,11 +3246,6 @@ public class MainActivity extends AppCompatActivity {
         viewCanvas = new Canvas(viewBitmap);
         imageView.setImageBitmap(viewBitmap);
 
-        gridBitmap = Bitmap.createBitmap(viewWidth, viewHeight, Bitmap.Config.ARGB_4444);
-        gridCanvas = new Canvas(gridBitmap);
-        ivGrid.setImageBitmap(gridBitmap);
-        drawGridOnView();
-
         rulerHBitmap = Bitmap.createBitmap(viewWidth, ivRulerH.getHeight(), Bitmap.Config.ARGB_4444);
         rulerHCanvas = new Canvas(rulerHBitmap);
         ivRulerH.setImageBitmap(rulerHBitmap);
@@ -3258,6 +3257,11 @@ public class MainActivity extends AppCompatActivity {
         chessboardCanvas = new Canvas(chessboardBitmap);
         ivChessboard.setImageBitmap(chessboardBitmap);
         drawChessboardOnView();
+
+        gridBitmap = Bitmap.createBitmap(viewWidth, viewHeight, Bitmap.Config.ARGB_4444);
+        gridCanvas = new Canvas(gridBitmap);
+        ivGrid.setImageBitmap(gridBitmap);
+        drawGridOnView();
 
         previewBitmap = Bitmap.createBitmap(viewWidth, viewHeight, Bitmap.Config.ARGB_4444);
         previewCanvas = new Canvas(previewBitmap);
@@ -3315,62 +3319,70 @@ public class MainActivity extends AppCompatActivity {
             canvas.drawBitmap(background, 0.0f, 0.0f, PAINT_SRC);
         }
 
-        for (LayerTree.Node node = root; node != null; node = node.getFront()) {
-            final Tab tab = node.getTab();
-            if (!tab.visible && tab != excludedTab) {
-                continue;
-            }
-            final LayerTree branch = node.getBranch();
-            if (branch == null) {
-                final Paint paint = node == root && background != null ? PAINT_SRC : tab.paint;
-                if (tab.filter == null) {
-                    if (tab.drawBelow) {
-                        canvas.drawBitmap(bitmap, 0.0f, 0.0f, paint);
-                    } else if (tab == excludedTab) {
-                        if (excludedIntegrity) {
-                            canvas.drawBitmap(excludedBitmap, rect, relative, paint);
+        try {
+            for (LayerTree.Node node = root; node != null; node = node.getFront()) {
+                final Tab tab = node.getTab();
+                if (!tab.visible && tab != excludedTab) {
+                    continue;
+                }
+                final LayerTree branch = node.getBranch();
+                if (branch == null) {
+                    final Paint paint = node == root && background != null ? PAINT_SRC : tab.paint;
+                    if (tab.filter == null) {
+                        if (tab.drawBelow) {
+                            canvas.drawBitmap(bitmap, 0.0f, 0.0f, paint);
+                        } else if (tab == excludedTab) {
+                            if (excludedIntegrity) {
+                                canvas.drawBitmap(excludedBitmap, rect, relative, paint);
+                            } else {
+                                canvas.drawBitmap(excludedBitmap, 0.0f, 0.0f, paint);
+                            }
                         } else {
-                            canvas.drawBitmap(excludedBitmap, 0.0f, 0.0f, paint);
+                            canvas.drawBitmap(tab.bitmap, rect, relative, paint);
                         }
                     } else {
-                        canvas.drawBitmap(tab.bitmap, rect, relative, paint);
+                        final Bitmap bm = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+                        final Canvas cv = new Canvas(bm);
+                        try {
+                            if (tab.drawBelow) {
+                                cv.drawBitmap(bitmap, 0.0f, 0.0f, PAINT_SRC);
+                            } else if (tab == excludedTab) {
+                                if (excludedIntegrity) {
+                                    cv.drawBitmap(excludedBitmap, rect, relative, PAINT_SRC);
+                                } else {
+                                    cv.drawBitmap(excludedBitmap, 0.0f, 0.0f, PAINT_SRC);
+                                }
+                            } else {
+                                cv.drawBitmap(tab.bitmap, rect, relative, PAINT_SRC);
+                            }
+                            switch (tab.filter) {
+                                case COLOR_FILTER:
+                                    BitmapUtil.addColorMatrixColorFilter(bm, 0, 0, bm, 0, 0,
+                                            tab.colorMatrix);
+                                    break;
+                                case CURVES:
+                                    BitmapUtil.applyCurves(bm, tab.curves);
+                                    break;
+                                case HSV:
+                                    BitmapUtil.shiftHsv(bm, tab.deltaHsv);
+                                    break;
+                            }
+                            canvas.drawBitmap(bm, 0.0f, 0.0f, paint);
+                        } finally {
+                            bm.recycle();
+                        }
                     }
                 } else {
-                    final Bitmap bm = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
-                    final Canvas cv = new Canvas(bm);
-                    if (tab.drawBelow) {
-                        cv.drawBitmap(bitmap, 0.0f, 0.0f, PAINT_SRC);
-                    } else if (tab == excludedTab) {
-                        if (excludedIntegrity) {
-                            cv.drawBitmap(excludedBitmap, rect, relative, PAINT_SRC);
-                        } else {
-                            cv.drawBitmap(excludedBitmap, 0.0f, 0.0f, PAINT_SRC);
-                        }
-                    } else {
-                        cv.drawBitmap(tab.bitmap, rect, relative, PAINT_SRC);
-                    }
-                    switch (tab.filter) {
-                        case COLOR_FILTER:
-                            BitmapUtil.addColorMatrixColorFilter(bm, 0, 0, bm, 0, 0,
-                                    tab.colorMatrix);
-                            break;
-                        case CURVES:
-                            BitmapUtil.applyCurves(bm, tab.curves);
-                            break;
-                        case HSV:
-                            BitmapUtil.shiftHsv(bm, tab.deltaHsv);
-                            break;
-                    }
-                    canvas.drawBitmap(bm, 0.0f, 0.0f, paint);
-                    bm.recycle();
+                    final Bitmap branchBitmap = mergeLayers(branch, rect,
+                            !tab.drawBelow || node == root ? null : bitmap,
+                            excludedTab, excludedBitmap, excludedIntegrity);
+                    canvas.drawBitmap(branchBitmap, 0.0f, 0.0f, tab.paint);
+                    branchBitmap.recycle();
                 }
-            } else {
-                final Bitmap branchBitmap = mergeLayers(branch, rect,
-                        !tab.drawBelow || node == root ? null : bitmap,
-                        excludedTab, excludedBitmap, excludedIntegrity);
-                canvas.drawBitmap(branchBitmap, 0.0f, 0.0f, tab.paint);
-                branchBitmap.recycle();
             }
+        } catch (RuntimeException e) {
+            bitmap.recycle();
+            throw e;
         }
 
         return bitmap;
@@ -4843,8 +4855,8 @@ public class MainActivity extends AppCompatActivity {
 
         computeLayerTree();
 
-        drawChessboardOnView();
         drawBitmapOnView(true, true);
+        drawChessboardOnView();
         drawGridOnView();
         drawSelectionOnView();
 

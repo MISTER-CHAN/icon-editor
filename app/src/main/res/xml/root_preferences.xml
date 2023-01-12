@@ -46,8 +46,8 @@
             app:defaultValue="false"
             app:key="mt"
             app:singleLineTitle="false"
-            app:summaryOff="@string/synchronous"
-            app:summaryOn="@string/asynchronous"
+            app:summaryOff="@string/synchronously_draw_image_and_ui"
+            app:summaryOn="@string/asynchronously_draw_image_and_ui"
             app:title="@string/draw_on_not_ui_thread" />
     </PreferenceCategory>
 
