@@ -61,13 +61,11 @@ public class LevelsDialog {
     public static void drawHistogram(int[] src, Bitmap dst, ImageView iv,
                                      Function<Integer, Integer> f, float maxHeight, Paint paint) {
         new Thread(() -> {
-            dst.eraseColor(Color.TRANSPARENT);
             final Canvas cv = new Canvas(dst);
             final int[] numValue = new int[0x100];
             int max = 1;
-            for (int i = 0; i < src.length; ++i) {
-                int pixel = src[i];
-                int n = ++numValue[f.apply(pixel)];
+            for (final int pixel : src) {
+                final int n = ++numValue[f.apply(pixel)];
                 if (n > max) {
                     max = n;
                 }
@@ -110,10 +108,10 @@ public class LevelsDialog {
         final AlertDialog dialog = builder.show();
 
         final Window window = dialog.getWindow();
-        final WindowManager.LayoutParams lp = window.getAttributes();
-        lp.flags &= ~WindowManager.LayoutParams.FLAG_DIM_BEHIND;
-        lp.gravity = Gravity.BOTTOM;
-        window.setAttributes(lp);
+        final WindowManager.LayoutParams layoutParams = window.getAttributes();
+        layoutParams.flags &= ~WindowManager.LayoutParams.FLAG_DIM_BEHIND;
+        layoutParams.gravity = Gravity.BOTTOM;
+        window.setAttributes(layoutParams);
 
         iv = dialog.findViewById(R.id.iv);
         ivProgress = dialog.findViewById(R.id.iv_progress);
