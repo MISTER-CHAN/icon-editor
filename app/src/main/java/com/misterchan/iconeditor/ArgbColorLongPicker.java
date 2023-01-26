@@ -3,6 +3,7 @@ package com.misterchan.iconeditor;
 import android.graphics.ColorSpace;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
+import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -42,8 +43,8 @@ public class ArgbColorLongPicker extends ArgbColorPicker {
 
         colorSpace = Color.colorSpace(oldColor);
         initViews(dialog);
-        final TextView tvColorSpace = dialog.findViewById(R.id.tv_color_space);
 
+        dialog.findViewById(R.id.ll_color_space).setVisibility(View.VISIBLE);
         sbAlpha.setMin((int) (colorSpace.getMinValue(3) * 100.0f));
         sbAlpha.setMax((int) (colorSpace.getMaxValue(3) * 100.0f));
         sbRed.setMin((int) (colorSpace.getMinValue(0) * 100.0f));
@@ -56,6 +57,7 @@ public class ArgbColorLongPicker extends ArgbColorPicker {
         tietRed.setInputType(EDITOR_TYPE_NUM_DEC_SIGNED);
         tietGreen.setInputType(EDITOR_TYPE_NUM_DEC_SIGNED);
         tietBlue.setInputType(EDITOR_TYPE_NUM_DEC_SIGNED);
+        ((TextView) dialog.findViewById(R.id.tv_color_space)).setText(colorSpace.toString());
         sbAlpha.setOnSeekBarChangeListener((OnSeekBarProgressChangeListener) (seekBar, progress) -> tietAlpha.setText(String.valueOf(progress / 100.0f)));
         sbRed.setOnSeekBarChangeListener((OnSeekBarProgressChangeListener) (seekBar, progress) -> tietRed.setText(String.valueOf(progress / 100.0f)));
         sbGreen.setOnSeekBarChangeListener((OnSeekBarProgressChangeListener) (seekBar, progress) -> tietGreen.setText(String.valueOf(progress / 100.0f)));
@@ -64,8 +66,6 @@ public class ArgbColorLongPicker extends ArgbColorPicker {
         tietRed.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(1, s, sbRed));
         tietGreen.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(2, s, sbGreen));
         tietBlue.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(3, s, sbBlue));
-        tvColorSpace.setText(colorSpace.toString());
-        tvColorSpace.setVisibility(View.VISIBLE);
 
         tietAlpha.setText(String.valueOf(Color.alpha(oldColor)));
         loadColor(oldColor);
