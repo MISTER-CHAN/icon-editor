@@ -112,8 +112,6 @@ public class MainActivity extends AppCompatActivity {
     private static final Pattern PATTERN_FILE_NAME = Pattern.compile("[\"*/:<>?\\\\|]");
     private static final Pattern PATTERN_TREE = Pattern.compile("^content://com\\.android\\.externalstorage\\.documents/tree/primary%3A(?<path>.*)$");
 
-    private static final String STRING_EMPTY = "";
-
     private static final Bitmap.CompressFormat[] COMPRESS_FORMATS = {
             Bitmap.CompressFormat.PNG,
             Bitmap.CompressFormat.JPEG
@@ -123,7 +121,7 @@ public class MainActivity extends AppCompatActivity {
             (source, sourceStart, sourceEnd, dest, destStart, destEnd) -> {
                 final Matcher matcher = PATTERN_FILE_NAME.matcher(source.toString());
                 if (matcher.find()) {
-                    return STRING_EMPTY;
+                    return "";
                 }
                 return null;
             }
@@ -659,7 +657,7 @@ public class MainActivity extends AppCompatActivity {
         }, true);
     };
 
-    private final ColorMatrixManager.OnMatrixElementsChangeListener onLayerColorFilterChangeListener = matrix -> {
+    private final ColorMatrixManager.OnMatrixElementsChangeListener onLayerColorMatrixChangeListener = matrix -> {
         tab.colorMatrix = matrix;
         drawBitmapOnView(true);
     };
@@ -742,7 +740,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             miHasAlpha.setChecked(bitmap.hasAlpha());
-            miLayerColorFilter.setChecked(MainActivity.this.tab.filter == Tab.Filter.COLOR_FILTER);
+            miLayerColorFilter.setChecked(MainActivity.this.tab.filter == Tab.Filter.COLOR_MATRIX);
             miLayerCurves.setChecked(MainActivity.this.tab.filter == Tab.Filter.CURVES);
             miLayerDrawBelow.setChecked(MainActivity.this.tab.drawBelow);
             miLayerFilterSet.setEnabled(MainActivity.this.tab.filter != null);
@@ -1533,14 +1531,14 @@ public class MainActivity extends AppCompatActivity {
                                 String.format(getString(R.string.state_l_t_r_b_size),
                                         selection.left, selection.top, selection.right - 1, selection.bottom - 1,
                                         selection.width(), selection.height()) :
-                                STRING_EMPTY);
+                                "");
                     }
                 } else {
                     tvStatus.setText(hasSelection ?
                             String.format(getString(R.string.state_l_t_r_b_size),
                                     selection.left, selection.top, selection.right - 1, selection.bottom - 1,
                                     selection.width(), selection.height()) :
-                            STRING_EMPTY);
+                            "");
                 }
                 break;
         }
@@ -1735,16 +1733,10 @@ public class MainActivity extends AppCompatActivity {
                             draggingBound = Position.NULL;
                             isDraggingCorner = false;
                             hasDragged = false;
-                            final int width = selection.width(), height = selection.height();
-                            if (width > 0 && height > 0) {
-                                transformer.stretch(width, height);
-                            } else {
-                                hasSelection = false;
-                                recycleTransformer();
-                            }
+                            transformer.stretch(selection.width(), selection.height());
+                            selection.sort();
                             drawBitmapOnView(true);
                             drawSelectionOnView(false);
-                            clearStatus();
                         }
                         break;
                 }
@@ -1821,14 +1813,10 @@ public class MainActivity extends AppCompatActivity {
                         break;
                     }
                     case MotionEvent.ACTION_POINTER_UP: {
-                        final int width = selection.width(), height = selection.height();
-                        if (width > 0 && height > 0) {
-                            transformer.stretch(width, height);
-                        } else if (transformer != null) {
-                            recycleTransformer();
-                        }
+                        transformer.stretch(selection.width(), selection.height());
+                        selection.sort();
+                        drawBitmapOnView(true);
                         drawSelectionOnView();
-                        clearStatus();
                         break;
                     }
                 }
@@ -1968,7 +1956,6 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("ClickableViewAccessibility")
     private final CompoundButton.OnCheckedChangeListener onBucketFillRadioButtonCheckedChangeListener = (buttonView, isChecked) -> {
         if (isChecked) {
-            drawFloatingLayers();
             onToolChange(onImageViewTouchWithBucketListener);
             threshold = 0x0;
             hsvOptionsBucketFill.setVisibility(View.VISIBLE);
@@ -2002,7 +1989,6 @@ public class MainActivity extends AppCompatActivity {
 
     private final CompoundButton.OnCheckedChangeListener onMagicEraserRadioButtonCheckedChangeListener = (buttonView, isChecked) -> {
         if (isChecked) {
-            drawFloatingLayers();
             onToolChange(onImageViewTouchWithMagicEraserListener);
             bitmapSource = Bitmap.createBitmap(bitmap);
             paint.setAntiAlias(false);
@@ -2020,7 +2006,6 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("ClickableViewAccessibility")
     private final CompoundButton.OnCheckedChangeListener onMagicPaintRadioButtonCheckedChangeListener = (buttonView, isChecked) -> {
         if (isChecked) {
-            drawFloatingLayers();
             onToolChange(onImageViewTouchWithMagicPaintListener);
             bitmapSource = Bitmap.createBitmap(bitmap);
             threshold = 0xFF;
@@ -2243,18 +2228,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void addBitmap(Tab tab, int position, String title) {
-        this.tab = tab;
         tabs.add(position, tab);
         tab.history = new BitmapHistory();
         addHistory();
         tab.cellGrid = new CellGrid();
 
         resetTranslAndScale();
-
-        if (transformer != null) {
-            recycleTransformer();
-        }
-        hasSelection = false;
 
         final TabLayout.Tab t = tabLayout.newTab()
                 .setCustomView(R.layout.tab)
@@ -2425,7 +2404,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void clearStatus() {
-        tvStatus.setText(STRING_EMPTY);
+        tvStatus.setText("");
     }
 
     private void closeTab() {
@@ -3355,7 +3334,7 @@ public class MainActivity extends AppCompatActivity {
                                 cv.drawBitmap(tab.bitmap, rect, relative, PAINT_SRC);
                             }
                             switch (tab.filter) {
-                                case COLOR_FILTER:
+                                case COLOR_MATRIX:
                                     BitmapUtil.addColorMatrixColorFilter(bm, 0, 0, bm, 0, 0,
                                             tab.colorMatrix);
                                     break;
@@ -3411,8 +3390,8 @@ public class MainActivity extends AppCompatActivity {
         settings.update(preferences);
 
         // Locale
-        final String def = "def", loc = preferences.getString(Settings.KEY_LOC, def);
-        if (!def.equals(loc)) {
+        final String loc = preferences.getString(Settings.KEY_LOC, "def");
+        if (!"def".equals(loc)) {
             final int i = loc.indexOf('_');
             final Locale locale = i == -1
                     ? new Locale(loc)
@@ -3669,7 +3648,7 @@ public class MainActivity extends AppCompatActivity {
         final MenuInflater menuInflater = getMenuInflater();
         menuInflater.inflate(R.menu.main, menu);
         miHasAlpha = menu.findItem(R.id.i_has_alpha);
-        miLayerColorFilter = menu.findItem(R.id.i_layer_color_filter);
+        miLayerColorFilter = menu.findItem(R.id.i_layer_color_matrix);
         miLayerCurves = menu.findItem(R.id.i_layer_curves);
         miLayerDrawBelow = menu.findItem(R.id.i_layer_draw_below);
         miLayerFilterSet = menu.findItem(R.id.i_layer_filter_set);
@@ -3718,7 +3697,6 @@ public class MainActivity extends AppCompatActivity {
             case R.id.i_blend_mode_saturation:
             case R.id.i_blend_mode_color:
             case R.id.i_blend_mode_luminosity:
-                drawFloatingLayers();
                 for (int i = 0; i < BLEND_MODES.length; ++i) {
                     final MenuItem mi = smBlendModes.getItem(i);
                     if (mi == item) {
@@ -3865,15 +3843,12 @@ public class MainActivity extends AppCompatActivity {
                 break;
 
             case R.id.i_file_new: {
-                drawFloatingLayers();
                 new NewGraphicPropertiesDialog(this)
                         .setOnFinishSettingListener(onFinishSettingNewGraphicPropertiesListener)
                         .show();
                 break;
             }
             case R.id.i_file_open:
-                drawFloatingLayers();
-
                 getImages.launch("image/*");
                 break;
 
@@ -4105,7 +4080,6 @@ public class MainActivity extends AppCompatActivity {
                 break;
             }
             case R.id.i_layer_add_mask: {
-                drawFloatingLayers();
                 tab.cbLayerVisible.setChecked(true);
                 final Tab t = new Tab();
                 t.bitmap = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(),
@@ -4125,7 +4099,6 @@ public class MainActivity extends AppCompatActivity {
                 break;
             }
             case R.id.i_layer_alpha:
-                drawFloatingLayers();
                 new SeekBarDialog(this).setTitle(R.string.alpha_value).setMin(0).setMax(255)
                         .setProgress(tab.paint.getAlpha())
                         .setOnChangeListener(onLayerAlphaSeekBarProgressChangeListener)
@@ -4135,13 +4108,13 @@ public class MainActivity extends AppCompatActivity {
                 clearStatus();
                 break;
 
-            case R.id.i_layer_color_filter: {
+            case R.id.i_layer_color_matrix: {
                 final boolean checked = !item.isChecked();
                 if (checked) {
                     disableAllLayerFilters();
                 }
                 item.setChecked(checked);
-                tab.filter = checked ? Tab.Filter.COLOR_FILTER : null;
+                tab.filter = checked ? Tab.Filter.COLOR_MATRIX : null;
                 miLayerFilterSet.setEnabled(checked);
                 drawBitmapOnView(true);
                 break;
@@ -4215,10 +4188,10 @@ public class MainActivity extends AppCompatActivity {
                     break;
                 }
                 switch (tab.filter) {
-                    case COLOR_FILTER:
+                    case COLOR_MATRIX:
                         ColorMatrixManager.make(this,
                                         R.string.channel_mixer,
-                                        onLayerColorFilterChangeListener,
+                                        onLayerColorMatrixChangeListener,
                                         null,
                                         tab.colorMatrix)
                                 .show();
@@ -4284,7 +4257,6 @@ public class MainActivity extends AppCompatActivity {
                 break;
             }
             case R.id.i_layer_new:
-                drawFloatingLayers();
                 createLayer(bitmap.getWidth(), bitmap.getHeight(),
                         bitmap.getConfig(), true, bitmap.getColorSpace(),
                         tabLayout.getSelectedTabPosition());
@@ -4345,8 +4317,7 @@ public class MainActivity extends AppCompatActivity {
                 boolean si = !hasSelection; // Is selection invisible
                 if (hasSelection) {
                     final Rect vs = getVisibleSubset();
-                    si = !(vs.left < selection.right && selection.left < vs.right
-                            && vs.top < selection.bottom && selection.top < vs.bottom);
+                    si = !Rect.intersects(selection, vs);
                 }
                 if (si) {
                     hasSelection = true;

@@ -9,7 +9,7 @@ import androidx.annotation.Size;
 
 class Tab {
     public enum Filter {
-        COLOR_FILTER, CURVES, HSV
+        COLOR_MATRIX, CURVES, HSV
     }
 
     public boolean drawBelow = false;

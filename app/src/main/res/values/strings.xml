@@ -110,7 +110,6 @@
     <string name="hidden_image">Hidden Image</string>
     <string name="highlights">Highlights</string>
     <string name="homepage">Homepage</string>
-    <string name="homepage_address" translatable="false">https://github.com/MISTER-CHAN/icon-editor</string>
     <string name="horizontally">Horizontally</string>
     <string name="hsv" translatable="false">HSV</string>
     <string name="hue_to_alpha">Hue to Alpha</string>

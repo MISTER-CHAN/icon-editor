@@ -64,7 +64,7 @@ public class SettingsActivity extends AppCompatActivity {
             if (key != null) {
                 switch (key) {
                     case Settings.KEY_CFU:
-                        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.homepage_address))));
+                        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/MISTER-CHAN/icon-editor/releases")));
                         break;
                 }
             }

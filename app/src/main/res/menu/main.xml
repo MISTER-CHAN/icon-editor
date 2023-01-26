@@ -387,9 +387,9 @@
                         android:title="@string/hsv" />
 
                     <item
-                        android:id="@+id/i_layer_color_filter"
+                        android:id="@+id/i_layer_color_matrix"
                         android:checkable="true"
-                        android:title="@string/color_filter" />
+                        android:title="@string/channel_mixer" />
 
                     <item
                         android:id="@+id/i_layer_filter_set"
