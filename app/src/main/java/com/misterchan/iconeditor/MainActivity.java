@@ -265,8 +265,8 @@ public class MainActivity extends AppCompatActivity {
     private ImageView ivSelection;
     private InputMethodManager inputMethodManager;
     private int imageWidth, imageHeight;
-    private int selectionBeginX, selectionBeginY;
-    private int selectionEndX, selectionEndY;
+    private int selectionFromX, selectionFromY;
+    private int selectionToX, selectionToY;
     private int shapeStartX, shapeStartY;
     private int textX, textY;
     private int threshold;
@@ -565,28 +565,28 @@ public class MainActivity extends AppCompatActivity {
                             R.string.swap)
                     .show();
 
-    private final ColorRangeDialog.OnColorRangeChangeListener onColorRangeChangeListener = (hueMin, hueMax, valueMin, valueMax, stopped) -> {
+    private final ColorRangeDialog.OnColorRangeChangeListener onColorRangeChangeListener = (hueMin, hueMax, lumMin, lumMax, stopped) -> {
         runOrStart(() -> {
-            if (hueMin == 0 && hueMax == 360 && valueMin == 0x0 && valueMax == 0xFF) {
+            if (hueMin == 0 && hueMax == 360 && lumMin == 0x0 && lumMax == 0xFF) {
                 preview.clearFilter();
-            } else if (valueMin > valueMax) {
+            } else if (lumMin > lumMax) {
                 preview.drawColor(Color.TRANSPARENT);
             } else {
                 final int width = preview.getWidth(), height = preview.getHeight(), area = width * height;
                 final int[] src = preview.getPixels(), dst = new int[area];
                 for (int i = 0; i < area; ++i) {
                     final float h = Color.hue(src[i]);
-                    final int v = Color.luminosity(src[i]);
+                    final int v = (int) (Color.luminance(src[i]) * 100.0f);
                     dst[i] = (hueMin <= h && h <= hueMax
                             || hueMin > hueMax && (hueMin <= h || h <= hueMax))
-                            && (valueMin <= v && v <= valueMax)
+                            && (lumMin <= v && v <= lumMax)
                             ? src[i] : Color.TRANSPARENT;
                 }
                 preview.setPixels(dst, width, height);
             }
             drawPreviewBitmapOnView(stopped);
         }, stopped);
-        tvStatus.setText(String.format(getString(R.string.state_color_range), hueMin, hueMax, valueMin, valueMax));
+        tvStatus.setText(String.format(getString(R.string.state_color_range), hueMin, hueMax, lumMin, lumMax));
     };
 
     private final ColorRangeDialog.OnColorRangeChangeListener onLayerDuplicateByColorRangeConfirmListener = (hueMin, hueMax, valueMin, valueMax, stopped) -> {
@@ -667,7 +667,7 @@ public class MainActivity extends AppCompatActivity {
         runOrStart(() -> {
             if (progress == 0xFF) {
                 preview.drawColor(Color.BLACK);
-            } else if (progress == 0x0) {
+            } else if (progress == 0x00) {
                 preview.clearFilter();
             } else {
                 final int w = preview.getWidth(), h = preview.getHeight(), area = w * h;
@@ -692,7 +692,7 @@ public class MainActivity extends AppCompatActivity {
 
     private final View.OnClickListener onThresholdButtonClickListener = v -> {
         createPreviewBitmap();
-        new SeekBarDialog(this).setTitle(R.string.threshold).setMin(0x0).setMax(0xFF)
+        new SeekBarDialog(this).setTitle(R.string.threshold).setMin(0x00).setMax(0xFF)
                 .setOnCancelListener(onPreviewCancelListener, false)
                 .setOnPositiveButtonClickListener(onThresholdConfirmListener)
                 .setOnChangeListener(onThresholdChangeListener)
@@ -1476,19 +1476,19 @@ public class MainActivity extends AppCompatActivity {
                         tvStatus.setText(String.format(getString(R.string.state_selected_bound),
                                 getString(draggingBound.name)));
                     } else {
-                        if (hasSelection && selectionBeginX == selectionEndX - 1 && selectionBeginY == selectionEndY - 1) {
-                            selectionEndX = toBitmapX(x) + 1;
-                            selectionEndY = toBitmapY(y) + 1;
+                        if (hasSelection && selectionFromX == selectionToX - 1 && selectionFromY == selectionToY - 1) {
+                            selectionToX = toBitmapX(x) + 1;
+                            selectionToY = toBitmapY(y) + 1;
                         } else {
                             hasSelection = true;
-                            selectionBeginX = toBitmapX(x);
-                            selectionBeginY = toBitmapY(y);
-                            selectionEndX = selectionBeginX + 1;
-                            selectionEndY = selectionBeginY + 1;
+                            selectionFromX = toBitmapX(x);
+                            selectionFromY = toBitmapY(y);
+                            selectionToX = selectionFromX + 1;
+                            selectionToY = selectionFromY + 1;
                         }
                         drawSelectionOnViewByStartsAndEnds();
                         tvStatus.setText(String.format(getString(R.string.state_start_end_size_1),
-                                selectionBeginX, selectionBeginY, selectionBeginX, selectionBeginY));
+                                selectionFromX, selectionFromY, selectionFromX, selectionFromY));
                     }
                 } else {
                     dragBound(x, y);
@@ -1503,12 +1503,12 @@ public class MainActivity extends AppCompatActivity {
             case MotionEvent.ACTION_MOVE: {
                 final float x = event.getX(), y = event.getY();
                 if (draggingBound == Position.NULL) {
-                    selectionEndX = toBitmapX(x) + 1;
-                    selectionEndY = toBitmapY(y) + 1;
+                    selectionToX = toBitmapX(x) + 1;
+                    selectionToY = toBitmapY(y) + 1;
                     drawSelectionOnViewByStartsAndEnds();
                     tvStatus.setText(String.format(getString(R.string.state_start_end_size),
-                            selectionBeginX, selectionBeginY, selectionEndX - 1, selectionEndY - 1,
-                            Math.abs(selectionEndX - selectionBeginX - 1) + 1, Math.abs(selectionEndY - selectionBeginY - 1) + 1));
+                            selectionFromX, selectionFromY, selectionToX - 1, selectionToY - 1,
+                            Math.abs(selectionToX - selectionFromX - 1) + 1, Math.abs(selectionToY - selectionFromY - 1) + 1));
                 } else {
                     dragBound(x, y);
                     drawSelectionOnView();
@@ -1601,8 +1601,8 @@ public class MainActivity extends AppCompatActivity {
 
                 case MotionEvent.ACTION_MOVE: {
                     final float x = event.getX(), y = event.getY();
-                    textX = toBitmapX(x);
-                    textY = toBitmapY(y);
+                    textX = toBitmapX(x - prevX);
+                    textY = toBitmapY(y - prevY);
                     drawTextOnView();
                     break;
                 }
@@ -2230,10 +2230,10 @@ public class MainActivity extends AppCompatActivity {
     private void addBitmap(Tab tab, int position, String title) {
         tabs.add(position, tab);
         tab.history = new BitmapHistory();
-        addHistory();
+        addHistory(tab);
         tab.cellGrid = new CellGrid();
 
-        resetTranslAndScale();
+        resetTranslAndScale(tab);
 
         final TabLayout.Tab t = tabLayout.newTab()
                 .setCustomView(R.layout.tab)
@@ -2249,6 +2249,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void addHistory() {
+        addHistory(tab);
+    }
+
+    private void addHistory(Tab tab) {
         tab.history.offer(tab.bitmap);
     }
 
@@ -2960,19 +2964,19 @@ public class MainActivity extends AppCompatActivity {
     private void drawSelectionOnViewByStartsAndEnds() {
         eraseBitmap(selectionBitmap);
         if (hasSelection) {
-            if (selectionBeginX < selectionEndX) {
-                selection.left = selectionBeginX;
-                selection.right = selectionEndX;
+            if (selectionFromX < selectionToX) {
+                selection.left = selectionFromX;
+                selection.right = selectionToX;
             } else {
-                selection.left = selectionEndX - 1;
-                selection.right = selectionBeginX + 1;
+                selection.left = selectionToX - 1;
+                selection.right = selectionFromX + 1;
             }
-            if (selectionBeginY < selectionEndY) {
-                selection.top = selectionBeginY;
-                selection.bottom = selectionEndY;
+            if (selectionFromY < selectionToY) {
+                selection.top = selectionFromY;
+                selection.bottom = selectionToY;
             } else {
-                selection.top = selectionEndY - 1;
-                selection.bottom = selectionBeginY + 1;
+                selection.top = selectionToY - 1;
+                selection.bottom = selectionFromY + 1;
             }
             selectionCanvas.drawRect(
                     toViewX(selection.left), toViewY(selection.top),
@@ -3298,7 +3302,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         try {
-            for (LayerTree.Node node = root; node != null; node = node.getFront()) {
+            for (LayerTree.Node node = root; node != null; node = node.getAbove()) {
                 final Tab tab = node.getTab();
                 if (!tab.visible && tab != excludedTab) {
                     continue;
@@ -3668,47 +3672,6 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("NonConstantResourceId")
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.i_blend_mode_clear:
-            case R.id.i_blend_mode_src:
-            case R.id.i_blend_mode_dst:
-            case R.id.i_blend_mode_src_over:
-            case R.id.i_blend_mode_dst_over:
-            case R.id.i_blend_mode_src_in:
-            case R.id.i_blend_mode_dst_in:
-            case R.id.i_blend_mode_src_out:
-            case R.id.i_blend_mode_dst_out:
-            case R.id.i_blend_mode_src_atop:
-            case R.id.i_blend_mode_dst_atop:
-            case R.id.i_blend_mode_xor:
-            case R.id.i_blend_mode_plus:
-            case R.id.i_blend_mode_modulate:
-            case R.id.i_blend_mode_screen:
-            case R.id.i_blend_mode_overlay:
-            case R.id.i_blend_mode_darken:
-            case R.id.i_blend_mode_lighten:
-            case R.id.i_blend_mode_color_dodge:
-            case R.id.i_blend_mode_color_burn:
-            case R.id.i_blend_mode_hard_light:
-            case R.id.i_blend_mode_soft_light:
-            case R.id.i_blend_mode_difference:
-            case R.id.i_blend_mode_exclusion:
-            case R.id.i_blend_mode_multiply:
-            case R.id.i_blend_mode_hue:
-            case R.id.i_blend_mode_saturation:
-            case R.id.i_blend_mode_color:
-            case R.id.i_blend_mode_luminosity:
-                for (int i = 0; i < BLEND_MODES.length; ++i) {
-                    final MenuItem mi = smBlendModes.getItem(i);
-                    if (mi == item) {
-                        tab.paint.setBlendMode(BLEND_MODES[i]);
-                        mi.setChecked(true);
-                    } else if (mi.isChecked()) {
-                        mi.setChecked(false);
-                    }
-                }
-                drawBitmapOnView(true);
-                break;
-
             case R.id.i_cell_grid: {
                 CellGridManager.make(this, tab.cellGrid,
                                 onUpdateCellGridListener)
@@ -4108,6 +4071,47 @@ public class MainActivity extends AppCompatActivity {
                 clearStatus();
                 break;
 
+            case R.id.i_layer_blend_mode_clear:
+            case R.id.i_layer_blend_mode_src:
+            case R.id.i_layer_blend_mode_dst:
+            case R.id.i_layer_blend_mode_src_over:
+            case R.id.i_layer_blend_mode_dst_over:
+            case R.id.i_layer_blend_mode_src_in:
+            case R.id.i_layer_blend_mode_dst_in:
+            case R.id.i_layer_blend_mode_src_out:
+            case R.id.i_layer_blend_mode_dst_out:
+            case R.id.i_layer_blend_mode_src_atop:
+            case R.id.i_layer_blend_mode_dst_atop:
+            case R.id.i_layer_blend_mode_xor:
+            case R.id.i_layer_blend_mode_plus:
+            case R.id.i_layer_blend_mode_modulate:
+            case R.id.i_layer_blend_mode_screen:
+            case R.id.i_layer_blend_mode_overlay:
+            case R.id.i_layer_blend_mode_darken:
+            case R.id.i_layer_blend_mode_lighten:
+            case R.id.i_layer_blend_mode_color_dodge:
+            case R.id.i_layer_blend_mode_color_burn:
+            case R.id.i_layer_blend_mode_hard_light:
+            case R.id.i_layer_blend_mode_soft_light:
+            case R.id.i_layer_blend_mode_difference:
+            case R.id.i_layer_blend_mode_exclusion:
+            case R.id.i_layer_blend_mode_multiply:
+            case R.id.i_layer_blend_mode_hue:
+            case R.id.i_layer_blend_mode_saturation:
+            case R.id.i_layer_blend_mode_color:
+            case R.id.i_layer_blend_mode_luminosity:
+                for (int i = 0; i < BLEND_MODES.length; ++i) {
+                    final MenuItem mi = smBlendModes.getItem(i);
+                    if (mi == item) {
+                        tab.paint.setBlendMode(BLEND_MODES[i]);
+                        mi.setChecked(true);
+                    } else if (mi.isChecked()) {
+                        mi.setChecked(false);
+                    }
+                }
+                drawBitmapOnView(true);
+                break;
+
             case R.id.i_layer_color_matrix: {
                 final boolean checked = !item.isChecked();
                 if (checked) {
@@ -4273,6 +4277,7 @@ public class MainActivity extends AppCompatActivity {
                 final EditText et = dialog.findViewById(R.id.et_file_name);
 
                 et.setFilters(FILTERS_FILE_NAME);
+                et.setHint(R.string.layer_name);
                 et.setText(getTabName());
                 dialog.findViewById(R.id.s_file_type).setVisibility(View.GONE);
 
@@ -4357,10 +4362,10 @@ public class MainActivity extends AppCompatActivity {
                 selectAll();
                 hasSelection = true;
                 drawSelectionOnView();
-                selectionBeginX = selection.left;
-                selectionBeginY = selection.top;
-                selectionEndX = selection.right;
-                selectionEndY = selection.bottom;
+                selectionFromX = selection.left;
+                selectionFromY = selection.top;
+                selectionToX = selection.right;
+                selectionToY = selection.bottom;
                 clearStatus();
                 break;
 
@@ -4521,6 +4526,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void resetTranslAndScale() {
+        resetTranslAndScale(tab);
+    }
+
+    private void resetTranslAndScale(Tab tab) {
         tab.translationX = 0.0f;
         tab.translationY = 0.0f;
         tab.scale = (float) ((double) viewWidth / (double) tab.bitmap.getWidth());

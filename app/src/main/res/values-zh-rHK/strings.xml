@@ -87,6 +87,7 @@
     <string name="flip">翻轉</string>
     <string name="float_">浮點數</string>
     <string name="foreground_color">畫筆顏色</string>
+    <string name="fuzziness">容差</string>
     <string name="general">一般</string>
     <string name="gradient">漸變</string>
     <string name="has_alpha">有 Alpha</string>
@@ -109,6 +110,7 @@
     <string name="invert">反相</string>
     <string name="language">語言</string>
     <string name="layer">圖層</string>
+    <string name="layer_name">圖層名</string>
     <string name="left">左</string>
     <string name="level">階級</string>
     <string name="levels">色階</string>
@@ -119,6 +121,7 @@
     <string name="locale">地區</string>
     <string name="lock_aspect_ratio">鎖定寬高比</string>
     <string name="long_integer">長整數</string>
+    <string name="luminance">明度</string>
     <string name="magic_eraser">魔術擦</string>
     <string name="magic_paint">魔術筆</string>
     <string name="mask">遮色片</string>
@@ -186,7 +189,7 @@
     <string name="stamp">印章</string>
     <string name="state_axes">軸長：%d, %d</string>
     <string name="state_lightness">明度：%d</string>
-    <string name="state_color_range">色相：%d° – %d°，明度：%d – %d</string>
+    <string name="state_color_range">色相：%d° – %d°，明度：%d%% – %d%%</string>
     <string name="state_contrast">對比度：%.1f</string>
     <string name="state_hue">Hue: %.0f°</string>
     <string name="state_invert">反相：%.1f</string>

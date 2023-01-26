@@ -1,6 +1,7 @@
 package com.misterchan.iconeditor;
 
 import androidx.annotation.ColorInt;
+import androidx.annotation.FloatRange;
 import androidx.annotation.IntRange;
 import androidx.annotation.Size;
 
@@ -23,9 +24,10 @@ public class Color extends android.graphics.Color {
         hsv[2] = max;
     }
 
+    @FloatRange(from = 0.0f, to = 360.0f, toInclusive = false)
     public static float hue(@ColorInt int color) {
-        final float r = red(color), g = green(color), b = blue(color);
-        final float max = Math.max(Math.max(r, g), b), min = Math.min(Math.min(r, g), b);
+        final int r = red(color), g = green(color), b = blue(color);
+        final int max = Math.max(Math.max(r, g), b), min = Math.min(Math.min(r, g), b);
         if (max == min) {
             return 0.0f;
         } else if (max == r) {
@@ -64,12 +66,12 @@ public class Color extends android.graphics.Color {
         return TRANSPARENT;
     }
 
+    @FloatRange(from = 0.0f, to = 1.0f)
     public static float luminance(@ColorInt int color) {
-        return 0.2126f * red(color) / 255.0f
-                + 0.7152f * green(color) / 255.0f
-                + 0.0722f * blue(color) / 255.0f;
+        return (0.2126f * red(color) + 0.7152f * green(color) + 0.0722f * blue(color)) / 255.0f;
     }
 
+    @IntRange(from = 0x00, to = 0xFF)
     public static int luminosity(@ColorInt int color) {
         return Math.max(Math.max(red(color), green(color)), blue(color));
     }
@@ -86,10 +88,12 @@ public class Color extends android.graphics.Color {
         return red << 16 | green << 8 | blue;
     }
 
+    @FloatRange(from = 0.0f, to = 1.0f)
     public static float sat(float v) {
         return v <= 0.0f ? 0.0f : v >= 1.0f ? 1.0f : v;
     }
 
+    @IntRange(from = 0x00, to = 0xFF)
     public static int sat(int v) {
         return v <= 0x00 ? 0x00 : v >= 0xFF ? 0xFF : v;
     }

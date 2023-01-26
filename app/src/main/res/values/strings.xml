@@ -75,7 +75,6 @@
     <string name="delete">Delete</string>
     <string name="delete_invisible">Delete Invisible</string>
     <string name="deselect">Deselect</string>
-    <string name="double_zero" translatable="false">00</string>
     <string name="draw">Draw</string>
     <string name="draw_below">Draw Layers below</string>
     <string name="draw_color">Draw Color</string>
@@ -88,7 +87,6 @@
     <string name="exception_merge_as_hidden">Exception: Please select the first tab of two images.</string>
     <string name="eyedropper">Eyedropper</string>
     <string name="fast_add_a_mask">Fast Add a Mask</string>
-    <string name="ff" translatable="false">FF</string>
     <string name="file">File</string>
     <string name="file_name">File name</string>
     <string name="fill">Fill</string>
@@ -98,6 +96,7 @@
     <string name="float_">Float</string>
     <string name="foreground_color">Foreground Color</string>
     <string name="forty_eight" translatable="false">48</string>
+    <string name="fuzziness">Fuzziness</string>
     <string name="g" translatable="false">G</string>
     <string name="general">General</string>
     <string name="gradient">Gradient</string>
@@ -126,6 +125,7 @@
     <string name="l_" translatable="false">L*</string>
     <string name="language">Language</string>
     <string name="layer">Layer</string>
+    <string name="layer_name">Layer Name</string>
     <string name="left">Left</string>
     <string name="level">Level</string>
     <string name="levels">Levels</string>
@@ -137,6 +137,7 @@
     <string name="lock_aspect_ratio">Lock Aspect Ratio</string>
     <string name="long_integer">Long Integer</string>
     <string name="lt" translatable="false"><![CDATA[<]]></string>
+    <string name="luminance">Luminance</string>
     <string name="m" translatable="false">M</string>
     <string name="magic_eraser">Magic Eraser</string>
     <string name="magic_paint">Magic Paint</string>
@@ -211,7 +212,7 @@
     <string name="stamp">Stamp</string>
     <string name="state_alpha" translatable="false">Alpha: %s</string>
     <string name="state_axes">"Axes: %d, %d"</string>
-    <string name="state_color_range">Hue: %d° – %d°, Luminosity: %d – %d</string>
+    <string name="state_color_range">Hue: %d° – %d°, Luminance: %d%% – %d%%</string>
     <string name="state_contrast">Contrast: %.1f</string>
     <string name="state_eyedropper_imprecise" translatable="false">(%%d, %%d) A: %1$s, R: %1$s, G: %1$s, B: %1$s</string>
     <string name="state_eyedropper_precise" translatable="false">(%d, %d) A: %s, R: %s, G: %s, B: %s</string>

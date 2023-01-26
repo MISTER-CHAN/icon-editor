@@ -19,6 +19,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 
+import androidx.annotation.IntRange;
 import androidx.annotation.Size;
 import androidx.appcompat.app.AlertDialog;
 
@@ -32,7 +33,6 @@ public class CurvesDialog {
 
     private Bitmap bitmap;
     private Bitmap grid;
-    private Bitmap[] histBitmaps = new Bitmap[5];
     private final AlertDialog.Builder builder;
     private Canvas canvas;
     private float density;
@@ -43,6 +43,9 @@ public class CurvesDialog {
     private int selectedCompIndex;
     private int[] srcPixels;
     private OnCurvesChangeListener listener;
+
+    @Size(5)
+    private Bitmap[] histBitmaps = new Bitmap[5];
 
     /**
      * <table>
@@ -56,6 +59,8 @@ public class CurvesDialog {
      */
     @Size(5)
     private int[][] curves;
+
+    @Size(0x100)
     private int[] c;
 
     private final Paint normalPaint = new Paint();
@@ -127,13 +132,13 @@ public class CurvesDialog {
                     c[bx] = 0xFF - by;
                     drawGraphics(bx, bx);
                 } else {
-                    final int beginX = Math.min(prevBX, bx), endX = Math.max(prevBX, bx);
+                    final int left = Math.min(prevBX, bx), right = Math.max(prevBX, bx);
                     final int b = prevBX <= bx ? prevBY : by;
                     final float k = (float) (by - prevBY) / (float) (bx - prevBX);
-                    for (int i = beginX; i <= endX; ++i) {
-                        c[i] = sat((int) (0xFF - ((i - beginX) * k + b)));
+                    for (int i = left; i <= right; ++i) {
+                        c[i] = sat((int) (0xFF - ((i - left) * k + b)));
                     }
-                    drawGraphics(beginX, endX);
+                    drawGraphics(left, right);
                 }
                 prevBX = bx;
                 prevBY = by;
@@ -156,15 +161,15 @@ public class CurvesDialog {
         iv.invalidate();
     }
 
-    private void drawGraphics(int l, int r) {
-        final int begin = l - 1, end = r + 1;
-        canvas.drawRect(begin, 0.0f, end, 256.0f, eraser);
-        if (begin >= 0x0) {
-            canvas.drawLine(begin, 255.0f - c[begin], l, 255.0f - c[l], paint);
+    private void drawGraphics(int leftIncl, int rightIncl) {
+        final int leftExcl = leftIncl - 1, rightExcl = rightIncl + 1;
+        canvas.drawRect(leftExcl, 0.0f, rightExcl, 256.0f, eraser);
+        if (leftExcl >= 0x0) {
+            canvas.drawLine(leftExcl, 255.0f - c[leftExcl], leftIncl, 255.0f - c[leftIncl], paint);
         }
-        canvas.drawLine(l, 255.0f - c[l], r, 255.0f - c[r], paint);
-        if (end < 0x100) {
-            canvas.drawLine(r, 255.0f - c[r], end, 255.0f - c[end], paint);
+        canvas.drawLine(leftIncl, 255.0f - c[leftIncl], rightIncl, 255.0f - c[rightIncl], paint);
+        if (rightExcl < 0x100) {
+            canvas.drawLine(rightIncl, 255.0f - c[rightIncl], rightExcl, 255.0f - c[rightExcl], paint);
         }
         iv.invalidate();
     }
@@ -211,12 +216,13 @@ public class CurvesDialog {
         reset(c);
     }
 
-    private void reset(int[] curve) {
+    private void reset(@Size(0x100) int[] curve) {
         for (int i = 0x0; i < 0x100; ++i) {
             curve[i] = i;
         }
     }
 
+    @IntRange(from = 0x00, to = 0xFF)
     private static int sat(int v) {
         return v <= 0x0 ? 0x0 : v >= 0x100 ? 0xFF : v;
     }

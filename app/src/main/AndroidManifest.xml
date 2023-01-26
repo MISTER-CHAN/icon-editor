@@ -19,11 +19,6 @@
         android:theme="@style/Theme.IconEditor">
 
         <activity
-            android:name=".SettingsActivity"
-            android:exported="false"
-            android:label="@string/settings" />
-
-        <activity
             android:name=".MainActivity"
             android:configChanges="screenSize"
             android:exported="true"
@@ -45,6 +40,11 @@
                 <data android:mimeType="image/png" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".SettingsActivity"
+            android:exported="false"
+            android:label="@string/settings" />
 
         <provider
             android:authorities="${applicationId}.provider"

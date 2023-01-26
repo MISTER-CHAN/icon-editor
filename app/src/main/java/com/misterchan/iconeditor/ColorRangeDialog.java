@@ -12,14 +12,14 @@ import androidx.appcompat.app.AlertDialog;
 public class ColorRangeDialog {
 
     public interface OnColorRangeChangeListener {
-        void onChange(int hueMin, int hueMax, int valueMin, int valueMax, boolean stopped);
+        void onChange(int hueMin, int hueMax, int lumMin, int lumMax, boolean stopped);
     }
 
     private final AlertDialog.Builder builder;
     private OnColorRangeChangeListener listener;
 
     private SeekBar sbHueMin, sbHueMax;
-    private SeekBar sbValueMin, sbValueMax;
+    private SeekBar sbLumMin, sbLumMax;
 
     public ColorRangeDialog(Context context) {
         builder = new AlertDialog.Builder(context)
@@ -37,7 +37,7 @@ public class ColorRangeDialog {
     public ColorRangeDialog setOnPositiveButtonClickListener(OnColorRangeChangeListener listener) {
         builder.setPositiveButton(R.string.ok, (dialog, which) ->
                 listener.onChange(sbHueMin.getProgress(), sbHueMax.getProgress(),
-                        sbValueMin.getProgress(), sbValueMax.getProgress(),
+                        sbLumMin.getProgress(), sbLumMax.getProgress(),
                         true));
         return this;
     }
@@ -59,26 +59,26 @@ public class ColorRangeDialog {
 
         sbHueMin = dialog.findViewById(R.id.sb_hue_min);
         sbHueMax = dialog.findViewById(R.id.sb_hue_max);
-        sbValueMin = dialog.findViewById(R.id.sb_value_min);
-        sbValueMax = dialog.findViewById(R.id.sb_value_max);
+        sbLumMin = dialog.findViewById(R.id.sb_luminance_min);
+        sbLumMax = dialog.findViewById(R.id.sb_luminance_max);
         final OnSeekBarChangeListener l = (progress, stopped) ->
                 listener.onChange(sbHueMin.getProgress(), sbHueMax.getProgress(),
-                        sbValueMin.getProgress(), sbValueMax.getProgress(),
+                        sbLumMin.getProgress(), sbLumMax.getProgress(),
                         stopped);
 
         sbHueMin.setOnSeekBarChangeListener(l);
         sbHueMax.setOnSeekBarChangeListener(l);
 
-        sbValueMin.setOnSeekBarChangeListener((OnSeekBarChangeListener) (progress, stopped) -> {
-            if (progress > sbValueMax.getProgress()) {
-                sbValueMin.setProgress(sbValueMax.getProgress());
+        sbLumMin.setOnSeekBarChangeListener((OnSeekBarChangeListener) (progress, stopped) -> {
+            if (progress > sbLumMax.getProgress()) {
+                sbLumMin.setProgress(sbLumMax.getProgress());
             }
             l.onChanged(progress, stopped);
         });
 
-        sbValueMax.setOnSeekBarChangeListener((OnSeekBarChangeListener) (progress, stopped) -> {
-            if (progress < sbValueMin.getProgress()) {
-                sbValueMax.setProgress(sbValueMin.getProgress());
+        sbLumMax.setOnSeekBarChangeListener((OnSeekBarChangeListener) (progress, stopped) -> {
+            if (progress < sbLumMin.getProgress()) {
+                sbLumMax.setProgress(sbLumMin.getProgress());
             }
             l.onChanged(progress, stopped);
         });

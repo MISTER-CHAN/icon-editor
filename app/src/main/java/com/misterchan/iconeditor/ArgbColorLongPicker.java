@@ -1,6 +1,8 @@
 package com.misterchan.iconeditor;
 
 import android.graphics.ColorSpace;
+import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -18,9 +20,9 @@ public class ArgbColorLongPicker extends ArgbColorPicker {
 
     private void loadColor(@ColorLong long color) {
         color = Color.convert(color, colorSpace);
-        etRed.setText(String.valueOf(argb[1] = Color.red(color)));
-        etGreen.setText(String.valueOf(argb[2] = Color.green(color)));
-        etBlue.setText(String.valueOf(argb[3] = Color.blue(color)));
+        tietRed.setText(String.valueOf(argb[1] = Color.red(color)));
+        tietGreen.setText(String.valueOf(argb[2] = Color.green(color)));
+        tietBlue.setText(String.valueOf(argb[3] = Color.blue(color)));
     }
 
     protected void onComponentChanged(@IntRange(from = 0, to = 3) int index, String s, SeekBar seekBar) {
@@ -50,18 +52,23 @@ public class ArgbColorLongPicker extends ArgbColorPicker {
         sbGreen.setMax((int) (colorSpace.getMaxValue(1) * 100.0f));
         sbBlue.setMin((int) (colorSpace.getMinValue(2) * 100.0f));
         sbBlue.setMax((int) (colorSpace.getMaxValue(2) * 100.0f));
-        sbAlpha.setOnSeekBarChangeListener((OnSeekBarProgressChangeListener) (seekBar, progress) -> etAlpha.setText(String.valueOf(progress / 100.0f)));
-        sbRed.setOnSeekBarChangeListener((OnSeekBarProgressChangeListener) (seekBar, progress) -> etRed.setText(String.valueOf(progress / 100.0f)));
-        sbGreen.setOnSeekBarChangeListener((OnSeekBarProgressChangeListener) (seekBar, progress) -> etGreen.setText(String.valueOf(progress / 100.0f)));
-        sbBlue.setOnSeekBarChangeListener((OnSeekBarProgressChangeListener) (seekBar, progress) -> etBlue.setText(String.valueOf(progress / 100.0f)));
-        etAlpha.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(0, s, sbAlpha));
-        etRed.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(1, s, sbRed));
-        etGreen.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(2, s, sbGreen));
-        etBlue.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(3, s, sbBlue));
-
-        etAlpha.setText(String.valueOf(Color.alpha(oldColor)));
-        loadColor(oldColor);
+        tietAlpha.setInputType(EDITOR_TYPE_NUM_DEC);
+        tietRed.setInputType(EDITOR_TYPE_NUM_DEC_SIGNED);
+        tietGreen.setInputType(EDITOR_TYPE_NUM_DEC_SIGNED);
+        tietBlue.setInputType(EDITOR_TYPE_NUM_DEC_SIGNED);
+        sbAlpha.setOnSeekBarChangeListener((OnSeekBarProgressChangeListener) (seekBar, progress) -> tietAlpha.setText(String.valueOf(progress / 100.0f)));
+        sbRed.setOnSeekBarChangeListener((OnSeekBarProgressChangeListener) (seekBar, progress) -> tietRed.setText(String.valueOf(progress / 100.0f)));
+        sbGreen.setOnSeekBarChangeListener((OnSeekBarProgressChangeListener) (seekBar, progress) -> tietGreen.setText(String.valueOf(progress / 100.0f)));
+        sbBlue.setOnSeekBarChangeListener((OnSeekBarProgressChangeListener) (seekBar, progress) -> tietBlue.setText(String.valueOf(progress / 100.0f)));
+        tietAlpha.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(0, s, sbAlpha));
+        tietRed.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(1, s, sbRed));
+        tietGreen.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(2, s, sbGreen));
+        tietBlue.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(3, s, sbBlue));
         tvColorSpace.setText(colorSpace.toString());
+        tvColorSpace.setVisibility(View.VISIBLE);
+
+        tietAlpha.setText(String.valueOf(Color.alpha(oldColor)));
+        loadColor(oldColor);
 
         final OnColorPickListener onColorPickListener = (oldColor, newColor) -> loadColor(newColor);
         showOtherColorPickers(dialog, onColorPickListener);

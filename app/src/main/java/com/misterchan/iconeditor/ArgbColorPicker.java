@@ -8,23 +8,25 @@ import androidx.annotation.ColorLong;
 import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
 
+import com.google.android.material.textfield.TextInputEditText;
+
 public abstract class ArgbColorPicker extends ColorPicker {
 
     protected Context context;
-    protected EditText etAlpha;
-    protected EditText etRed, etGreen, etBlue;
     protected SeekBar sbAlpha;
     protected SeekBar sbRed, sbGreen, sbBlue;
+    protected TextInputEditText tietAlpha;
+    protected TextInputEditText tietRed, tietGreen, tietBlue;
 
     protected void initViews(AlertDialog dialog) {
-        etAlpha = dialog.findViewById(R.id.et_alpha);
-        etRed = dialog.findViewById(R.id.et_red);
-        etGreen = dialog.findViewById(R.id.et_green);
-        etBlue = dialog.findViewById(R.id.et_blue);
         sbAlpha = dialog.findViewById(R.id.sb_alpha);
-        sbRed = dialog.findViewById(R.id.sb_red);
-        sbGreen = dialog.findViewById(R.id.sb_green);
-        sbBlue = dialog.findViewById(R.id.sb_blue);
+        sbRed = dialog.findViewById(R.id.sb_comp_0);
+        sbGreen = dialog.findViewById(R.id.sb_comp_1);
+        sbBlue = dialog.findViewById(R.id.sb_comp_2);
+        tietAlpha = dialog.findViewById(R.id.tiet_alpha);
+        tietRed = dialog.findViewById(R.id.tiet_comp_0);
+        tietGreen = dialog.findViewById(R.id.tiet_comp_1);
+        tietBlue = dialog.findViewById(R.id.tiet_comp_2);
         vPreview = dialog.findViewById(R.id.v_color_preview);
     }
 
@@ -46,7 +48,7 @@ public abstract class ArgbColorPicker extends ColorPicker {
                 .setPositiveButton(R.string.ok,
                         (dialog, which) -> onColorPickListener.onPick(oldColor, picker.newColor))
                 .setTitle(titleId)
-                .setView(act ? R.layout.color_int_picker : R.layout.color_long_picker);
+                .setView(R.layout.color_picker);
 
         if (oldColor != null) {
             picker.oldColor = oldColor;
