@@ -1,7 +1,6 @@
 package com.misterchan.iconeditor;
 
 import android.content.Context;
-import android.widget.EditText;
 import android.widget.SeekBar;
 
 import androidx.annotation.ColorLong;
@@ -40,8 +39,7 @@ public abstract class ArgbColorPicker extends ColorPicker {
                                    final OnColorPickListener onColorPickListener,
                                    @ColorLong final Long oldColor, @StringRes int neutralFunction) {
         final Settings settings = ((MainApplication) context.getApplicationContext()).getSettings();
-        final boolean act = settings.getArgbComponentType();
-        final ArgbColorPicker picker = act ? new ArgbColorIntPicker() : new ArgbColorLongPicker();
+        final ArgbColorPicker picker = settings.getArgbColorType() ? new ArgbColorIntPicker() : new ArgbColorLongPicker();
         picker.context = context;
         picker.dialogBuilder = new AlertDialog.Builder(context)
                 .setNegativeButton(R.string.cancel, null)

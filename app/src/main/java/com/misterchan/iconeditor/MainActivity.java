@@ -4695,7 +4695,7 @@ public class MainActivity extends AppCompatActivity {
 
     @SuppressLint("ClickableViewAccessibility")
     void setArgbComponentType() {
-        onImageViewTouchWithEyedropperListener = settings.getArgbComponentType()
+        onImageViewTouchWithEyedropperListener = settings.getArgbColorType()
                 ? onImageViewTouchWithEyedropperImpreciseListener : onImageViewTouchWithEyedropperPreciseListener;
         if (rbEyedropper != null && rbEyedropper.isChecked()) {
             cbZoom.setTag(onImageViewTouchWithEyedropperListener);

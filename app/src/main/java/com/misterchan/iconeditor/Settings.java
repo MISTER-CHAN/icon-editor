@@ -14,12 +14,16 @@ public class Settings {
     static final String KEY_LOC = "loc";
     static final String KEY_MT = "mt";
 
-    private boolean argbComponentType = true;
+    private boolean argbColorType = true;
     private boolean independentTranslAndScale = false;
     private boolean multithreaded = false;
     private int argbComponentRadix = 16;
     private MainActivity mainActivity;
     private String argbComponentFormat = FORMAT_02X;
+
+    public boolean getArgbColorType() {
+        return argbColorType;
+    }
 
     public String getArgbComponentFormat() {
         return argbComponentFormat;
@@ -27,10 +31,6 @@ public class Settings {
 
     public int getArgbComponentRadix() {
         return argbComponentRadix;
-    }
-
-    public boolean getArgbComponentType() {
-        return argbComponentType;
     }
 
     public boolean getIndependentTranslAndScale() {
@@ -60,7 +60,7 @@ public class Settings {
                 break;
 
             case KEY_ACT:
-                argbComponentType = Boolean.parseBoolean(preferences.getString(KEY_ACT, "true"));
+                argbColorType = Boolean.parseBoolean(preferences.getString(KEY_ACT, "true"));
                 mainActivity.setArgbComponentType();
                 break;
 
