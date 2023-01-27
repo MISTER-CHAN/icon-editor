@@ -17,7 +17,6 @@ public class HsvDialog {
     }
 
     private final AlertDialog.Builder builder;
-    private boolean when = false;
     private OnHsvChangeListener listener;
 
     @Size(3)
@@ -29,8 +28,8 @@ public class HsvDialog {
                 .setView(R.layout.hsv);
     }
 
-    public HsvDialog setDefaultDeltaHSV(float[] deltaHSV) {
-        this.deltaHsv = deltaHSV;
+    public HsvDialog setDefaultDeltaHsv(float[] deltaHsv) {
+        this.deltaHsv = deltaHsv;
         return this;
     }
 
@@ -45,7 +44,7 @@ public class HsvDialog {
         return this;
     }
 
-    public HsvDialog setOnHSVChangeListener(OnHsvChangeListener listener) {
+    public HsvDialog setOnHsvChangeListener(OnHsvChangeListener listener) {
         this.listener = listener;
         return this;
     }

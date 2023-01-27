@@ -71,7 +71,7 @@ public abstract class ArgbColorPicker extends ColorPicker {
                 CmykColorPicker.make(context, l, newColor).show());
 
         dialog.findViewById(R.id.tv_hsv).setOnClickListener(v ->
-                HSVColorPicker.make(context, l, newColor).show());
+                HsvColorPicker.make(context, l, newColor).show());
 
         dialog.findViewById(R.id.tv_lab).setOnClickListener(v ->
                 LabColorPicker.make(context, l, newColor).show());

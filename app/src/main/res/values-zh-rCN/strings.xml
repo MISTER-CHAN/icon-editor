@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="about">关于</string>
-    <string name="accurate">精准</string>
     <string name="add">添加</string>
     <string name="all_layers">全部图层</string>
     <string name="alpha_value">Alpha 值</string>
@@ -153,6 +152,7 @@
     <string name="pen_with_filter">滤光笔</string>
     <string name="performance">性能</string>
     <string name="please_save_first">请先保存。</string>
+    <string name="precise">精密</string>
     <string name="preferences">偏好</string>
     <string name="properties">属性</string>
     <string name="rectangle">矩形</string>

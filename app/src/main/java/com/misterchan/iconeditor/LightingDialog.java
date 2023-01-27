@@ -10,7 +10,7 @@ import android.widget.SeekBar;
 import androidx.annotation.Size;
 import androidx.appcompat.app.AlertDialog;
 
-public class ChannelLighting {
+public class LightingDialog {
 
     public interface OnLightingChangeListener {
         void onChanged(@Size(8) float[] lighting, boolean stopped);
@@ -22,7 +22,7 @@ public class ChannelLighting {
     @Size(8)
     private final float[] lighting = new float[]{1.0f, 0.0f, 1.0f, 0.0f, 1.0f ,0.0f, 1.0f ,0.0f};
 
-    public ChannelLighting(Context context) {
+    public LightingDialog(Context context) {
         builder = new AlertDialog.Builder(context)
                 .setTitle(R.string.channel_lighting)
                 .setView(R.layout.channel_lighting);
@@ -33,19 +33,19 @@ public class ChannelLighting {
         onLightingChangeListener.onChanged(lighting, stopped);
     }
 
-    public ChannelLighting setOnCancelListener(DialogInterface.OnCancelListener listener) {
+    public LightingDialog setOnCancelListener(DialogInterface.OnCancelListener listener) {
         builder.setOnCancelListener(listener);
         builder.setNegativeButton(R.string.cancel,
                 (dialog, which) -> listener.onCancel(dialog));
         return this;
     }
 
-    public ChannelLighting setOnPositiveButtonClickListener(DialogInterface.OnClickListener listener) {
+    public LightingDialog setOnPositiveButtonClickListener(DialogInterface.OnClickListener listener) {
         builder.setPositiveButton(R.string.ok, listener);
         return this;
     }
 
-    public ChannelLighting setOnLightingChangeListener(OnLightingChangeListener listener) {
+    public LightingDialog setOnLightingChangeListener(OnLightingChangeListener listener) {
         onLightingChangeListener = listener;
         return this;
     }

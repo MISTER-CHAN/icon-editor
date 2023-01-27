@@ -13,24 +13,21 @@ import androidx.appcompat.app.AlertDialog;
 public class ColorBalanceDialog {
 
     private final AlertDialog.Builder builder;
-    private ColorMatrixManager.OnMatrixElementsChangeListener listener;
+    private LightingDialog.OnLightingChangeListener listener;
     private SeekBar sbRed, sbGreen, sbBlue;
 
-    @Size(20)
-    private final float[] matrix = new float[]{
-            1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-            0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
-            0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-            0.0f, 0.0f, 0.0f, 1.0f, 0.0f
+    @Size(8)
+    private final float[] lighting = new float[]{
+            1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f
     };
 
-    private final OnSeekBarProgressChangeListener onProgressChangeListener = (seekBar, progress) -> {
+    private final OnSeekBarChangeListener onProgressChangeListener = (progress, stopped) -> {
         final float r = sbRed.getProgress() / 10.0f, g = sbGreen.getProgress() / 10.0f, b = sbBlue.getProgress() / 10.0f;
         final float average = (r + g + b) / 3.0f;
-        matrix[0] = 1.0f + r - average;
-        matrix[6] = 1.0f + g - average;
-        matrix[12] = 1.0f + b - average;
-        listener.onChanged(matrix);
+        lighting[0] = 1.0f + r - average;
+        lighting[2] = 1.0f + g - average;
+        lighting[4] = 1.0f + b - average;
+        listener.onChanged(lighting, stopped);
     };
 
     public ColorBalanceDialog(Context context) {
@@ -50,7 +47,7 @@ public class ColorBalanceDialog {
         return this;
     }
 
-    public ColorBalanceDialog setOnMatrixChangeListener(ColorMatrixManager.OnMatrixElementsChangeListener listener) {
+    public ColorBalanceDialog setOnColorBalanceChangeListener(LightingDialog.OnLightingChangeListener listener) {
         this.listener = listener;
         return this;
     }

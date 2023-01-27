@@ -2,7 +2,6 @@
     <string name="a" translatable="false">A</string>
     <string name="a_" translatable="false">a*</string>
     <string name="about">About</string>
-    <string name="accurate">Accurate</string>
     <string name="add">Add</string>
     <string name="add_symbol" translatable="false">+</string>
     <string name="all_layers">All Layers</string>
@@ -173,6 +172,7 @@
     <string name="percent" translatable="false">%</string>
     <string name="performance">Performance</string>
     <string name="please_save_first">Please save first.</string>
+    <string name="precise">Precise</string>
     <string name="preferences">Preferences</string>
     <string name="properties">Properties</string>
     <string name="r" translatable="false">R</string>
@@ -217,7 +217,7 @@
     <string name="state_eyedropper_imprecise" translatable="false">(%%d, %%d) A: %1$s, R: %1$s, G: %1$s, B: %1$s</string>
     <string name="state_eyedropper_precise" translatable="false">(%d, %d) A: %s, R: %s, G: %s, B: %s</string>
     <string name="state_hsv" translatable="false">H: %+.0f°, S: %+.2f, V: %+.2f</string>
-    <string name="state_hue">色相：%.0f°</string>
+    <string name="state_hue">Hue：%.0f°</string>
     <string name="state_invert">Invert: %.1f</string>
     <string name="state_left_top">Left: %d, Top: %d</string>
     <string name="state_length">Length: %f</string>

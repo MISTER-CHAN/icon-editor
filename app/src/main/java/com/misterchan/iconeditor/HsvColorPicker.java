@@ -1,7 +1,6 @@
 package com.misterchan.iconeditor;
 
 import android.content.Context;
-import android.view.inputmethod.EditorInfo;
 import android.widget.GridLayout;
 import android.widget.SeekBar;
 
@@ -13,7 +12,7 @@ import androidx.appcompat.app.AlertDialog;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
-public class HSVColorPicker extends ColorPicker {
+public class HsvColorPicker extends ColorPicker {
 
     private SeekBar sbHue, sbSaturation, sbValue;
     private TextInputEditText tietHue, tietSaturation, tietValue;
@@ -22,7 +21,7 @@ public class HSVColorPicker extends ColorPicker {
     private final float[] hsv = new float[3];
 
     public static ColorPicker make(Context context, final OnColorPickListener onColorPickListener, @ColorLong final Long oldColor) {
-        final HSVColorPicker picker = new HSVColorPicker();
+        final HsvColorPicker picker = new HsvColorPicker();
         picker.dialogBuilder = new AlertDialog.Builder(context)
                 .setNegativeButton(R.string.cancel, null)
                 .setPositiveButton(R.string.ok, (dialog, which) -> onColorPickListener.onPick(oldColor, picker.newColor))

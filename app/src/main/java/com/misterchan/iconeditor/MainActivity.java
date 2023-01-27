@@ -495,19 +495,6 @@ public class MainActivity extends AppCompatActivity {
         }, stopped);
     };
 
-    private final DialogInterface.OnCancelListener onPreviewCancelListener = dialog -> {
-        drawBitmapOnView(selection, true);
-        preview.recycle();
-        preview = null;
-        clearStatus();
-    };
-
-    private final DialogInterface.OnClickListener onPreviewConfirmListener = (dialog, which) -> {
-        drawPreviewBitmapOnCanvas();
-        addHistory();
-        clearStatus();
-    };
-
     private final DialogInterface.OnClickListener onLayerRenameDialogPosButtonClickListener = (dialog, which) -> {
         final EditText etFileName = ((AlertDialog) dialog).findViewById(R.id.et_file_name);
         final Editable name = etFileName.getText();
@@ -515,6 +502,22 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
         tab.tvTitle.setText(name);
+    };
+
+    private final DialogInterface.OnCancelListener onPreviewCancelListener = dialog -> {
+        drawBitmapOnView(selection, true);
+        preview.recycle();
+        preview = null;
+        clearStatus();
+    };
+
+    private final DialogInterface.OnClickListener onPreviewNBClickListener =
+            (dialog, which) -> onPreviewCancelListener.onCancel(dialog);
+
+    private final DialogInterface.OnClickListener onPreviewPBClickListener = (dialog, which) -> {
+        drawPreviewBitmapOnCanvas();
+        addHistory();
+        clearStatus();
     };
 
     private final View.OnClickListener onAddSwatchViewClickListener = v ->
@@ -589,7 +592,7 @@ public class MainActivity extends AppCompatActivity {
         tvStatus.setText(String.format(getString(R.string.state_color_range), hueMin, hueMax, lumMin, lumMax));
     };
 
-    private final ColorRangeDialog.OnColorRangeChangeListener onLayerDuplicateByColorRangeConfirmListener = (hueMin, hueMax, valueMin, valueMax, stopped) -> {
+    private final ColorRangeDialog.OnColorRangeChangeListener onLayerDuplicatingByColorRangeConfirmListener = (hueMin, hueMax, valueMin, valueMax, stopped) -> {
         final Bitmap p = preview.getEntire();
         final Bitmap bm = Bitmap.createBitmap(p.getWidth(), p.getHeight(),
                 p.getConfig(), true, p.getColorSpace());
@@ -614,7 +617,7 @@ public class MainActivity extends AppCompatActivity {
 
     private final NewGraphicPropertiesDialog.OnFinishSettingListener onFinishSettingNewGraphicPropertiesListener = this::createGraphic;
 
-    private final HsvDialog.OnHsvChangeListener onFilterHSVChangeListener = (deltaHsv, stopped) -> {
+    private final HsvDialog.OnHsvChangeListener onFilterHsvChangeListener = (deltaHsv, stopped) -> {
         runOrStart(() -> {
             if (deltaHsv[0] == 0.0f && deltaHsv[1] == 0.0f && deltaHsv[2] == 0.0f) {
                 preview.clearFilter();
@@ -629,7 +632,7 @@ public class MainActivity extends AppCompatActivity {
         tvStatus.setText(String.format(getString(R.string.state_hsv), deltaHsv[0], deltaHsv[1], deltaHsv[2]));
     };
 
-    private final HsvDialog.OnHsvChangeListener onLayerHSVChangeListener = (deltaHsv, stopped) -> {
+    private final HsvDialog.OnHsvChangeListener onLayerHsvChangeListener = (deltaHsv, stopped) -> {
         tab.deltaHsv = deltaHsv;
         drawBitmapOnView(stopped);
         tvStatus.setText(String.format(getString(R.string.state_hsv), deltaHsv[0], deltaHsv[1], deltaHsv[2]));
@@ -643,7 +646,7 @@ public class MainActivity extends AppCompatActivity {
         }, stopped);
     };
 
-    private final ChannelLighting.OnLightingChangeListener onLightingChangeListener = (lighting, stopped) -> {
+    private final LightingDialog.OnLightingChangeListener onLightingChangeListener = (lighting, stopped) -> {
         runOrStart(() -> {
             preview.addLightingColorFilter(lighting);
             drawPreviewBitmapOnView(stopped);
@@ -660,6 +663,34 @@ public class MainActivity extends AppCompatActivity {
     private final ColorMatrixManager.OnMatrixElementsChangeListener onLayerColorMatrixChangeListener = matrix -> {
         tab.colorMatrix = matrix;
         drawBitmapOnView(true);
+    };
+
+    private final OnSeekBarChangeListener onFilterContrastSeekBarProgressChangeListener = (progress, stopped) -> {
+        final float scale = progress / 10.0f, shift = 0xFF / 2.0f * (1.0f - scale);
+        runOrStart(() -> {
+            preview.addLightingColorFilter(scale, shift);
+            drawPreviewBitmapOnView(stopped);
+        }, stopped);
+        tvStatus.setText(String.format(getString(R.string.state_contrast), scale));
+    };
+
+    private final OnSeekBarChangeListener onFilterHToASeekBarProgressChangeListener = (progress, stopped) -> {
+        runOrStart(() -> {
+            final int w = preview.getWidth(), h = preview.getHeight();
+            final int[] src = preview.getPixels(), dst = new int[w * h];
+            BitmapUtil.setAlphaByHue(src, dst, progress);
+            preview.setPixels(dst, w, h);
+            drawPreviewBitmapOnView(stopped);
+        }, stopped);
+        tvStatus.setText(String.format(getString(R.string.state_hue), (float) progress));
+    };
+
+    private final OnSeekBarChangeListener onFilterLightnessSeekBarProgressChangeListener = (progress, stopped) -> {
+        runOrStart(() -> {
+            preview.addLightingColorFilter(1.0f, progress);
+            drawPreviewBitmapOnView(stopped);
+        }, stopped);
+        tvStatus.setText(String.format(getString(R.string.state_lightness), progress));
     };
 
     private final OnSeekBarChangeListener onThresholdChangeListener = (progress, stopped) -> {
@@ -686,17 +717,14 @@ public class MainActivity extends AppCompatActivity {
         tvStatus.setText(String.format(getString(R.string.state_threshold), progress));
     };
 
-    private final DialogInterface.OnClickListener onThresholdConfirmListener = (dialog, which) -> {
-        onPreviewCancelListener.onCancel(dialog);
-    };
+    private final DialogInterface.OnClickListener onThresholdPBClickListener = onPreviewNBClickListener;
 
     private final View.OnClickListener onThresholdButtonClickListener = v -> {
         createPreviewBitmap();
-        new SeekBarDialog(this).setTitle(R.string.threshold).setMin(0x00).setMax(0xFF)
-                .setOnCancelListener(onPreviewCancelListener, false)
-                .setOnPositiveButtonClickListener(onThresholdConfirmListener)
+        new SeekBarDialog(this).setTitle(R.string.threshold).setMin(0x00).setMax(0xFF).setProgress(threshold)
                 .setOnChangeListener(onThresholdChangeListener)
-                .setProgress(threshold)
+                .setOnPositiveButtonClickListener(onThresholdPBClickListener)
+                .setOnCancelListener(onPreviewCancelListener, false)
                 .show();
         onThresholdChangeListener.onChanged(threshold, true);
     };
@@ -2089,34 +2117,6 @@ public class MainActivity extends AppCompatActivity {
         } else {
             flImageView.setOnTouchListener((View.OnTouchListener) cbZoom.getTag());
         }
-    };
-
-    private final OnSeekBarChangeListener onFilterContrastSeekBarProgressChangeListener = (progress, stopped) -> {
-        final float scale = progress / 10.0f, shift = 0xFF / 2.0f * (1.0f - scale);
-        runOrStart(() -> {
-            preview.addLightingColorFilter(scale, shift);
-            drawPreviewBitmapOnView(stopped);
-        }, stopped);
-        tvStatus.setText(String.format(getString(R.string.state_contrast), scale));
-    };
-
-    private final OnSeekBarChangeListener onFilterHToASeekBarProgressChangeListener = (progress, stopped) -> {
-        runOrStart(() -> {
-            final int w = preview.getWidth(), h = preview.getHeight();
-            final int[] src = preview.getPixels(), dst = new int[w * h];
-            BitmapUtil.setAlphaByHue(src, dst, progress);
-            preview.setPixels(dst, w, h);
-            drawPreviewBitmapOnView(stopped);
-        }, stopped);
-        tvStatus.setText(String.format(getString(R.string.state_hue), (float) progress));
-    };
-
-    private final OnSeekBarChangeListener onFilterLightnessSeekBarProgressChangeListener = (progress, stopped) -> {
-        runOrStart(() -> {
-            preview.addLightingColorFilter(1.0f, progress);
-            drawPreviewBitmapOnView(stopped);
-        }, stopped);
-        tvStatus.setText(String.format(getString(R.string.state_lightness), progress));
     };
 
     private final OnSeekBarChangeListener onFilterSaturationSeekBarProgressChangeListener = (progress, stopped) -> {
@@ -3864,10 +3864,10 @@ public class MainActivity extends AppCompatActivity {
             case R.id.i_filter_channel_lighting:
                 drawFloatingLayers();
                 createPreviewBitmap();
-                new ChannelLighting(this)
-                        .setOnCancelListener(onPreviewCancelListener)
+                new LightingDialog(this)
                         .setOnLightingChangeListener(onLightingChangeListener)
-                        .setOnPositiveButtonClickListener(onPreviewConfirmListener)
+                        .setOnPositiveButtonClickListener(onPreviewPBClickListener)
+                        .setOnCancelListener(onPreviewCancelListener)
                         .show();
                 clearStatus();
                 break;
@@ -3876,9 +3876,9 @@ public class MainActivity extends AppCompatActivity {
                 drawFloatingLayers();
                 createPreviewBitmap();
                 new ColorBalanceDialog(this)
+                        .setOnColorBalanceChangeListener(onLightingChangeListener)
+                        .setOnPositiveButtonClickListener(onPreviewPBClickListener)
                         .setOnCancelListener(onPreviewCancelListener)
-                        .setOnMatrixChangeListener(onColorMatrixChangeListener)
-                        .setOnPositiveButtonClickListener(onPreviewConfirmListener)
                         .show();
                 clearStatus();
                 break;
@@ -3888,7 +3888,7 @@ public class MainActivity extends AppCompatActivity {
                 createPreviewBitmap();
                 new SeekBarDialog(this).setTitle(R.string.contrast).setMin(-10).setMax(100).setProgress(10)
                         .setOnChangeListener(onFilterContrastSeekBarProgressChangeListener)
-                        .setOnPositiveButtonClickListener(onPreviewConfirmListener)
+                        .setOnPositiveButtonClickListener(onPreviewPBClickListener)
                         .setOnCancelListener(onPreviewCancelListener)
                         .show();
                 clearStatus();
@@ -3900,7 +3900,7 @@ public class MainActivity extends AppCompatActivity {
                 new CurvesDialog(this)
                         .setSource(preview.getPixels())
                         .setOnCurvesChangeListener(onFilterCurvesChangeListener)
-                        .setOnPositiveButtonClickListener(onPreviewConfirmListener)
+                        .setOnPositiveButtonClickListener(onPreviewPBClickListener)
                         .setOnCancelListener(onPreviewCancelListener)
                         .show();
                 clearStatus();
@@ -3910,8 +3910,8 @@ public class MainActivity extends AppCompatActivity {
                 drawFloatingLayers();
                 createPreviewBitmap();
                 new HsvDialog(this)
-                        .setOnHSVChangeListener(onFilterHSVChangeListener)
-                        .setOnPositiveButtonClickListener(onPreviewConfirmListener)
+                        .setOnHsvChangeListener(onFilterHsvChangeListener)
+                        .setOnPositiveButtonClickListener(onPreviewPBClickListener)
                         .setOnCancelListener(onPreviewCancelListener)
                         .show();
                 clearStatus();
@@ -3922,7 +3922,7 @@ public class MainActivity extends AppCompatActivity {
                 createPreviewBitmap();
                 new SeekBarDialog(this).setTitle(R.string.hue).setMin(0).setMax(360).setProgress(0)
                         .setOnChangeListener(onFilterHToASeekBarProgressChangeListener)
-                        .setOnPositiveButtonClickListener(onPreviewConfirmListener)
+                        .setOnPositiveButtonClickListener(onPreviewPBClickListener)
                         .setOnCancelListener(onPreviewCancelListener)
                         .show();
                 onFilterHToASeekBarProgressChangeListener.onChanged(0, true);
@@ -3933,7 +3933,7 @@ public class MainActivity extends AppCompatActivity {
                 createPreviewBitmap();
                 new LevelsDialog(this)
                         .setOnLevelsChangeListener(onFilterLevelsChangeListener)
-                        .setOnPositiveButtonClickListener(onPreviewConfirmListener)
+                        .setOnPositiveButtonClickListener(onPreviewPBClickListener)
                         .setOnCancelListener(onPreviewCancelListener)
                         .show()
                         .drawHistogram(preview.getPixels());
@@ -3945,7 +3945,7 @@ public class MainActivity extends AppCompatActivity {
                 createPreviewBitmap();
                 new SeekBarDialog(this).setTitle(R.string.lightness).setMin(-0xFF).setMax(0xFF).setProgress(0)
                         .setOnChangeListener(onFilterLightnessSeekBarProgressChangeListener)
-                        .setOnPositiveButtonClickListener(onPreviewConfirmListener)
+                        .setOnPositiveButtonClickListener(onPreviewPBClickListener)
                         .setOnCancelListener(onPreviewCancelListener)
                         .show();
                 clearStatus();
@@ -3958,7 +3958,7 @@ public class MainActivity extends AppCompatActivity {
                         .make(this,
                                 R.string.channel_mixer,
                                 onColorMatrixChangeListener,
-                                onPreviewConfirmListener,
+                                onPreviewPBClickListener,
                                 onPreviewCancelListener)
                         .show();
                 clearStatus();
@@ -3969,7 +3969,7 @@ public class MainActivity extends AppCompatActivity {
                 createPreviewBitmap();
                 new SeekBarDialog(this).setTitle(R.string.saturation).setMin(0).setMax(100).setProgress(10)
                         .setOnChangeListener(onFilterSaturationSeekBarProgressChangeListener)
-                        .setOnPositiveButtonClickListener(onPreviewConfirmListener)
+                        .setOnPositiveButtonClickListener(onPreviewPBClickListener)
                         .setOnCancelListener(onPreviewCancelListener)
                         .show();
                 clearStatus();
@@ -3980,7 +3980,7 @@ public class MainActivity extends AppCompatActivity {
                 createPreviewBitmap();
                 new SeekBarDialog(this).setTitle(R.string.threshold).setMin(0).setMax(255).setProgress(128)
                         .setOnChangeListener(onFilterThresholdSeekBarProgressChangeListener)
-                        .setOnPositiveButtonClickListener(onPreviewConfirmListener)
+                        .setOnPositiveButtonClickListener(onPreviewPBClickListener)
                         .setOnCancelListener(onPreviewCancelListener)
                         .show();
                 onFilterThresholdSeekBarProgressChangeListener.onChanged(128, true);
@@ -3991,9 +3991,8 @@ public class MainActivity extends AppCompatActivity {
                 drawFloatingLayers();
                 createPreviewBitmap();
                 final AlertDialog dialog = new AlertDialog.Builder(this).setTitle(R.string.white_balance)
-                        .setPositiveButton(R.string.ok, onPreviewConfirmListener)
-                        .setNegativeButton(R.string.cancel,
-                                ((d, which) -> onPreviewCancelListener.onCancel(d)))
+                        .setPositiveButton(R.string.ok, onPreviewPBClickListener)
+                        .setNegativeButton(R.string.cancel, onPreviewNBClickListener)
                         .setOnCancelListener(onPreviewCancelListener)
                         .show();
 
@@ -4171,7 +4170,7 @@ public class MainActivity extends AppCompatActivity {
                 createPreviewBitmap();
                 new ColorRangeDialog(this)
                         .setOnColorRangeChangeListener(onColorRangeChangeListener)
-                        .setOnPositiveButtonClickListener(onLayerDuplicateByColorRangeConfirmListener)
+                        .setOnPositiveButtonClickListener(onLayerDuplicatingByColorRangeConfirmListener)
                         .setOnCancelListener(onPreviewCancelListener)
                         .show();
                 break;
@@ -4212,9 +4211,9 @@ public class MainActivity extends AppCompatActivity {
                         break;
                     case HSV:
                         new HsvDialog(this)
-                                .setOnHSVChangeListener(onLayerHSVChangeListener)
+                                .setOnHsvChangeListener(onLayerHsvChangeListener)
                                 .setOnPositiveButtonClickListener(null)
-                                .setDefaultDeltaHSV(tab.deltaHsv)
+                                .setDefaultDeltaHsv(tab.deltaHsv)
                                 .show();
                         tvStatus.setText(String.format(getString(R.string.state_hsv),
                                 tab.deltaHsv[0], tab.deltaHsv[1], tab.deltaHsv[2]));
@@ -4307,7 +4306,7 @@ public class MainActivity extends AppCompatActivity {
                 createPreviewBitmap();
                 new SeekBarDialog(this).setTitle(R.string.noise).setMin(0).setMax(100).setProgress(0)
                         .setOnChangeListener(onNoiseSeekBarProgressChangeListener)
-                        .setOnPositiveButtonClickListener(onPreviewConfirmListener)
+                        .setOnPositiveButtonClickListener(onPreviewPBClickListener)
                         .setOnCancelListener(onPreviewCancelListener)
                         .show();
                 clearStatus();

@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="about">關於</string>
-    <string name="accurate">精準</string>
     <string name="add">新增</string>
     <string name="all_layers">全部圖層</string>
     <string name="alpha_value">Alpha 値</string>
@@ -153,6 +152,7 @@
     <string name="pen_with_filter">濾光筆</string>
     <string name="performance">效能</string>
     <string name="please_save_first">請先儲存。</string>
+    <string name="precise">精密</string>
     <string name="preferences">偏好</string>
     <string name="properties">屬性</string>
     <string name="rectangle">矩形</string>
@@ -191,7 +191,7 @@
     <string name="state_lightness">明度：%d</string>
     <string name="state_color_range">色相：%d° – %d°，明度：%d%% – %d%%</string>
     <string name="state_contrast">對比度：%.1f</string>
-    <string name="state_hue">Hue: %.0f°</string>
+    <string name="state_hue">色相: %.0f°</string>
     <string name="state_invert">反相：%.1f</string>
     <string name="state_left_top">左：%d，上：%d</string>
     <string name="state_length">長：%f</string>
