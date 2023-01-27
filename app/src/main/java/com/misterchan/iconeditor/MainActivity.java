@@ -487,10 +487,10 @@ public class MainActivity extends AppCompatActivity {
 
     private final CurvesDialog.OnCurvesChangeListener onFilterCurvesChangeListener = (curves, stopped) -> {
         runOrStart(() -> {
-            final int width = preview.getWidth(), height = preview.getHeight(), area = width * height;
-            final int[] src = preview.getPixels(), dst = new int[area];
+            final int w = preview.getWidth(), h = preview.getHeight();
+            final int[] src = preview.getPixels(), dst = new int[w * h];
             BitmapUtil.applyCurves(src, dst, curves);
-            preview.setPixels(dst, width, height);
+            preview.setPixels(dst, w, h);
             drawPreviewBitmapOnView(stopped);
         }, stopped);
     };
@@ -622,8 +622,8 @@ public class MainActivity extends AppCompatActivity {
             if (deltaHsv[0] == 0.0f && deltaHsv[1] == 0.0f && deltaHsv[2] == 0.0f) {
                 preview.clearFilter();
             } else {
-                final int w = preview.getWidth(), h = preview.getHeight(), area = w * h;
-                final int[] src = preview.getPixels(), dst = new int[area];
+                final int w = preview.getWidth(), h = preview.getHeight();
+                final int[] src = preview.getPixels(), dst = new int[w * h];
                 BitmapUtil.shiftHsv(src, dst, deltaHsv);
                 preview.setPixels(dst, w, h);
             }
