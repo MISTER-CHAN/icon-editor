@@ -12,7 +12,7 @@
         android:orientation="horizontal"
         android:rowCount="5">
 
-        <TextView />
+        <View android:visibility="gone" />
 
         <TextView
             android:layout_columnWeight="1"
@@ -31,16 +31,14 @@
 
         <SeekBar
             android:id="@+id/sb_red_scale"
-            android:layout_columnWeight="1"
-            android:layout_gravity="center_vertical"
+            android:layout_gravity="center_vertical|fill_horizontal"
             android:max="20"
             android:min="0"
             android:progress="10" />
 
         <SeekBar
             android:id="@+id/sb_red_shift"
-            android:layout_columnWeight="1"
-            android:layout_gravity="center_vertical"
+            android:layout_gravity="center_vertical|fill_horizontal"
             android:max="255"
             android:min="-255"
             android:progress="0" />
@@ -52,16 +50,14 @@
 
         <SeekBar
             android:id="@+id/sb_green_scale"
-            android:layout_columnWeight="1"
-            android:layout_gravity="center_vertical"
+            android:layout_gravity="center_vertical|fill_horizontal"
             android:max="20"
             android:min="0"
             android:progress="10" />
 
         <SeekBar
             android:id="@+id/sb_green_shift"
-            android:layout_columnWeight="1"
-            android:layout_gravity="center_vertical"
+            android:layout_gravity="center_vertical|fill_horizontal"
             android:max="255"
             android:min="-255"
             android:progress="0" />
@@ -73,16 +69,14 @@
 
         <SeekBar
             android:id="@+id/sb_blue_scale"
-            android:layout_columnWeight="1"
-            android:layout_gravity="center_vertical"
+            android:layout_gravity="center_vertical|fill_horizontal"
             android:max="20"
             android:min="0"
             android:progress="10" />
 
         <SeekBar
             android:id="@+id/sb_blue_shift"
-            android:layout_columnWeight="1"
-            android:layout_gravity="center_vertical"
+            android:layout_gravity="center_vertical|fill_horizontal"
             android:max="255"
             android:min="-255"
             android:progress="0" />
@@ -94,16 +88,14 @@
 
         <SeekBar
             android:id="@+id/sb_alpha_scale"
-            android:layout_columnWeight="1"
-            android:layout_gravity="center_vertical"
+            android:layout_gravity="center_vertical|fill_horizontal"
             android:max="20"
             android:min="0"
             android:progress="10" />
 
         <SeekBar
             android:id="@+id/sb_alpha_shift"
-            android:layout_columnWeight="1"
-            android:layout_gravity="center_vertical"
+            android:layout_gravity="center_vertical|fill_horizontal"
             android:max="255"
             android:min="-255"
             android:progress="0" />

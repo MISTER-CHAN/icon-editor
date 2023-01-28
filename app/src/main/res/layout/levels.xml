@@ -46,9 +46,9 @@
         <SeekBar
             android:id="@+id/sb_input_shadows"
             android:layout_gravity="center_vertical|fill_horizontal"
-            android:max="255"
-            android:min="0"
-            android:progress="0" />
+            android:max="0xFF"
+            android:min="0x00"
+            android:progress="0x00" />
 
         <TextView
             android:layout_gravity="center_vertical|start"
@@ -58,9 +58,9 @@
         <SeekBar
             android:id="@+id/sb_input_highlights"
             android:layout_gravity="center_vertical|fill_horizontal"
-            android:max="255"
-            android:min="0"
-            android:progress="255" />
+            android:max="0xFF"
+            android:min="0x00"
+            android:progress="0xFF" />
 
         <TextView
             android:layout_columnSpan="2"
@@ -77,9 +77,9 @@
         <SeekBar
             android:id="@+id/sb_output_shadows"
             android:layout_gravity="center_vertical|fill_horizontal"
-            android:max="255"
-            android:min="0"
-            android:progress="0" />
+            android:max="0xFF"
+            android:min="0x00"
+            android:progress="0x00" />
 
         <TextView
             android:layout_gravity="center_vertical|start"
@@ -89,8 +89,8 @@
         <SeekBar
             android:id="@+id/sb_output_highlights"
             android:layout_gravity="center_vertical|fill_horizontal"
-            android:max="255"
-            android:min="0"
-            android:progress="255" />
+            android:max="0xFF"
+            android:min="0x00"
+            android:progress="0xFF" />
     </GridLayout>
 </LinearLayout>

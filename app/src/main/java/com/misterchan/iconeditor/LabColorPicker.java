@@ -54,9 +54,12 @@ public class LabColorPicker extends ColorPicker {
         sbL = dialog.findViewById(R.id.sb_comp_0);
         sbA = dialog.findViewById(R.id.sb_comp_1);
         sbB = dialog.findViewById(R.id.sb_comp_2);
-        tietL = dialog.findViewById(R.id.tiet_comp_0);
-        tietA = dialog.findViewById(R.id.tiet_comp_1);
-        tietB = dialog.findViewById(R.id.tiet_comp_2);
+        final TextInputLayout tilL = dialog.findViewById(R.id.til_comp_0);
+        final TextInputLayout tilA = dialog.findViewById(R.id.til_comp_1);
+        final TextInputLayout tilB = dialog.findViewById(R.id.til_comp_2);
+        tietL = (TextInputEditText) tilL.getEditText();
+        tietA = (TextInputEditText) tilA.getEditText();
+        tietB = (TextInputEditText) tilB.getEditText();
         vPreview = dialog.findViewById(R.id.v_color_preview);
 
         hideOtherColorPickers(dialog);
@@ -70,9 +73,9 @@ public class LabColorPicker extends ColorPicker {
         tietL.setInputType(EDITOR_TYPE_NUM_DEC);
         tietA.setInputType(EDITOR_TYPE_NUM_DEC_SIGNED);
         tietB.setInputType(EDITOR_TYPE_NUM_DEC_SIGNED);
-        ((TextInputLayout) dialog.findViewById(R.id.til_comp_0)).setHint(R.string.l_);
-        ((TextInputLayout) dialog.findViewById(R.id.til_comp_1)).setHint(R.string.a_);
-        ((TextInputLayout) dialog.findViewById(R.id.til_comp_2)).setHint(R.string.b_);
+        tilL.setHint(R.string.l_);
+        tilA.setHint(R.string.a_);
+        tilB.setHint(R.string.b_);
         sbL.setOnSeekBarChangeListener((OnSeekBarProgressChangeListener) (seekBar, progress) -> tietL.setText(String.valueOf(progress)));
         sbA.setOnSeekBarChangeListener((OnSeekBarProgressChangeListener) (seekBar, progress) -> tietA.setText(String.valueOf(progress)));
         sbB.setOnSeekBarChangeListener((OnSeekBarProgressChangeListener) (seekBar, progress) -> tietB.setText(String.valueOf(progress)));

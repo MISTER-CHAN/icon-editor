@@ -9,21 +9,19 @@ import androidx.annotation.ColorInt;
 import androidx.appcompat.app.AlertDialog;
 
 public abstract class ColorPicker {
-    protected static final int EDITOR_TYPE_NUM_DEC = EditorInfo.TYPE_CLASS_NUMBER | EditorInfo.TYPE_NUMBER_FLAG_DECIMAL;
+    protected static final int EDITOR_TYPE_NUM = EditorInfo.TYPE_CLASS_NUMBER;
+    protected static final int EDITOR_TYPE_NUM_DEC = EDITOR_TYPE_NUM | EditorInfo.TYPE_NUMBER_FLAG_DECIMAL;
     protected static final int EDITOR_TYPE_NUM_DEC_SIGNED = EDITOR_TYPE_NUM_DEC | EditorInfo.TYPE_NUMBER_FLAG_SIGNED;
+
+    // Positions of first view and last view in alpha row
+    private static final int GL_POS_ALPHA_BEGIN = 0, GL_POS_ALPHA_END = 2;
+
+    // Positions of first view and last view in extra row
+    private static final int GL_POS_EXTRA_BEGIN = 8, GL_POS_EXTRA_END = 10;
 
     public interface OnColorPickListener {
         void onPick(Long oldColor, Long newColor);
     }
-
-    // Positions of first view and last view in alpha row
-    private static final int GL_POS_ALPHA_BEGIN = 0, GL_POS_ALPHA_END = 3;
-
-    // Positions of first view and last view in extra row
-    private static final int GL_POS_EXTRA_BEGIN = 12, GL_POS_EXTRA_END = 15;
-
-    // Positions of component unit views in GridLayout
-    private static final int[] GL_POS_UNIT = new int[]{4, 7, 10};
 
     protected AlertDialog.Builder dialogBuilder;
     protected View vPreview;
@@ -46,12 +44,6 @@ public abstract class ColorPicker {
     protected static void setChildVisibilities(GridLayout gl, int begin, int end, int visibility) {
         for (int i = begin; i < end; ++i) {
             gl.getChildAt(i).setVisibility(visibility);
-        }
-    }
-
-    protected static void showUnits(GridLayout gl) {
-        for (final int i : GL_POS_UNIT) {
-            gl.getChildAt(i).setVisibility(View.VISIBLE);
         }
     }
 

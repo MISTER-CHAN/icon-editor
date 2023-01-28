@@ -19,8 +19,7 @@
 
         <SeekBar
             android:id="@+id/sb_red"
-            android:layout_columnWeight="1"
-            android:layout_gravity="center_vertical"
+            android:layout_gravity="center_vertical|fill_horizontal"
             android:max="20"
             android:min="0"
             android:progress="10" />
@@ -37,8 +36,7 @@
 
         <SeekBar
             android:id="@+id/sb_green"
-            android:layout_columnWeight="1"
-            android:layout_gravity="center_vertical"
+            android:layout_gravity="center_vertical|fill_horizontal"
             android:max="20"
             android:min="0"
             android:progress="10" />
@@ -55,8 +53,7 @@
 
         <SeekBar
             android:id="@+id/sb_blue"
-            android:layout_columnWeight="1"
-            android:layout_gravity="center_vertical"
+            android:layout_gravity="center_vertical|fill_horizontal"
             android:max="20"
             android:min="0"
             android:progress="10" />

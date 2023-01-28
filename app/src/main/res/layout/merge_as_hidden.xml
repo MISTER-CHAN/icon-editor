@@ -26,7 +26,7 @@
 
         <SeekBar
             android:id="@+id/sb_scale_to_white"
-            android:layout_gravity="fill"
+            android:layout_gravity="center_vertical|fill_horizontal"
             android:max="8"
             android:min="0"
             android:progress="4" />
@@ -38,7 +38,7 @@
 
         <SeekBar
             android:id="@+id/sb_scale_to_black"
-            android:layout_gravity="fill"
+            android:layout_gravity="center_vertical|fill_horizontal"
             android:max="8"
             android:min="0"
             android:progress="4" />

@@ -60,9 +60,12 @@ public class XyzColorPicker extends ColorPicker {
         sbX = dialog.findViewById(R.id.sb_comp_0);
         sbY = dialog.findViewById(R.id.sb_comp_1);
         sbZ = dialog.findViewById(R.id.sb_comp_2);
-        tietX = dialog.findViewById(R.id.tiet_comp_0);
-        tietY = dialog.findViewById(R.id.tiet_comp_1);
-        tietZ = dialog.findViewById(R.id.tiet_comp_2);
+        final TextInputLayout tilX = dialog.findViewById(R.id.til_comp_0);
+        final TextInputLayout tilY = dialog.findViewById(R.id.til_comp_1);
+        final TextInputLayout tilZ = dialog.findViewById(R.id.til_comp_2);
+        tietX = (TextInputEditText) tilX.getEditText();
+        tietY = (TextInputEditText) tilY.getEditText();
+        tietZ = (TextInputEditText) tilZ.getEditText();
         vPreview = dialog.findViewById(R.id.v_color_preview);
 
         hideOtherColorPickers(dialog);
@@ -77,9 +80,9 @@ public class XyzColorPicker extends ColorPicker {
         tietX.setInputType(EDITOR_TYPE_NUM_DEC_SIGNED);
         tietY.setInputType(EDITOR_TYPE_NUM_DEC_SIGNED);
         tietZ.setInputType(EDITOR_TYPE_NUM_DEC_SIGNED);
-        ((TextInputLayout) dialog.findViewById(R.id.til_comp_0)).setHint(R.string.x);
-        ((TextInputLayout) dialog.findViewById(R.id.til_comp_1)).setHint(R.string.y);
-        ((TextInputLayout) dialog.findViewById(R.id.til_comp_2)).setHint(R.string.z);
+        tilX.setHint(R.string.x);
+        tilY.setHint(R.string.y);
+        tilZ.setHint(R.string.z);
         sbX.setOnSeekBarChangeListener((OnSeekBarProgressChangeListener) (seekBar, progress) -> tietX.setText(String.valueOf((float) progress / 100.0f)));
         sbY.setOnSeekBarChangeListener((OnSeekBarProgressChangeListener) (seekBar, progress) -> tietY.setText(String.valueOf((float) progress / 100.0f)));
         sbZ.setOnSeekBarChangeListener((OnSeekBarProgressChangeListener) (seekBar, progress) -> tietZ.setText(String.valueOf((float) progress / 100.0f)));

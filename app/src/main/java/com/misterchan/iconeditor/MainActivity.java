@@ -71,6 +71,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -109,22 +111,11 @@ public class MainActivity extends AppCompatActivity {
 
     private static final Looper MAIN_LOOPER = Looper.getMainLooper();
 
-    private static final Pattern PATTERN_FILE_NAME = Pattern.compile("[\"*/:<>?\\\\|]");
     private static final Pattern PATTERN_TREE = Pattern.compile("^content://com\\.android\\.externalstorage\\.documents/tree/primary%3A(?<path>.*)$");
 
     private static final Bitmap.CompressFormat[] COMPRESS_FORMATS = {
             Bitmap.CompressFormat.PNG,
             Bitmap.CompressFormat.JPEG
-    };
-
-    private static final InputFilter[] FILTERS_FILE_NAME = new InputFilter[]{
-            (source, sourceStart, sourceEnd, dest, destStart, destEnd) -> {
-                final Matcher matcher = PATTERN_FILE_NAME.matcher(source.toString());
-                if (matcher.find()) {
-                    return "";
-                }
-                return null;
-            }
     };
 
     private static final Paint PAINT_BLACK = new Paint() {
@@ -186,6 +177,20 @@ public class MainActivity extends AppCompatActivity {
     };
 
     private static final Paint PAINT_SRC_OVER = new Paint();
+
+    private static final class FileNameHelper {
+        private static final Pattern PATTERN = Pattern.compile("[\"*/:<>?\\\\|]");
+
+        public static final InputFilter[] FILTERS = new InputFilter[]{
+                (source, start, end, dest, dstart, dend) -> {
+                    final Matcher matcher = PATTERN.matcher(source.toString());
+                    if (matcher.find()) {
+                        return "";
+                    }
+                    return null;
+                }
+        };
+    }
 
     private Bitmap bitmap;
     private Bitmap bitmapSource;
@@ -414,9 +419,9 @@ public class MainActivity extends AppCompatActivity {
     };
 
     private final DialogInterface.OnClickListener onFileNameDialogPosButtonClickListener = (dialog, which) -> {
-        final EditText etFileName = ((AlertDialog) dialog).findViewById(R.id.et_file_name);
+        final TextInputEditText tietFileName = ((AlertDialog) dialog).findViewById(R.id.tiet_file_name);
         final AppCompatSpinner sFileType = ((AlertDialog) dialog).findViewById(R.id.s_file_type);
-        final String fileName = etFileName.getText().toString() + sFileType.getSelectedItem().toString();
+        final String fileName = tietFileName.getText().toString() + sFileType.getSelectedItem().toString();
         if (fileName.length() <= 0) {
             return;
         }
@@ -446,9 +451,9 @@ public class MainActivity extends AppCompatActivity {
                 .setView(R.layout.file_name)
                 .show();
 
-        final EditText etFileName = fileNameDialog.findViewById(R.id.et_file_name);
-        etFileName.setFilters(FILTERS_FILE_NAME);
-        etFileName.setText(getTabName());
+        final TextInputEditText tietFileName = fileNameDialog.findViewById(R.id.tiet_file_name);
+        tietFileName.setFilters(FileNameHelper.FILTERS);
+        tietFileName.setText(getTabName());
     };
 
     private final ActivityResultLauncher<String> getImages =
@@ -496,8 +501,8 @@ public class MainActivity extends AppCompatActivity {
     };
 
     private final DialogInterface.OnClickListener onLayerRenameDialogPosButtonClickListener = (dialog, which) -> {
-        final EditText etFileName = ((AlertDialog) dialog).findViewById(R.id.et_file_name);
-        final Editable name = etFileName.getText();
+        final TextInputEditText tietFileName = ((AlertDialog) dialog).findViewById(R.id.tiet_file_name);
+        final Editable name = tietFileName.getText();
         if (name.length() <= 0) {
             return;
         }
@@ -4273,11 +4278,12 @@ public class MainActivity extends AppCompatActivity {
                         .setView(R.layout.file_name)
                         .show();
 
-                final EditText et = dialog.findViewById(R.id.et_file_name);
+                final TextInputLayout til = dialog.findViewById(R.id.til_file_name);
+                final TextInputEditText tiet = (TextInputEditText) til.getEditText();
 
-                et.setFilters(FILTERS_FILE_NAME);
-                et.setHint(R.string.layer_name);
-                et.setText(getTabName());
+                tiet.setFilters(FileNameHelper.FILTERS);
+                tiet.setText(getTabName());
+                til.setHint(R.string.layer_name);
                 dialog.findViewById(R.id.s_file_type).setVisibility(View.GONE);
 
                 break;

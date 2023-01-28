@@ -10,7 +10,7 @@
         android:layout_height="wrap_content"
         android:columnCount="2"
         android:orientation="horizontal"
-        android:rowCount="2">
+        android:rowCount="3">
 
         <TextView
             android:layout_gravity="center_vertical|start"
@@ -18,54 +18,50 @@
             android:text="@string/size" />
 
         <LinearLayout
-            android:layout_gravity="fill"
-            android:orientation="vertical">
+            android:layout_gravity="fill_horizontal"
+            android:orientation="horizontal">
 
-            <LinearLayout
-                android:layout_width="match_parent"
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:baselineAligned="false"
-                android:orientation="horizontal">
+                android:layout_margin="8dp"
+                android:layout_weight="1">
 
-                <com.google.android.material.textfield.TextInputLayout
-                    android:layout_width="0dp"
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/et_img_size_x"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_margin="8dp"
-                    android:layout_weight="1">
+                    android:background="@color/transparent"
+                    android:hint="@string/width"
+                    android:inputType="number"
+                    android:textAlignment="textEnd" />
+            </com.google.android.material.textfield.TextInputLayout>
 
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/et_img_size_x"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@color/transparent"
-                        android:hint="@string/width"
-                        android:inputType="number"
-                        android:textAlignment="textEnd" />
-                </com.google.android.material.textfield.TextInputLayout>
-
-                <com.google.android.material.textfield.TextInputLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="8dp"
-                    android:layout_weight="1">
-
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/et_img_size_y"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@color/transparent"
-                        android:hint="@string/height"
-                        android:inputType="number"
-                        android:textAlignment="textEnd" />
-                </com.google.android.material.textfield.TextInputLayout>
-            </LinearLayout>
-
-            <CheckBox
-                android:id="@+id/cb_img_lar"
-                android:layout_width="wrap_content"
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="@string/lock_aspect_ratio" />
+                android:layout_margin="8dp"
+                android:layout_weight="1">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/et_img_size_y"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@color/transparent"
+                    android:hint="@string/height"
+                    android:inputType="number"
+                    android:textAlignment="textEnd" />
+            </com.google.android.material.textfield.TextInputLayout>
         </LinearLayout>
+
+        <View android:visibility="gone" />
+
+        <CheckBox
+            android:id="@+id/cb_img_lar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:text="@string/lock_aspect_ratio" />
 
         <TextView
             android:layout_gravity="center_vertical|start"
@@ -73,7 +69,7 @@
             android:text="@string/when_resizing" />
 
         <RadioGroup
-            android:layout_gravity="fill"
+            android:layout_gravity="fill_horizontal"
             android:orientation="horizontal">
 
             <RadioButton

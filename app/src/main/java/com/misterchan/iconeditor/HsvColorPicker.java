@@ -67,14 +67,16 @@ public class HsvColorPicker extends ColorPicker {
         sbHue = dialog.findViewById(R.id.sb_comp_0);
         sbSaturation = dialog.findViewById(R.id.sb_comp_1);
         sbValue = dialog.findViewById(R.id.sb_comp_2);
-        tietHue = dialog.findViewById(R.id.tiet_comp_0);
-        tietSaturation = dialog.findViewById(R.id.tiet_comp_1);
-        tietValue = dialog.findViewById(R.id.tiet_comp_2);
+        final TextInputLayout tilHue = dialog.findViewById(R.id.til_comp_0);
+        final TextInputLayout tilSaturation = dialog.findViewById(R.id.til_comp_1);
+        final TextInputLayout tilValue = dialog.findViewById(R.id.til_comp_2);
+        tietHue = (TextInputEditText) tilHue.getEditText();
+        tietSaturation = (TextInputEditText) tilSaturation.getEditText();
+        tietValue = (TextInputEditText) tilValue.getEditText();
         vPreview = dialog.findViewById(R.id.v_color_preview);
 
         hideOtherColorPickers(dialog);
         hideAlphaComp(gl);
-        showUnits(gl);
 
         sbHue.setMax(360);
         sbSaturation.setMax(100);
@@ -82,9 +84,12 @@ public class HsvColorPicker extends ColorPicker {
         tietHue.setInputType(EDITOR_TYPE_NUM_DEC);
         tietSaturation.setInputType(EDITOR_TYPE_NUM_DEC);
         tietValue.setInputType(EDITOR_TYPE_NUM_DEC);
-        ((TextInputLayout) dialog.findViewById(R.id.til_comp_0)).setHint(R.string.h);
-        ((TextInputLayout) dialog.findViewById(R.id.til_comp_1)).setHint(R.string.s);
-        ((TextInputLayout) dialog.findViewById(R.id.til_comp_2)).setHint(R.string.v);
+        tilHue.setHint(R.string.h);
+        tilHue.setSuffixText("°");
+        tilSaturation.setHint(R.string.s);
+        tilSaturation.setSuffixText("%");
+        tilValue.setHint(R.string.v);
+        tilValue.setSuffixText("%");
         sbHue.setOnSeekBarChangeListener((OnSeekBarProgressChangeListener) (seekBar, progress) -> tietHue.setText(String.valueOf(progress)));
         sbSaturation.setOnSeekBarChangeListener((OnSeekBarProgressChangeListener) (seekBar, progress) -> tietSaturation.setText(String.valueOf(progress)));
         sbValue.setOnSeekBarChangeListener((OnSeekBarProgressChangeListener) (seekBar, progress) -> tietValue.setText(String.valueOf(progress)));

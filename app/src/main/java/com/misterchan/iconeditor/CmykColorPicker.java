@@ -1,6 +1,7 @@
 package com.misterchan.iconeditor;
 
 import android.content.Context;
+import android.view.inputmethod.EditorInfo;
 import android.widget.GridLayout;
 import android.widget.SeekBar;
 
@@ -55,9 +56,12 @@ public class CmykColorPicker extends ColorPicker {
         sbMagenta = dialog.findViewById(R.id.sb_comp_1);
         sbYellow = dialog.findViewById(R.id.sb_comp_2);
         sbKey = dialog.findViewById(R.id.sb_comp_3);
-        tietCyan = dialog.findViewById(R.id.tiet_comp_0);
-        tietMagenta = dialog.findViewById(R.id.tiet_comp_1);
-        tietYellow = dialog.findViewById(R.id.tiet_comp_2);
+        final TextInputLayout tilCyan = dialog.findViewById(R.id.til_comp_0);
+        final TextInputLayout tilMagenta = dialog.findViewById(R.id.til_comp_1);
+        final TextInputLayout tilYellow = dialog.findViewById(R.id.til_comp_2);
+        tietCyan = (TextInputEditText) tilCyan.getEditText();
+        tietMagenta = (TextInputEditText) tilMagenta.getEditText();
+        tietYellow = (TextInputEditText) tilYellow.getEditText();
         tietKey = dialog.findViewById(R.id.tiet_comp_3);
         vPreview = dialog.findViewById(R.id.v_color_preview);
 
@@ -65,9 +69,16 @@ public class CmykColorPicker extends ColorPicker {
         hideAlphaComp(gl);
         showExtraComp(gl);
 
-        ((TextInputLayout) dialog.findViewById(R.id.til_comp_0)).setHint(R.string.c);
-        ((TextInputLayout) dialog.findViewById(R.id.til_comp_1)).setHint(R.string.m);
-        ((TextInputLayout) dialog.findViewById(R.id.til_comp_2)).setHint(R.string.y);
+        if (radix <= 10) {
+            tietCyan.setInputType(EDITOR_TYPE_NUM);
+            tietMagenta.setInputType(EDITOR_TYPE_NUM);
+            tietYellow.setInputType(EDITOR_TYPE_NUM);
+            tietKey.setInputType(EDITOR_TYPE_NUM);
+        }
+
+        tilCyan.setHint(R.string.c);
+        tilMagenta.setHint(R.string.m);
+        tilYellow.setHint(R.string.y);
         sbCyan.setOnSeekBarChangeListener((OnSeekBarProgressChangeListener) (seekBar, progress) -> tietCyan.setText(String.format(format, progress)));
         sbMagenta.setOnSeekBarChangeListener((OnSeekBarProgressChangeListener) (seekBar, progress) -> tietMagenta.setText(String.format(format, progress)));
         sbYellow.setOnSeekBarChangeListener((OnSeekBarProgressChangeListener) (seekBar, progress) -> tietYellow.setText(String.format(format, progress)));

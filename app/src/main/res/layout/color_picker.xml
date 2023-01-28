@@ -28,7 +28,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
-        android:columnCount="3"
+        android:columnCount="2"
         android:gravity="center"
         android:orientation="horizontal"
         android:rowCount="5">
@@ -42,18 +42,15 @@
                 android:background="@color/transparent"
                 android:hint="@string/a"
                 android:inputType="text"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
                 android:textAlignment="textEnd" />
         </com.google.android.material.textfield.TextInputLayout>
-
-        <View
-            android:layout_gravity="center_vertical"
-            android:visibility="gone" />
 
         <SeekBar
             android:id="@+id/sb_alpha"
             android:layout_gravity="center_vertical|fill_horizontal"
-            android:max="255"
-            android:progress="255" />
+            android:max="0xFF" />
 
         <com.google.android.material.textfield.TextInputLayout android:id="@+id/til_comp_0">
 
@@ -64,19 +61,15 @@
                 android:background="@color/transparent"
                 android:hint="@string/r"
                 android:inputType="text"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
                 android:textAlignment="textEnd" />
         </com.google.android.material.textfield.TextInputLayout>
-
-        <TextView
-            android:id="@+id/tv_comp_0_unit"
-            android:layout_gravity="center_vertical"
-            android:text="@string/degree"
-            android:visibility="gone" />
 
         <SeekBar
             android:id="@+id/sb_comp_0"
             android:layout_gravity="center_vertical|fill_horizontal"
-            android:max="255" />
+            android:max="0xFF" />
 
         <com.google.android.material.textfield.TextInputLayout android:id="@+id/til_comp_1">
 
@@ -87,19 +80,15 @@
                 android:background="@color/transparent"
                 android:hint="@string/g"
                 android:inputType="text"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
                 android:textAlignment="textEnd" />
         </com.google.android.material.textfield.TextInputLayout>
-
-        <TextView
-            android:id="@+id/tv_comp_1_unit"
-            android:layout_gravity="center_vertical"
-            android:text="@string/percent"
-            android:visibility="gone" />
 
         <SeekBar
             android:id="@+id/sb_comp_1"
             android:layout_gravity="center_vertical|fill_horizontal"
-            android:max="255" />
+            android:max="0xFF" />
 
         <com.google.android.material.textfield.TextInputLayout android:id="@+id/til_comp_2">
 
@@ -110,19 +99,15 @@
                 android:background="@color/transparent"
                 android:hint="@string/b"
                 android:inputType="text"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
                 android:textAlignment="textEnd" />
         </com.google.android.material.textfield.TextInputLayout>
-
-        <TextView
-            android:id="@+id/tv_comp_2_unit"
-            android:layout_gravity="center_vertical"
-            android:text="@string/percent"
-            android:visibility="gone" />
 
         <SeekBar
             android:id="@+id/sb_comp_2"
             android:layout_gravity="center_vertical|fill_horizontal"
-            android:max="255" />
+            android:max="0xFF" />
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/til_comp_3"
@@ -135,17 +120,15 @@
                 android:background="@color/transparent"
                 android:hint="@string/k"
                 android:inputType="text"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
                 android:textAlignment="textEnd" />
         </com.google.android.material.textfield.TextInputLayout>
-
-        <TextView
-            android:layout_gravity="center_vertical"
-            android:visibility="gone" />
 
         <SeekBar
             android:id="@+id/sb_comp_3"
             android:layout_gravity="center_vertical|fill_horizontal"
-            android:max="255"
+            android:max="0xFF"
             android:visibility="gone" />
     </GridLayout>
 
