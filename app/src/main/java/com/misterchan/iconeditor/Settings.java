@@ -61,7 +61,7 @@ public class Settings {
 
             case KEY_ACT:
                 argbColorType = Boolean.parseBoolean(preferences.getString(KEY_ACT, "true"));
-                mainActivity.setArgbComponentType();
+                mainActivity.setArgbColorType();
                 break;
 
             case KEY_ITS:

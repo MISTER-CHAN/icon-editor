@@ -1,10 +1,14 @@
 package com.misterchan.iconeditor;
 
 import android.graphics.Bitmap;
+import android.graphics.Point;
+import android.graphics.Rect;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.Size;
 
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.Random;
 
 public class BitmapUtil {
@@ -85,8 +89,117 @@ public class BitmapUtil {
         }
     }
 
+    public static void bucketFill(final Bitmap bitmap, Rect rect, int x, int y, @ColorInt final int color) {
+        bucketFill(bitmap, rect, x, y, color, false, 0);
+    }
+
+    public static void bucketFill(final Bitmap bitmap, Rect rect, int x, int y, @ColorInt final int color,
+                            final boolean ignoreAlpha, final int tolerance) {
+        if (rect == null) {
+            rect = new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight());
+        } else if (!(rect.left <= x && x < rect.right && rect.top <= y && y < rect.bottom)) {
+            return;
+        }
+        final int pixel = bitmap.getPixel(x, y);
+        if (pixel == color && tolerance == 0) {
+            return;
+        }
+        final int w = rect.right - rect.left, h = rect.bottom - rect.top;
+        final int[] pixels = new int[w * h];
+        bitmap.getPixels(pixels, 0, w, rect.left, rect.top, w, h);
+        for (int i = 0; i < pixels.length; ++i) {
+            final int px = pixels[i];
+            if (ignoreAlpha) {
+                if (tolerance == 0 ?
+                        Color.rgb(px) == Color.rgb(pixel) :
+                        Color.isPermissible(pixel, tolerance, px)) {
+                    pixels[i] = px & Color.BLACK | Color.rgb(color);
+                }
+            } else {
+                if (tolerance == 0 ?
+                        px == pixel :
+                        Color.alpha(px) == Color.alpha(pixel)
+                                && Color.isPermissible(pixel, px, tolerance)) {
+                    pixels[i] = color;
+                }
+            }
+        }
+        bitmap.setPixels(pixels, 0, w, rect.left, rect.top, w, h);
+    }
+
     private static Bitmap edgeDetection(final Bitmap bitmap) {
         return null;
+    }
+
+    public static void floodFill(final Bitmap bitmap, Rect rect, int x, int y, @ColorInt final int color) {
+        floodFill(bitmap, bitmap, rect, x, y, color, false, 0);
+    }
+
+    public static void floodFill(final Bitmap bitmap, Rect rect, int x, int y, @ColorInt final int color,
+                           final boolean ignoreAlpha, final int tolerance) {
+        floodFill(bitmap, bitmap, rect, x, y, color, ignoreAlpha, tolerance);
+    }
+
+    public static void floodFill(final Bitmap src, final Bitmap dst, Rect rect,
+                           int x, int y, @ColorInt final int color,
+                           final boolean ignoreAlpha, final int tolerance) {
+        if (rect == null) {
+            rect = new Rect(0, 0, src.getWidth(), src.getHeight());
+        } else if (!(rect.left <= x && x < rect.right && rect.top <= y && y < rect.bottom)) {
+            return;
+        }
+        final int pixel = src.getPixel(x, y);
+        if (pixel == color && tolerance == 0) {
+            return;
+        }
+        final int w = rect.right - rect.left, h = rect.bottom - rect.top, area = w * h;
+        final int[] srcPixels = new int[area], dstPixels = src == dst ? srcPixels : new int[area];
+        src.getPixels(srcPixels, 0, w, rect.left, rect.top, w, h);
+//      final long a = System.currentTimeMillis();
+        final Queue<Point> pointsToBeSet = new LinkedList<>();
+        final boolean[] havePointsBeenSet = new boolean[area];
+        pointsToBeSet.offer(new Point(x, y));
+        Point point;
+        while ((point = pointsToBeSet.poll()) != null) {
+            final int i = (point.y - rect.top) * w + (point.x - rect.left);
+            if (havePointsBeenSet[i]) {
+                continue;
+            }
+            havePointsBeenSet[i] = true;
+            final int px = srcPixels[i];
+            boolean match;
+            int newColor;
+            if (ignoreAlpha) {
+                match = tolerance == 0
+                        ? Color.rgb(px) == Color.rgb(pixel)
+                        : Color.isPermissible(pixel, px, tolerance);
+                newColor = px & Color.BLACK | Color.rgb(color);
+            } else {
+                match = tolerance == 0 ?
+                        px == pixel :
+                        Color.alpha(px) == Color.alpha(pixel)
+                                && Color.isPermissible(pixel, px, tolerance);
+                newColor = color;
+            }
+            if (match) {
+                srcPixels[i] = newColor;
+                if (src != dst) {
+                    dstPixels[i] = newColor;
+                }
+                final int xn = point.x - 1, xp = point.x + 1, yn = point.y - 1, yp = point.y + 1; // n - negative, p - positive
+                if (rect.left <= xn && !havePointsBeenSet[i - 1])
+                    pointsToBeSet.offer(new Point(xn, point.y));
+                if (xp < rect.right && !havePointsBeenSet[i + 1])
+                    pointsToBeSet.offer(new Point(xp, point.y));
+                if (rect.top <= yn && !havePointsBeenSet[i - w])
+                    pointsToBeSet.offer(new Point(point.x, yn));
+                if (yp < rect.bottom && !havePointsBeenSet[i + w])
+                    pointsToBeSet.offer(new Point(point.x, yp));
+            }
+        }
+//      final long b = System.currentTimeMillis();
+//      Toast.makeText(this, String.valueOf(b - a), Toast.LENGTH_SHORT).show();
+        dst.setPixels(dstPixels, 0, w, rect.left, rect.top, w, h);
     }
 
     public static void generateNoise(@ColorInt final int[] pixels, final int area, @ColorInt final int color,
@@ -129,6 +242,18 @@ public class BitmapUtil {
                     + (db == 0.0f ? 0.0f : (b - fa * bb) / db * rb);
 
             pixels[i] = Color.argb(Color.sat(a_), fr, fg, fb);
+        }
+        bitmap.setPixels(pixels, 0, w, 0, 0, w, h);
+    }
+
+    private static void scaleAlpha(Bitmap bitmap) {
+        final int w = bitmap.getWidth(), h = bitmap.getHeight();
+        final int[] pixels = new int[w * h];
+        bitmap.getPixels(pixels, 0, w, 0, 0, w, h);
+        for (int i = 0; i < pixels.length; ++i) {
+            if (Color.alpha(pixels[i]) > 0x00) {
+                pixels[i] |= Color.BLACK;
+            }
         }
         bitmap.setPixels(pixels, 0, w, 0, 0, w, h);
     }

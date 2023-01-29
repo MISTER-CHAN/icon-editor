@@ -77,7 +77,8 @@
     <string name="eraser">胶擦</string>
     <string name="exception_merge_as_hidden">异常：请选中两张图像中第一个图像的分页。</string>
     <string name="eyedropper">滴管</string>
-    <string name="fast_add_a_mask">快速添加蒙版</string>
+    <string name="fast_add_layer_mask">快速添加图层蒙版</string>
+    <string name="fast_create_clipping_mask">快速创建剪贴蒙版</string>
     <string name="file">文件</string>
     <string name="file_name">文件名</string>
     <string name="fill">填充</string>

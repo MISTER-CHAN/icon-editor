@@ -85,7 +85,8 @@
     <string name="eraser">Eraser</string>
     <string name="exception_merge_as_hidden">Exception: Please select the first tab of two images.</string>
     <string name="eyedropper">Eyedropper</string>
-    <string name="fast_add_a_mask">Fast Add a Mask</string>
+    <string name="fast_add_layer_mask">Fast Add a Layer Mask</string>
+    <string name="fast_create_clipping_mask">Fast Create a Clipping Mask</string>
     <string name="file">File</string>
     <string name="file_name">File name</string>
     <string name="fill">Fill</string>

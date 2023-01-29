@@ -410,8 +410,12 @@
                         android:title="@string/level_down" />
 
                     <item
-                        android:id="@+id/i_layer_add_mask"
-                        android:title="@string/fast_add_a_mask" />
+                        android:id="@+id/i_layer_add_layer_mask"
+                        android:title="@string/fast_add_layer_mask" />
+
+                    <item
+                        android:id="@+id/i_layer_create_clipping_mask"
+                        android:title="@string/fast_create_clipping_mask" />
                 </menu>
             </item>
 
