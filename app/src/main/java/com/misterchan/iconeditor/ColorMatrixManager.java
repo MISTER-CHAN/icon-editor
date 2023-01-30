@@ -12,7 +12,7 @@ import androidx.appcompat.app.AlertDialog;
 
 import java.text.DecimalFormat;
 
-public class ColorMatrixManager {
+class ColorMatrixManager {
 
     private static final DecimalFormat DEC_FORMAT = new DecimalFormat("0.#######");
 

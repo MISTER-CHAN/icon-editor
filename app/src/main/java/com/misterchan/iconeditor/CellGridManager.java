@@ -7,7 +7,7 @@ import android.widget.EditText;
 
 import androidx.appcompat.app.AlertDialog;
 
-public class CellGridManager {
+class CellGridManager {
 
     public interface OnUpdateListener {
         void onUpdate();

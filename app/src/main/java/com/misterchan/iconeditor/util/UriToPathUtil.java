@@ -1,4 +1,4 @@
-package com.misterchan.iconeditor;
+package com.misterchan.iconeditor.util;
 
 import android.annotation.TargetApi;
 import android.content.ContentResolver;

@@ -8,7 +8,7 @@ import android.widget.RadioButton;
 
 import androidx.appcompat.app.AlertDialog;
 
-public class ImageSizeManager {
+class ImageSizeManager {
 
     public interface OnUpdateListener {
         void onUpdate(int width, int height, boolean stretch);

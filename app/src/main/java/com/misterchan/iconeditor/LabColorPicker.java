@@ -12,7 +12,7 @@ import androidx.appcompat.app.AlertDialog;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
-public class LabColorPicker extends ColorPicker {
+class LabColorPicker extends ColorPicker {
 
     private static final ColorSpace LAB = ColorSpace.get(ColorSpace.Named.CIE_LAB);
 

@@ -9,7 +9,7 @@ import androidx.appcompat.app.AlertDialog;
 
 import com.google.android.material.textfield.TextInputEditText;
 
-public abstract class ArgbColorPicker extends ColorPicker {
+abstract class ArgbColorPicker extends ColorPicker {
 
     protected Context context;
     protected SeekBar sbAlpha;

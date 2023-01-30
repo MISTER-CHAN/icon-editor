@@ -10,7 +10,7 @@ import android.widget.SeekBar;
 import androidx.annotation.Size;
 import androidx.appcompat.app.AlertDialog;
 
-public class HsvDialog {
+class HsvDialog {
 
     public interface OnHsvChangeListener {
         void onChange(@Size(3) float[] deltaHsv, boolean stopped);

@@ -9,7 +9,7 @@ import android.widget.SeekBar;
 
 import androidx.appcompat.app.AlertDialog;
 
-public class SeekBarDialog {
+class SeekBarDialog {
 
     private final AlertDialog.Builder builder;
     private int max, min, progress;

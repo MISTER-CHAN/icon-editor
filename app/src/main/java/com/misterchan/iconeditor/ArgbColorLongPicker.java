@@ -12,7 +12,7 @@ import androidx.annotation.IntRange;
 import androidx.annotation.Size;
 import androidx.appcompat.app.AlertDialog;
 
-public class ArgbColorLongPicker extends ArgbColorPicker {
+class ArgbColorLongPicker extends ArgbColorPicker {
 
     private ColorSpace colorSpace;
 

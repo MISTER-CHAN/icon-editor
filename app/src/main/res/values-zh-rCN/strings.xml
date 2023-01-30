@@ -13,6 +13,7 @@
     <string name="asynchronously_draw_image_and_ui">异步绘画图像与用户界面</string>
     <string name="author">作者</string>
     <string name="automatic">自动</string>
+    <string name="background">背景</string>
     <string name="background_color">底色</string>
     <string name="below_background">背景底下</string>
     <string name="blend_modes">混合模式</string>

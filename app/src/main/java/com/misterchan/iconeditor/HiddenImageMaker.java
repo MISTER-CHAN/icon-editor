@@ -12,7 +12,7 @@ import android.widget.SeekBar;
 import androidx.annotation.Size;
 import androidx.appcompat.app.AlertDialog;
 
-public class HiddenImageMaker {
+class HiddenImageMaker {
 
     public interface OnFinishSettingListener {
         void onFinish(Bitmap bitmap);

@@ -2,7 +2,7 @@ package com.misterchan.iconeditor;
 
 import android.widget.CompoundButton;
 
-public interface OnCheckedListener extends CompoundButton.OnCheckedChangeListener {
+interface OnCheckedListener extends CompoundButton.OnCheckedChangeListener {
 
     void onChecked();
 

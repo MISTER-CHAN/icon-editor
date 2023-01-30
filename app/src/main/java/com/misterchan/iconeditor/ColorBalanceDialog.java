@@ -10,7 +10,7 @@ import android.widget.SeekBar;
 import androidx.annotation.Size;
 import androidx.appcompat.app.AlertDialog;
 
-public class ColorBalanceDialog {
+class ColorBalanceDialog {
 
     private final AlertDialog.Builder builder;
     private LightingDialog.OnLightingChangeListener listener;

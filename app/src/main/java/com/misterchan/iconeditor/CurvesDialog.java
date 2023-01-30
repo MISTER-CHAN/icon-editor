@@ -25,7 +25,7 @@ import androidx.appcompat.app.AlertDialog;
 
 import java.util.function.Function;
 
-public class CurvesDialog {
+class CurvesDialog {
 
     public interface OnCurvesChangeListener {
         void onChange(int[][] curves, boolean stopped);

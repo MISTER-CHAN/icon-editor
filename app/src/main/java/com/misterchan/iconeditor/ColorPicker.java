@@ -8,7 +8,7 @@ import android.widget.TextView;
 import androidx.annotation.ColorInt;
 import androidx.appcompat.app.AlertDialog;
 
-public abstract class ColorPicker {
+abstract class ColorPicker {
     protected static final int EDITOR_TYPE_NUM = EditorInfo.TYPE_CLASS_NUMBER;
     protected static final int EDITOR_TYPE_NUM_DEC = EDITOR_TYPE_NUM | EditorInfo.TYPE_NUMBER_FLAG_DECIMAL;
     protected static final int EDITOR_TYPE_NUM_DEC_SIGNED = EDITOR_TYPE_NUM_DEC | EditorInfo.TYPE_NUMBER_FLAG_SIGNED;

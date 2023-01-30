@@ -11,7 +11,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Random;
 
-public class BitmapUtil {
+class BitmapUtil {
 
     public static void addLightingColorFilter(final Bitmap src, final int srcX, final int srcY,
                                               final Bitmap dst, final int dstX, final int dstY,

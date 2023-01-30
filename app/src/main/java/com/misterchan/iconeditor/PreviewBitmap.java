@@ -12,7 +12,7 @@ import android.graphics.RectF;
 import androidx.annotation.ColorInt;
 import androidx.annotation.Size;
 
-public class PreviewBitmap {
+class PreviewBitmap {
 
     private static final Paint PAINT_SRC = new Paint() {
         {

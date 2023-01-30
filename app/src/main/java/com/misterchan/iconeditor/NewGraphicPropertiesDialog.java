@@ -5,7 +5,7 @@ import android.widget.EditText;
 
 import androidx.appcompat.app.AlertDialog;
 
-public class NewGraphicPropertiesDialog {
+class NewGraphicPropertiesDialog {
 
     public interface OnFinishSettingListener {
         void onFinish(int width, int height);

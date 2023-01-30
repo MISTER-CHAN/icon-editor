@@ -16,7 +16,7 @@ import androidx.appcompat.app.AlertDialog;
 
 import java.util.function.Function;
 
-public class LevelsDialog {
+class LevelsDialog {
 
     public interface OnLevelsChangeListener {
         void onChange(int inputShadows, int inputHighlights, int outputShadows, int outputHighlights, boolean stopped);

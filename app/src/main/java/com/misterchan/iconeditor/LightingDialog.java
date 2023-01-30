@@ -10,7 +10,7 @@ import android.widget.SeekBar;
 import androidx.annotation.Size;
 import androidx.appcompat.app.AlertDialog;
 
-public class LightingDialog {
+class LightingDialog {
 
     public interface OnLightingChangeListener {
         void onChanged(@Size(8) float[] lighting, boolean stopped);

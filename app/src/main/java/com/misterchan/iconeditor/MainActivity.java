@@ -72,6 +72,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+import com.misterchan.iconeditor.util.UriToPathUtil;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -285,6 +286,7 @@ public class MainActivity extends AppCompatActivity {
     private LinkedList<Long> palette;
     private final List<Tab> tabs = new ArrayList<>();
     private MenuItem miHasAlpha;
+    private MenuItem miLayerBackground;
     private MenuItem miLayerColorMatrix;
     private MenuItem miLayerCurves;
     private MenuItem miLayerDrawBelow;
@@ -606,7 +608,7 @@ public class MainActivity extends AppCompatActivity {
         }
         preview.recycle();
         preview = null;
-        addBitmap(bm, tab.visible, tabLayout.getSelectedTabPosition());
+        addLayer(bm, tab.visible, tab.left, tab.top, tabLayout.getSelectedTabPosition());
         clearStatus();
     };
 
@@ -740,9 +742,10 @@ public class MainActivity extends AppCompatActivity {
             drawFloatingLayers();
 
             final int position = tab.getPosition();
-            final boolean areInDiffProj = Tab.findBackground(tabs, position) != oldBackground;
-            oldBackground = null;
             MainActivity.this.tab = tabs.get(position);
+            layerTree = Tab.computeLayerTree(tabs, position);
+            final boolean areInDiffProj = MainActivity.this.tab.getBackground() != oldBackground;
+            oldBackground = null;
             bitmap = MainActivity.this.tab.bitmap;
             canvas = new Canvas(bitmap);
 
@@ -754,8 +757,6 @@ public class MainActivity extends AppCompatActivity {
             }
             imageWidth = (int) toScaled(width);
             imageHeight = (int) toScaled(height);
-
-            computeLayerTree();
 
             if (transformer != null) {
                 recycleTransformer();
@@ -773,6 +774,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             miHasAlpha.setChecked(bitmap.hasAlpha());
+            miLayerBackground.setChecked(MainActivity.this.tab.isBackground);
             miLayerColorMatrix.setChecked(MainActivity.this.tab.filter == Tab.Filter.COLOR_MATRIX);
             miLayerCurves.setChecked(MainActivity.this.tab.filter == Tab.Filter.CURVES);
             miLayerDrawBelow.setChecked(MainActivity.this.tab.drawBelow);
@@ -792,10 +794,10 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onTabUnselected(TabLayout.Tab tab) {
-            oldBackground = Tab.findBackground(tabs, tab.getPosition());
             final int i = tab.getPosition();
             if (i >= 0) {
                 final Tab t = tabs.get(i);
+                oldBackground = t.getBackground();
                 t.translationX = translationX;
                 t.translationY = translationY;
                 t.scale = scale;
@@ -1921,7 +1923,7 @@ public class MainActivity extends AppCompatActivity {
                         tvStatus.setText(String.format(getString(R.string.coordinate),
                                 toBitmapX(x), toBitmapY(y)));
                         if (lastMerged == null) {
-                            drawBitmapEntireOnView();
+                            mergeBitmapEntire();
                         }
                         prevX = x;
                         prevY = y;
@@ -2218,15 +2220,6 @@ public class MainActivity extends AppCompatActivity {
         addBitmap(t, position, getString(R.string.untitled));
     }
 
-    private void addBitmap(Bitmap bitmap, boolean visible, int position) {
-        final Tab t = new Tab();
-        t.bitmap = bitmap;
-        t.paint = new Paint();
-        t.paint.setBlendMode(BlendMode.SRC_OVER);
-        t.visible = visible;
-        addBitmap(t, position, getString(R.string.untitled));
-    }
-
     private void addBitmap(Bitmap bitmap, int position,
                            String title, String path, Bitmap.CompressFormat compressFormat) {
         final Tab t = new Tab();
@@ -2252,10 +2245,12 @@ public class MainActivity extends AppCompatActivity {
         final View customView = t.getCustomView();
         tab.cbLayerVisible = customView.findViewById(R.id.cb_layer_visible);
         tab.cbLayerVisible.setChecked(tab.visible);
-        tab.cbLayerVisible.setOnCheckedChangeListener(getOnLayerVisibleCheckBoxCheckedChangeListener(tab));
+        tab.cbLayerVisible.setOnCheckedChangeListener(getOnLayerVisibleCBCheckedChangeListener(tab));
+        tab.tvLayerBackground = customView.findViewById(R.id.tv_layer_background);
         tab.tvLayerLevel = customView.findViewById(R.id.tv_layer_level);
         tab.tvTitle = customView.findViewById(R.id.tv_title);
         tab.tvTitle.setText(title);
+        tab.showBackground();
         tabLayout.addTab(t, position, true);
     }
 
@@ -2280,13 +2275,18 @@ public class MainActivity extends AppCompatActivity {
         miLayerHsv.setChecked(filter == Tab.Filter.HSV);
     }
 
-    private void addLayer(Bitmap bitmap, int position) {
+    private void addLayer(Bitmap bitmap, boolean visible, int position) {
+        addLayer(bitmap, visible, 0, 0, position);
+    }
+
+    private void addLayer(Bitmap bitmap, boolean visible, int left, int top, int position) {
         final Tab t = new Tab();
         t.bitmap = bitmap;
         t.isBackground = false;
+        t.moveTo(left, top);
         t.paint = new Paint();
         t.paint.setBlendMode(BlendMode.SRC_OVER);
-        t.visible = true;
+        t.visible = visible;
         addBitmap(t, position, getString(R.string.untitled));
     }
 
@@ -2332,7 +2332,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void closeTab(int position) {
-        final Tab tab = tabs.get(position);
+        final Tab tab = tabs.get(position), above = Tab.getAbove(tabs, position);
+        if (above != null) {
+            above.setBackground(true);
+        }
         final Bitmap bm = tab.bitmap;
         final BitmapHistory h = tab.history;
         tabs.remove(position);
@@ -2358,8 +2361,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void createLayer(int width, int height, Bitmap.Config config, boolean hasAlpha, ColorSpace colorSpace,
-                             int position) {
-        addLayer(Bitmap.createBitmap(width, height, config, hasAlpha, colorSpace), position);
+                             int left, int top, int position) {
+        addLayer(Bitmap.createBitmap(width, height, config, hasAlpha, colorSpace), true, left, top, position);
     }
 
     private void createPreviewBitmap() {
@@ -2466,93 +2469,83 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private final Runnable drawBitmapOnViewRunnable = () -> {
-        final Bitmap background = tab.getBackground().bitmap;
-        drawBitmapSubsetOnView(bitmap,
-                0, 0, background.getWidth(), background.getHeight(),
-                false, false);
-    };
-
     private void drawBitmapOnView() {
-        runOrStart(drawBitmapOnViewRunnable);
+        drawBitmapOnView(false);
     }
 
     private void drawBitmapOnView(final boolean wait) {
-        runOrStart(drawBitmapOnViewRunnable, wait);
-    }
-
-    private void drawBitmapOnView(final Bitmap bitmap, final Rect rect) {
-        runOrStart(() ->
-                drawBitmapSubsetOnView(bitmap,
-                        rect.left, rect.top, rect.right, rect.bottom,
-                        false, false));
-    }
-
-    private void drawBitmapOnView(final Bitmap bitmap, final Rect rect, final boolean wait) {
-        runOrStart(
-                () -> drawBitmapSubsetOnView(bitmap,
-                        rect.left, rect.top, rect.right, rect.bottom,
-                        false, false),
-                wait);
+        drawBitmapOnView(false, wait);
     }
 
     private void drawBitmapOnView(final boolean eraseVisible, final boolean wait) {
-        runOrStart(() -> {
-            final Bitmap background = tab.getBackground().bitmap;
-            drawBitmapSubsetOnView(bitmap,
-                    0, 0, background.getWidth(), background.getHeight(),
-                    false, eraseVisible);
-        }, wait);
+        runOrStart(() -> drawBitmapVisibleOnView(eraseVisible), wait);
+    }
+
+    private void drawBitmapOnView(final Rect rect) {
+        drawBitmapOnView(rect, false);
+    }
+
+    private void drawBitmapOnView(final Rect rect, final boolean wait) {
+        drawBitmapOnView(bitmap, rect, wait);
+    }
+
+    private void drawBitmapOnView(final Bitmap bitmap, final Rect rect) {
+        drawBitmapOnView(bitmap, rect, false);
+    }
+
+    private void drawBitmapOnView(final Bitmap bitmap, final Rect rect, final boolean wait) {
+        drawBitmapOnView(bitmap, rect.left, rect.top, rect.right, rect.bottom, wait);
     }
 
     private void drawBitmapOnView(final int left, final int top, final int right, final int bottom) {
+        drawBitmapOnView(bitmap, left, top, right, bottom, false);
+    }
+
+    private void drawBitmapOnView(final Bitmap bitmap,
+                                  final int left, final int top, final int right, final int bottom,
+                                  final boolean wait) {
         runOrStart(() ->
-                drawBitmapSubsetOnView(bitmap,
-                        left, top, right, bottom,
-                        false, false));
+                        drawBitmapSubsetOnView(bitmap,
+                                tab.left + left, tab.top + top, tab.left + right, tab.top + bottom
+                        ),
+                wait);
     }
 
     private void drawBitmapOnView(final int x0, final int y0, final int x1, final int y1, final float radius) {
         final boolean x = x0 <= x1, y = y0 <= y1;
         final int rad = (int) Math.ceil(radius);
-        final int left = (x ? x0 : x1) - rad, top = (y ? y0 : y1) - rad,
-                right = (x ? x1 : x0) + rad + 1, bottom = (y ? y1 : y0) + rad + 1;
+        final int left = tab.left + (x ? x0 : x1) - rad, top = tab.top + (y ? y0 : y1) - rad,
+                right = tab.left + (x ? x1 : x0) + rad + 1, bottom = tab.top + (y ? y1 : y0) + rad + 1;
         runOrStart(() ->
-                drawBitmapSubsetOnView(bitmap,
-                        left, top, right, bottom,
-                        false, false));
+                drawBitmapSubsetOnView(bitmap, left, top, right, bottom));
     }
 
-    private void drawBitmapOnView(final Rect rect) {
-        runOrStart(() ->
-                drawBitmapSubsetOnView(bitmap,
-                        rect.left, rect.top, rect.right, rect.bottom,
-                        false, false));
-    }
-
-    private void drawBitmapOnView(final Rect rect, final boolean wait) {
-        runOrStart(
-                () -> drawBitmapSubsetOnView(bitmap,
-                        rect.left, rect.top, rect.right, rect.bottom,
-                        false, false),
-                wait);
-    }
-
-    private final Runnable drawBitmapEntireOnViewRunner = () -> {
+    private final Runnable drawingBitmapEntireOnViewRunner = () -> {
         final Bitmap background = tab.getBackground().bitmap;
-        drawBitmapSubsetOnView(bitmap,
-                0, 0, background.getWidth(), background.getHeight(),
-                true, true);
+        final Rect vs = new Rect(0, 0, background.getWidth(), background.getHeight());
+
+        Tab extraExclTab = null;
+        if (transformer != null) {
+            extraExclTab = transformer.makeTab();
+        }
+        final Bitmap merged = Tab.mergeLayers(layerTree, vs, tab, bitmap, extraExclTab);
+        recycleBitmap(lastMerged);
+        lastMerged = merged;
     };
 
-    private void drawBitmapEntireOnView() {
-        runOrStart(drawBitmapEntireOnViewRunner, true);
+    private void mergeBitmapEntire() {
+        runOrStart(drawingBitmapEntireOnViewRunner, true);
     }
 
-    private final Runnable drawBitmapLastOnViewRunner = () -> drawBitmapLastOnView();
+    private void drawBitmapEntireOnView(final boolean wait) {
+        mergeBitmapEntire();
+        drawBitmapLastOnView(wait);
+    }
+
+    private final Runnable drawingBitmapLastOnViewRunner = this::drawBitmapLastOnView;
 
     private void drawBitmapLastOnView(final boolean wait) {
-        runOrStart(drawBitmapLastOnViewRunner, wait);
+        runOrStart(drawingBitmapLastOnViewRunner, wait);
     }
 
     private void drawBitmapLastOnView() {
@@ -2573,55 +2566,71 @@ public class MainActivity extends AppCompatActivity {
     private final Runnable erasingViewRunner = () -> eraseBitmap(viewBitmap);
 
     private void drawBitmapSubsetOnView(final Bitmap bitmap,
-                                        int left, int top, int right, int bottom,
-                                        boolean mergeEntire, boolean eraseVisible) {
+                                        int left, int top, int right, int bottom) {
         final Bitmap background = tab.getBackground().bitmap;
         final int width = background.getWidth(), height = background.getHeight();
-        left = Math.max(left + tab.left, 0);
-        top = Math.max(top + tab.top, 0);
-        right = Math.min(right + tab.left, width);
-        bottom = Math.min(bottom + tab.top, height);
+        left = Math.max(left, 0);
+        top = Math.max(top, 0);
+        right = Math.min(right, width);
+        bottom = Math.min(bottom, height);
         if (left >= right || top >= bottom) {
             return;
         }
-        final Rect vs = mergeEntire
-                ? new Rect(0, 0, width, height)
-                : getVisibleSubset(translationX, translationY, width, height);
+        final Rect vs = getVisibleSubset(translationX, translationY, width, height);
         if (vs.isEmpty()) {
             runOnUiThread(erasingViewRunner);
             return;
         }
-        if (!mergeEntire && !vs.intersect(left, top, right, bottom)) {
+        if (!vs.intersect(left, top, right, bottom)) {
             return;
         }
 
         Tab extraExclTab = null;
         if (transformer != null) {
-            extraExclTab = new Tab();
-            extraExclTab.bitmap = transformer.getBitmap();
-            extraExclTab.left = selection.left;
-            extraExclTab.top = selection.top;
+            extraExclTab = transformer.makeTab();
         }
         final Bitmap merged = Tab.mergeLayers(layerTree, vs, tab, bitmap, extraExclTab);
         recycleBitmap(lastMerged);
-        if (mergeEntire) {
-            lastMerged = merged;
-        } else {
-            lastMerged = null;
-            final float translLeft = toViewXFromBg(left), translTop = toViewYFromBg(top);
-            final Rect relative = new Rect(0, 0, vs.width(), vs.height());
-            runOnUiThread(() -> {
-                if (eraseVisible) {
-                    eraseBitmap(viewBitmap);
-                }
-                drawBitmapOnCanvas(merged, viewCanvas,
-                        translLeft > -scale ? translLeft : translLeft % scale,
-                        translTop > -scale ? translTop : translTop % scale,
-                        relative);
-                merged.recycle();
-                imageView.invalidate();
-            });
+        lastMerged = null;
+        final float translLeft = toViewXFromBg(left), translTop = toViewYFromBg(top);
+        final Rect relative = new Rect(0, 0, vs.width(), vs.height());
+        runOnUiThread(() -> {
+            drawBitmapOnCanvas(merged, viewCanvas,
+                    translLeft > -scale ? translLeft : translLeft % scale,
+                    translTop > -scale ? translTop : translTop % scale,
+                    relative);
+            merged.recycle();
+            imageView.invalidate();
+        });
+    }
+
+    private void drawBitmapVisibleOnView(final boolean eraseVisible) {
+        final Bitmap background = tab.getBackground().bitmap;
+        final Rect vs = getVisibleSubset(translationX, translationY, background.getWidth(), background.getHeight());
+        if (vs.isEmpty()) {
+            runOnUiThread(erasingViewRunner);
+            return;
         }
+
+        Tab extraExclTab = null;
+        if (transformer != null) {
+            extraExclTab = transformer.makeTab();
+        }
+        final Bitmap merged = Tab.mergeLayers(layerTree, vs, tab, bitmap, extraExclTab);
+        recycleBitmap(lastMerged);
+        lastMerged = null;
+        final Rect relative = new Rect(0, 0, vs.width(), vs.height());
+        runOnUiThread(() -> {
+            if (eraseVisible) {
+                eraseBitmap(viewBitmap);
+            }
+            drawBitmapOnCanvas(merged, viewCanvas,
+                    translationX > -scale ? translationX : translationX % scale,
+                    translationY > -scale ? translationY : translationY % scale,
+                    relative);
+            merged.recycle();
+            imageView.invalidate();
+        });
     }
 
     private void drawChessboardOnView() {
@@ -2940,9 +2949,9 @@ public class MainActivity extends AppCompatActivity {
         }
         canvas.drawBitmap(transformer.getBitmap(), selection.left, selection.top, PAINT_SRC_OVER);
         recycleTransformer();
+        drawBitmapOnView(selection);
         optimizeSelection();
         drawSelectionOnView();
-        drawBitmapOnView(selection);
         addHistory();
         clearStatus();
     }
@@ -2956,7 +2965,7 @@ public class MainActivity extends AppCompatActivity {
         imageView.invalidate();
     }
 
-    private CompoundButton.OnCheckedChangeListener getOnLayerVisibleCheckBoxCheckedChangeListener(final Tab tab) {
+    private CompoundButton.OnCheckedChangeListener getOnLayerVisibleCBCheckedChangeListener(final Tab tab) {
         return (buttonView, isChecked) -> {
             tab.visible = isChecked;
             drawBitmapOnView(true);
@@ -2977,11 +2986,11 @@ public class MainActivity extends AppCompatActivity {
 
     private Rect getVisibleSubset(float translX, float translY, int width, int height) {
         final int scaledBitmapW = (int) toScaled(width), scaledBitmapH = (int) toScaled(height);
-        final int startX = translX >= 0.0f ? 0 : toUnscaled(-translX);
-        final int startY = translY >= 0.0f ? 0 : toUnscaled(-translY);
-        final int endX = Math.min(toUnscaled(translX + scaledBitmapW <= viewWidth ? scaledBitmapW : viewWidth - translX) + 1, width);
-        final int endY = Math.min(toUnscaled(translY + scaledBitmapH <= viewHeight ? scaledBitmapH : viewHeight - translY) + 1, height);
-        return new Rect(startX, startY, endX, endY);
+        final int left = translX >= 0.0f ? 0 : toUnscaled(-translX);
+        final int top = translY >= 0.0f ? 0 : toUnscaled(-translY);
+        final int right = Math.min(toUnscaled(translX + scaledBitmapW <= viewWidth ? scaledBitmapW : viewWidth - translX) + 1, width);
+        final int bottom = Math.min(toUnscaled(translY + scaledBitmapH <= viewHeight ? scaledBitmapH : viewHeight - translY) + 1, height);
+        return new Rect(left, top, right, bottom);
     }
 
     private void hideSoftInputFromWindow() {
@@ -3063,10 +3072,12 @@ public class MainActivity extends AppCompatActivity {
         final View customView = t.getCustomView();
         tab.cbLayerVisible = customView.findViewById(R.id.cb_layer_visible);
         tab.cbLayerVisible.setChecked(tab.visible);
-        tab.cbLayerVisible.setOnCheckedChangeListener(getOnLayerVisibleCheckBoxCheckedChangeListener(tab));
+        tab.cbLayerVisible.setOnCheckedChangeListener(getOnLayerVisibleCBCheckedChangeListener(tab));
+        tab.tvLayerBackground = customView.findViewById(R.id.tv_layer_background);
         tab.tvLayerLevel = customView.findViewById(R.id.tv_layer_level);
         tab.tvTitle = customView.findViewById(R.id.tv_title);
         tab.tvTitle.setText(R.string.untitled);
+        tab.showBackground();
         tabLayout.addTab(t, true);
 
         etPencilBlurRadius.setText(String.valueOf(0.0f));
@@ -3365,6 +3376,7 @@ public class MainActivity extends AppCompatActivity {
         final MenuInflater menuInflater = getMenuInflater();
         menuInflater.inflate(R.menu.main, menu);
         miHasAlpha = menu.findItem(R.id.i_has_alpha);
+        miLayerBackground = menu.findItem(R.id.i_layer_background);
         miLayerColorMatrix = menu.findItem(R.id.i_layer_color_matrix);
         miLayerCurves = menu.findItem(R.id.i_layer_curves);
         miLayerDrawBelow = menu.findItem(R.id.i_layer_draw_below);
@@ -3441,7 +3453,7 @@ public class MainActivity extends AppCompatActivity {
                 drawFloatingLayers();
                 final int width = selection.width(), height = selection.height();
                 final Bitmap bm = Bitmap.createBitmap(bitmap, selection.left, selection.top, width, height);
-                resizeBitmap(width, height, false);
+                resizeBitmap(width, height, false, selection.left, selection.top);
                 canvas.drawBitmap(bm, 0.0f, 0.0f, PAINT_SRC);
                 bm.recycle();
                 drawBitmapOnView(true, true);
@@ -3755,12 +3767,12 @@ public class MainActivity extends AppCompatActivity {
                 break;
             }
             case R.id.i_layer_add_layer_mask: {
-                tab.cbLayerVisible.setChecked(true);
                 final Tab t = new Tab();
                 t.bitmap = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(),
                         bitmap.getConfig(), true, bitmap.getColorSpace());
-                t.isBackground = true;
+                t.isBackground = false;
                 t.setLevel(tab.getLevel() + 1);
+                t.moveTo(tab.left, tab.top);
                 t.paint = new Paint();
                 t.paint.setBlendMode(BlendMode.DST_IN);
                 t.visible = true;
@@ -3784,6 +3796,14 @@ public class MainActivity extends AppCompatActivity {
                 clearStatus();
                 break;
 
+            case R.id.i_layer_background: {
+                final boolean checked = !item.isChecked();
+                item.setChecked(checked);
+                tab.setBackground(checked);
+                computeLayerTree();
+                drawBitmapOnView(true);
+                break;
+            }
             case R.id.i_layer_blend_mode_clear:
             case R.id.i_layer_blend_mode_src:
             case R.id.i_layer_blend_mode_dst:
@@ -3835,10 +3855,10 @@ public class MainActivity extends AppCompatActivity {
                 break;
             }
             case R.id.i_layer_create_clipping_mask:
-                tab.cbLayerVisible.setChecked(true);
                 tab.paint.setBlendMode(BlendMode.SRC_ATOP);
                 checkLayerBlendModeMenuItem(BlendMode.SRC_ATOP);
                 Tab.levelDown(tabs, tabLayout.getSelectedTabPosition());
+                computeLayerTree();
                 drawBitmapOnView(true);
                 break;
 
@@ -3851,18 +3871,24 @@ public class MainActivity extends AppCompatActivity {
                 drawBitmapOnView(true);
                 break;
             }
-            case R.id.i_layer_delete_invisible:
-                for (int i = tabs.size() - 1; i >= 0; --i) {
+            case R.id.i_layer_delete_invisible: {
+                final Tab background = tab.getBackground();
+                for (int i = tab.getBackgroundPosition(); i >= 0; --i) {
                     final Tab t = tabs.get(i);
-                    if (t != tab && t.cbLayerVisible.getVisibility() == View.VISIBLE && !t.visible) {
+                    if (t.getBackground() != background) {
+                        break;
+                    }
+                    if (t != tab && !t.visible) {
                         closeTab(i);
                     }
                 }
                 if (!tab.visible && tabs.size() > 1) {
                     closeTab();
+                } else {
+                    computeLayerTree();
                 }
                 break;
-
+            }
             case R.id.i_layer_draw_below: {
                 final boolean checked = !item.isChecked();
                 item.setChecked(checked);
@@ -3880,7 +3906,7 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     cv.drawBitmap(bitmap, 0.0f, 0.0f, PAINT_SRC);
                 }
-                addBitmap(bm, tab.visible, tabLayout.getSelectedTabPosition());
+                addLayer(bm, tab.visible, tab.left, tab.top, tabLayout.getSelectedTabPosition());
                 break;
             }
             case R.id.i_layer_duplicate_by_color_range: {
@@ -3980,13 +4006,25 @@ public class MainActivity extends AppCompatActivity {
                 final int selected = tabLayout.getSelectedTabPosition();
                 final int w = bitmap.getWidth(), h = bitmap.getHeight();
                 final Bitmap bm = Tab.mergeLayers(layerTree, new Rect(0, 0, w, h));
-                addBitmap(bm, selected);
+                final Tab background = tab.getBackground();
+                for (int i = tab.getBackgroundPosition(); i >= 0; --i) {
+                    final Tab t = tabs.get(i);
+                    if (t.getBackground() != background) {
+                        break;
+                    } else if (t.visible) {
+                        t.cbLayerVisible.setOnCheckedChangeListener(null);
+                        t.cbLayerVisible.setChecked(false);
+                        t.visible = false;
+                        t.cbLayerVisible.setOnCheckedChangeListener(getOnLayerVisibleCBCheckedChangeListener(t));
+                    }
+                }
+                addLayer(bm, true, selected);
                 break;
             }
             case R.id.i_layer_new:
                 createLayer(bitmap.getWidth(), bitmap.getHeight(),
                         bitmap.getConfig(), true, bitmap.getColorSpace(),
-                        tabLayout.getSelectedTabPosition());
+                        tab.left, tab.top, tabLayout.getSelectedTabPosition());
                 break;
 
             case R.id.i_layer_rename: {
@@ -4243,6 +4281,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void resizeBitmap(int width, int height, boolean stretch) {
+        resizeBitmap(width, height, stretch, 0, 0);
+    }
+
+    private void resizeBitmap(int width, int height, boolean stretch, int offsetX, int offsetY) {
         final Bitmap bm = Bitmap.createBitmap(width, height,
                 bitmap.getConfig(), bitmap.hasAlpha(), bitmap.getColorSpace());
         final Canvas cv = new Canvas(bm);
@@ -4258,6 +4300,7 @@ public class MainActivity extends AppCompatActivity {
         bitmap = bm;
         tab.bitmap = bitmap;
         canvas = cv;
+        tab.moveBy(offsetX, offsetY);
         imageWidth = (int) toScaled(width);
         imageHeight = (int) toScaled(height);
 

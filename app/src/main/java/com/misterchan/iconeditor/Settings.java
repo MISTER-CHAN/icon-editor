@@ -2,7 +2,7 @@ package com.misterchan.iconeditor;
 
 import android.content.SharedPreferences;
 
-public class Settings {
+class Settings {
 
     private static final String FORMAT_02X = "%02X";
     private static final String FORMAT_D = "%d";

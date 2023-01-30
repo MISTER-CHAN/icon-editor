@@ -12,7 +12,7 @@ import androidx.appcompat.app.AlertDialog;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
-public class HsvColorPicker extends ColorPicker {
+class HsvColorPicker extends ColorPicker {
 
     private SeekBar sbHue, sbSaturation, sbValue;
     private TextInputEditText tietHue, tietSaturation, tietValue;

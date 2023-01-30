@@ -5,7 +5,7 @@ import androidx.annotation.FloatRange;
 import androidx.annotation.IntRange;
 import androidx.annotation.Size;
 
-public class Color extends android.graphics.Color {
+class Color extends android.graphics.Color {
 
     public static boolean isPermissible(@ColorInt int c0, @ColorInt int color, int tolerance) {
         return Math.abs(red(color) - red(c0)) <= tolerance

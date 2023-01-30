@@ -6,7 +6,7 @@ import android.widget.SeekBar;
 import androidx.annotation.ColorInt;
 import androidx.appcompat.app.AlertDialog;
 
-public class ArgbColorIntPicker extends ArgbColorPicker {
+class ArgbColorIntPicker extends ArgbColorPicker {
 
     private int radix = 16;
     private String format;

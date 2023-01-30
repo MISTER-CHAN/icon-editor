@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
-public class ColorAdapter extends RecyclerView.Adapter<ColorAdapter.ViewHolder> {
+class ColorAdapter extends RecyclerView.Adapter<ColorAdapter.ViewHolder> {
 
     protected static class ViewHolder extends RecyclerView.ViewHolder {
         private final View view;

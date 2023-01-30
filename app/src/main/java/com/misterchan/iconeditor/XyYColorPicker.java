@@ -14,7 +14,7 @@ import androidx.appcompat.app.AlertDialog;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
-public class XyYColorPicker extends ColorPicker {
+class XyYColorPicker extends ColorPicker {
 
     private static final ColorSpace XYZ = ColorSpace.get(ColorSpace.Named.CIE_XYZ);
 

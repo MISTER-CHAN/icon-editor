@@ -17,6 +17,7 @@
     <string name="automatic">Automatic</string>
     <string name="b" translatable="false">B</string>
     <string name="b_" translatable="false">b*</string>
+    <string name="background">Background</string>
     <string name="background_color">Background Color</string>
     <string name="below_background">Below Background</string>
     <string name="blend_modes">Blend Modes</string>

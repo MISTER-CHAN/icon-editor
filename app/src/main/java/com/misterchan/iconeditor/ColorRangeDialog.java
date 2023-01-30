@@ -9,7 +9,7 @@ import android.widget.SeekBar;
 
 import androidx.appcompat.app.AlertDialog;
 
-public class ColorRangeDialog {
+class ColorRangeDialog {
 
     public interface OnColorRangeChangeListener {
         void onChange(int hueMin, int hueMax, int lumMin, int lumMax, boolean stopped);

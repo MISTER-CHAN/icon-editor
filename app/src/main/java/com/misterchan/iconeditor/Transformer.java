@@ -9,7 +9,7 @@ import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.RectF;
 
-public class Transformer {
+class Transformer {
 
     private final static Paint PAINT = new Paint() {
         {
@@ -68,6 +68,14 @@ public class Transformer {
 
     public int getWidth() {
         return bitmap.getWidth();
+    }
+
+    public Tab makeTab() {
+        Tab tab = new Tab();
+        tab.bitmap = bitmap;
+        tab.left = rect.left;
+        tab.top = rect.top;
+        return tab;
     }
 
     public void recycle() {

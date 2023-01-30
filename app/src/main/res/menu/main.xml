@@ -423,6 +423,12 @@
                 android:id="@+id/i_layer_draw_below"
                 android:checkable="true"
                 android:title="@string/draw_below" />
+
+            <item
+                android:id="@+id/i_layer_background"
+                android:checkable="true"
+                android:title="@string/background"
+                android:visible="false" />
         </menu>
     </item>
 

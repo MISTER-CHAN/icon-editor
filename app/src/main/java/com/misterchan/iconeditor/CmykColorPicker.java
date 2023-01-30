@@ -11,7 +11,7 @@ import androidx.appcompat.app.AlertDialog;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
-public class CmykColorPicker extends ColorPicker {
+class CmykColorPicker extends ColorPicker {
 
     private int radix = 16;
     private SeekBar sbCyan, sbMagenta, sbYellow, sbKey;
