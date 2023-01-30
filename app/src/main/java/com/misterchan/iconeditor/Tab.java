@@ -274,8 +274,8 @@ class Tab {
                     final int bmW = tab.bitmap.getWidth(), bmH = tab.bitmap.getHeight();
                     // Rectangle src and dst are intersection between background layer subset and current layer
                     final Rect src = new Rect(0, 0, bmW, bmH);
-                    final int srcOrigLeft = -tab.left, srcAbsTop = -tab.top; // Origin location related to layer
-                    if (!src.intersect(srcOrigLeft + rect.left, srcAbsTop + rect.top, srcOrigLeft + rect.right, srcAbsTop + rect.bottom)) {
+                    final int srcOrigLeft = -tab.left, srcOrigTop = -tab.top; // Origin location related to layer
+                    if (!src.intersect(srcOrigLeft + rect.left, srcOrigTop + rect.top, srcOrigLeft + rect.right, srcOrigTop + rect.bottom)) {
                         continue; // No intersection
                     }
                     final Rect dst = new Rect(0, 0, rect.width(), rect.height());
