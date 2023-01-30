@@ -279,7 +279,7 @@ class Tab {
                         continue; // No intersection
                     }
                     final Rect dst = new Rect(0, 0, rect.width(), rect.height());
-                    final int dstTabLeft = -rect.left + tab.left, dstTop = -rect.top + tab.top; // Layer location related to background layer subset
+                    final int dstLeft = -rect.left + tab.left, dstTop = -rect.top + tab.top; // Layer location related to background layer subset
                     dst.intersect(dstTabLeft, dstTop, dstTabLeft + bmW, dstTop + bmH);
                     final int intW = src.width(), intH = src.height(); // Intersection size, src size == dst size
                     final Rect intRel = new Rect(0, 0, intW, intH); // Intersection relative rectangle
