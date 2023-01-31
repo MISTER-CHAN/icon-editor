@@ -11,6 +11,14 @@
             app:title="@string/independent_layer" />
 
         <ListPreference
+            app:defaultValue="false"
+            app:entries="@array/nll_entries"
+            app:entryValues="@array/bool_values"
+            app:key="nll"
+            app:title="@string/level_of_new_layer"
+            app:useSimpleSummaryProvider="true" />
+
+        <ListPreference
             app:defaultValue="def"
             app:entries="@array/locales_entries"
             app:entryValues="@array/locales_values"
@@ -23,9 +31,9 @@
     <PreferenceCategory app:title="@string/argb_color_picker">
 
         <ListPreference
-            app:defaultValue="true"
+            app:defaultValue="false"
             app:entries="@array/type_entries"
-            app:entryValues="@array/type_values"
+            app:entryValues="@array/bool_values"
             app:key="act"
             app:title="@string/color_type"
             app:useSimpleSummaryProvider="true" />

@@ -7,10 +7,12 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.view.View;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.TextView;
 
 import androidx.annotation.IntRange;
 import androidx.annotation.Size;
+import androidx.annotation.StringRes;
 
 import java.util.List;
 import java.util.Stack;
@@ -35,7 +37,7 @@ class Tab {
     public Bitmap.CompressFormat compressFormat;
     public BitmapHistory history;
     public CellGrid cellGrid;
-    public CheckBox cbLayerVisible;
+    private CheckBox cbVisible;
     public Filter filter;
     public float scale;
     public float translationX, translationY;
@@ -45,9 +47,9 @@ class Tab {
     public String path;
     private Tab background;
     private int backgroundPosition;
-    public TextView tvLayerBackground;
-    public TextView tvLayerLevel;
-    public TextView tvTitle;
+    private TextView tvBackground;
+    private TextView tvLowerLevel, tvBranchFirst, tvBranchLast, tvBranchZeroth;
+    private TextView tvTitle;
 
     @Size(20)
     public float[] colorMatrix = new float[]{
@@ -86,23 +88,30 @@ class Tab {
         }
     }
 
+    private void clearLevelIcons() {
+        tvLowerLevel.setText("");
+        tvBranchFirst.setText("");
+        tvBranchLast.setText("");
+        tvBranchZeroth.setText("");
+    }
+
     public static LayerTree computeLayerTree(List<Tab> tabs, int pos) {
         final Stack<LayerTree> stack = new Stack<>();
         LayerTree layerTree = new LayerTree();
         LayerTree.Node prev = null;
 
         final Tab projBegin = findBackground(tabs, pos);
-        final int last = tabs.size() - 1;
-        Tab background = tabs.get(last);
-        int backgroundPos = last;
-        if (!background.isBackground) {
-            background.setBackground(true);
-        }
+        final int first = tabs.size() - 1; // last = 0
+        Tab background = tabs.get(first);
+        int backgroundPos = first;
+        background.isBackground = true;
         boolean isInProject = false;
+        Tab lastTabInProject = null;
         stack.push(layerTree);
-        for (int i = last; i >= 0; --i) {
+        for (int i = first; i >= 0; --i) {
             final Tab t = tabs.get(i);
             if (t.isBackground) {
+                t.showBackground();
                 background = t;
                 backgroundPos = i;
                 isInProject = t == projBegin;
@@ -110,13 +119,22 @@ class Tab {
             t.background = background;
             t.backgroundPosition = backgroundPos;
             if (isInProject) {
-                t.cbLayerVisible.setVisibility(View.VISIBLE);
+                t.cbVisible.setVisibility(View.VISIBLE);
+                t.clearLevelIcons();
+                lastTabInProject = t;
+                if (t.level > 0) {
+                    t.tvLowerLevel.setText("→");
+                }
+                // If current layer is background layer
                 if (prev == null) {
+                    for (int j = 1; j < t.level; j++) {
+                        t.tvBranchZeroth.append("]");
+                    }
                     prev = layerTree.offer(t);
                     continue;
                 }
             } else {
-                t.cbLayerVisible.setVisibility(View.GONE);
+                t.cbVisible.setVisibility(View.GONE);
                 continue;
             }
             final Tab prevTab = prev.getTab();
@@ -133,21 +151,35 @@ class Tab {
                     prev = lt.offer(prevTab);
                     stack.push(lt);
                 }
+                for (int j = prevTab.level > 0 ? 0 : 1; j < levelDiff; ++j) {
+                    prevTab.tvBranchFirst.append("]");
+                }
                 prev = lt.offer(t);
 
             } else /* if (levelDiff < 0) */ {
+                // If current level is lower than or equals to background's level
                 if (-levelDiff < stack.size()) {
                     for (int j = 0; j > levelDiff; --j) {
                         stack.pop();
                     }
+                    for (int j = t.level > 0 ? 0 : -1; j > levelDiff; --j) {
+                        prevTab.tvBranchLast.append("[");
+                    }
                     prev = stack.peek().offer(t);
                 } else {
+                    // Re-compute layer tree
                     stack.clear();
                     layerTree = stack.push(new LayerTree());
+                    for (int j = t.level > 0 ? 0 : -1 ; j > levelDiff; --j) {
+                        prevTab.tvBranchLast.append("[");
+                    }
                     prev = layerTree.offer(t);
                 }
 
             }
+        }
+        for (int i = lastTabInProject.level; i > 1; --i) {
+            lastTabInProject.tvBranchLast.append("[");
         }
 
         return layerTree;
@@ -164,23 +196,21 @@ class Tab {
         return t;
     }
 
-    private static int findBackgroundPosition(List<Tab> tabs, int pos) {
-        int i = pos;
-        for (; i < tabs.size(); ++i) {
-            final Tab t = tabs.get(i);
-            if (t.isBackground) {
-                return i;
-            }
-        }
-        return i - 1;
-    }
-
     public static Tab getAbove(List<Tab> tabs, int pos) {
         if (pos <= 0) {
             return null;
         }
         final Tab t = tabs.get(pos - 1);
         return t.isBackground ? null : t;
+    }
+
+    public static Tab getBelow(List<Tab> tabs, int pos) {
+        final int newPos = pos + 1;
+        if (newPos >= tabs.size()) {
+            return null;
+        }
+        final Tab newTab = tabs.get(newPos);
+        return tabs.get(pos).getBackground() == newTab.getBackground() ? newTab : null;
     }
 
     public Tab getBackground() {
@@ -201,15 +231,23 @@ class Tab {
         return i == -1 ? s : s.substring(0, i);
     }
 
+    public void initViews(View view) {
+        cbVisible = view.findViewById(R.id.cb_visible);
+        tvBranchFirst = view.findViewById(R.id.tv_branch_first);
+        tvBranchLast = view.findViewById(R.id.tv_branch_last);
+        tvBranchZeroth = view.findViewById(R.id.tv_branch_zeroth);
+        tvBackground = view.findViewById(R.id.tv_background);
+        tvLowerLevel = view.findViewById(R.id.tv_lower_level);
+        tvTitle = view.findViewById(R.id.tv_title);
+    }
+
     public void levelDown() {
         ++level;
-        showLayerLevel();
     }
 
     public static void levelDown(List<Tab> tabs, int position) {
         final Tab tab = tabs.get(position);
         final int level = tab.level++;
-        tab.showLayerLevel();
         for (int i = position - 1; i >= 0; --i) {
             final Tab t = tabs.get(i);
             if (t.isBackground) {
@@ -217,7 +255,6 @@ class Tab {
             }
             if (t.level > level) {
                 ++t.level;
-                t.showLayerLevel();
             } else {
                 break;
             }
@@ -229,7 +266,6 @@ class Tab {
             return;
         }
         --level;
-        showLayerLevel();
     }
 
     public static void mergeLayers(Tab upper, Tab lower) {
@@ -241,7 +277,7 @@ class Tab {
         if (upper.filter != null) {
             addFilters(uBm, upper);
         }
-        lCv.drawBitmap(uBm, 0.0f, 0.0f, upper.paint);
+        lCv.drawBitmap(uBm, upper.left - lower.left, upper.top - lower.top, upper.paint);
     }
 
     public static Bitmap mergeLayers(final LayerTree tree, final Rect rect) {
@@ -274,13 +310,13 @@ class Tab {
                     final int bmW = tab.bitmap.getWidth(), bmH = tab.bitmap.getHeight();
                     // Rectangle src and dst are intersection between background layer subset and current layer
                     final Rect src = new Rect(0, 0, bmW, bmH);
-                    final int srcOrigLeft = -tab.left, srcAbsTop = -tab.top; // Origin location related to layer
-                    if (!src.intersect(srcOrigLeft + rect.left, srcAbsTop + rect.top, srcOrigLeft + rect.right, srcAbsTop + rect.bottom)) {
+                    final int srcOrigLeft = -tab.left, srcOrigTop = -tab.top; // Origin location related to layer
+                    if (!src.intersect(srcOrigLeft + rect.left, srcOrigTop + rect.top, srcOrigLeft + rect.right, srcOrigTop + rect.bottom)) {
                         continue; // No intersection
                     }
                     final Rect dst = new Rect(0, 0, rect.width(), rect.height());
-                    final int dstTabLeft = -rect.left + tab.left, dstTop = -rect.top + tab.top; // Layer location related to background layer subset
-                    dst.intersect(dstTabLeft, dstTop, dstTabLeft + bmW, dstTop + bmH);
+                    final int dstLeft = -rect.left + tab.left, dstTop = -rect.top + tab.top; // Layer location related to background layer subset
+                    dst.intersect(dstLeft, dstTop, dstLeft + bmW, dstTop + bmH);
                     final int intW = src.width(), intH = src.height(); // Intersection size, src size == dst size
                     final Rect intRel = new Rect(0, 0, intW, intH); // Intersection relative rectangle
 
@@ -300,7 +336,7 @@ class Tab {
                         if (tab.drawBelow) {
                             canvas.drawBitmap(bitmap, 0.0f, 0.0f, paint);
                         } else if (tab == excludedTab) {
-                            if (extraExclTab != null && eed != null) {
+                            if (eed != null) {
                                 final Bitmap bm = Bitmap.createBitmap(intW, intH, Bitmap.Config.ARGB_8888); // Intersection bitmap
                                 final Canvas cv = new Canvas(bm);
                                 try {
@@ -324,7 +360,7 @@ class Tab {
                                 cv.drawBitmap(bitmap, dst, intRel, PAINT_SRC);
                             } else if (tab == excludedTab) {
                                 cv.drawBitmap(excludedBitmap, src, intRel, PAINT_SRC);
-                                if (extraExclTab != null && eed != null) {
+                                if (eed != null) {
                                     cv.drawBitmap(extraExclTab.bitmap, ees, eed, PAINT_SRC_OVER);
                                 }
                             } else {
@@ -374,22 +410,46 @@ class Tab {
         this.level = level;
     }
 
-    public void showBackground() {
-        if (tvLayerBackground == null) {
+    /**
+     * @param listener Listener on {@link #cbVisible} checked change
+     */
+    public void addOVCBCCListener(CompoundButton.OnCheckedChangeListener listener) {
+        cbVisible.setOnCheckedChangeListener(listener);
+    }
+
+    public void removeOLVCBCCListener() {
+        cbVisible.setOnCheckedChangeListener(null);
+    }
+
+    public void setTitle(@StringRes int resId) {
+        tvTitle.setText(resId);
+    }
+
+    public void setVisible(boolean visible) {
+        cbVisible.setChecked(visible);
+    }
+
+    public void setTitle(CharSequence text) {
+        tvTitle.setText(text);
+    }
+
+    private void showBackground() {
+        if (tvBackground == null) {
             return;
         }
         final StringBuilder sb = new StringBuilder();
         if (isBackground) {
             sb.append('▕');
         }
-        tvLayerBackground.setText(sb);
+        tvBackground.setText(sb);
     }
 
-    public void showLayerLevel() {
-        final StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < level; ++i) {
-            sb.append('→');
-        }
-        tvLayerLevel.setText(sb);
+    public void showTo(View view) {
+        ((TextView) view.findViewById(R.id.tv_branch_first)).setText(tvBranchFirst.getText());
+        ((TextView) view.findViewById(R.id.tv_branch_last)).setText(tvBranchLast.getText());
+        ((TextView) view.findViewById(R.id.tv_branch_zeroth)).setText(tvBranchZeroth.getText());
+        ((TextView) view.findViewById(R.id.tv_background)).setText(tvBackground.getText());
+        ((TextView) view.findViewById(R.id.tv_lower_level)).setText(tvLowerLevel.getText());
+        ((TextView) view.findViewById(R.id.tv_title)).setText(tvTitle.getText());
     }
 }

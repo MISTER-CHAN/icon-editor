@@ -104,7 +104,7 @@
     <string name="image">图像</string>
     <string name="image_size">图像尺寸</string>
     <string name="independent_layer">独立图层</string>
-    <string name="independent_transl_and_scale">独立各图层的位置及缩放</string>
+    <string name="independent_transl_and_scale">独立各图层的可见子集</string>
     <string name="information">资讯</string>
     <string name="input">输入</string>
     <string name="integer">整数</string>
@@ -114,9 +114,10 @@
     <string name="layer_name">图层名</string>
     <string name="left">左</string>
     <string name="level">阶级</string>
-    <string name="levels">色阶</string>
     <string name="level_down">降级</string>
+    <string name="level_of_new_layer">新图层阶级</string>
     <string name="level_up">升级</string>
+    <string name="levels">色阶</string>
     <string name="lightness">明度</string>
     <string name="line">直线</string>
     <string name="locale">地区</string>
@@ -179,6 +180,7 @@
     <string name="scale_to_white">压缩至白色</string>
     <string name="select">选择</string>
     <string name="select_all">全选</string>
+    <string name="selected_layers_level">选中图层阶级</string>
     <string name="send_to_back">置底</string>
     <string name="set">设置</string>
     <string name="settings">设置</string>
@@ -218,11 +220,12 @@
     <string name="tolerance">容差</string>
     <string name="tool_options">工具选项</string>
     <string name="top">顶</string>
+    <string name="top_level">顶级</string>
     <string name="transform">变换</string>
     <string name="translate">平移</string>
     <string name="tutorial_merge_as_hidden">Tutorial</string>
     <string name="two_seventy_degrees">270°</string>
-    <string name="unified_transl_and_scale">统一各图层的位置及缩放</string>
+    <string name="unified_transl_and_scale">统一各图层的可见子集</string>
     <string name="untitled">无标题</string>
     <string name="version">版本（发布日期）</string>
     <string name="vertically">垂直</string>

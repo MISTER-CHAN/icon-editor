@@ -427,7 +427,7 @@ public class MainActivity extends AppCompatActivity {
         tab.path = Environment.getExternalStorageDirectory().getPath() + File.separator + tree + File.separator + fileName;
         tab.compressFormat = COMPRESS_FORMATS[sFileType.getSelectedItemPosition()];
         save();
-        tab.tvTitle.setText(fileName);
+        tab.setTitle(fileName);
     };
 
     private final ActivityResultCallback<List<Uri>> imagesCallback = result -> result.forEach(this::openFile);
@@ -505,7 +505,7 @@ public class MainActivity extends AppCompatActivity {
         if (name.length() <= 0) {
             return;
         }
-        tab.tvTitle.setText(name);
+        tab.setTitle(name);
     };
 
     private final DialogInterface.OnCancelListener onPreviewCancelListener = dialog -> {
@@ -608,7 +608,7 @@ public class MainActivity extends AppCompatActivity {
         }
         preview.recycle();
         preview = null;
-        addLayer(bm, tab.visible, tab.left, tab.top, tabLayout.getSelectedTabPosition());
+        addLayer(bm, tab.visible, tab.getLevel(), tab.left, tab.top, tabLayout.getSelectedTabPosition());
         clearStatus();
     };
 
@@ -822,7 +822,11 @@ public class MainActivity extends AppCompatActivity {
 
             final TabLayout tl = dialog.findViewById(R.id.tl);
             for (int i = 0; i < tabLayout.getTabCount(); ++i) {
-                tl.addTab(tl.newTab().setText(tabs.get(i).tvTitle.getText()), i == position);
+                final TabLayout.Tab nt = tl.newTab().setCustomView(R.layout.tab);
+                final View cv = nt.getCustomView();
+                final Tab t = tabs.get(i);
+                t.showTo(cv);
+                tl.addTab(nt, i == position);
             }
             tl.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
                 @Override
@@ -831,7 +835,9 @@ public class MainActivity extends AppCompatActivity {
                     final int p = t.getPosition();
                     final Tab selected = tabs.remove(position);
                     final View cv = tab.getCustomView();
+                    tabLayout.removeOnTabSelectedListener(onTabSelectedListener);
                     tabLayout.removeTabAt(position);
+                    tabLayout.addOnTabSelectedListener(onTabSelectedListener);
                     tabs.add(p, selected);
                     final TabLayout.Tab nt = tabLayout.newTab()
                             .setCustomView(cv)
@@ -2239,18 +2245,11 @@ public class MainActivity extends AppCompatActivity {
 
         resetTranslAndScale(tab);
 
-        final TabLayout.Tab t = tabLayout.newTab()
-                .setCustomView(R.layout.tab)
-                .setTag(tab);
-        final View customView = t.getCustomView();
-        tab.cbLayerVisible = customView.findViewById(R.id.cb_layer_visible);
-        tab.cbLayerVisible.setChecked(tab.visible);
-        tab.cbLayerVisible.setOnCheckedChangeListener(getOnLayerVisibleCBCheckedChangeListener(tab));
-        tab.tvLayerBackground = customView.findViewById(R.id.tv_layer_background);
-        tab.tvLayerLevel = customView.findViewById(R.id.tv_layer_level);
-        tab.tvTitle = customView.findViewById(R.id.tv_title);
-        tab.tvTitle.setText(title);
-        tab.showBackground();
+        final TabLayout.Tab t = tabLayout.newTab().setCustomView(R.layout.tab).setTag(tab);
+        tab.initViews(t.getCustomView());
+        tab.setTitle(title);
+        tab.setVisible(tab.visible);
+        tab.addOVCBCCListener(getOVCBCCListener(tab));
         tabLayout.addTab(t, position, true);
     }
 
@@ -2276,13 +2275,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void addLayer(Bitmap bitmap, boolean visible, int position) {
-        addLayer(bitmap, visible, 0, 0, position);
+        addLayer(bitmap, visible, 0, 0, 0, position);
     }
 
-    private void addLayer(Bitmap bitmap, boolean visible, int left, int top, int position) {
+    private void addLayer(Bitmap bitmap, boolean visible, int level, int left, int top, int position) {
         final Tab t = new Tab();
         t.bitmap = bitmap;
         t.isBackground = false;
+        t.setLevel(level);
         t.moveTo(left, top);
         t.paint = new Paint();
         t.paint.setBlendMode(BlendMode.SRC_OVER);
@@ -2332,16 +2332,32 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void closeTab(int position) {
-        final Tab tab = tabs.get(position), above = Tab.getAbove(tabs, position);
-        if (above != null) {
-            above.setBackground(true);
-        }
-        final Bitmap bm = tab.bitmap;
-        final BitmapHistory h = tab.history;
-        tabs.remove(position);
+        closeTab(position, true);
+    }
+
+    private void closeTab(int position, boolean select) {
+        final Tab tab = tabs.get(position);
+        tabLayout.removeOnTabSelectedListener(onTabSelectedListener);
         tabLayout.removeTabAt(position);
-        bm.recycle();
-        h.clear();
+        tabLayout.addOnTabSelectedListener(onTabSelectedListener);
+        tab.bitmap.recycle();
+        tab.history.clear();
+        if (select) {
+            final Tab above = Tab.getAbove(tabs, position), below = Tab.getBelow(tabs, position);
+            tabs.remove(position);
+            if (above != null && tab.isBackground) {
+                above.setBackground(true);
+            }
+            final int newPos = tabLayout.getSelectedTabPosition();
+            final Tab newTab = tabs.get(newPos), oldBackground = tab.getBackground();
+            if (newTab.getBackground() == oldBackground || below == null) {
+                onTabSelectedListener.onTabSelected(tabLayout.getTabAt(newPos));
+            } else {
+                tabLayout.selectTab(tabLayout.getTabAt(position));
+            }
+        } else {
+            tabs.remove(position);
+        }
     }
 
     private void computeLayerTree() {
@@ -2361,8 +2377,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void createLayer(int width, int height, Bitmap.Config config, boolean hasAlpha, ColorSpace colorSpace,
-                             int left, int top, int position) {
-        addLayer(Bitmap.createBitmap(width, height, config, hasAlpha, colorSpace), true, left, top, position);
+                             int level, int left, int top, int position) {
+        addLayer(Bitmap.createBitmap(width, height, config, hasAlpha, colorSpace), true, level, left, top, position);
     }
 
     private void createPreviewBitmap() {
@@ -2965,7 +2981,10 @@ public class MainActivity extends AppCompatActivity {
         imageView.invalidate();
     }
 
-    private CompoundButton.OnCheckedChangeListener getOnLayerVisibleCBCheckedChangeListener(final Tab tab) {
+    /**
+     * @see Tab#addOVCBCCListener(CompoundButton.OnCheckedChangeListener)
+     */
+    private CompoundButton.OnCheckedChangeListener getOVCBCCListener(final Tab tab) {
         return (buttonView, isChecked) -> {
             tab.visible = isChecked;
             drawBitmapOnView(true);
@@ -3066,18 +3085,11 @@ public class MainActivity extends AppCompatActivity {
         ivSelection.setImageBitmap(selectionBitmap);
         drawSelectionOnView();
 
-        final TabLayout.Tab t = tabLayout.newTab()
-                .setCustomView(R.layout.tab)
-                .setTag(tab);
-        final View customView = t.getCustomView();
-        tab.cbLayerVisible = customView.findViewById(R.id.cb_layer_visible);
-        tab.cbLayerVisible.setChecked(tab.visible);
-        tab.cbLayerVisible.setOnCheckedChangeListener(getOnLayerVisibleCBCheckedChangeListener(tab));
-        tab.tvLayerBackground = customView.findViewById(R.id.tv_layer_background);
-        tab.tvLayerLevel = customView.findViewById(R.id.tv_layer_level);
-        tab.tvTitle = customView.findViewById(R.id.tv_title);
-        tab.tvTitle.setText(R.string.untitled);
-        tab.showBackground();
+        final TabLayout.Tab t = tabLayout.newTab().setCustomView(R.layout.tab).setTag(tab);
+        tab.initViews(t.getCustomView());
+        tab.setTitle(R.string.untitled);
+        tab.setVisible(tab.visible);
+        tab.addOVCBCCListener(getOVCBCCListener(tab));
         tabLayout.addTab(t, true);
 
         etPencilBlurRadius.setText(String.valueOf(0.0f));
@@ -3783,7 +3795,6 @@ public class MainActivity extends AppCompatActivity {
                     cv.drawColor(Color.BLACK, PorterDuff.Mode.SRC);
                 }
                 addBitmap(t, tabLayout.getSelectedTabPosition(), getString(R.string.mask));
-                t.showLayerLevel();
                 break;
             }
             case R.id.i_layer_alpha:
@@ -3879,13 +3890,13 @@ public class MainActivity extends AppCompatActivity {
                         break;
                     }
                     if (t != tab && !t.visible) {
-                        closeTab(i);
+                        closeTab(i, false);
                     }
                 }
                 if (!tab.visible && tabs.size() > 1) {
                     closeTab();
                 } else {
-                    computeLayerTree();
+                    onTabSelectedListener.onTabSelected(tabLayout.getTabAt(tabLayout.getSelectedTabPosition()));
                 }
                 break;
             }
@@ -3906,7 +3917,7 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     cv.drawBitmap(bitmap, 0.0f, 0.0f, PAINT_SRC);
                 }
-                addLayer(bm, tab.visible, tab.left, tab.top, tabLayout.getSelectedTabPosition());
+                addLayer(bm, tab.visible, tab.getLevel(), tab.left, tab.top, tabLayout.getSelectedTabPosition());
                 break;
             }
             case R.id.i_layer_duplicate_by_color_range: {
@@ -4003,27 +4014,27 @@ public class MainActivity extends AppCompatActivity {
             }
             case R.id.i_layer_merge_visible: {
                 drawFloatingLayers();
-                final int selected = tabLayout.getSelectedTabPosition();
-                final int w = bitmap.getWidth(), h = bitmap.getHeight();
-                final Bitmap bm = Tab.mergeLayers(layerTree, new Rect(0, 0, w, h));
                 final Tab background = tab.getBackground();
+                final int w = background.bitmap.getWidth(), h = background.bitmap.getHeight();
+                final Bitmap bm = Tab.mergeLayers(layerTree, new Rect(0, 0, w, h));
                 for (int i = tab.getBackgroundPosition(); i >= 0; --i) {
                     final Tab t = tabs.get(i);
                     if (t.getBackground() != background) {
                         break;
                     } else if (t.visible) {
-                        t.cbLayerVisible.setOnCheckedChangeListener(null);
-                        t.cbLayerVisible.setChecked(false);
+                        t.removeOLVCBCCListener();
+                        t.setVisible(false);
                         t.visible = false;
-                        t.cbLayerVisible.setOnCheckedChangeListener(getOnLayerVisibleCBCheckedChangeListener(t));
+                        t.addOVCBCCListener(getOVCBCCListener(t));
                     }
                 }
-                addLayer(bm, true, selected);
+                addLayer(bm, true, tabLayout.getSelectedTabPosition());
                 break;
             }
             case R.id.i_layer_new:
                 createLayer(bitmap.getWidth(), bitmap.getHeight(),
                         bitmap.getConfig(), true, bitmap.getColorSpace(),
+                        settings.getNewLayerLevel() ? tab.getLevel() : 0,
                         tab.left, tab.top, tabLayout.getSelectedTabPosition());
                 break;
 
@@ -4423,7 +4434,7 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("ClickableViewAccessibility")
     void setArgbColorType() {
         onImageViewTouchWithEyedropperListener = settings.getArgbColorType()
-                ? onImageViewTouchWithEyedropperImpreciseListener : onImageViewTouchWithEyedropperPreciseListener;
+                ? onImageViewTouchWithEyedropperPreciseListener : onImageViewTouchWithEyedropperImpreciseListener;
         if (rbEyedropper != null && rbEyedropper.isChecked()) {
             cbZoom.setTag(onImageViewTouchWithEyedropperListener);
             if (!cbZoom.isChecked()) {

@@ -117,7 +117,7 @@
     <string name="image">Image</string>
     <string name="image_size">Image Size</string>
     <string name="independent_layer">Independent Layer</string>
-    <string name="independent_transl_and_scale">Independent Location and Scale of Each Layer</string>
+    <string name="independent_transl_and_scale">Independent Visible Subset of Each Layer</string>
     <string name="information">Information</string>
     <string name="input">Input</string>
     <string name="integer">Integer</string>
@@ -129,9 +129,10 @@
     <string name="layer_name">Layer Name</string>
     <string name="left">Left</string>
     <string name="level">Level</string>
-    <string name="levels">Levels</string>
     <string name="level_down">Level Down</string>
+    <string name="level_of_new_layer">Level of New Layer</string>
     <string name="level_up">Level Up</string>
+    <string name="levels">Levels</string>
     <string name="lightness">Lightness</string>
     <string name="line">Line</string>
     <string name="locale">Locale</string>
@@ -202,6 +203,7 @@
     <string name="scale_to_black">Scale to Black</string>
     <string name="select">Select</string>
     <string name="select_all">Select All</string>
+    <string name="selected_layers_level">Selected Layer\'s Level</string>
     <string name="send_to_back">Send to Back</string>
     <string name="set">Set</string>
     <string name="settings">Settings</string>
@@ -246,12 +248,13 @@
     <string name="tolerance">Tolerance</string>
     <string name="tool_options">Tool Options</string>
     <string name="top">Top</string>
+    <string name="top_level">Top</string>
     <string name="transform">Transform</string>
     <string name="translate">Translate</string>
     <string name="tutorial_merge_as_hidden">Tutorial</string>
     <string name="two_seventy_degrees">270°</string>
     <string name="undo" translatable="false">↶</string>
-    <string name="unified_transl_and_scale">Unified Location and Scale of Each Layer</string>
+    <string name="unified_transl_and_scale">Unified Visible Subset of Each Layer</string>
     <string name="untitled">Untitled</string>
     <string name="v" translatable="false">V</string>
     <string name="version">Version (Release Date)</string>

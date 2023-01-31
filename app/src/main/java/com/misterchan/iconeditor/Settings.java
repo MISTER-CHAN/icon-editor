@@ -9,14 +9,16 @@ class Settings {
 
     static final String KEY_ACR = "acr";
     static final String KEY_ACT = "act";
+    static final String KEY_NLL = "nll";
     static final String KEY_CFU = "cfu";
     static final String KEY_ITS = "its";
     static final String KEY_LOC = "loc";
     static final String KEY_MT = "mt";
 
-    private boolean argbColorType = true;
+    private boolean argbColorType = false;
     private boolean independentTranslAndScale = false;
     private boolean multithreaded = false;
+    private boolean newLayerLevel = false;
     private int argbComponentRadix = 16;
     private MainActivity mainActivity;
     private String argbComponentFormat = FORMAT_02X;
@@ -41,11 +43,16 @@ class Settings {
         this.mainActivity = mainActivity;
     }
 
+    public boolean getNewLayerLevel() {
+        return newLayerLevel;
+    }
+
     public void update(SharedPreferences preferences) {
         update(preferences, KEY_ACR);
         update(preferences, KEY_ACT);
         update(preferences, KEY_ITS);
         update(preferences, KEY_MT);
+        update(preferences, KEY_NLL);
     }
 
     public void update(SharedPreferences preferences, String key) {
@@ -60,7 +67,7 @@ class Settings {
                 break;
 
             case KEY_ACT:
-                argbColorType = Boolean.parseBoolean(preferences.getString(KEY_ACT, "true"));
+                argbColorType = Boolean.parseBoolean(preferences.getString(KEY_ACT, "false"));
                 mainActivity.setArgbColorType();
                 break;
 
@@ -74,6 +81,10 @@ class Settings {
             case KEY_MT:
                 multithreaded = preferences.getBoolean(KEY_MT, false);
                 mainActivity.setRunnableRunner(multithreaded);
+                break;
+
+            case KEY_NLL:
+                newLayerLevel = Boolean.parseBoolean(preferences.getString(KEY_NLL, "false"));
                 break;
         }
     }

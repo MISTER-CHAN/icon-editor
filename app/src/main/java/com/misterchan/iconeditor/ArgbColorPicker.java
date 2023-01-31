@@ -39,7 +39,7 @@ abstract class ArgbColorPicker extends ColorPicker {
                                    final OnColorPickListener onColorPickListener,
                                    @ColorLong final Long oldColor, @StringRes int neutralFunction) {
         final Settings settings = ((MainApplication) context.getApplicationContext()).getSettings();
-        final ArgbColorPicker picker = settings.getArgbColorType() ? new ArgbColorIntPicker() : new ArgbColorLongPicker();
+        final ArgbColorPicker picker = settings.getArgbColorType() ? new ArgbColorLongPicker() : new ArgbColorIntPicker();
         picker.context = context;
         picker.dialogBuilder = new AlertDialog.Builder(context)
                 .setNegativeButton(R.string.cancel, null)
