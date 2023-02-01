@@ -1,7 +1,7 @@
 package com.misterchan.iconeditor;
 
 /**
- * Here is an example for layer tree.<br />
+ * Here is an example of layer tree.<br />
  * <code>
  *     <nobr>
  *         &nbsp; Level 0 &nbsp; &nbsp; &nbsp; &nbsp;Level 1 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Level 2<br />
