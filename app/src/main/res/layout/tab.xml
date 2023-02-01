@@ -6,7 +6,7 @@
     android:orientation="horizontal">
 
     <TextView
-        android:id="@+id/tv_branch_last"
+        android:id="@+id/tv_leaf"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:maxLines="1"
@@ -28,7 +28,7 @@
         android:textColor="?android:attr/textColorPrimary" />
 
     <TextView
-        android:id="@+id/tv_branch_first"
+        android:id="@+id/tv_parent"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:maxLines="1"
@@ -45,7 +45,7 @@
         android:textColor="?android:attr/textColorSecondary" />
 
     <TextView
-        android:id="@+id/tv_branch_zeroth"
+        android:id="@+id/tv_root"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:maxLines="1"

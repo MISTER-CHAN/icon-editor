@@ -48,7 +48,7 @@ class Tab {
     private Tab background;
     private int backgroundPosition;
     private TextView tvBackground;
-    private TextView tvLowerLevel, tvBranchFirst, tvBranchLast, tvBranchZeroth;
+    private TextView tvLowerLevel, tvRoot, tvParent, tvLeaf;
     private TextView tvTitle;
 
     @Size(20)
@@ -90,15 +90,15 @@ class Tab {
 
     private void clearLevelIcons() {
         tvLowerLevel.setText("");
-        tvBranchFirst.setText("");
-        tvBranchLast.setText("");
-        tvBranchZeroth.setText("");
+        tvRoot.setText("");
+        tvParent.setText("");
+        tvLeaf.setText("");
     }
 
-    public static LayerTree computeLayerTree(List<Tab> tabs, int pos) {
-        final Stack<LayerTree> stack = new Stack<>();
-        LayerTree layerTree = new LayerTree();
-        LayerTree.Node prev = null;
+    public static LayerBranch computeLayerTree(List<Tab> tabs, int pos) {
+        final Stack<LayerBranch> stack = new Stack<>();
+        LayerBranch trunk = new LayerBranch();
+        LayerBranch.Node prev = null;
 
         final Tab projBegin = findBackground(tabs, pos);
         final int first = tabs.size() - 1; // last = 0
@@ -107,7 +107,7 @@ class Tab {
         background.isBackground = true;
         boolean isInProject = false;
         Tab lastTabInProject = null;
-        stack.push(layerTree);
+        stack.push(trunk);
         for (int i = first; i >= 0; --i) {
             final Tab t = tabs.get(i);
             if (t.isBackground) {
@@ -128,9 +128,9 @@ class Tab {
                 // If current layer is background layer
                 if (prev == null) {
                     for (int j = 1; j < t.level; j++) {
-                        t.tvBranchZeroth.append("]");
+                        t.tvRoot.append("]");
                     }
-                    prev = layerTree.offer(t);
+                    prev = trunk.push(t);
                     continue;
                 }
             } else {
@@ -141,20 +141,20 @@ class Tab {
             final int levelDiff = t.level - prevTab.level;
 
             if (levelDiff == 0) {
-                prev = stack.peek().offer(t);
+                prev = stack.peek().push(t);
 
             } else if (levelDiff > 0) {
-                LayerTree lt = null;
+                LayerBranch lb = null;
                 for (int j = 0; j < levelDiff; ++j) {
-                    lt = new LayerTree();
-                    prev.setBranch(lt);
-                    prev = lt.offer(prevTab);
-                    stack.push(lt);
+                    lb = new LayerBranch();
+                    prev.setChildren(lb);
+                    prev = lb.push(prevTab);
+                    stack.push(lb);
                 }
                 for (int j = prevTab.level > 0 ? 0 : 1; j < levelDiff; ++j) {
-                    prevTab.tvBranchFirst.append("]");
+                    prevTab.tvParent.append("]");
                 }
-                prev = lt.offer(t);
+                prev = lb.push(t);
 
             } else /* if (levelDiff < 0) */ {
                 // If current level is lower than or equals to background's level
@@ -163,26 +163,26 @@ class Tab {
                         stack.pop();
                     }
                     for (int j = t.level > 0 ? 0 : -1; j > levelDiff; --j) {
-                        prevTab.tvBranchLast.append("[");
+                        prevTab.tvLeaf.append("[");
                     }
-                    prev = stack.peek().offer(t);
+                    prev = stack.peek().push(t);
                 } else {
                     // Re-compute layer tree
                     stack.clear();
-                    layerTree = stack.push(new LayerTree());
-                    for (int j = t.level > 0 ? 0 : -1 ; j > levelDiff; --j) {
-                        prevTab.tvBranchLast.append("[");
+                    trunk = stack.push(new LayerBranch());
+                    for (int j = t.level > 0 ? 0 : -1; j > levelDiff; --j) {
+                        prevTab.tvLeaf.append("[");
                     }
-                    prev = layerTree.offer(t);
+                    prev = trunk.push(t);
                 }
 
             }
         }
         for (int i = lastTabInProject.level; i > 1; --i) {
-            lastTabInProject.tvBranchLast.append("[");
+            lastTabInProject.tvLeaf.append("[");
         }
 
-        return layerTree;
+        return trunk;
     }
 
     private static Tab findBackground(List<Tab> tabs, int pos) {
@@ -233,9 +233,9 @@ class Tab {
 
     public void initViews(View view) {
         cbVisible = view.findViewById(R.id.cb_visible);
-        tvBranchFirst = view.findViewById(R.id.tv_branch_first);
-        tvBranchLast = view.findViewById(R.id.tv_branch_last);
-        tvBranchZeroth = view.findViewById(R.id.tv_branch_zeroth);
+        tvRoot = view.findViewById(R.id.tv_root);
+        tvParent = view.findViewById(R.id.tv_parent);
+        tvLeaf = view.findViewById(R.id.tv_leaf);
         tvBackground = view.findViewById(R.id.tv_background);
         tvLowerLevel = view.findViewById(R.id.tv_lower_level);
         tvTitle = view.findViewById(R.id.tv_title);
@@ -280,18 +280,18 @@ class Tab {
         lCv.drawBitmap(uBm, upper.left - lower.left, upper.top - lower.top, upper.paint);
     }
 
-    public static Bitmap mergeLayers(final LayerTree tree, final Rect rect) {
+    public static Bitmap mergeLayers(final LayerBranch tree, final Rect rect) {
         return mergeLayers(tree, rect, null, null, null);
     }
 
-    public static Bitmap mergeLayers(final LayerTree tree, final Rect rect,
+    public static Bitmap mergeLayers(final LayerBranch tree, final Rect rect,
                                      final Tab excludedTab, final Bitmap excludedBitmap, final Tab extraExclTab) {
         return mergeLayers(tree, rect, null, excludedTab, excludedBitmap, extraExclTab);
     }
 
-    public static Bitmap mergeLayers(final LayerTree tree, final Rect rect, final Bitmap background,
+    public static Bitmap mergeLayers(final LayerBranch tree, final Rect rect, final Bitmap background,
                                      final Tab excludedTab, final Bitmap excludedBitmap, final Tab extraExclTab) {
-        final LayerTree.Node root = tree.peekBackground();
+        final LayerBranch.Node backgroundNode = tree.peekBackground();
         final Bitmap bitmap = Bitmap.createBitmap(rect.width(), rect.height(), Bitmap.Config.ARGB_8888);
         final Canvas canvas = new Canvas(bitmap);
         if (background != null) {
@@ -299,14 +299,14 @@ class Tab {
         }
 
         try {
-            for (LayerTree.Node node = root; node != null; node = node.getAbove()) {
+            for (LayerBranch.Node node = backgroundNode; node != null; node = node.getAbove()) {
                 final Tab tab = node.getTab();
                 if (!tab.visible && tab != excludedTab) {
                     continue;
                 }
-                final LayerTree branch = node.getBranch();
-                if (branch == null) {
-                    final Paint paint = node == root && background != null ? PAINT_SRC : tab.paint;
+                final LayerBranch children = node.getChildren();
+                if (children == null) {
+                    final Paint paint = node == backgroundNode && background == null ? PAINT_SRC : tab.paint;
                     final int bmW = tab.bitmap.getWidth(), bmH = tab.bitmap.getHeight();
                     // Rectangle src and dst are intersection between background layer subset and current layer
                     final Rect src = new Rect(0, 0, bmW, bmH);
@@ -321,7 +321,7 @@ class Tab {
                     final Rect intRel = new Rect(0, 0, intW, intH); // Intersection relative rectangle
 
                     Rect ees = null, eed = null; // Intersection between intersection and extra excluded layer
-                    if (extraExclTab != null) {
+                    if (tab == excludedTab && extraExclTab != null) {
                         final int w = extraExclTab.bitmap.getWidth(), h = extraExclTab.bitmap.getHeight();
                         ees = new Rect(0, 0, w, h);
                         final int sol = -extraExclTab.left - tab.left + rect.left, sot = -extraExclTab.top - tab.top + rect.top; // Origin location related to extra excluded layer
@@ -373,8 +373,8 @@ class Tab {
                         }
                     }
                 } else {
-                    final Bitmap branchBitmap = mergeLayers(branch, rect,
-                            !tab.drawBelow || node == root ? null : bitmap,
+                    final Bitmap branchBitmap = mergeLayers(children, rect,
+                            !tab.drawBelow || node == backgroundNode ? null : bitmap,
                             excludedTab, excludedBitmap, extraExclTab);
                     canvas.drawBitmap(branchBitmap, 0.0f, 0.0f, tab.paint);
                     branchBitmap.recycle();
@@ -396,11 +396,6 @@ class Tab {
     public void moveTo(int left, int top) {
         this.left = left;
         this.top = top;
-    }
-
-    public void setBackground(boolean isBackground) {
-        this.isBackground = isBackground;
-        showBackground();
     }
 
     public void setLevel(@IntRange(from = 0) int level) {
@@ -445,9 +440,9 @@ class Tab {
     }
 
     public void showTo(View view) {
-        ((TextView) view.findViewById(R.id.tv_branch_first)).setText(tvBranchFirst.getText());
-        ((TextView) view.findViewById(R.id.tv_branch_last)).setText(tvBranchLast.getText());
-        ((TextView) view.findViewById(R.id.tv_branch_zeroth)).setText(tvBranchZeroth.getText());
+        ((TextView) view.findViewById(R.id.tv_parent)).setText(tvParent.getText());
+        ((TextView) view.findViewById(R.id.tv_leaf)).setText(tvLeaf.getText());
+        ((TextView) view.findViewById(R.id.tv_root)).setText(tvRoot.getText());
         ((TextView) view.findViewById(R.id.tv_background)).setText(tvBackground.getText());
         ((TextView) view.findViewById(R.id.tv_lower_level)).setText(tvLowerLevel.getText());
         ((TextView) view.findViewById(R.id.tv_title)).setText(tvTitle.getText());

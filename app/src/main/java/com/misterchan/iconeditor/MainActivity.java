@@ -274,7 +274,7 @@ public class MainActivity extends AppCompatActivity {
     private int textX, textY;
     private int threshold;
     private int viewWidth, viewHeight;
-    private LayerTree layerTree;
+    private LayerBranch layerTree;
     private LinearLayout llOptionsEraser;
     private LinearLayout llOptionsEyedropper;
     private LinearLayout llOptionsGradient;
@@ -286,7 +286,6 @@ public class MainActivity extends AppCompatActivity {
     private LinkedList<Long> palette;
     private final List<Tab> tabs = new ArrayList<>();
     private MenuItem miHasAlpha;
-    private MenuItem miLayerBackground;
     private MenuItem miLayerColorMatrix;
     private MenuItem miLayerCurves;
     private MenuItem miLayerDrawBelow;
@@ -608,7 +607,9 @@ public class MainActivity extends AppCompatActivity {
         }
         preview.recycle();
         preview = null;
-        addLayer(bm, tab.visible, tab.getLevel(), tab.left, tab.top, tabLayout.getSelectedTabPosition());
+        addLayer(bm,
+                tab.visible, tab.getLevel(), tab.left, tab.top,
+                tabLayout.getSelectedTabPosition(), getString(R.string.copy_noun));
         clearStatus();
     };
 
@@ -774,7 +775,6 @@ public class MainActivity extends AppCompatActivity {
             }
 
             miHasAlpha.setChecked(bitmap.hasAlpha());
-            miLayerBackground.setChecked(MainActivity.this.tab.isBackground);
             miLayerColorMatrix.setChecked(MainActivity.this.tab.filter == Tab.Filter.COLOR_MATRIX);
             miLayerCurves.setChecked(MainActivity.this.tab.filter == Tab.Filter.CURVES);
             miLayerDrawBelow.setChecked(MainActivity.this.tab.drawBelow);
@@ -2279,6 +2279,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void addLayer(Bitmap bitmap, boolean visible, int level, int left, int top, int position) {
+        addLayer(bitmap, visible, level, left, top, position, getString(R.string.untitled));
+    }
+
+    private void addLayer(Bitmap bitmap, boolean visible, int level, int left, int top, int position, String title) {
         final Tab t = new Tab();
         t.bitmap = bitmap;
         t.isBackground = false;
@@ -2287,7 +2291,7 @@ public class MainActivity extends AppCompatActivity {
         t.paint = new Paint();
         t.paint.setBlendMode(BlendMode.SRC_OVER);
         t.visible = visible;
-        addBitmap(t, position, getString(R.string.untitled));
+        addBitmap(t, position, title);
     }
 
     private Position checkDraggingBound(float x, float y) {
@@ -2346,7 +2350,7 @@ public class MainActivity extends AppCompatActivity {
             final Tab above = Tab.getAbove(tabs, position), below = Tab.getBelow(tabs, position);
             tabs.remove(position);
             if (above != null && tab.isBackground) {
-                above.setBackground(true);
+                above.isBackground = true;
             }
             final int newPos = tabLayout.getSelectedTabPosition();
             final Tab newTab = tabs.get(newPos), oldBackground = tab.getBackground();
@@ -3388,7 +3392,6 @@ public class MainActivity extends AppCompatActivity {
         final MenuInflater menuInflater = getMenuInflater();
         menuInflater.inflate(R.menu.main, menu);
         miHasAlpha = menu.findItem(R.id.i_has_alpha);
-        miLayerBackground = menu.findItem(R.id.i_layer_background);
         miLayerColorMatrix = menu.findItem(R.id.i_layer_color_matrix);
         miLayerCurves = menu.findItem(R.id.i_layer_curves);
         miLayerDrawBelow = menu.findItem(R.id.i_layer_draw_below);
@@ -3786,13 +3789,12 @@ public class MainActivity extends AppCompatActivity {
                 t.setLevel(tab.getLevel() + 1);
                 t.moveTo(tab.left, tab.top);
                 t.paint = new Paint();
-                t.paint.setBlendMode(BlendMode.DST_IN);
+                t.paint.setBlendMode(BlendMode.DST_OUT);
                 t.visible = true;
                 final Canvas cv = new Canvas(t.bitmap);
                 if (hasSelection) {
-                    cv.drawRect(selection, PAINT_BLACK);
-                } else {
-                    cv.drawColor(Color.BLACK, PorterDuff.Mode.SRC);
+                    t.bitmap.eraseColor(Color.BLACK);
+                    cv.drawRect(selection, PAINT_DST_OUT);
                 }
                 addBitmap(t, tabLayout.getSelectedTabPosition(), getString(R.string.mask));
                 break;
@@ -3807,14 +3809,6 @@ public class MainActivity extends AppCompatActivity {
                 clearStatus();
                 break;
 
-            case R.id.i_layer_background: {
-                final boolean checked = !item.isChecked();
-                item.setChecked(checked);
-                tab.setBackground(checked);
-                computeLayerTree();
-                drawBitmapOnView(true);
-                break;
-            }
             case R.id.i_layer_blend_mode_clear:
             case R.id.i_layer_blend_mode_src:
             case R.id.i_layer_blend_mode_dst:
@@ -3869,6 +3863,7 @@ public class MainActivity extends AppCompatActivity {
                 tab.paint.setBlendMode(BlendMode.SRC_ATOP);
                 checkLayerBlendModeMenuItem(BlendMode.SRC_ATOP);
                 Tab.levelDown(tabs, tabLayout.getSelectedTabPosition());
+                miLayerLevelUp.setEnabled(true);
                 computeLayerTree();
                 drawBitmapOnView(true);
                 break;
@@ -3917,7 +3912,9 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     cv.drawBitmap(bitmap, 0.0f, 0.0f, PAINT_SRC);
                 }
-                addLayer(bm, tab.visible, tab.getLevel(), tab.left, tab.top, tabLayout.getSelectedTabPosition());
+                addLayer(bm,
+                        tab.visible, tab.getLevel(), tab.left, tab.top,
+                        tabLayout.getSelectedTabPosition(), getString(R.string.copy_noun));
                 break;
             }
             case R.id.i_layer_duplicate_by_color_range: {

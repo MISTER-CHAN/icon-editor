@@ -61,7 +61,8 @@
     <string name="convert_xyy_to_rgb">Convert CIE xyY to RGB</string>
     <string name="convert_xyz_to_rgb">Convert CIE XYZ to RGB</string>
     <string name="coordinate" translatable="false">(%d, %d)</string>
-    <string name="copy">Copy</string>
+    <string name="copy_noun">Copy</string>
+    <string name="copy_verb">Copy</string>
     <string name="crop">Crop</string>
     <string name="current_layer">Current Layer</string>
     <string name="curves">Curves</string>

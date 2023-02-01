@@ -65,7 +65,7 @@
 
             <item
                 android:id="@+id/i_copy"
-                android:title="@string/copy" />
+                android:title="@string/copy_verb" />
 
             <item
                 android:id="@+id/i_paste"
