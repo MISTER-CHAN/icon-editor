@@ -85,6 +85,8 @@
     <string name="file_name">檔案名</string>
     <string name="fill">塡充</string>
     <string name="filter">濾鏡</string>
+    <string name="filter_displayed_image_after_zooming_out">過濾縮小後顯示之圖像</string>
+    <string name="filter_image">過濾圖像</string>
     <string name="filters">濾鏡</string>
     <string name="flip">翻轉</string>
     <string name="float_">浮點數</string>

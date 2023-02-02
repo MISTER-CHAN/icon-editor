@@ -20,8 +20,6 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.PointF;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Shader;
@@ -116,10 +114,11 @@ public class MainActivity extends AppCompatActivity {
             Bitmap.CompressFormat.JPEG
     };
 
-    private static final Paint PAINT_BLACK = new Paint() {
+    private static final Paint PAINT_BITMAP = new Paint() {
         {
             setBlendMode(BlendMode.SRC);
-            setColor(Color.BLACK);
+            setAntiAlias(false);
+            setFilterBitmap(false);
         }
     };
 
@@ -322,9 +321,10 @@ public class MainActivity extends AppCompatActivity {
     @ColorLong
     private long color0;
 
-    private final Paint colorPaint = new Paint() {
+    private final Paint bitmapPaint = new Paint() {
         {
-            setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC));
+            setBlendMode(BlendMode.SRC);
+            setAntiAlias(false);
         }
     };
 
@@ -2471,22 +2471,8 @@ public class MainActivity extends AppCompatActivity {
         if (vs.isEmpty()) {
             return;
         }
-        final RectF svs = getScaledVisibleSubset(bitmap, translX, translY);
-        if (isScaledMuch()) {
-            final int w = vs.width(), h = vs.height();
-            final int[] pixels = new int[w * h];
-            bitmap.getPixels(pixels, 0, w, vs.left, vs.top, w, h);
-            float t = svs.top, b = t + scale;
-            for (int i = 0, y = vs.top; y < vs.bottom; ++y, t += scale, b += scale) {
-                float l = svs.left;
-                for (int x = vs.left; x < vs.right; ++x, ++i) {
-                    colorPaint.setColor(pixels[i]);
-                    canvas.drawRect(l, t, l += scale, b, colorPaint);
-                }
-            }
-        } else {
-            canvas.drawBitmap(bitmap, vs, svs, PAINT_SRC);
-        }
+        final RectF svs = getVisibleSubsetOfView(vs, translX, translY);
+        canvas.drawBitmap(bitmap, vs, svs, isScaledMuch() ? PAINT_BITMAP : bitmapPaint);
     }
 
     private void drawBitmapOnView() {
@@ -2995,14 +2981,6 @@ public class MainActivity extends AppCompatActivity {
         };
     }
 
-    private RectF getScaledVisibleSubset(Bitmap bitmap, float translX, float translY) {
-        final float left = translX > -scale ? translX : translX % scale;
-        final float top = translY > -scale ? translY : translY % scale;
-        final float right = Math.min(translX + toScaled(bitmap.getWidth()), viewWidth);
-        final float bottom = Math.min(translY + toScaled(bitmap.getHeight()), viewHeight);
-        return new RectF(left, top, right, bottom);
-    }
-
     private Rect getVisibleSubset() {
         return getVisibleSubset(translationX, translationY, bitmap.getWidth(), bitmap.getHeight());
     }
@@ -3014,6 +2992,14 @@ public class MainActivity extends AppCompatActivity {
         final int right = Math.min(toUnscaled(translX + scaledBitmapW <= viewWidth ? scaledBitmapW : viewWidth - translX) + 1, width);
         final int bottom = Math.min(toUnscaled(translY + scaledBitmapH <= viewHeight ? scaledBitmapH : viewHeight - translY) + 1, height);
         return new Rect(left, top, right, bottom);
+    }
+
+    private RectF getVisibleSubsetOfView(Rect subset, float translX, float translY) {
+        final float left = translX > -scale ? translX : translX % scale;
+        final float top = translY > -scale ? translY : translY % scale;
+        final float right = left + toScaled(subset.width());
+        final float bottom = top + toScaled(subset.height());
+        return new RectF(left, top, right, bottom);
     }
 
     private void hideSoftInputFromWindow() {
@@ -4442,6 +4428,13 @@ public class MainActivity extends AppCompatActivity {
 
     private void setBlurRadius(Paint paint, float f) {
         paint.setMaskFilter(f > 0.0f ? new BlurMaskFilter(f, BlurMaskFilter.Blur.NORMAL) : null);
+    }
+
+    void setFilterBitmap(boolean filterBitmap) {
+        bitmapPaint.setFilterBitmap(filterBitmap);
+        if (!hasNotLoaded) {
+            drawBitmapOnView(true);
+        }
     }
 
     void setRunnableRunner(boolean multithreaded) {

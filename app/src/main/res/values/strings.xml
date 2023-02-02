@@ -93,6 +93,8 @@
     <string name="file_name">File name</string>
     <string name="fill">Fill</string>
     <string name="filter">Filter</string>
+    <string name="filter_displayed_image_after_zooming_out">Filter the Displayed Image after Zooming out</string>
+    <string name="filter_image">Filter Image</string>
     <string name="filters">Filters</string>
     <string name="flip">Flip</string>
     <string name="float_">Float</string>
