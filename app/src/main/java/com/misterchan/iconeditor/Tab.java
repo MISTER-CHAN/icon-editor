@@ -106,7 +106,6 @@ class Tab {
         int backgroundPos = first;
         background.isBackground = true;
         boolean isInProject = false;
-        Tab lastTabInProject = null;
         stack.push(layerTree);
         for (int i = first; i >= 0; --i) {
             final Tab t = tabs.get(i);
@@ -121,7 +120,6 @@ class Tab {
             if (isInProject) {
                 t.cbVisible.setVisibility(View.VISIBLE);
                 t.clearLevelIcons();
-                lastTabInProject = t;
                 if (t.level > 0) {
                     t.tvLowerLevel.setText("→");
                 }
@@ -178,6 +176,7 @@ class Tab {
 
             }
         }
+        final Tab lastTabInProject = layerTree.peekForeground().getTab();
         for (int i = lastTabInProject.level; i > 1; --i) {
             lastTabInProject.tvLeaf.append("[");
         }
