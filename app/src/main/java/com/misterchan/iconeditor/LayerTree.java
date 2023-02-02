@@ -1,21 +1,21 @@
 package com.misterchan.iconeditor;
 
 /**
- * Here is an example for layer tree.<br />
+ * Here is an example of layer tree.<br />
  * <code>
  *     <nobr>
- *         &nbsp; Level 0 &nbsp; &nbsp; &nbsp; &nbsp;Level 1 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Level 2<br />
- *         &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;┌───────────────────────────┐<br />
- *         &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;┌─┤Layer Mask of Clipping Mask│<br />
- *         &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;┌─────────────┐ │ ├───────────────────────────┤<br />
- *         &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;┌─┤Clipping Mask├─┴─┤ &nbsp; &nbsp; &nbsp; Clipping Mask &nbsp; &nbsp; &nbsp; │<br />
- *         &nbsp; ┌──────────┐ │ ├─────────────┤ &nbsp; └───────────────────────────┘<br />
- *         ┌─┤ Layer 2 &nbsp;│ │ │ Layer Mask &nbsp;│<br />
- *         │ ├──────────┤ │ ├─────────────┤<br />
- *         │ │ Layer 1 &nbsp;├─┴─┤ &nbsp; Layer 1 &nbsp; │<br />
- *         │ ├──────────┤ &nbsp; └─────────────┘<br />
- *         └─┤Background│<br />
- *         &nbsp; └──────────┘<br />
+ *         &nbsp; &nbsp;Level 0 &nbsp; &nbsp; &nbsp; &nbsp;Level 1 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Level 2<br />
+ *         &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ┌───────────────────────────┐<br />
+ *         &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ┌─┤Layer Mask of Clipping Mask│<br />
+ *         &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ┌─────────────┐ │ ├───────────────────────────┤<br />
+ *         &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ┌─┤Clipping Mask├─┴─┤ &nbsp; &nbsp; &nbsp; Clipping Mask &nbsp; &nbsp; &nbsp; │<br />
+ *         &nbsp; &nbsp;┌──────────┐ │ ├─────────────┤ &nbsp; └───────────────────────────┘<br />
+ *         &nbsp;┌─┤ Layer 2 &nbsp;│ │ │ Layer Mask &nbsp;│<br />
+ *         &nbsp;│ ├──────────┤ │ ├─────────────┤<br />
+ *         &nbsp;│ │ Layer 1 &nbsp;├─┴─┤ &nbsp; Layer 1 &nbsp; │<br />
+ *         &nbsp;│ ├──────────┤ &nbsp; └─────────────┘<br />
+ *         ─┴─┤Background│<br />
+ *         &nbsp; &nbsp;└──────────┘<br />
  *     </nobr>
  * </code>
  * <br />
@@ -45,10 +45,10 @@ package com.misterchan.iconeditor;
  *     </nobr>
  * </code>
  */
-class LayerBranch {
+class LayerTree {
     public static class Node {
         private final Tab val;
-        private LayerBranch children;
+        private LayerTree children;
         private Node above;
 
         public Node(Tab val) {
@@ -62,7 +62,7 @@ class LayerBranch {
             return above;
         }
 
-        public LayerBranch getChildren() {
+        public LayerTree getChildren() {
             return children;
         }
 
@@ -70,7 +70,7 @@ class LayerBranch {
             return val;
         }
 
-        public void setChildren(LayerBranch children) {
+        public void setChildren(LayerTree children) {
             this.children = children;
         }
     }

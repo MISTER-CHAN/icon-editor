@@ -274,7 +274,7 @@ public class MainActivity extends AppCompatActivity {
     private int textX, textY;
     private int threshold;
     private int viewWidth, viewHeight;
-    private LayerBranch layerTree;
+    private LayerTree layerTree;
     private LinearLayout llOptionsEraser;
     private LinearLayout llOptionsEyedropper;
     private LinearLayout llOptionsGradient;
