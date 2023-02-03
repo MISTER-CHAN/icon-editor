@@ -502,12 +502,24 @@
         <menu>
 
             <item
-                android:id="@+id/i_cell_grid"
-                android:title="@string/cell_grid" />
+                android:id="@+id/i_view_fit_on_screen"
+                android:title="@string/fit_on_screen" />
 
             <item
-                android:id="@+id/i_view_refit"
-                android:title="@string/refit" />
+                android:id="@+id/i_view_actual_pixels"
+                android:title="@string/actual_pixels" />
+
+            <item
+                android:id="@+id/i_guides_new"
+                android:title="@string/new_guide" />
+
+            <item
+                android:id="@+id/i_guides_clear"
+                android:title="@string/clear_guides" />
+
+            <item
+                android:id="@+id/i_cell_grid"
+                android:title="@string/cell_grid" />
         </menu>
     </item>
 

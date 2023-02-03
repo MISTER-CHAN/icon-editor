@@ -1,15 +1,24 @@
 package com.misterchan.iconeditor;
 
+import android.content.Context;
 import android.view.inputmethod.EditorInfo;
 import android.widget.SeekBar;
 
 import androidx.annotation.ColorInt;
+import androidx.annotation.ColorLong;
+import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
 
 class ArgbColorIntPicker extends ArgbColorPicker {
 
     private int radix = 16;
     private String format;
+
+    protected ArgbColorIntPicker(Context context, int titleId, Settings settings,
+                                 final OnColorPickListener onColorPickListener,
+                                 @ColorLong final Long oldColor, @StringRes int neutralFunction) {
+        super(context, titleId, settings, onColorPickListener, oldColor, neutralFunction);
+    }
 
     private void loadColor(@ColorInt int color) {
         tietRed.setText(String.format(format, Color.red(color)));
@@ -18,7 +27,7 @@ class ArgbColorIntPicker extends ArgbColorPicker {
     }
 
     @Override
-    public void make(Settings settings) {
+    protected void make(Settings settings) {
         format = settings.getArgbComponentFormat();
         radix = settings.getArgbComponentRadix();
     }

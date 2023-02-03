@@ -1,5 +1,6 @@
 package com.misterchan.iconeditor;
 
+import android.content.Context;
 import android.graphics.ColorSpace;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -10,6 +11,7 @@ import android.widget.TextView;
 import androidx.annotation.ColorLong;
 import androidx.annotation.IntRange;
 import androidx.annotation.Size;
+import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
 
 class ArgbColorLongPicker extends ArgbColorPicker {
@@ -18,6 +20,12 @@ class ArgbColorLongPicker extends ArgbColorPicker {
 
     @Size(4)
     private final float[] argb = new float[4];
+
+    protected ArgbColorLongPicker(Context context, int titleId, Settings settings,
+                                  final OnColorPickListener onColorPickListener,
+                                  @ColorLong final Long oldColor, @StringRes int neutralFunction) {
+        super(context, titleId, settings, onColorPickListener, oldColor, neutralFunction);
+    }
 
     private void loadColor(@ColorLong long color) {
         color = Color.convert(color, colorSpace);

@@ -20,17 +20,18 @@ class HsvColorPicker extends ColorPicker {
     @Size(3)
     private final float[] hsv = new float[3];
 
-    public static ColorPicker make(Context context, final OnColorPickListener onColorPickListener, @ColorLong final Long oldColor) {
-        final HsvColorPicker picker = new HsvColorPicker();
-        picker.dialogBuilder = new AlertDialog.Builder(context)
+    private HsvColorPicker(Context context, final OnColorPickListener onColorPickListener, @ColorLong final Long oldColor) {
+        dialogBuilder = new AlertDialog.Builder(context)
                 .setNegativeButton(R.string.cancel, null)
-                .setPositiveButton(R.string.ok, (dialog, which) -> onColorPickListener.onPick(oldColor, picker.newColor))
+                .setPositiveButton(R.string.ok, (dialog, which) -> onColorPickListener.onPick(oldColor, newColor))
                 .setTitle(R.string.convert_hsv_to_rgb)
                 .setView(R.layout.color_picker);
 
-        picker.oldColor = oldColor;
+        this.oldColor = oldColor;
+    }
 
-        return picker;
+    public static ColorPicker make(Context context, final OnColorPickListener onColorPickListener, @ColorLong final Long oldColor) {
+        return new HsvColorPicker(context, onColorPickListener, oldColor);
     }
 
     private void onComponentChanged() {

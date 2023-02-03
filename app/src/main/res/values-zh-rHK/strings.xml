@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="about">關於</string>
+    <string name="actual_pixels">實際像素</string>
     <string name="add">新增</string>
     <string name="all_layers">全部圖層</string>
     <string name="alpha_value">Alpha 値</string>
@@ -29,6 +30,7 @@
     <string name="circle">圓</string>
     <string name="clear">淸除</string>
     <string name="clear_destination">淸除目標</string>
+    <string name="clear_guides">淸除參考線</string>
     <string name="clone">克隆</string>
     <string name="clone_as_new">克隆爲新圖像</string>
     <string name="cloner">克隆筆</string>
@@ -88,6 +90,7 @@
     <string name="filter_displayed_image_after_zooming_out">過濾縮小後顯示之圖像</string>
     <string name="filter_image">過濾圖像</string>
     <string name="filters">濾鏡</string>
+    <string name="fit_on_screen">適應螢幕</string>
     <string name="flip">翻轉</string>
     <string name="float_">浮點數</string>
     <string name="foreground_color">畫筆顏色</string>
@@ -101,6 +104,7 @@
     <string name="hidden_image">隱藏圖</string>
     <string name="highlights">重點</string>
     <string name="homepage">主頁</string>
+    <string name="horizontal">水平</string>
     <string name="horizontally">水平</string>
     <string name="hue_to_alpha">色相轉 Alpha</string>
     <string name="ignore_alpha">忽略 Alpha</string>
@@ -141,6 +145,7 @@
     <string name="more">更多</string>
     <string name="move_layer">移動圖層</string>
     <string name="new_">新建</string>
+    <string name="new_guide">新參考線</string>
     <string name="ninety_degrees">90°</string>
     <string name="noise">噪音</string>
     <string name="not_supported_file_type">不支援之檔案類型</string>
@@ -149,8 +154,10 @@
     <string name="one_eighty_degrees">180°</string>
     <string name="open">開啟</string>
     <string name="open_from_clipboard">開啟自剪貼簿</string>
+    <string name="orientation">方向</string>
     <string name="output">輸出</string>
     <string name="oval">橢圓</string>
+    <string name="paint">畫筆</string>
     <string name="palette">調色板</string>
     <string name="paste">貼上</string>
     <string name="patch">修補</string>
@@ -158,12 +165,12 @@
     <string name="pen_with_filter">濾光筆</string>
     <string name="performance">效能</string>
     <string name="please_save_first">請先儲存。</string>
+    <string name="position">位置</string>
     <string name="precise">精密</string>
     <string name="preferences">偏好</string>
     <string name="properties">屬性</string>
     <string name="rectangle">矩形</string>
     <string name="refer_to_clipboard">參考至剪貼簿</string>
-    <string name="refit">重新適應</string>
     <string name="rename">重命名</string>
     <string name="reset">重設</string>
     <string name="reset_this_curve">重設此曲線</string>
@@ -231,6 +238,7 @@
     <string name="unified_transl_and_scale">統一各圖層之可見子集</string>
     <string name="untitled">無標題</string>
     <string name="version">版本（發布日期）</string>
+    <string name="vertical">垂直</string>
     <string name="vertically">垂直</string>
     <string name="view">檢視</string>
     <string name="visible">可見</string>

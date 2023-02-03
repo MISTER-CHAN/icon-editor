@@ -18,6 +18,7 @@ import android.graphics.ColorSpace;
 import android.graphics.LinearGradient;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
@@ -41,7 +42,6 @@ import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
-import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
@@ -153,6 +153,19 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    private static final Paint PAINT_GUIDE = new Paint() {
+        {
+            setColor(Color.CYAN);
+            setStrokeWidth(2.0f);
+        }
+    };
+
+    private static final Paint PAINT_IMAGE_BOUND = new Paint() {
+        {
+            setColor(Color.DKGRAY);
+        }
+    };
+
     private static final Paint PAINT_POINT = new Paint() {
         {
             setColor(Color.RED);
@@ -174,6 +187,13 @@ public class MainActivity extends AppCompatActivity {
     };
 
     private static final Paint PAINT_SRC_OVER = new Paint();
+
+    private static final Paint PAINT_TEXT_LINE = new Paint() {
+        {
+            setColor(Color.BLUE);
+            setStrokeWidth(2.0f);
+        }
+    };
 
     private static final class FileNameHelper {
         private static final Pattern PATTERN = Pattern.compile("[\"*/:<>?\\\\|]");
@@ -228,27 +248,8 @@ public class MainActivity extends AppCompatActivity {
     private CheckBox cbTransformerLar;
     private CheckBox cbZoom;
     private ColorAdapter colorAdapter;
-    private double prevDiagonal;
-    private double prevTheta;
-    private EditText etCloneStampBlurRadius;
-    private EditText etCloneStampStrokeWidth;
-    private EditText etEraserBlurRadius;
-    private EditText etEraserStrokeWidth;
-    private EditText etGradientBlurRadius;
-    private EditText etGradientStrokeWidth;
-    private EditText etMagicEraserStrokeWidth;
-    private EditText etMagicPaintBlurRadius;
-    private EditText etMagicPaintStrokeWidth;
-    private EditText etPatcherBlurRadius;
-    private EditText etPatcherStrokeWidth;
-    private EditText etPencilBlurRadius;
-    private EditText etPencilStrokeWidth;
-    private EditText etShapeStrokeWidth;
-    private EditText etText;
-    private EditText etTextSize;
     private float blurRadius = 0.0f, blurRadiusEraser = 0.0f;
     private float pivotX, pivotY;
-    private float prevX, prevY;
     private float scale;
     private float strokeWidth = 1.0f, strokeHalfWidthEraser = 0.5f;
     private float textSize = 12.0f;
@@ -257,8 +258,15 @@ public class MainActivity extends AppCompatActivity {
     private FrameLayout flToolOptions;
     private HorizontalScrollView hsvOptionsBucketFill;
     private HorizontalScrollView hsvOptionsCloneStamp;
+    private HorizontalScrollView hsvOptionsEraser;
+    private HorizontalScrollView hsvOptionsEyedropper;
+    private HorizontalScrollView hsvOptionsGradient;
+    private HorizontalScrollView hsvOptionsMagicEraser;
     private HorizontalScrollView hsvOptionsMagicPaint;
+    private HorizontalScrollView hsvOptionsPaint;
+    private HorizontalScrollView hsvOptionsPatcher;
     private HorizontalScrollView hsvOptionsPencil;
+    private HorizontalScrollView hsvOptionsTransformer;
     private ImageView imageView;
     private ImageView ivChessboard;
     private ImageView ivGrid;
@@ -267,6 +275,7 @@ public class MainActivity extends AppCompatActivity {
     private ImageView ivSelection;
     private InputMethodManager inputMethodManager;
     private int imageWidth, imageHeight;
+    private int rulerHHeight, rulerVWidth;
     private int selectionFromX, selectionFromY;
     private int selectionToX, selectionToY;
     private int shapeStartX, shapeStartY;
@@ -274,14 +283,8 @@ public class MainActivity extends AppCompatActivity {
     private int threshold;
     private int viewWidth, viewHeight;
     private LayerTree layerTree;
-    private LinearLayout llOptionsEraser;
-    private LinearLayout llOptionsEyedropper;
-    private LinearLayout llOptionsGradient;
-    private LinearLayout llOptionsMagicEraser;
-    private LinearLayout llOptionsPatcher;
     private LinearLayout llOptionsShape;
     private LinearLayout llOptionsText;
-    private LinearLayout llOptionsTransformer;
     private LinkedList<Long> palette;
     private final List<Tab> tabs = new ArrayList<>();
     private MenuItem miHasAlpha;
@@ -292,7 +295,6 @@ public class MainActivity extends AppCompatActivity {
     private MenuItem miLayerHsv;
     private MenuItem miLayerLevelUp;
     private Point cloneStampSrc;
-    private final Point cloneStampSrcDist = new Point(0, 0); // Distance
     private Point magErB, magErF; // Magic eraser background and foreground
     private final PointF magErBD = new PointF(0.0f, 0.0f), magErFD = new PointF(0.0f, 0.0f); // Distance
     private Position draggingBound = Position.NULL;
@@ -309,17 +311,33 @@ public class MainActivity extends AppCompatActivity {
     private Settings settings;
     private String tree = "";
     private SubMenu smBlendModes;
+    private Paint.Style style = Paint.Style.FILL_AND_STROKE;
     private Tab tab;
     private TabLayout tabLayout;
+    private TextInputEditText tietCloneStampBlurRadius;
+    private TextInputEditText tietCloneStampStrokeWidth;
+    private TextInputEditText tietEraserBlurRadius;
+    private TextInputEditText tietEraserStrokeWidth;
+    private TextInputEditText tietGradientBlurRadius;
+    private TextInputEditText tietGradientStrokeWidth;
+    private TextInputEditText tietMagicEraserStrokeWidth;
+    private TextInputEditText tietMagicPaintBlurRadius;
+    private TextInputEditText tietMagicPaintStrokeWidth;
+    private TextInputEditText tietPaintBlurRadius;
+    private TextInputEditText tietPaintStrokeWidth;
+    private TextInputEditText tietPatcherBlurRadius;
+    private TextInputEditText tietPatcherStrokeWidth;
+    private TextInputEditText tietPencilBlurRadius;
+    private TextInputEditText tietPencilStrokeWidth;
+    private TextInputEditText tietShapeStrokeWidth;
+    private TextInputEditText tietText;
+    private TextInputEditText tietTextSize;
     private TextView tvStatus;
     private Thread thread = new Thread();
     private Transformer transformer;
     private Uri fileToBeOpened;
     private View vBackgroundColor;
     private View vForegroundColor;
-
-    @ColorLong
-    private long color0;
 
     private final Paint bitmapPaint = new Paint() {
         {
@@ -342,16 +360,10 @@ public class MainActivity extends AppCompatActivity {
 
     private final Paint fillPaint = new Paint() {
         {
-
             setAntiAlias(false);
+            setBlendMode(BlendMode.SRC);
             setColor(Color.BLACK);
             setStyle(Style.FILL_AND_STROKE);
-        }
-    };
-
-    private final Paint imageBound = new Paint() {
-        {
-            setColor(Color.DKGRAY);
         }
     };
 
@@ -386,8 +398,6 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    private Paint pencil;
-
     private final Paint rulerPaint = new Paint() {
         {
             setColor(Color.GRAY);
@@ -404,16 +414,14 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    private final Paint textLine = new Paint() {
-        {
-            setColor(Color.BLUE);
-            setStrokeWidth(2.0f);
-        }
-    };
-
-    private final CompoundButton.OnCheckedChangeListener onAntiAliasCheckedChangeListener = (buttonView, isChecked) -> {
+    private final CompoundButton.OnCheckedChangeListener onAntiAliasCBCheckedChangeListener = (buttonView, isChecked) -> {
         antiAlias = isChecked;
         paint.setAntiAlias(isChecked);
+    };
+
+    private final CompoundButton.OnCheckedChangeListener onFillCBCheckedChangeListener = (buttonView, isChecked) -> {
+        style = isChecked ? Paint.Style.FILL_AND_STROKE : Paint.Style.STROKE;
+        paint.setStyle(style);
     };
 
     private final DialogInterface.OnClickListener onFileNameDialogPosButtonClickListener = (dialog, which) -> {
@@ -469,7 +477,7 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    private final AfterTextChangedListener onStrokeWidthTextChangedListener = s -> {
+    private final AfterTextChangedListener onStrokeWidthETTextChangedListener = s -> {
         try {
             final float f = Float.parseFloat(s);
             strokeWidth = f;
@@ -505,22 +513,6 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
         tab.setTitle(name);
-    };
-
-    private final DialogInterface.OnCancelListener onPreviewCancelListener = dialog -> {
-        drawBitmapOnView(selection, true);
-        preview.recycle();
-        preview = null;
-        clearStatus();
-    };
-
-    private final DialogInterface.OnClickListener onPreviewNBClickListener =
-            (dialog, which) -> onPreviewCancelListener.onCancel(dialog);
-
-    private final DialogInterface.OnClickListener onPreviewPBClickListener = (dialog, which) -> {
-        drawPreviewBitmapOnCanvas();
-        addHistory();
-        clearStatus();
     };
 
     private final View.OnClickListener onAddSwatchViewClickListener = v ->
@@ -571,6 +563,18 @@ public class MainActivity extends AppCompatActivity {
                             R.string.swap)
                     .show();
 
+    private final ColorMatrixManager.OnMatrixElementsChangeListener onColorMatrixChangeListener = matrix -> {
+        runOrStart(() -> {
+            preview.addColorMatrixColorFilter(matrix);
+            drawPreviewBitmapOnView(true);
+        }, true);
+    };
+
+    private final ColorMatrixManager.OnMatrixElementsChangeListener onLayerColorMatrixChangeListener = matrix -> {
+        tab.colorMatrix = matrix;
+        drawBitmapOnView(true);
+    };
+
     private final ColorRangeDialog.OnColorRangeChangeListener onColorRangeChangeListener = (hueMin, hueMax, lumMin, lumMax, stopped) -> {
         runOrStart(() -> {
             if (hueMin == 0 && hueMax == 360 && lumMin == 0x0 && lumMax == 0xFF) {
@@ -613,14 +617,12 @@ public class MainActivity extends AppCompatActivity {
         clearStatus();
     };
 
-    private final HiddenImageMaker.OnFinishSettingListener onFinishMakingHiddenImageListener = bm -> {
-        createGraphic(bm.getWidth(), bm.getHeight(), tabLayout.getSelectedTabPosition() + 2);
-        canvas.drawBitmap(bm, 0.0f, 0.0f, PAINT_SRC);
-        drawBitmapOnView(true, true);
-        bm.recycle();
+    private final HiddenImageMaker.OnFinishSettingListener onFinishMakingHiddenImageListener = bitmap -> {
+        final Bitmap bm = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
+        new Canvas(bm).drawBitmap(bitmap, 0.0f, 0.0f, PAINT_SRC);
+        addTab(bm, tabLayout.getSelectedTabPosition() + 2);
+        bitmap.recycle();
     };
-
-    private final NewGraphicPropertiesDialog.OnFinishSettingListener onFinishSettingNewGraphicPropertiesListener = this::createGraphic;
 
     private final HsvDialog.OnHsvChangeListener onFilterHsvChangeListener = (deltaHsv, stopped) -> {
         runOrStart(() -> {
@@ -658,16 +660,22 @@ public class MainActivity extends AppCompatActivity {
         }, stopped);
     };
 
-    private final ColorMatrixManager.OnMatrixElementsChangeListener onColorMatrixChangeListener = matrix -> {
-        runOrStart(() -> {
-            preview.addColorMatrixColorFilter(matrix);
-            drawPreviewBitmapOnView(true);
-        }, true);
+    private final NewImageDialog.OnFinishSettingListener onFinishSettingNewImagePropertiesListener = this::createImage;
+
+    private final DialogInterface.OnCancelListener onPreviewCancelListener = dialog -> {
+        drawBitmapOnView(selection, true);
+        preview.recycle();
+        preview = null;
+        clearStatus();
     };
 
-    private final ColorMatrixManager.OnMatrixElementsChangeListener onLayerColorMatrixChangeListener = matrix -> {
-        tab.colorMatrix = matrix;
-        drawBitmapOnView(true);
+    private final DialogInterface.OnClickListener onPreviewNBClickListener =
+            (dialog, which) -> onPreviewCancelListener.onCancel(dialog);
+
+    private final DialogInterface.OnClickListener onPreviewPBClickListener = (dialog, which) -> {
+        drawPreviewBitmapOnCanvas();
+        addHistory();
+        clearStatus();
     };
 
     private final OnSeekBarChangeListener onFilterContrastSeekBarProgressChangeListener = (progress, stopped) -> {
@@ -696,6 +704,56 @@ public class MainActivity extends AppCompatActivity {
             drawPreviewBitmapOnView(stopped);
         }, stopped);
         tvStatus.setText(String.format(getString(R.string.state_lightness), progress));
+    };
+
+    private final OnSeekBarChangeListener onFilterSaturationSeekBarProgressChangeListener = (progress, stopped) -> {
+        final float f = progress / 10.0f;
+        final ColorMatrix colorMatrix = new ColorMatrix();
+        colorMatrix.setSaturation(f);
+        runOrStart(() -> {
+            preview.addColorMatrixColorFilter(colorMatrix.getArray());
+            drawPreviewBitmapOnView(stopped);
+        }, stopped);
+        tvStatus.setText(String.format(getString(R.string.state_saturation), f));
+    };
+
+    private final OnSeekBarChangeListener onFilterThresholdSeekBarProgressChangeListener = (progress, stopped) -> {
+        final float f = -0x100 * progress;
+        runOrStart(() -> {
+            preview.addColorMatrixColorFilter(new float[]{
+                    0.213f * 0x100, 0.715f * 0x100, 0.072f * 0x100, 0.0f, f,
+                    0.213f * 0x100, 0.715f * 0x100, 0.072f * 0x100, 0.0f, f,
+                    0.213f * 0x100, 0.715f * 0x100, 0.072f * 0x100, 0.0f, f,
+                    0.0f, 0.0f, 0.0f, 1.0f, 0.0f
+            });
+            drawPreviewBitmapOnView(stopped);
+        }, stopped);
+        tvStatus.setText(String.format(getString(R.string.state_threshold), progress));
+    };
+
+    private final OnSeekBarChangeListener onLayerAlphaSeekBarProgressChangeListener = (progress, stopped) -> {
+        tab.paint.setAlpha(progress);
+        drawBitmapOnView(stopped);
+        tvStatus.setText(String.format(
+                String.format(getString(R.string.state_alpha), settings.getArgbComponentFormat()),
+                progress));
+    };
+
+    private final OnSeekBarChangeListener onNoiseSeekBarProgressChangeListener = (progress, stopped) -> {
+        runOrStart(() -> {
+            if (progress == 0) {
+                preview.clearFilter();
+            } else if (progress == 100) {
+                preview.drawColor(paint.getColor());
+            } else {
+                final int w = preview.getWidth(), h = preview.getHeight(), area = w * h;
+                final int[] pixels = preview.getPixels(w, h, area);
+                BitmapUtil.generateNoise(pixels, area, paint.getColor(), progress / 100.0f, null);
+                preview.setPixels(pixels, w, h);
+            }
+            drawPreviewBitmapOnView(stopped);
+        }, stopped);
+        clearStatus();
     };
 
     private final OnSeekBarChangeListener onThresholdChangeListener = (progress, stopped) -> {
@@ -743,18 +801,19 @@ public class MainActivity extends AppCompatActivity {
             drawFloatingLayers();
 
             final int position = tab.getPosition();
-            MainActivity.this.tab = tabs.get(position);
+            final Tab t = tabs.get(position);
+            MainActivity.this.tab = t;
             layerTree = Tab.computeLayerTree(tabs, position);
-            final boolean areInDiffProj = MainActivity.this.tab.getBackground() != oldBackground;
+            final boolean areInDiffProj = t.getBackground() != oldBackground;
             oldBackground = null;
-            bitmap = MainActivity.this.tab.bitmap;
+            bitmap = t.bitmap;
             canvas = new Canvas(bitmap);
 
             final int width = bitmap.getWidth(), height = bitmap.getHeight();
             if (settings.getIndependentTranslAndScale() || areInDiffProj) {
-                translationX = MainActivity.this.tab.translationX;
-                translationY = MainActivity.this.tab.translationY;
-                scale = MainActivity.this.tab.scale;
+                translationX = t.translationX;
+                translationY = t.translationY;
+                scale = t.scale;
             }
             imageWidth = (int) toScaled(width);
             imageHeight = (int) toScaled(height);
@@ -775,13 +834,13 @@ public class MainActivity extends AppCompatActivity {
             }
 
             miHasAlpha.setChecked(bitmap.hasAlpha());
-            miLayerColorMatrix.setChecked(MainActivity.this.tab.filter == Tab.Filter.COLOR_MATRIX);
-            miLayerCurves.setChecked(MainActivity.this.tab.filter == Tab.Filter.CURVES);
-            miLayerDrawBelow.setChecked(MainActivity.this.tab.drawBelow);
-            miLayerFilterSet.setEnabled(MainActivity.this.tab.filter != null);
-            miLayerHsv.setChecked(MainActivity.this.tab.filter == Tab.Filter.HSV);
-            miLayerLevelUp.setEnabled(MainActivity.this.tab.getLevel() > 0);
-            checkLayerBlendModeMenuItem(MainActivity.this.tab.paint.getBlendMode());
+            miLayerColorMatrix.setChecked(t.filter == Tab.Filter.COLOR_MATRIX);
+            miLayerCurves.setChecked(t.filter == Tab.Filter.CURVES);
+            miLayerDrawBelow.setChecked(t.drawBelow);
+            miLayerFilterSet.setEnabled(t.filter != null);
+            miLayerHsv.setChecked(t.filter == Tab.Filter.HSV);
+            miLayerLevelUp.setEnabled(t.getLevel() > 0);
+            checkLayerBlendModeMenuItem(t.paint.getBlendMode());
 
             drawBitmapOnView(true, true);
             drawChessboardOnView();
@@ -857,6 +916,96 @@ public class MainActivity extends AppCompatActivity {
 
         }
     };
+
+    @SuppressLint("ClickableViewAccessibility")
+    private final View.OnTouchListener onRulerHTouchListener = new View.OnTouchListener() {
+        Point guide;
+
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    guide = new Point();
+                    tab.guides.offerFirst(guide); // Add at the front for faster removal if necessary later
+                    break;
+
+                case MotionEvent.ACTION_MOVE:
+                    guide.y = toBitmapY(event.getY() - rulerHHeight);
+                    drawGridOnView();
+                    break;
+
+                case MotionEvent.ACTION_UP:
+                case MotionEvent.ACTION_CANCEL:
+                    if (!(0 < guide.y && guide.y < bitmap.getHeight())) {
+                        tab.guides.remove(guide);
+                        drawGridOnView();
+                    }
+                    guide = null;
+                    break;
+            }
+            return true;
+        }
+    };
+
+    @SuppressLint("ClickableViewAccessibility")
+    private final View.OnTouchListener onRulerVTouchListener = new View.OnTouchListener() {
+        Point guide;
+
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    guide = new Point();
+                    tab.guides.offerFirst(guide); // Add at the front for faster removal if necessary later
+                    break;
+
+                case MotionEvent.ACTION_MOVE:
+                    guide.x = toBitmapX(event.getX() - rulerVWidth);
+                    drawGridOnView();
+                    break;
+
+                case MotionEvent.ACTION_UP:
+                case MotionEvent.ACTION_CANCEL:
+                    if (!(0 < guide.x && guide.x < bitmap.getWidth())) {
+                        tab.guides.remove(guide);
+                        drawGridOnView();
+                    }
+                    guide = null;
+                    break;
+            }
+            return true;
+        }
+    };
+
+    private final CellGridManager.OnUpdateListener onUpdateCellGridListener = this::drawGridOnView;
+
+    private final ImageSizeManager.OnUpdateListener onUpdateImageSizeListener = (width, height, stretch) -> {
+        resizeBitmap(width, height, stretch);
+        drawBitmapOnView(true, true);
+        addHistory();
+    };
+
+    private final RunnableRunnable runnableRunningRunner = (target, wait) -> target.run();
+
+    private final RunnableRunnable runnableStartingRunner = (target, wait) -> {
+        if (Looper.myLooper() == MAIN_LOOPER) {
+            if (!thread.isAlive() || wait) {
+                thread = new Thread(() -> {
+                    synchronized (this) {
+                        try {
+                            target.run();
+                        } catch (RuntimeException e) {
+                        }
+                    }
+                });
+                thread.start();
+            }
+        } else {
+            target.run();
+        }
+    };
+
+    private RunnableRunnable runnableRunner;
 
     private final Shape circle = new Shape() {
         @Override
@@ -960,7 +1109,6 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("ClickableViewAccessibility")
     private final View.OnTouchListener onImageViewTouchWithBucketListener = (v, event) -> {
         switch (event.getAction()) {
-
             case MotionEvent.ACTION_DOWN: {
                 final float x = event.getX(), y = event.getY();
                 final int bx = toBitmapX(x), by = toBitmapY(y);
@@ -968,15 +1116,21 @@ public class MainActivity extends AppCompatActivity {
                     break;
                 }
                 final Rect rect = hasSelection ? selection : null;
-                if (cbBucketFillContiguous.isChecked()) {
-                    BitmapUtil.floodFill(bitmap, rect, bx, by, paint.getColor(),
-                            cbBucketFillIgnoreAlpha.isChecked(), threshold);
-                } else {
-                    BitmapUtil.bucketFill(bitmap, rect, bx, by, paint.getColor(),
-                            cbBucketFillIgnoreAlpha.isChecked(), threshold);
-                }
-                drawBitmapOnView(true);
-                addHistory();
+                runOrStart(() -> {
+                    if (cbBucketFillContiguous.isChecked()) {
+                        BitmapUtil.floodFill(bitmap, rect, bx, by, paint.getColor(),
+                                cbBucketFillIgnoreAlpha.isChecked(), threshold);
+                    } else {
+                        BitmapUtil.bucketFill(bitmap, rect, bx, by, paint.getColor(),
+                                cbBucketFillIgnoreAlpha.isChecked(), threshold);
+                    }
+                    if (rect == null) {
+                        drawBitmapOnView(true);
+                    } else {
+                        drawBitmapOnView(rect, true);
+                    }
+                    addHistory();
+                }, true);
                 clearStatus();
                 break;
             }
@@ -985,101 +1139,109 @@ public class MainActivity extends AppCompatActivity {
     };
 
     @SuppressLint({"ClickableViewAccessibility", "SetTextI18n"})
-    private final View.OnTouchListener onImageViewTouchWithCloneStampListener = (v, event) -> {
-        final float x = event.getX(), y = event.getY();
-        final int bx = toBitmapX(x), by = toBitmapY(y);
-        switch (event.getAction()) {
+    private final View.OnTouchListener onImageViewTouchWithCloneStampListener = new View.OnTouchListener() {
+        float lastX, lastY;
+        int dx, dy;
 
-            case MotionEvent.ACTION_DOWN:
-                if (cloneStampSrc == null) {
-                    break;
-                }
-                cloneStampSrcDist.x = cloneStampSrc.x - bx;
-                cloneStampSrcDist.y = cloneStampSrc.y - by;
-                prevX = x;
-                prevY = y;
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            final float x = event.getX(), y = event.getY();
+            final int bx = toBitmapX(x), by = toBitmapY(y);
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    if (cloneStampSrc == null) {
+                        break;
+                    }
+                    dx = cloneStampSrc.x - bx;
+                    dy = cloneStampSrc.y - by;
+                    lastX = x;
+                    lastY = y;
 
-            case MotionEvent.ACTION_MOVE: {
-                if (cloneStampSrc == null) {
-                    break;
-                }
-                final int prevBX = toBitmapX(prevX), prevBY = toBitmapY(prevY);
+                case MotionEvent.ACTION_MOVE: {
+                    if (cloneStampSrc == null) {
+                        break;
+                    }
+                    final int lastBX = toBitmapX(lastX), lastBY = toBitmapY(lastY);
 
-                final int width = (int) (Math.abs(bx - prevBX) + strokeWidth + blurRadius * 2.0f),
-                        height = (int) (Math.abs(by - prevBY) + strokeWidth + blurRadius * 2.0f);
-                final Bitmap bm = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-                final float rad = strokeWidth / 2.0f + blurRadius;
-                final float left = Math.min(prevBX, bx) - rad, top = Math.min(prevBY, by) - rad;
-                final int l = (int) (left + cloneStampSrcDist.x), t = (int) (top + cloneStampSrcDist.y);
-                final Canvas cv = new Canvas(bm);
-                cv.drawLine(prevBX - left, prevBY - top, bx - left, by - top, paint);
-                cv.drawRect(0.0f, 0.0f, -l, height, PAINT_CLEAR);
-                cv.drawRect(0.0f, 0.0f, width, -t, PAINT_CLEAR);
-                cv.drawRect(bitmap.getWidth() - l, 0.0f, width, height, PAINT_CLEAR);
-                cv.drawRect(0.0f, bitmap.getHeight() - t, width, height, PAINT_CLEAR);
-                cv.drawBitmap(bitmap,
-                        new Rect(l, t, l + width, t + height),
-                        new RectF(0.0f, 0.0f, width, height),
-                        PAINT_SRC_IN);
-                canvas.drawBitmap(bm, left, top, PAINT_SRC_OVER);
-                bm.recycle();
-                drawBitmapOnView((int) left, (int) top, (int) (left + width), (int) (top + height));
-                drawCrossOnView(bx + cloneStampSrcDist.x, by + cloneStampSrcDist.y);
-                tvStatus.setText(String.format(getString(R.string.coordinate), bx, by));
-
-                prevX = x;
-                prevY = y;
-                break;
-            }
-            case MotionEvent.ACTION_CANCEL:
-            case MotionEvent.ACTION_UP:
-                if (cloneStampSrc == null) {
-                    cloneStampSrc = new Point(bx, by);
-                    drawCrossOnView(bx, by);
+                    final int width = (int) (Math.abs(bx - lastBX) + strokeWidth + blurRadius * 2.0f),
+                            height = (int) (Math.abs(by - lastBY) + strokeWidth + blurRadius * 2.0f);
+                    final Bitmap bm = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+                    final float rad = strokeWidth / 2.0f + blurRadius;
+                    final float left = Math.min(lastBX, bx) - rad, top = Math.min(lastBY, by) - rad;
+                    final int l = (int) (left + dx), t = (int) (top + dy);
+                    final Canvas cv = new Canvas(bm);
+                    cv.drawLine(lastBX - left, lastBY - top, bx - left, by - top, paint);
+                    cv.drawRect(0.0f, 0.0f, -l, height, PAINT_CLEAR);
+                    cv.drawRect(0.0f, 0.0f, width, -t, PAINT_CLEAR);
+                    cv.drawRect(bitmap.getWidth() - l, 0.0f, width, height, PAINT_CLEAR);
+                    cv.drawRect(0.0f, bitmap.getHeight() - t, width, height, PAINT_CLEAR);
+                    cv.drawBitmap(bitmap,
+                            new Rect(l, t, l + width, t + height),
+                            new RectF(0.0f, 0.0f, width, height),
+                            PAINT_SRC_IN);
+                    canvas.drawBitmap(bm, left, top, PAINT_SRC_OVER);
+                    bm.recycle();
+                    drawBitmapOnView((int) left, (int) top, (int) (left + width), (int) (top + height));
+                    drawCrossOnView(bx + dx, by + dy);
                     tvStatus.setText(String.format(getString(R.string.coordinate), bx, by));
-                } else {
-                    drawCrossOnView(cloneStampSrc.x, cloneStampSrc.y);
-                    addHistory();
-                    clearStatus();
+
+                    lastX = x;
+                    lastY = y;
+                    break;
                 }
-                break;
+                case MotionEvent.ACTION_CANCEL:
+                case MotionEvent.ACTION_UP:
+                    if (cloneStampSrc == null) {
+                        cloneStampSrc = new Point(bx, by);
+                        drawCrossOnView(bx, by);
+                        tvStatus.setText(String.format(getString(R.string.coordinate), bx, by));
+                    } else {
+                        drawCrossOnView(cloneStampSrc.x, cloneStampSrc.y);
+                        addHistory();
+                        clearStatus();
+                    }
+                    break;
+            }
+            return true;
         }
-        return true;
     };
 
     @SuppressLint({"ClickableViewAccessibility"})
-    private final View.OnTouchListener onImageViewTouchWithEraserListener = (v, event) -> {
-        switch (event.getAction()) {
+    private final View.OnTouchListener onImageViewTouchWithEraserListener = new View.OnTouchListener() {
+        float lastX, lastY;
 
-            case MotionEvent.ACTION_DOWN: {
-                final float x = event.getX(), y = event.getY();
-                prevX = x;
-                prevY = y;
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN: {
+                    final float x = event.getX(), y = event.getY();
+                    lastX = x;
+                    lastY = y;
+                }
+                case MotionEvent.ACTION_MOVE: {
+                    final float x = event.getX(), y = event.getY();
+                    final int lastBX = toBitmapX(lastX), lastBY = toBitmapY(lastY);
+                    final int bx = toBitmapX(x), by = toBitmapY(y);
+                    drawLineOnCanvas(lastBX, lastBY, bx, by, eraser);
+                    drawBitmapOnView(lastBX, lastBY, bx, by, strokeHalfWidthEraser + blurRadiusEraser);
+                    tvStatus.setText(String.format(MainActivity.this.getString(R.string.coordinate), bx, by));
+                    lastX = x;
+                    lastY = y;
+                    break;
+                }
+                case MotionEvent.ACTION_CANCEL:
+                case MotionEvent.ACTION_UP:
+                    addHistory();
+                    clearStatus();
+                    break;
             }
-            case MotionEvent.ACTION_MOVE: {
-                final float x = event.getX(), y = event.getY();
-                final int prevBX = toBitmapX(prevX), prevBY = toBitmapY(prevY);
-                final int bx = toBitmapX(x), by = toBitmapY(y);
-                drawLineOnCanvas(prevBX, prevBY, bx, by, eraser);
-                drawBitmapOnView(prevBX, prevBY, bx, by, strokeHalfWidthEraser + blurRadiusEraser);
-                tvStatus.setText(String.format(getString(R.string.coordinate), bx, by));
-                prevX = x;
-                prevY = y;
-                break;
-            }
-            case MotionEvent.ACTION_CANCEL:
-            case MotionEvent.ACTION_UP:
-                addHistory();
-                clearStatus();
-                break;
+            return true;
         }
-        return true;
     };
 
     @SuppressLint({"ClickableViewAccessibility"})
     private final View.OnTouchListener onImageViewTouchWithEyedropperImpreciseListener = (v, event) -> {
         switch (event.getAction()) {
-
             case MotionEvent.ACTION_DOWN:
             case MotionEvent.ACTION_MOVE: {
                 final float x = event.getX(), y = event.getY();
@@ -1094,7 +1256,6 @@ public class MainActivity extends AppCompatActivity {
                         Color.alpha(color), Color.red(color), Color.green(color), Color.blue(color)));
                 break;
             }
-
             case MotionEvent.ACTION_CANCEL:
             case MotionEvent.ACTION_UP:
                 clearStatus();
@@ -1106,7 +1267,6 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint({"ClickableViewAccessibility"})
     private final View.OnTouchListener onImageViewTouchWithEyedropperPreciseListener = (v, event) -> {
         switch (event.getAction()) {
-
             case MotionEvent.ACTION_DOWN:
             case MotionEvent.ACTION_MOVE: {
                 final float x = event.getX(), y = event.getY();
@@ -1121,7 +1281,6 @@ public class MainActivity extends AppCompatActivity {
                         String.valueOf(color.red()), String.valueOf(color.green()), String.valueOf(color.blue())));
                 break;
             }
-
             case MotionEvent.ACTION_CANCEL:
             case MotionEvent.ACTION_UP:
                 clearStatus();
@@ -1133,119 +1292,128 @@ public class MainActivity extends AppCompatActivity {
     private View.OnTouchListener onImageViewTouchWithEyedropperListener;
 
     @SuppressLint({"ClickableViewAccessibility", "SetTextI18n"})
-    private final View.OnTouchListener onImageViewTouchWithGradientListener = (v, event) -> {
-        final float x = event.getX(), y = event.getY();
-        final int bx = toBitmapX(x), by = toBitmapY(y);
-        switch (event.getAction()) {
+    private final View.OnTouchListener onImageViewTouchWithGradientListener = new View.OnTouchListener() {
+        boolean done = true;
+        int startX, startY;
 
-            case MotionEvent.ACTION_DOWN: {
-                paint.setStrokeWidth(toScaled((int) paint.getStrokeWidth()));
-                if (isShapeStopped) {
-                    isShapeStopped = false;
-                    drawPointOnView(bx, by);
-                    shapeStartX = bx;
-                    shapeStartY = by;
-                    color0 = bitmap.getColor(satX(bitmap, bx), satY(bitmap, by)).pack();
-                    tvStatus.setText(String.format(getString(R.string.coordinate), bx, by));
-                    break;
+        @ColorLong
+        long color0;
+
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            final float x = event.getX(), y = event.getY();
+            final int bx = MainActivity.this.toBitmapX(x), by = MainActivity.this.toBitmapY(y);
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN: {
+                    paint.setStrokeWidth(MainActivity.this.toScaled((int) paint.getStrokeWidth()));
+                    if (done) {
+                        done = false;
+                        drawPointOnView(bx, by);
+                        startX = bx;
+                        startY = by;
+                        color0 = bitmap.getColor(satX(bitmap, bx), satY(bitmap, by)).pack();
+                        tvStatus.setText(String.format(MainActivity.this.getString(R.string.coordinate), bx, by));
+                        break;
+                    }
                 }
-            }
-
-            case MotionEvent.ACTION_MOVE: {
-                final float startX = toViewX(shapeStartX + 0.5f), startY = toViewY(shapeStartY + 0.5f),
-                        stopX = toViewX(bx + 0.5f), stopY = toViewY(by + 0.5f);
-                paint.setShader(new LinearGradient(startX, startY, stopX, stopY,
-                        color0,
-                        bitmap.getColor(satX(bitmap, bx), satY(bitmap, by)).pack(),
-                        Shader.TileMode.CLAMP));
-                eraseBitmap(previewBitmap);
-                previewCanvas.drawLine(startX, startY, stopX, stopY, paint);
-                ivPreview.invalidate();
-                tvStatus.setText(String.format(getString(R.string.state_start_stop),
-                        shapeStartX, shapeStartY, bx, by));
-                break;
-            }
-
-            case MotionEvent.ACTION_CANCEL:
-            case MotionEvent.ACTION_UP:
-                paint.setStrokeWidth(strokeWidth);
-                if (bx != shapeStartX || by != shapeStartY) {
-                    paint.setShader(new LinearGradient(shapeStartX, shapeStartY, bx, by,
+                case MotionEvent.ACTION_MOVE: {
+                    final float startVX = toViewX(startX + 0.5f), startVY = toViewY(startY + 0.5f),
+                            stopX = toViewX(bx + 0.5f), stopY = toViewY(by + 0.5f);
+                    paint.setShader(new LinearGradient(startVX, startVY, stopX, stopY,
                             color0,
                             bitmap.getColor(satX(bitmap, bx), satY(bitmap, by)).pack(),
                             Shader.TileMode.CLAMP));
-                    drawLineOnCanvas(shapeStartX, shapeStartY, bx, by, paint);
-                    isShapeStopped = true;
-                    drawBitmapOnView(shapeStartX, shapeStartY, bx, by, strokeWidth / 2.0f + blurRadius);
-                    eraseBitmapAndInvalidateView(previewBitmap, ivPreview);
-                    addHistory();
-                    clearStatus();
+                    eraseBitmap(previewBitmap);
+                    previewCanvas.drawLine(startVX, startVY, stopX, stopY, paint);
+                    ivPreview.invalidate();
+                    tvStatus.setText(String.format(getString(R.string.state_start_stop),
+                            startX, startY, bx, by));
+                    break;
                 }
-                paint.setShader(null);
-                break;
+                case MotionEvent.ACTION_CANCEL:
+                case MotionEvent.ACTION_UP:
+                    paint.setStrokeWidth(strokeWidth);
+                    if (bx != startX || by != startY) {
+                        paint.setShader(new LinearGradient(startX, startY, bx, by,
+                                color0,
+                                bitmap.getColor(satX(bitmap, bx), satY(bitmap, by)).pack(),
+                                Shader.TileMode.CLAMP));
+                        drawLineOnCanvas(startX, startY, bx, by, paint);
+                        done = true;
+                        drawBitmapOnView(startX, startY, bx, by, strokeWidth / 2.0f + blurRadius);
+                        eraseBitmapAndInvalidateView(previewBitmap, ivPreview);
+                        addHistory();
+                        clearStatus();
+                    }
+                    paint.setShader(null);
+                    break;
+            }
+            return true;
         }
-        return true;
     };
 
     @SuppressLint("ClickableViewAccessibility")
-    private final View.OnTouchListener onImageViewTouchWithMagicEraserImpreciseListener = (v, event) -> {
-        final float x = event.getX(), y = event.getY();
-        switch (event.getAction()) {
+    private final View.OnTouchListener onImageViewTouchWithMagicEraserImpreciseListener = new View.OnTouchListener() {
+        float lastX, lastY;
 
-            case MotionEvent.ACTION_DOWN:
-                prevX = x;
-                prevY = y;
-                break;
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            final float x = event.getX(), y = event.getY();
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    lastX = x;
+                    lastY = y;
+                    break;
 
-            case MotionEvent.ACTION_MOVE: {
-                final int bx = toBitmapX(x), by = toBitmapY(y);
-                final int prevBX = toBitmapX(prevX), prevBY = toBitmapY(prevY);
-                final int rad = (int) (strokeWidth / 2.0f + blurRadius);
-                final float radF = toScaled(rad);
-                final double theta = Math.atan2(y - prevY, x - prevX);
-                final int colorLeft = bitmapSource.getPixel(
-                        satX(bitmapSource, toBitmapX(x + radF * (float) Math.sin(theta))),
-                        satY(bitmapSource, toBitmapY(y - radF * (float) Math.cos(theta))));
-                final int colorRight = bitmapSource.getPixel(
-                        satX(bitmapSource, toBitmapX(x - radF * (float) Math.sin(theta))),
-                        satY(bitmapSource, toBitmapY(y + radF * (float) Math.cos(theta))));
-                final int backgroundColor = cbMagicEraserPosition == rbMagicEraserLeft ? colorLeft : colorRight;
-                final int foregroundColor = backgroundColor == colorLeft ? colorRight : colorLeft;
+                case MotionEvent.ACTION_MOVE: {
+                    final int bx = toBitmapX(x), by = toBitmapY(y);
+                    final int lastBX = toBitmapX(lastX), lastBY = toBitmapY(lastY);
+                    final int rad = (int) (strokeWidth / 2.0f + blurRadius);
+                    final float radF = toScaled(rad);
+                    final double theta = Math.atan2(y - lastY, x - lastX);
+                    final int colorLeft = bitmapSource.getPixel(
+                            satX(bitmapSource, toBitmapX(x + radF * (float) Math.sin(theta))),
+                            satY(bitmapSource, toBitmapY(y - radF * (float) Math.cos(theta))));
+                    final int colorRight = bitmapSource.getPixel(
+                            satX(bitmapSource, toBitmapX(x - radF * (float) Math.sin(theta))),
+                            satY(bitmapSource, toBitmapY(y + radF * (float) Math.cos(theta))));
+                    final int backgroundColor = cbMagicEraserPosition == rbMagicEraserLeft ? colorLeft : colorRight;
+                    final int foregroundColor = backgroundColor == colorLeft ? colorRight : colorLeft;
 
-                final int left = Math.min(prevBX, bx) - rad, top = Math.min(prevBY, by) - rad,
-                        right = Math.max(prevBX, bx) + rad + 1, bottom = Math.max(prevBY, by) + rad + 1;
-                final int width = right - left, height = bottom - top;
-                final Bitmap bLine = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-                final Canvas cLine = new Canvas(bLine);
-                cLine.drawLine(prevBX - left, prevBY - top,
-                        bx - left, by - top,
-                        paint);
-                canvas.drawBitmap(bLine, left, top, PAINT_DST_OUT);
-                final Bitmap bm = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-                new Canvas(bm).drawBitmap(bitmapSource,
-                        new Rect(left, top, right, bottom),
-                        new Rect(0, 0, width, height),
-                        PAINT_SRC);
-                BitmapUtil.removeBackground(bm, foregroundColor, backgroundColor);
-                cLine.drawBitmap(bm, 0.0f, 0.0f, PAINT_SRC_IN);
-                bm.recycle();
-                canvas.drawBitmap(bLine, left, top, PAINT_SRC_OVER);
-                bLine.recycle();
+                    final int left = Math.min(lastBX, bx) - rad, top = Math.min(lastBY, by) - rad,
+                            right = Math.max(lastBX, bx) + rad + 1, bottom = Math.max(lastBY, by) + rad + 1;
+                    final int width = right - left, height = bottom - top;
+                    final Bitmap bLine = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+                    final Canvas cLine = new Canvas(bLine);
+                    cLine.drawLine(lastBX - left, lastBY - top,
+                            bx - left, by - top,
+                            paint);
+                    canvas.drawBitmap(bLine, left, top, PAINT_DST_OUT);
+                    final Bitmap bm = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+                    new Canvas(bm).drawBitmap(bitmapSource,
+                            new Rect(left, top, right, bottom),
+                            new Rect(0, 0, width, height),
+                            PAINT_SRC);
+                    BitmapUtil.removeBackground(bm, foregroundColor, backgroundColor);
+                    cLine.drawBitmap(bm, 0.0f, 0.0f, PAINT_SRC_IN);
+                    bm.recycle();
+                    canvas.drawBitmap(bLine, left, top, PAINT_SRC_OVER);
+                    bLine.recycle();
 
-                drawBitmapOnView(left, top, right, bottom);
-                tvStatus.setText(String.format(getString(R.string.coordinate), bx, by));
-                prevX = x;
-                prevY = y;
-                break;
+                    drawBitmapOnView(left, top, right, bottom);
+                    tvStatus.setText(String.format(getString(R.string.coordinate), bx, by));
+                    lastX = x;
+                    lastY = y;
+                    break;
+                }
+                case MotionEvent.ACTION_UP:
+                case MotionEvent.ACTION_CANCEL:
+                    addHistory();
+                    clearStatus();
+                    break;
             }
-
-            case MotionEvent.ACTION_UP:
-            case MotionEvent.ACTION_CANCEL:
-                addHistory();
-                clearStatus();
-                break;
+            return true;
         }
-        return true;
     };
 
     @SuppressLint("ClickableViewAccessibility")
@@ -1334,61 +1502,100 @@ public class MainActivity extends AppCompatActivity {
     private View.OnTouchListener onImageViewTouchWithMagicEraserListener = onImageViewTouchWithMagicEraserImpreciseListener;
 
     @SuppressLint({"ClickableViewAccessibility"})
-    private final View.OnTouchListener onImageViewTouchWithMagicPaintListener = (v, event) -> {
-        switch (event.getAction()) {
+    private final View.OnTouchListener onImageViewTouchWithMagicPaintListener = new View.OnTouchListener() {
+        float lastX, lastY;
 
-            case MotionEvent.ACTION_DOWN: {
-                final float x = event.getX(), y = event.getY();
-                prevX = x;
-                prevY = y;
-            }
-            case MotionEvent.ACTION_MOVE: {
-                final float x = event.getX(), y = event.getY();
-                final int bx = toBitmapX(x), by = toBitmapY(y);
-                final int prevBX = toBitmapX(prevX), prevBY = toBitmapY(prevY);
-
-                final int rad = (int) (strokeWidth / 2.0f + blurRadius);
-                final int left = Math.min(prevBX, bx) - rad,
-                        top = Math.min(prevBY, by) - rad,
-                        right = Math.max(prevBX, bx) + rad + 1,
-                        bottom = Math.max(prevBY, by) + rad + 1;
-                final int width = right - left, height = bottom - top;
-                final int relativeX = bx - left, relativeY = by - top;
-                final Bitmap bLine = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-                final Canvas cLine = new Canvas(bLine);
-                cLine.drawLine(prevBX - left, prevBY - top,
-                        relativeX, relativeY,
-                        paint);
-                if (threshold < 0xFF) {
-                    final Bitmap bm = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-                    final Canvas cv = new Canvas(bm);
-                    cv.drawBitmap(bLine, 0.0f, 0.0f, PAINT_SRC);
-                    final Rect absolute = new Rect(left, top, right, bottom),
-                            relative = new Rect(0, 0, width, height);
-                    cv.drawBitmap(bitmapSource, absolute, relative, PAINT_SRC_IN);
-                    final Bitmap bThr = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_4444); // Threshold
-                    BitmapUtil.floodFill(bm, bThr, hasSelection ? selection : null,
-                            relativeX, relativeY, Color.BLACK, true, threshold);
-                    bm.recycle();
-                    cLine.drawBitmap(bThr, 0.0f, 0.0f, PAINT_DST_IN);
-                    bThr.recycle();
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN: {
+                    final float x = event.getX(), y = event.getY();
+                    lastX = x;
+                    lastY = y;
                 }
-                canvas.drawBitmap(bLine, left, top, magicPaint);
-                bLine.recycle();
+                case MotionEvent.ACTION_MOVE: {
+                    final float x = event.getX(), y = event.getY();
+                    final int bx = toBitmapX(x), by = toBitmapY(y);
+                    final int lastBX = toBitmapX(lastX), lastBY = toBitmapY(lastY);
 
-                drawBitmapOnView(left, top, right, bottom);
-                tvStatus.setText(String.format(getString(R.string.coordinate), bx, by));
-                prevX = x;
-                prevY = y;
-                break;
+                    final int rad = (int) (strokeWidth / 2.0f + blurRadius);
+                    final int left = Math.min(lastBX, bx) - rad,
+                            top = Math.min(lastBY, by) - rad,
+                            right = Math.max(lastBX, bx) + rad + 1,
+                            bottom = Math.max(lastBY, by) + rad + 1;
+                    final int width = right - left, height = bottom - top;
+                    final int relativeX = bx - left, relativeY = by - top;
+                    final Bitmap bLine = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+                    final Canvas cLine = new Canvas(bLine);
+                    cLine.drawLine(lastBX - left, lastBY - top,
+                            relativeX, relativeY,
+                            paint);
+                    if (threshold < 0xFF) {
+                        final Bitmap bm = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+                        final Canvas cv = new Canvas(bm);
+                        cv.drawBitmap(bLine, 0.0f, 0.0f, PAINT_SRC);
+                        final Rect absolute = new Rect(left, top, right, bottom),
+                                relative = new Rect(0, 0, width, height);
+                        cv.drawBitmap(bitmapSource, absolute, relative, PAINT_SRC_IN);
+                        final Bitmap bThr = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_4444); // Threshold
+                        BitmapUtil.floodFill(bm, bThr, hasSelection ? selection : null,
+                                relativeX, relativeY, Color.BLACK, true, threshold);
+                        bm.recycle();
+                        cLine.drawBitmap(bThr, 0.0f, 0.0f, PAINT_DST_IN);
+                        bThr.recycle();
+                    }
+                    canvas.drawBitmap(bLine, left, top, magicPaint);
+                    bLine.recycle();
+
+                    drawBitmapOnView(left, top, right, bottom);
+                    tvStatus.setText(String.format(getString(R.string.coordinate), bx, by));
+                    lastX = x;
+                    lastY = y;
+                    break;
+                }
+                case MotionEvent.ACTION_UP:
+                case MotionEvent.ACTION_CANCEL:
+                    addHistory();
+                    clearStatus();
+                    break;
             }
-            case MotionEvent.ACTION_UP:
-            case MotionEvent.ACTION_CANCEL:
-                addHistory();
-                clearStatus();
-                break;
+            return true;
         }
-        return true;
+    };
+
+    @SuppressLint({"ClickableViewAccessibility"})
+    private final View.OnTouchListener onImageViewTouchWithPaintListener = new View.OnTouchListener() {
+        Path path;
+
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN: {
+                    final float x = event.getX(), y = event.getY();
+                    final int bx = toBitmapX(x), by = toBitmapY(y);
+                    path = new Path();
+                    path.moveTo(bx, by);
+                    tvStatus.setText(String.format(getString(R.string.coordinate), bx, by));
+                    break;
+                }
+                case MotionEvent.ACTION_MOVE: {
+                    final float x = event.getX(), y = event.getY();
+                    final int bx = toBitmapX(x), by = toBitmapY(y);
+                    path.lineTo(bx, by);
+                    canvas.drawPath(path, paint);
+                    drawBitmapOnView();
+                    tvStatus.setText(String.format(getString(R.string.coordinate), bx, by));
+                    break;
+                }
+                case MotionEvent.ACTION_UP:
+                case MotionEvent.ACTION_CANCEL:
+                    path = null;
+                    addHistory();
+                    clearStatus();
+                    break;
+            }
+            return true;
+        }
     };
 
     @SuppressLint("ClickableViewAccessibility")
@@ -1401,7 +1608,6 @@ public class MainActivity extends AppCompatActivity {
             return true;
         }
         switch (event.getAction()) {
-
             case MotionEvent.ACTION_DOWN:
                 createPreviewBitmap();
 
@@ -1440,75 +1646,85 @@ public class MainActivity extends AppCompatActivity {
     };
 
     @SuppressLint({"ClickableViewAccessibility"})
-    private final View.OnTouchListener onImageViewTouchWithPencilListener = (v, event) -> {
-        switch (event.getAction()) {
+    private final View.OnTouchListener onImageViewTouchWithPencilListener = new View.OnTouchListener() {
+        float lastX, lastY;
+        Paint pencil;
 
-            case MotionEvent.ACTION_DOWN: {
-                final float x = event.getX(), y = event.getY();
-                pencil = cbPencilWithEraser.isChecked()
-                        && bitmap.getColor(satX(bitmap, toBitmapX(x)), satY(bitmap, toBitmapY(y))).pack() != eraser.getColorLong()
-                        ? eraser : paint;
-                prevX = x;
-                prevY = y;
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN: {
+                    final float x = event.getX(), y = event.getY();
+                    pencil = cbPencilWithEraser.isChecked()
+                            && bitmap.getColor(satX(bitmap, toBitmapX(x)), satY(bitmap, toBitmapY(y))).pack() != eraser.getColorLong()
+                            ? eraser : paint;
+                    lastX = x;
+                    lastY = y;
+                }
+                case MotionEvent.ACTION_MOVE: {
+                    final float x = event.getX(), y = event.getY();
+                    final int lastBX = toBitmapX(lastX), lastBY = toBitmapY(lastY);
+                    final int bx = toBitmapX(x), by = toBitmapY(y);
+                    drawLineOnCanvas(lastBX, lastBY, bx, by, pencil);
+                    drawBitmapOnView(lastBX, lastBY, bx, by, strokeWidth / 2.0f + blurRadius);
+                    tvStatus.setText(String.format(getString(R.string.coordinate), bx, by));
+                    lastX = x;
+                    lastY = y;
+                    break;
+                }
+                case MotionEvent.ACTION_UP:
+                case MotionEvent.ACTION_CANCEL:
+                    addHistory();
+                    clearStatus();
+                    break;
             }
-            case MotionEvent.ACTION_MOVE: {
-                final float x = event.getX(), y = event.getY();
-                final int prevBX = toBitmapX(prevX), prevBY = toBitmapY(prevY);
-                final int bx = toBitmapX(x), by = toBitmapY(y);
-                drawLineOnCanvas(prevBX, prevBY, bx, by, pencil);
-                drawBitmapOnView(prevBX, prevBY, bx, by, strokeWidth / 2.0f + blurRadius);
-                tvStatus.setText(String.format(getString(R.string.coordinate), bx, by));
-                prevX = x;
-                prevY = y;
-                break;
-            }
-            case MotionEvent.ACTION_UP:
-            case MotionEvent.ACTION_CANCEL:
-                addHistory();
-                clearStatus();
-                break;
+            return true;
         }
-        return true;
     };
 
     @SuppressLint("ClickableViewAccessibility")
-    private final View.OnTouchListener onImageViewTouchWithRulerListener = (v, event) -> {
-        final float x = event.getX(), y = event.getY();
-        final float halfScale = scale / 2.0f;
-        final int bx = toBitmapX(x + halfScale), by = toBitmapY(y + halfScale);
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                if (isShapeStopped) {
-                    isShapeStopped = false;
-                    ruler.enabled = false;
-                    eraseBitmapAndInvalidateView(previewBitmap, ivPreview);
-                    drawPointOnView(bx, by);
-                    shapeStartX = bx;
-                    shapeStartY = by;
-                    tvStatus.setText(String.format(getString(R.string.coordinate), bx, by));
-                    break;
-                }
+    private final View.OnTouchListener onImageViewTouchWithRulerListener = new View.OnTouchListener() {
+        boolean done = true;
+        int startX, startY;
 
-            case MotionEvent.ACTION_MOVE:
-                if (bx != shapeStartX || by != shapeStartY) {
-                    isShapeStopped = true;
-                    ruler.set(shapeStartX, shapeStartY, bx, by);
-                    ruler.enabled = true;
-                    drawRulerOnView();
-                    final int dx = ruler.stopX - ruler.startX, dy = ruler.stopY - ruler.startY;
-                    tvStatus.setText(String.format(getString(R.string.state_ruler),
-                            ruler.startX, ruler.startY, ruler.stopX, ruler.stopY, dx, dy,
-                            String.valueOf((float) Math.sqrt(dx * dx + dy * dy))));
-                }
-                break;
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            final float x = event.getX(), y = event.getY();
+            final float halfScale = scale / 2.0f;
+            final int bx = toBitmapX(x + halfScale), by = toBitmapY(y + halfScale);
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    if (done) {
+                        done = false;
+                        ruler.enabled = false;
+                        eraseBitmapAndInvalidateView(previewBitmap, ivPreview);
+                        drawPointOnView(bx, by);
+                        startX = bx;
+                        startY = by;
+                        tvStatus.setText(String.format(getString(R.string.coordinate), bx, by));
+                        break;
+                    }
+                    // Fall through
+                case MotionEvent.ACTION_MOVE:
+                    if (bx != startX || by != startY) {
+                        done = true;
+                        ruler.set(startX, startY, bx, by);
+                        ruler.enabled = true;
+                        drawRulerOnView();
+                        final int dx = ruler.stopX - ruler.startX, dy = ruler.stopY - ruler.startY;
+                        tvStatus.setText(String.format(getString(R.string.state_ruler),
+                                ruler.startX, ruler.startY, ruler.stopX, ruler.stopY, dx, dy,
+                                String.valueOf((float) Math.sqrt(dx * dx + dy * dy))));
+                    }
+                    break;
+            }
+            return true;
         }
-        return true;
     };
 
     @SuppressLint({"ClickableViewAccessibility"})
     private final View.OnTouchListener onImageViewTouchWithSelectorListener = (v, event) -> {
         switch (event.getAction()) {
-
             case MotionEvent.ACTION_DOWN: {
                 final float x = event.getX(), y = event.getY();
                 if (draggingBound == Position.NULL) {
@@ -1539,7 +1755,6 @@ public class MainActivity extends AppCompatActivity {
                 }
                 break;
             }
-
             case MotionEvent.ACTION_MOVE: {
                 final float x = event.getX(), y = event.getY();
                 if (draggingBound == Position.NULL) {
@@ -1558,7 +1773,6 @@ public class MainActivity extends AppCompatActivity {
                 }
                 break;
             }
-
             case MotionEvent.ACTION_CANCEL:
             case MotionEvent.ACTION_UP:
                 optimizeSelection();
@@ -1586,136 +1800,149 @@ public class MainActivity extends AppCompatActivity {
     };
 
     @SuppressLint({"ClickableViewAccessibility", "SetTextI18n"})
-    private final View.OnTouchListener onImageViewTouchWithShapeListener = (v, event) -> {
-        final float x = event.getX(), y = event.getY();
-        final int bx = toBitmapX(x), by = toBitmapY(y);
-        switch (event.getAction()) {
+    private final View.OnTouchListener onImageViewTouchWithShapeListener = new View.OnTouchListener() {
+        boolean done = true;
+        int startX, startY;
 
-            case MotionEvent.ACTION_DOWN: {
-                paint.setStrokeWidth(toScaled((int) paint.getStrokeWidth()));
-                if (isShapeStopped) {
-                    isShapeStopped = false;
-                    drawPointOnView(bx, by);
-                    shapeStartX = bx;
-                    shapeStartY = by;
-                    tvStatus.setText(String.format(getString(R.string.coordinate), bx, by));
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            final float x = event.getX(), y = event.getY();
+            final int bx = toBitmapX(x), by = toBitmapY(y);
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN: {
+                    paint.setStrokeWidth(toScaled((int) paint.getStrokeWidth()));
+                    if (done) {
+                        done = false;
+                        drawPointOnView(bx, by);
+                        startX = bx;
+                        startY = by;
+                        tvStatus.setText(String.format(getString(R.string.coordinate), bx, by));
+                        break;
+                    }
+                }
+                case MotionEvent.ACTION_MOVE: {
+                    final String result = drawShapeOnView(startX, startY, bx, by);
+                    tvStatus.setText(
+                            String.format(getString(R.string.state_start_stop_),
+                                    startX, startY, bx, by)
+                                    + result);
                     break;
                 }
+                case MotionEvent.ACTION_CANCEL:
+                case MotionEvent.ACTION_UP:
+                    paint.setStrokeWidth(strokeWidth);
+                    if (bx != startX || by != startY) {
+                        drawShapeOnCanvas(startX, startY, bx, by);
+                        done = true;
+                        shape.drawBitmapOnView(startX, startY, bx, by);
+                        eraseBitmapAndInvalidateView(previewBitmap, ivPreview);
+                        addHistory();
+                        clearStatus();
+                    }
+                    break;
             }
-
-            case MotionEvent.ACTION_MOVE: {
-                final String result = drawShapeOnView(shapeStartX, shapeStartY, bx, by);
-                tvStatus.setText(
-                        String.format(getString(R.string.state_start_stop_),
-                                shapeStartX, shapeStartY, bx, by)
-                                + result);
-                break;
-            }
-
-            case MotionEvent.ACTION_CANCEL:
-            case MotionEvent.ACTION_UP:
-                paint.setStrokeWidth(strokeWidth);
-                if (bx != shapeStartX || by != shapeStartY) {
-                    drawShapeOnCanvas(shapeStartX, shapeStartY, bx, by);
-                    isShapeStopped = true;
-                    shape.drawBitmapOnView(shapeStartX, shapeStartY, bx, by);
-                    eraseBitmapAndInvalidateView(previewBitmap, ivPreview);
-                    addHistory();
-                    clearStatus();
-                }
-                break;
+            return true;
         }
-        return true;
     };
 
     @SuppressLint("ClickableViewAccessibility")
-    private final View.OnTouchListener onImageViewTouchWithTextListener = (v, event) -> {
-        if (isEditingText) {
+    private final View.OnTouchListener onImageViewTouchWithTextListener = new View.OnTouchListener() {
+        float dx, dy;
 
-            switch (event.getAction()) {
-                case MotionEvent.ACTION_DOWN:
-                    prevX = event.getX() - toScaled(textX);
-                    prevY = event.getY() - toScaled(textY);
-                    drawTextOnView();
-                    break;
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            if (isEditingText) {
 
-                case MotionEvent.ACTION_MOVE: {
-                    final float x = event.getX(), y = event.getY();
-                    textX = toBitmapX(x - prevX);
-                    textY = toBitmapY(y - prevY);
-                    drawTextOnView();
-                    break;
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        dx = event.getX() - toViewX(textX);
+                        dy = event.getY() - toViewY(textY);
+                        drawTextOnView();
+                        break;
+
+                    case MotionEvent.ACTION_MOVE: {
+                        final float x = event.getX(), y = event.getY();
+                        textX = toBitmapX(x - dx);
+                        textY = toBitmapY(y - dy);
+                        drawTextOnView();
+                        break;
+                    }
+                }
+
+            } else {
+
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        textX = toBitmapX(event.getX());
+                        textY = toBitmapY(event.getY());
+                        llOptionsText.setVisibility(View.VISIBLE);
+                        isEditingText = true;
+                        drawTextOnView();
+                        dx = translationX;
+                        dy = translationY;
+                        break;
                 }
             }
-
-        } else {
-
-            switch (event.getAction()) {
-                case MotionEvent.ACTION_DOWN:
-                    textX = toBitmapX(event.getX());
-                    textY = toBitmapY(event.getY());
-                    llOptionsText.setVisibility(View.VISIBLE);
-                    isEditingText = true;
-                    drawTextOnView();
-                    prevX = translationX;
-                    prevY = translationY;
-                    break;
-            }
+            return true;
         }
-        return true;
     };
 
     @SuppressLint({"ClickableViewAccessibility"})
-    private final View.OnTouchListener onImageViewTouchWithTransformerOfRotationListener = (v, event) -> {
-        if (!hasSelection) {
+    private final View.OnTouchListener onImageViewTouchWithTransformerOfRotationListener = new View.OnTouchListener() {
+        double lastTheta;
+
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            if (!hasSelection) {
+                return true;
+            }
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN: {
+                    if (selection.isEmpty()) {
+                        break;
+                    }
+                    final float x = event.getX(), y = event.getY();
+                    if (transformer == null) {
+                        createTransformer();
+                    }
+                    ivSelection.setPivotX(toViewX(selection.exactCenterX()));
+                    ivSelection.setPivotY(toViewY(selection.exactCenterY()));
+                    lastTheta = (float) Math.atan2(y - ivSelection.getPivotY(), x - ivSelection.getPivotX());
+                    clearStatus();
+                    break;
+                }
+                case MotionEvent.ACTION_MOVE: {
+                    if (transformer == null) {
+                        break;
+                    }
+                    final float x = event.getX(), y = event.getY();
+                    final float degrees = (float) Math.toDegrees(Math.atan2(y - ivSelection.getPivotY(), x - ivSelection.getPivotX()) - lastTheta);
+                    ivSelection.setRotation(degrees);
+                    drawSelectionOnView();
+                    tvStatus.setText(String.format(getString(R.string.degrees_), degrees));
+                    break;
+                }
+                case MotionEvent.ACTION_UP:
+                case MotionEvent.ACTION_CANCEL: {
+                    if (transformer == null) {
+                        break;
+                    }
+                    final int w = transformer.getWidth(), h = transformer.getHeight();
+                    transformer.rotate(ivSelection.getRotation());
+                    ivSelection.setRotation(0.0f);
+                    final int w_ = transformer.getWidth(), h_ = transformer.getHeight();
+                    selection.left += w - w_ >> 1;
+                    selection.top += h - h_ >> 1;
+                    selection.right = selection.left + w_;
+                    selection.bottom = selection.top + h_;
+                    drawBitmapOnView(selection);
+                    drawSelectionOnView();
+                    clearStatus();
+                    break;
+                }
+            }
             return true;
         }
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN: {
-                if (selection.isEmpty()) {
-                    break;
-                }
-                final float x = event.getX(), y = event.getY();
-                if (transformer == null) {
-                    createTransformer();
-                }
-                ivSelection.setPivotX(toViewX(selection.exactCenterX()));
-                ivSelection.setPivotY(toViewY(selection.exactCenterY()));
-                prevTheta = (float) Math.atan2(y - ivSelection.getPivotY(), x - ivSelection.getPivotX());
-                clearStatus();
-                break;
-            }
-            case MotionEvent.ACTION_MOVE: {
-                if (transformer == null) {
-                    break;
-                }
-                final float x = event.getX(), y = event.getY();
-                final float degrees = (float) Math.toDegrees(Math.atan2(y - ivSelection.getPivotY(), x - ivSelection.getPivotX()) - prevTheta);
-                ivSelection.setRotation(degrees);
-                drawSelectionOnView();
-                tvStatus.setText(String.format(getString(R.string.degrees_), degrees));
-                break;
-            }
-            case MotionEvent.ACTION_UP:
-            case MotionEvent.ACTION_CANCEL: {
-                if (transformer == null) {
-                    break;
-                }
-                final int w = transformer.getWidth(), h = transformer.getHeight();
-                transformer.rotate(ivSelection.getRotation());
-                ivSelection.setRotation(0.0f);
-                final int w_ = transformer.getWidth(), h_ = transformer.getHeight();
-                selection.left += w - w_ >> 1;
-                selection.top += h - h_ >> 1;
-                selection.right = selection.left + w_;
-                selection.bottom = selection.top + h_;
-                drawBitmapOnView(selection);
-                drawSelectionOnView();
-                clearStatus();
-                break;
-            }
-        }
-        return true;
     };
 
     @SuppressLint({"ClickableViewAccessibility"})
@@ -1866,142 +2093,154 @@ public class MainActivity extends AppCompatActivity {
     };
 
     @SuppressLint({"ClickableViewAccessibility"})
-    private final View.OnTouchListener onImageViewTouchWithTransformerOfTranslationListener = (v, event) -> {
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN: {
-                final float x = event.getX(), y = event.getY();
-                if (hasSelection) {
-                    if (transformer == null) {
-                        createTransformer();
+    private final View.OnTouchListener onImageViewTouchWithTransformerOfTranslationListener = new View.OnTouchListener() {
+        float dx, dy;
+
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN: {
+                    final float x = event.getX(), y = event.getY();
+                    if (hasSelection) {
+                        if (transformer == null) {
+                            createTransformer();
+                        }
+                        drawSelectionOnView(false);
+                        tvStatus.setText(String.format(getString(R.string.state_left_top),
+                                selection.left, selection.top));
+                        dx = x - toViewX(selection.left);
+                        dy = y - toViewY(selection.top);
+                    } else {
+                        tvStatus.setText(String.format(getString(R.string.state_left_top),
+                                tab.left, tab.top));
+                        dx = x - toViewXFromBg(tab.left);
+                        dy = y - toViewYFromBg(tab.top);
                     }
-                    drawSelectionOnView(false);
-                    tvStatus.setText(String.format(getString(R.string.state_left_top),
-                            selection.left, selection.top));
-                    prevX = x - toViewX(selection.left);
-                    prevY = y - toViewY(selection.top);
-                } else {
-                    tvStatus.setText(String.format(getString(R.string.state_left_top),
-                            tab.left, tab.top));
-                    prevX = x - toViewXFromBg(tab.left);
-                    prevY = y - toViewYFromBg(tab.top);
+                    break;
                 }
-                break;
+                case MotionEvent.ACTION_MOVE: {
+                    final float x = event.getX(), y = event.getY();
+                    if (transformer != null) {
+                        selection.offsetTo(toBitmapX(x - dx), toBitmapY(y - dy));
+                        drawSelectionOnView(true);
+                        tvStatus.setText(String.format(getString(R.string.state_left_top),
+                                selection.left, selection.top));
+                    } else {
+                        tab.left = toBgBitmapX(x - dx);
+                        tab.top = toBgBitmapY(y - dy);
+                        drawChessboardOnView();
+                        drawGridOnView();
+                        tvStatus.setText(String.format(getString(R.string.state_left_top),
+                                tab.left, tab.top));
+                    }
+                    drawBitmapOnView();
+                    break;
+                }
+                case MotionEvent.ACTION_UP:
+                case MotionEvent.ACTION_CANCEL:
+                    if (transformer != null) {
+                        drawSelectionOnView(false);
+                    }
+                    drawBitmapOnView(true);
+                    break;
             }
-            case MotionEvent.ACTION_MOVE: {
-                final float x = event.getX(), y = event.getY();
-                if (transformer != null) {
-                    selection.offsetTo(toBitmapX(x - prevX), toBitmapY(y - prevY));
-                    drawSelectionOnView(true);
-                    tvStatus.setText(String.format(getString(R.string.state_left_top),
-                            selection.left, selection.top));
-                } else {
-                    tab.left = toBgBitmapX(x - prevX);
-                    tab.top = toBgBitmapY(y - prevY);
-                    drawChessboardOnView();
-                    drawGridOnView();
-                    tvStatus.setText(String.format(getString(R.string.state_left_top),
-                            tab.left, tab.top));
-                }
-                drawBitmapOnView();
-                break;
-            }
-            case MotionEvent.ACTION_UP:
-            case MotionEvent.ACTION_CANCEL:
-                if (transformer != null) {
-                    drawSelectionOnView(false);
-                }
-                drawBitmapOnView(true);
-                break;
+            return true;
         }
-        return true;
     };
 
     private View.OnTouchListener onImageViewTouchWithTransformerListener = onImageViewTouchWithTransformerOfTranslationListener;
 
     @SuppressLint({"ClickableViewAccessibility"})
-    private final View.OnTouchListener onImageViewTouchWithZoomToolListener = (v, event) -> {
-        switch (event.getPointerCount()) {
+    private final View.OnTouchListener onImageViewTouchWithZoomToolListener = new View.OnTouchListener() {
+        float dx, dy;
+        float lastPivotX, lastPivotY;
+        double lastDiagonal;
 
-            case 1: {
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN: {
-                        final float x = event.getX(), y = event.getY();
-                        tvStatus.setText(String.format(getString(R.string.coordinate),
-                                toBitmapX(x), toBitmapY(y)));
-                        if (lastMerged == null) {
-                            mergeBitmapEntire();
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            switch (event.getPointerCount()) {
+
+                case 1: {
+                    switch (event.getAction()) {
+                        case MotionEvent.ACTION_DOWN: {
+                            final float x = event.getX(), y = event.getY();
+                            tvStatus.setText(String.format(getString(R.string.coordinate),
+                                    toBitmapX(x), toBitmapY(y)));
+                            if (lastMerged == null) {
+                                mergeBitmapEntire();
+                            }
+                            dx = x;
+                            dy = y;
+                            break;
                         }
-                        prevX = x;
-                        prevY = y;
-                        break;
+                        case MotionEvent.ACTION_MOVE: {
+                            final float x = event.getX(), y = event.getY();
+                            final float deltaX = x - dx, deltaY = y - dy;
+                            translationX += deltaX;
+                            translationY += deltaY;
+                            drawAfterTranslatingOrScaling(true);
+                            dx = x;
+                            dy = y;
+                            break;
+                        }
+                        case MotionEvent.ACTION_UP:
+                            drawBitmapLastOnView(true);
+                            clearStatus();
+                            break;
                     }
-                    case MotionEvent.ACTION_MOVE: {
-                        final float x = event.getX(), y = event.getY();
-                        final float deltaX = x - prevX, deltaY = y - prevY;
-                        translationX += deltaX;
-                        translationY += deltaY;
-                        drawAfterTranslatingOrScaling(true);
-                        prevX = x;
-                        prevY = y;
-                        break;
-                    }
-                    case MotionEvent.ACTION_UP:
-                        drawBitmapLastOnView(true);
-                        clearStatus();
-                        break;
+                    break;
                 }
-                break;
-            }
 
-            case 2: {
-                switch (event.getActionMasked()) {
-                    case MotionEvent.ACTION_MOVE: {
-                        final float x0 = event.getX(0), y0 = event.getY(0),
-                                x1 = event.getX(1), y1 = event.getY(1);
-                        final double diagonal = Math.sqrt(Math.pow(x0 - x1, 2.0) + Math.pow(y0 - y1, 2.0));
-                        final double diagonalRatio = diagonal / prevDiagonal;
-                        final float s = (float) (scale * diagonalRatio);
-                        final int scaledWidth = (int) (bitmap.getWidth() * s), scaledHeight = (int) (bitmap.getHeight() * s);
-                        scale = s;
-                        imageWidth = scaledWidth;
-                        imageHeight = scaledHeight;
-                        final float pivotX = (float) (this.pivotX * diagonalRatio), pivotY = (float) (this.pivotY * diagonalRatio);
-                        translationX = translationX - pivotX + this.pivotX;
-                        translationY = translationY - pivotY + this.pivotY;
-                        drawAfterTranslatingOrScaling(true);
-                        this.pivotX = pivotX;
-                        this.pivotY = pivotY;
-                        prevDiagonal = diagonal;
-                        break;
+                case 2: {
+                    switch (event.getActionMasked()) {
+                        case MotionEvent.ACTION_MOVE: {
+                            final float x0 = event.getX(0), y0 = event.getY(0),
+                                    x1 = event.getX(1), y1 = event.getY(1);
+                            final double diagonal = Math.sqrt(Math.pow(x0 - x1, 2.0) + Math.pow(y0 - y1, 2.0));
+                            final double diagonalRatio = diagonal / lastDiagonal;
+                            final float s = (float) (scale * diagonalRatio);
+                            final int scaledWidth = (int) (bitmap.getWidth() * s), scaledHeight = (int) (bitmap.getHeight() * s);
+                            scale = s;
+                            imageWidth = scaledWidth;
+                            imageHeight = scaledHeight;
+                            final float pivotX = (float) (lastPivotX * diagonalRatio), pivotY = (float) (lastPivotY * diagonalRatio);
+                            translationX = translationX - pivotX + lastPivotX;
+                            translationY = translationY - pivotY + lastPivotY;
+                            drawAfterTranslatingOrScaling(true);
+                            lastPivotX = pivotX;
+                            lastPivotY = pivotY;
+                            lastDiagonal = diagonal;
+                            break;
+                        }
+                        case MotionEvent.ACTION_POINTER_DOWN: {
+                            final float x0 = event.getX(0), y0 = event.getY(0),
+                                    x1 = event.getX(1), y1 = event.getY(1);
+                            lastPivotX = (x0 + x1) / 2.0f - translationX;
+                            lastPivotY = (y0 + y1) / 2.0f - translationY;
+                            lastDiagonal = Math.sqrt(Math.pow(x0 - x1, 2.0) + Math.pow(y0 - y1, 2.0));
+                            clearStatus();
+                            break;
+                        }
+                        case MotionEvent.ACTION_POINTER_UP: {
+                            final int index = 1 - event.getActionIndex();
+                            final float x = event.getX(index);
+                            final float y = event.getY(index);
+                            tvStatus.setText(String.format(getString(R.string.coordinate),
+                                    toBitmapX(x), toBitmapY(y)));
+                            dx = x;
+                            dy = y;
+                            break;
+                        }
                     }
-                    case MotionEvent.ACTION_POINTER_DOWN: {
-                        final float x0 = event.getX(0), y0 = event.getY(0),
-                                x1 = event.getX(1), y1 = event.getY(1);
-                        this.pivotX = (x0 + x1) / 2.0f - translationX;
-                        this.pivotY = (y0 + y1) / 2.0f - translationY;
-                        prevDiagonal = Math.sqrt(Math.pow(x0 - x1, 2.0) + Math.pow(y0 - y1, 2.0));
-                        clearStatus();
-                        break;
-                    }
-                    case MotionEvent.ACTION_POINTER_UP: {
-                        final int index = 1 - event.getActionIndex();
-                        final float x = event.getX(index);
-                        final float y = event.getY(index);
-                        tvStatus.setText(String.format(getString(R.string.coordinate),
-                                toBitmapX(x), toBitmapY(y)));
-                        prevX = x;
-                        prevY = y;
-                        break;
-                    }
+                    break;
                 }
-                break;
             }
+            return true;
         }
-        return true;
     };
 
     @SuppressLint("ClickableViewAccessibility")
-    private final CompoundButton.OnCheckedChangeListener onBucketFillRadioButtonCheckedChangeListener = (buttonView, isChecked) -> {
+    private final CompoundButton.OnCheckedChangeListener onBucketFillRBCheckedChangeListener = (buttonView, isChecked) -> {
         if (isChecked) {
             onToolChange(onImageViewTouchWithBucketListener);
             threshold = 0x0;
@@ -2010,12 +2249,12 @@ public class MainActivity extends AppCompatActivity {
     };
 
     @SuppressLint("ClickableViewAccessibility")
-    private final CompoundButton.OnCheckedChangeListener onCloneStampRadioButtonCheckedChangeListener = (buttonView, isChecked) -> {
+    private final CompoundButton.OnCheckedChangeListener onCloneStampRBCheckedChangeListener = (buttonView, isChecked) -> {
         if (isChecked) {
             onToolChange(onImageViewTouchWithCloneStampListener);
             cbCloneStampAntiAlias.setChecked(antiAlias);
-            etCloneStampBlurRadius.setText(String.valueOf(blurRadius));
-            etCloneStampStrokeWidth.setText(String.valueOf(strokeWidth));
+            tietCloneStampBlurRadius.setText(String.valueOf(blurRadius));
+            tietCloneStampStrokeWidth.setText(String.valueOf(strokeWidth));
             hsvOptionsCloneStamp.setVisibility(View.VISIBLE);
         } else {
             cloneStampSrc = null;
@@ -2024,25 +2263,25 @@ public class MainActivity extends AppCompatActivity {
     };
 
     @SuppressLint("ClickableViewAccessibility")
-    private final CompoundButton.OnCheckedChangeListener onGradientRadioButtonCheckedChangeListener = (buttonView, isChecked) -> {
+    private final CompoundButton.OnCheckedChangeListener onGradientRBCheckedChangeListener = (buttonView, isChecked) -> {
         if (isChecked) {
             onToolChange(onImageViewTouchWithGradientListener);
             cbGradientAntiAlias.setChecked(antiAlias);
-            etGradientBlurRadius.setText(String.valueOf(blurRadius));
-            etGradientStrokeWidth.setText(String.valueOf(strokeWidth));
-            llOptionsGradient.setVisibility(View.VISIBLE);
+            tietGradientBlurRadius.setText(String.valueOf(blurRadius));
+            tietGradientStrokeWidth.setText(String.valueOf(strokeWidth));
+            hsvOptionsGradient.setVisibility(View.VISIBLE);
         }
     };
 
-    private final CompoundButton.OnCheckedChangeListener onMagicEraserRadioButtonCheckedChangeListener = (buttonView, isChecked) -> {
+    private final CompoundButton.OnCheckedChangeListener onMagicEraserRBCheckedChangeListener = (buttonView, isChecked) -> {
         if (isChecked) {
             onToolChange(onImageViewTouchWithMagicEraserListener);
             bitmapSource = Bitmap.createBitmap(bitmap);
             paint.setAntiAlias(false);
             paint.setMaskFilter(null);
             paint.setStrokeCap(Paint.Cap.BUTT);
-            etMagicEraserStrokeWidth.setText(String.valueOf(strokeWidth));
-            llOptionsMagicEraser.setVisibility(View.VISIBLE);
+            tietMagicEraserStrokeWidth.setText(String.valueOf(strokeWidth));
+            hsvOptionsMagicEraser.setVisibility(View.VISIBLE);
         } else {
             paint.setStrokeCap(Paint.Cap.ROUND);
             magErB = null;
@@ -2051,41 +2290,53 @@ public class MainActivity extends AppCompatActivity {
     };
 
     @SuppressLint("ClickableViewAccessibility")
-    private final CompoundButton.OnCheckedChangeListener onMagicPaintRadioButtonCheckedChangeListener = (buttonView, isChecked) -> {
+    private final CompoundButton.OnCheckedChangeListener onMagicPaintRBCheckedChangeListener = (buttonView, isChecked) -> {
         if (isChecked) {
             onToolChange(onImageViewTouchWithMagicPaintListener);
             bitmapSource = Bitmap.createBitmap(bitmap);
             threshold = 0xFF;
             cbMagicPaintAntiAlias.setChecked(antiAlias);
-            etMagicPaintBlurRadius.setText(String.valueOf(blurRadius));
-            etMagicPaintStrokeWidth.setText(String.valueOf(strokeWidth));
+            tietMagicPaintBlurRadius.setText(String.valueOf(blurRadius));
+            tietMagicPaintStrokeWidth.setText(String.valueOf(strokeWidth));
             hsvOptionsMagicPaint.setVisibility(View.VISIBLE);
         }
     };
 
     @SuppressLint("ClickableViewAccessibility")
-    private final CompoundButton.OnCheckedChangeListener onPatcherRadioButtonCheckedChangeListener = (buttonView, isChecked) -> {
+    private final CompoundButton.OnCheckedChangeListener onPaintRBCheckedChangeListener = (buttonView, isChecked) -> {
         if (isChecked) {
-            onToolChange(onImageViewTouchWithPatcherListener);
-            cbPatcherAntiAlias.setChecked(antiAlias);
-            etPatcherBlurRadius.setText(String.valueOf(blurRadius));
-            etPatcherStrokeWidth.setText(String.valueOf(strokeWidth));
-            llOptionsPatcher.setVisibility(View.VISIBLE);
+            onToolChange(onImageViewTouchWithPaintListener);
+            paint.setAntiAlias(true);
+            tietPaintBlurRadius.setText(String.valueOf(blurRadius));
+            tietPaintStrokeWidth.setText(String.valueOf(strokeWidth));
+            paint.setStyle(Paint.Style.STROKE);
+            hsvOptionsPaint.setVisibility(View.VISIBLE);
         }
     };
 
     @SuppressLint("ClickableViewAccessibility")
-    private final CompoundButton.OnCheckedChangeListener onPencilRadioButtonCheckedChangeListener = (buttonView, isChecked) -> {
+    private final CompoundButton.OnCheckedChangeListener onPatcherRBCheckedChangeListener = (buttonView, isChecked) -> {
+        if (isChecked) {
+            onToolChange(onImageViewTouchWithPatcherListener);
+            cbPatcherAntiAlias.setChecked(antiAlias);
+            tietPatcherBlurRadius.setText(String.valueOf(blurRadius));
+            tietPatcherStrokeWidth.setText(String.valueOf(strokeWidth));
+            hsvOptionsPatcher.setVisibility(View.VISIBLE);
+        }
+    };
+
+    @SuppressLint("ClickableViewAccessibility")
+    private final CompoundButton.OnCheckedChangeListener onPencilRBCheckedChangeListener = (buttonView, isChecked) -> {
         if (isChecked) {
             onToolChange(onImageViewTouchWithPencilListener);
             cbPencilAntiAlias.setChecked(antiAlias);
-            etPencilBlurRadius.setText(String.valueOf(blurRadius));
-            etPencilStrokeWidth.setText(String.valueOf(strokeWidth));
+            tietPencilBlurRadius.setText(String.valueOf(blurRadius));
+            tietPencilStrokeWidth.setText(String.valueOf(strokeWidth));
             hsvOptionsPencil.setVisibility(View.VISIBLE);
         }
     };
 
-    private final CompoundButton.OnCheckedChangeListener onRulerRadioButtonCheckedChangeListener = (buttonView, isChecked) -> {
+    private final CompoundButton.OnCheckedChangeListener onRulerRBCheckedChangeListener = (buttonView, isChecked) -> {
         if (isChecked) {
             onToolChange(onImageViewTouchWithRulerListener);
         } else {
@@ -2094,20 +2345,20 @@ public class MainActivity extends AppCompatActivity {
     };
 
     @SuppressLint("ClickableViewAccessibility")
-    private final CompoundButton.OnCheckedChangeListener onShapeRadioButtonCheckedChangeListener = (buttonView, isChecked) -> {
+    private final CompoundButton.OnCheckedChangeListener onShapeRBCheckedChangeListener = (buttonView, isChecked) -> {
         if (isChecked) {
             onToolChange(onImageViewTouchWithShapeListener);
             cbShapeFill.setChecked(isPaintStyleFill());
-            etShapeStrokeWidth.setText(String.valueOf(paint.getStrokeWidth()));
+            tietShapeStrokeWidth.setText(String.valueOf(paint.getStrokeWidth()));
             llOptionsShape.setVisibility(View.VISIBLE);
         }
     };
 
     @SuppressLint("ClickableViewAccessibility")
-    private final CompoundButton.OnCheckedChangeListener onTransformerRadioButtonCheckedChangeListener = (buttonView, isChecked) -> {
+    private final CompoundButton.OnCheckedChangeListener onTransformerRBCheckedChangeListener = (buttonView, isChecked) -> {
         if (isChecked) {
             onToolChange(onImageViewTouchWithTransformerListener);
-            llOptionsTransformer.setVisibility(View.VISIBLE);
+            hsvOptionsTransformer.setVisibility(View.VISIBLE);
             selector.setColor(Color.BLUE);
             drawSelectionOnView();
         } else {
@@ -2120,7 +2371,7 @@ public class MainActivity extends AppCompatActivity {
     };
 
     @SuppressLint("ClickableViewAccessibility")
-    private final CompoundButton.OnCheckedChangeListener onTextRadioButtonCheckedChangeListener = (buttonView, isChecked) -> {
+    private final CompoundButton.OnCheckedChangeListener onTextRBCheckedChangeListener = (buttonView, isChecked) -> {
         if (isChecked) {
             onToolChange(onImageViewTouchWithTextListener);
             cbTextFill.setChecked(isPaintStyleFill());
@@ -2138,112 +2389,28 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    private final OnSeekBarChangeListener onFilterSaturationSeekBarProgressChangeListener = (progress, stopped) -> {
-        final float f = progress / 10.0f;
-        final ColorMatrix colorMatrix = new ColorMatrix();
-        colorMatrix.setSaturation(f);
-        runOrStart(() -> {
-            preview.addColorMatrixColorFilter(colorMatrix.getArray());
-            drawPreviewBitmapOnView(stopped);
-        }, stopped);
-        tvStatus.setText(String.format(getString(R.string.state_saturation), f));
-    };
-
-    private final OnSeekBarChangeListener onFilterThresholdSeekBarProgressChangeListener = (progress, stopped) -> {
-        final float f = -0x100 * progress;
-        runOrStart(() -> {
-            preview.addColorMatrixColorFilter(new float[]{
-                    0.213f * 0x100, 0.715f * 0x100, 0.072f * 0x100, 0.0f, f,
-                    0.213f * 0x100, 0.715f * 0x100, 0.072f * 0x100, 0.0f, f,
-                    0.213f * 0x100, 0.715f * 0x100, 0.072f * 0x100, 0.0f, f,
-                    0.0f, 0.0f, 0.0f, 1.0f, 0.0f
-            });
-            drawPreviewBitmapOnView(stopped);
-        }, stopped);
-        tvStatus.setText(String.format(getString(R.string.state_threshold), progress));
-    };
-
-    private final CellGridManager.OnUpdateListener onUpdateCellGridListener = this::drawGridOnView;
-
-    private final ImageSizeManager.OnUpdateListener onUpdateImageSizeListener = (width, height, stretch) -> {
-        resizeBitmap(width, height, stretch);
-        drawBitmapOnView(true, true);
-        addHistory();
-    };
-
-    private final OnSeekBarChangeListener onLayerAlphaSeekBarProgressChangeListener = (progress, stopped) -> {
-        tab.paint.setAlpha(progress);
-        drawBitmapOnView(stopped);
-        tvStatus.setText(String.format(
-                String.format(getString(R.string.state_alpha), settings.getArgbComponentFormat()),
-                progress));
-    };
-
-    private final OnSeekBarChangeListener onNoiseSeekBarProgressChangeListener = (progress, stopped) -> {
-        runOrStart(() -> {
-            if (progress == 0) {
-                preview.clearFilter();
-            } else if (progress == 100) {
-                preview.drawColor(paint.getColor());
-            } else {
-                final int w = preview.getWidth(), h = preview.getHeight(), area = w * h;
-                final int[] pixels = preview.getPixels(w, h, area);
-                BitmapUtil.generateNoise(pixels, area, paint.getColor(), progress / 100.0f, null);
-                preview.setPixels(pixels, w, h);
-            }
-            drawPreviewBitmapOnView(stopped);
-        }, stopped);
-        clearStatus();
-    };
-
-    private final RunnableRunnable runnableRunningRunner = (target, wait) -> target.run();
-
-    private final RunnableRunnable runnableStartingRunner = (target, wait) -> {
-        if (Looper.myLooper() == MAIN_LOOPER) {
-            if (!thread.isAlive() || wait) {
-                thread = new Thread(() -> {
-                    synchronized (this) {
-                        try {
-                            target.run();
-                        } catch (RuntimeException e) {
-                        }
-                    }
-                });
-                thread.start();
-            }
-        } else {
-            target.run();
-        }
-    };
-
-    private RunnableRunnable runnableRunner;
-
-    private void addBitmap(Bitmap bitmap, int position) {
+    private void addTab(Bitmap bitmap, int position) {
         final Tab t = new Tab();
         t.bitmap = bitmap;
-        t.paint = new Paint();
         t.paint.setBlendMode(BlendMode.SRC_OVER);
-        addBitmap(t, position, getString(R.string.untitled));
+        addTab(t, position, getString(R.string.untitled));
     }
 
-    private void addBitmap(Bitmap bitmap, int position,
-                           String title, String path, Bitmap.CompressFormat compressFormat) {
+    private void addTab(Bitmap bitmap, int position,
+                        String title, String path, Bitmap.CompressFormat compressFormat) {
         final Tab t = new Tab();
         t.bitmap = bitmap;
-        t.paint = new Paint();
         t.paint.setBlendMode(BlendMode.SRC_OVER);
         t.path = path;
         t.compressFormat = compressFormat;
-        addBitmap(t, position, title);
+        addTab(t, position, title);
     }
 
-    private void addBitmap(Tab tab, int position, String title) {
+    private void addTab(Tab tab, int position, String title) {
         tabs.add(position, tab);
-        tab.history = new BitmapHistory();
         addHistory(tab);
-        tab.cellGrid = new CellGrid();
 
-        resetTranslAndScale(tab);
+        fitOnScreen(tab);
 
         final TabLayout.Tab t = tabLayout.newTab().setCustomView(R.layout.tab).setTag(tab);
         tab.initViews(t.getCustomView());
@@ -2258,7 +2425,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void addHistory(Tab tab) {
-        tab.history.offer(tab.bitmap);
+        tab.history.add(tab.bitmap);
     }
 
     private void checkLayerBlendModeMenuItem(BlendMode blendMode) {
@@ -2288,10 +2455,9 @@ public class MainActivity extends AppCompatActivity {
         t.isBackground = false;
         t.setLevel(level);
         t.moveTo(left, top);
-        t.paint = new Paint();
         t.paint.setBlendMode(BlendMode.SRC_OVER);
         t.visible = visible;
-        addBitmap(t, position, title);
+        addTab(t, position, title);
     }
 
     private Position checkDraggingBound(float x, float y) {
@@ -2341,6 +2507,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void closeTab(int position, boolean select) {
         final Tab tab = tabs.get(position);
+        if (tab == this.tab && transformer != null) {
+            recycleTransformer();
+        }
         tabLayout.removeOnTabSelectedListener(onTabSelectedListener);
         tabLayout.removeTabAt(position);
         tabLayout.addOnTabSelectedListener(onTabSelectedListener);
@@ -2368,16 +2537,16 @@ public class MainActivity extends AppCompatActivity {
         layerTree = Tab.computeLayerTree(tabs, tabLayout.getSelectedTabPosition());
     }
 
-    private void createGraphic(int width, int height) {
-        createGraphic(width, height, -1);
+    private void createImage(int width, int height) {
+        createImage(width, height, -1);
     }
 
-    private void createGraphic(int width, int height, int position) {
+    private void createImage(int width, int height, int position) {
         final Bitmap bm = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         if (position == -1) {
             position = tabs.size();
         }
-        addBitmap(bm, position);
+        addTab(bm, position);
     }
 
     private void createLayer(int width, int height, Bitmap.Config config, boolean hasAlpha, ColorSpace colorSpace,
@@ -2472,7 +2641,10 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
         final RectF svs = getVisibleSubsetOfView(vs, translX, translY);
-        canvas.drawBitmap(bitmap, vs, svs, isScaledMuch() ? PAINT_BITMAP : bitmapPaint);
+        try {
+            canvas.drawBitmap(bitmap, vs, svs, isScaledMuch() ? PAINT_BITMAP : bitmapPaint);
+        } catch (RuntimeException e) {
+        }
     }
 
     private void drawBitmapOnView() {
@@ -2680,51 +2852,51 @@ public class MainActivity extends AppCompatActivity {
     private void drawGridOnView() {
         eraseBitmap(gridBitmap);
 
-        float l = translationX + toScaled(tab.left), t = translationY + toScaled(tab.top);
-        float startX = l >= 0.0f ? l : l % scale,
-                startY = t >= 0.0f ? t : t % scale,
-                endX = Math.min(l + imageWidth, viewWidth),
-                endY = Math.min(t + imageHeight, viewHeight);
+        final float left = toViewX(0), top = toViewY(0);
+
+        float l = left >= 0.0f ? left : left % scale,
+                t = top >= 0.0f ? top : top % scale,
+                r = Math.min(left + imageWidth, viewWidth),
+                b = Math.min(top + imageHeight, viewHeight);
         if (isScaledMuch()) {
-            for (float x = startX; x < endX; x += scale) {
-                gridCanvas.drawLine(x, startY, x, endY, PAINT_GRID);
+            for (float x = l; x < r; x += scale) {
+                gridCanvas.drawLine(x, t, x, b, PAINT_GRID);
             }
-            for (float y = startY; y < endY; y += scale) {
-                gridCanvas.drawLine(startX, y, endX, y, PAINT_GRID);
+            for (float y = t; y < b; y += scale) {
+                gridCanvas.drawLine(l, y, r, y, PAINT_GRID);
             }
         }
 
-        gridCanvas.drawLine(startX, startY, startX - 100.0f, startY, imageBound);
-        gridCanvas.drawLine(endX, startY, endX + 100.0f, startY, imageBound);
-        gridCanvas.drawLine(endX, startY - 100.0f, endX, startY, imageBound);
-        gridCanvas.drawLine(endX, endY, endX, endY + 100.0f, imageBound);
-        gridCanvas.drawLine(endX + 100.0f, endY, endX, endY, imageBound);
-        gridCanvas.drawLine(startX, endY, startX - 100.0f, endY, imageBound);
-        gridCanvas.drawLine(startX, endY + 100.0f, startX, endY, imageBound);
-        gridCanvas.drawLine(startX, startY, startX, startY - 100.0f, imageBound);
+        gridCanvas.drawLine(l, t, l - 100.0f, t, PAINT_IMAGE_BOUND);
+        gridCanvas.drawLine(r, t, r + 100.0f, t, PAINT_IMAGE_BOUND);
+        gridCanvas.drawLine(r, t - 100.0f, r, t, PAINT_IMAGE_BOUND);
+        gridCanvas.drawLine(r, b, r, b + 100.0f, PAINT_IMAGE_BOUND);
+        gridCanvas.drawLine(r + 100.0f, b, r, b, PAINT_IMAGE_BOUND);
+        gridCanvas.drawLine(l, b, l - 100.0f, b, PAINT_IMAGE_BOUND);
+        gridCanvas.drawLine(l, b + 100.0f, l, b, PAINT_IMAGE_BOUND);
+        gridCanvas.drawLine(l, t, l, t - 100.0f, PAINT_IMAGE_BOUND);
 
         final CellGrid cellGrid = tab.cellGrid;
         if (cellGrid.enabled) {
             if (cellGrid.sizeX > 1) {
                 final float scaledSizeX = toScaled(cellGrid.sizeX),
                         scaledSpacingX = toScaled(cellGrid.spacingX);
-                startX = (l >= 0.0f ? l : l % (scaledSizeX + scaledSpacingX)) + toScaled(cellGrid.offsetX);
-                startY = Math.max(0.0f, t);
+                l = (left >= 0.0f ? left : left % (scaledSizeX + scaledSpacingX)) + toScaled(cellGrid.offsetX);
+                t = Math.max(0.0f, top);
+                float x = l;
                 if (cellGrid.spacingX <= 0) {
-                    float x = startX;
-                    while (x < endX) {
-                        gridCanvas.drawLine(x, startY, x, endY, PAINT_CELL_GRID);
+                    while (x < r) {
+                        gridCanvas.drawLine(x, t, x, b, PAINT_CELL_GRID);
                         x += scaledSizeX;
                     }
                 } else {
-                    float x = startX;
                     while (true) {
-                        gridCanvas.drawLine(x, startY, x, endY, PAINT_CELL_GRID);
-                        if ((x += scaledSizeX) >= endX) {
+                        gridCanvas.drawLine(x, t, x, b, PAINT_CELL_GRID);
+                        if ((x += scaledSizeX) >= r) {
                             break;
                         }
-                        gridCanvas.drawLine(x, startY, x, endY, PAINT_CELL_GRID);
-                        if ((x += scaledSpacingX) >= endX) {
+                        gridCanvas.drawLine(x, t, x, b, PAINT_CELL_GRID);
+                        if ((x += scaledSpacingX) >= r) {
                             break;
                         }
                     }
@@ -2733,27 +2905,36 @@ public class MainActivity extends AppCompatActivity {
             if (cellGrid.sizeY > 1) {
                 final float scaledSizeY = toScaled(cellGrid.sizeY),
                         scaledSpacingY = toScaled(cellGrid.spacingY);
-                startY = (t >= 0.0f ? t : t % (scaledSizeY + scaledSpacingY)) + toScaled(cellGrid.offsetY);
-                startX = Math.max(0.0f, l);
+                t = (top >= 0.0f ? top : top % (scaledSizeY + scaledSpacingY)) + toScaled(cellGrid.offsetY);
+                l = Math.max(0.0f, left);
+                float y = t;
                 if (cellGrid.spacingY <= 0) {
-                    float y = startY;
-                    while (y < endY) {
-                        gridCanvas.drawLine(startX, y, endX, y, PAINT_CELL_GRID);
+                    while (y < b) {
+                        gridCanvas.drawLine(l, y, r, y, PAINT_CELL_GRID);
                         y += scaledSizeY;
                     }
                 } else {
-                    float y = startY;
                     while (true) {
-                        gridCanvas.drawLine(startX, y, endX, y, PAINT_CELL_GRID);
-                        if ((y += scaledSizeY) >= endY) {
+                        gridCanvas.drawLine(l, y, r, y, PAINT_CELL_GRID);
+                        if ((y += scaledSizeY) >= b) {
                             break;
                         }
-                        gridCanvas.drawLine(startX, y, endX, y, PAINT_CELL_GRID);
-                        if ((y += scaledSpacingY) >= endY) {
+                        gridCanvas.drawLine(l, y, r, y, PAINT_CELL_GRID);
+                        if ((y += scaledSpacingY) >= b) {
                             break;
                         }
                     }
                 }
+            }
+        }
+
+        for (final Point guide : tab.guides) {
+            if (0 < guide.x && guide.x < tab.bitmap.getWidth()) {
+                final float x = toViewX(guide.x);
+                gridCanvas.drawLine(x, 0.0f, x, viewHeight, PAINT_GUIDE);
+            } else if (0 < guide.y && guide.y < tab.bitmap.getHeight()) {
+                final float y = toViewY(guide.y);
+                gridCanvas.drawLine(0.0f, y, viewWidth, y, PAINT_GUIDE);
             }
         }
 
@@ -2923,7 +3104,7 @@ public class MainActivity extends AppCompatActivity {
         }
         isEditingText = false;
         paint.setTextSize(textSize);
-        canvas.drawText(etText.getText().toString(), textX, textY, paint);
+        canvas.drawText(tietText.getText().toString(), textX, textY, paint);
         drawBitmapOnView(true, true);
         eraseBitmapAndInvalidateView(previewBitmap, ivPreview);
         hideSoftInputFromWindow();
@@ -2942,9 +3123,9 @@ public class MainActivity extends AppCompatActivity {
         paint.setTextSize(toScaled(textSize));
         final Paint.FontMetrics fontMetrics = paint.getFontMetrics();
         final float centerVertical = y + fontMetrics.ascent / 2.0f;
-        previewCanvas.drawText(etText.getText().toString(), x, y, paint);
+        previewCanvas.drawText(tietText.getText().toString(), x, y, paint);
         previewCanvas.drawLine(x, 0.0f, x, viewHeight, PAINT_CELL_GRID);
-        previewCanvas.drawLine(0.0f, y, viewWidth, y, textLine);
+        previewCanvas.drawLine(0.0f, y, viewWidth, y, PAINT_TEXT_LINE);
         previewCanvas.drawLine(0.0f, centerVertical, viewWidth, centerVertical, PAINT_CELL_GRID);
         ivPreview.invalidate();
     }
@@ -2969,6 +3150,24 @@ public class MainActivity extends AppCompatActivity {
     private static void eraseBitmapAndInvalidateView(Bitmap bitmap, ImageView imageView) {
         eraseBitmap(bitmap);
         imageView.invalidate();
+    }
+
+    private void fitOnScreen() {
+        fitOnScreen(tab);
+    }
+
+    private void fitOnScreen(Tab tab) {
+        final float width = tab.bitmap.getWidth(), height = tab.bitmap.getHeight();
+        final float scaleW = (float) viewWidth / width, scaleH = (float) viewHeight / height;
+        if (scaleW <= scaleH) {
+            tab.scale = scaleW;
+            tab.translationX = 0.0f;
+            tab.translationY = (viewHeight >> 1) - height * scaleW / 2.0f;
+        } else {
+            tab.scale = scaleH;
+            tab.translationX = (viewWidth >> 1) - width * scaleH / 2.0f;
+            tab.translationY = 0.0f;
+        }
     }
 
     /**
@@ -3023,6 +3222,8 @@ public class MainActivity extends AppCompatActivity {
     private void load() {
         viewWidth = imageView.getWidth();
         viewHeight = imageView.getHeight();
+        rulerHHeight = ivRulerH.getHeight();
+        rulerVWidth = ivRulerV.getWidth();
 
         tab = new Tab();
         tabs.add(tab);
@@ -3030,20 +3231,18 @@ public class MainActivity extends AppCompatActivity {
         tab.bitmap = bitmap;
         canvas = new Canvas(bitmap);
 
-        tab.cellGrid = new CellGrid();
-
-        tab.history = new BitmapHistory();
         addHistory();
 
-        tab.paint = new Paint();
         tab.paint.setBlendMode(BlendMode.SRC_OVER);
 
         tab.path = null;
 
-        resetTranslAndScale();
+        fitOnScreen();
         scale = tab.scale;
         translationX = tab.translationX;
         translationY = tab.translationY;
+        imageWidth = (int) toScaled(48);
+        imageHeight = (int) toScaled(48);
 
         viewBitmap = Bitmap.createBitmap(viewWidth, viewHeight, Bitmap.Config.ARGB_8888);
         viewCanvas = new Canvas(viewBitmap);
@@ -3082,11 +3281,11 @@ public class MainActivity extends AppCompatActivity {
         tab.addOVCBCCListener(getOVCBCCListener(tab));
         tabLayout.addTab(t, true);
 
-        etPencilBlurRadius.setText(String.valueOf(0.0f));
-        etEraserBlurRadius.setText(String.valueOf(0.0f));
-        etEraserStrokeWidth.setText(String.valueOf(eraser.getStrokeWidth()));
-        etPencilStrokeWidth.setText(String.valueOf(paint.getStrokeWidth()));
-        etTextSize.setText(String.valueOf(paint.getTextSize()));
+        tietPencilBlurRadius.setText(String.valueOf(0.0f));
+        tietEraserBlurRadius.setText(String.valueOf(0.0f));
+        tietEraserStrokeWidth.setText(String.valueOf(eraser.getStrokeWidth()));
+        tietPencilStrokeWidth.setText(String.valueOf(paint.getStrokeWidth()));
+        tietTextSize.setText(String.valueOf(paint.getTextSize()));
 
         if (fileToBeOpened != null) {
             closeTab(0);
@@ -3148,27 +3347,17 @@ public class MainActivity extends AppCompatActivity {
         cbTextFill = findViewById(R.id.cb_text_fill);
         cbTransformerLar = findViewById(R.id.cb_transformer_lar);
         cbZoom = findViewById(R.id.cb_zoom);
-        etCloneStampBlurRadius = findViewById(R.id.et_clone_stamp_blur_radius);
-        etCloneStampStrokeWidth = findViewById(R.id.et_clone_stamp_stroke_width);
-        etEraserBlurRadius = findViewById(R.id.et_eraser_blur_radius);
-        etEraserStrokeWidth = findViewById(R.id.et_eraser_stroke_width);
-        etGradientBlurRadius = findViewById(R.id.et_gradient_blur_radius);
-        etGradientStrokeWidth = findViewById(R.id.et_gradient_stroke_width);
-        etMagicEraserStrokeWidth = findViewById(R.id.et_magic_eraser_stroke_width);
-        etMagicPaintBlurRadius = findViewById(R.id.et_magic_paint_blur_radius);
-        etMagicPaintStrokeWidth = findViewById(R.id.et_magic_paint_stroke_width);
-        etPatcherBlurRadius = findViewById(R.id.et_patcher_blur_radius);
-        etPatcherStrokeWidth = findViewById(R.id.et_patcher_stroke_width);
-        etPencilBlurRadius = findViewById(R.id.et_pencil_blur_radius);
-        etPencilStrokeWidth = findViewById(R.id.et_pencil_stroke_width);
-        etShapeStrokeWidth = findViewById(R.id.et_shape_stroke_width);
-        etText = findViewById(R.id.et_text);
-        etTextSize = findViewById(R.id.et_text_size);
         flToolOptions = findViewById(R.id.fl_tool_options);
         flImageView = findViewById(R.id.fl_iv);
         hsvOptionsBucketFill = findViewById(R.id.hsv_options_bucket_fill);
         hsvOptionsCloneStamp = findViewById(R.id.hsv_options_clone_stamp);
+        hsvOptionsEraser = findViewById(R.id.hsv_options_eraser);
+        hsvOptionsEyedropper = findViewById(R.id.hsv_options_eyedropper);
+        hsvOptionsGradient = findViewById(R.id.hsv_options_gradient);
+        hsvOptionsMagicEraser = findViewById(R.id.hsv_options_magic_eraser);
         hsvOptionsMagicPaint = findViewById(R.id.hsv_options_magic_paint);
+        hsvOptionsPaint = findViewById(R.id.hsv_options_paint);
+        hsvOptionsPatcher = findViewById(R.id.hsv_options_patcher);
         hsvOptionsPencil = findViewById(R.id.hsv_options_pencil);
         imageView = findViewById(R.id.iv);
         inputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
@@ -3178,14 +3367,9 @@ public class MainActivity extends AppCompatActivity {
         ivRulerH = findViewById(R.id.iv_ruler_horizontal);
         ivRulerV = findViewById(R.id.iv_ruler_vertical);
         ivSelection = findViewById(R.id.iv_selection);
-        llOptionsEraser = findViewById(R.id.ll_options_eraser);
-        llOptionsEyedropper = findViewById(R.id.ll_options_eyedropper);
-        llOptionsGradient = findViewById(R.id.ll_options_gradient);
-        llOptionsMagicEraser = findViewById(R.id.ll_options_magic_eraser);
-        llOptionsPatcher = findViewById(R.id.ll_options_patcher);
         llOptionsShape = findViewById(R.id.ll_options_shape);
         llOptionsText = findViewById(R.id.ll_options_text);
-        llOptionsTransformer = findViewById(R.id.ll_options_transformer);
+        hsvOptionsTransformer = findViewById(R.id.hsv_options_transformer);
         final RecyclerView rvSwatches = findViewById(R.id.rv_swatches);
         rbCloneStamp = findViewById(R.id.rb_clone_stamp);
         rbEyedropper = findViewById(R.id.rb_eyedropper);
@@ -3198,6 +3382,24 @@ public class MainActivity extends AppCompatActivity {
         rbTransformer = findViewById(R.id.rb_transformer);
         final RadioGroup rgMagicEraserPosition = findViewById(R.id.rg_magic_eraser_position);
         tabLayout = findViewById(R.id.tl);
+        tietCloneStampBlurRadius = findViewById(R.id.tiet_clone_stamp_blur_radius);
+        tietCloneStampStrokeWidth = findViewById(R.id.tiet_clone_stamp_stroke_width);
+        tietEraserBlurRadius = findViewById(R.id.tiet_eraser_blur_radius);
+        tietEraserStrokeWidth = findViewById(R.id.tiet_eraser_stroke_width);
+        tietGradientBlurRadius = findViewById(R.id.tiet_gradient_blur_radius);
+        tietGradientStrokeWidth = findViewById(R.id.tiet_gradient_stroke_width);
+        tietMagicEraserStrokeWidth = findViewById(R.id.tiet_magic_eraser_stroke_width);
+        tietMagicPaintBlurRadius = findViewById(R.id.tiet_magic_paint_blur_radius);
+        tietMagicPaintStrokeWidth = findViewById(R.id.tiet_magic_paint_stroke_width);
+        tietPaintBlurRadius = findViewById(R.id.tiet_paint_blur_radius);
+        tietPaintStrokeWidth = findViewById(R.id.tiet_paint_stroke_width);
+        tietPatcherBlurRadius = findViewById(R.id.tiet_patcher_blur_radius);
+        tietPatcherStrokeWidth = findViewById(R.id.tiet_patcher_stroke_width);
+        tietPencilBlurRadius = findViewById(R.id.tiet_pencil_blur_radius);
+        tietPencilStrokeWidth = findViewById(R.id.tiet_pencil_stroke_width);
+        tietShapeStrokeWidth = findViewById(R.id.tiet_shape_stroke_width);
+        tietText = findViewById(R.id.tiet_text);
+        tietTextSize = findViewById(R.id.tiet_text_size);
         tvStatus = findViewById(R.id.tv_status);
         vBackgroundColor = findViewById(R.id.v_background_color);
         vForegroundColor = findViewById(R.id.v_foreground_color);
@@ -3206,54 +3408,59 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.b_clone_stamp_src).setOnClickListener(onCloneStampSrcButtonClickListener);
         findViewById(R.id.b_magic_paint_tolerance).setOnClickListener(onThresholdButtonClickListener);
         findViewById(R.id.b_text_draw).setOnClickListener(v -> drawTextOnCanvas());
-        cbCloneStampAntiAlias.setOnCheckedChangeListener(onAntiAliasCheckedChangeListener);
+        cbCloneStampAntiAlias.setOnCheckedChangeListener(onAntiAliasCBCheckedChangeListener);
         ((CompoundButton) findViewById(R.id.cb_eraser_anti_alias)).setOnCheckedChangeListener((buttonView, isChecked) -> eraser.setAntiAlias(isChecked));
-        cbGradientAntiAlias.setOnCheckedChangeListener(onAntiAliasCheckedChangeListener);
-        cbMagicPaintAntiAlias.setOnCheckedChangeListener(onAntiAliasCheckedChangeListener);
+        cbGradientAntiAlias.setOnCheckedChangeListener(onAntiAliasCBCheckedChangeListener);
+        cbMagicPaintAntiAlias.setOnCheckedChangeListener(onAntiAliasCBCheckedChangeListener);
         ((CompoundButton) findViewById(R.id.cb_magic_paint_clear)).setOnCheckedChangeListener(((buttonView, isChecked) -> magicPaint.setBlendMode(isChecked ? BlendMode.DST_OUT : null)));
         cbMagErAccEnabled = findViewById(R.id.cb_magic_eraser_acc_enabled);
-        cbPatcherAntiAlias.setOnCheckedChangeListener(onAntiAliasCheckedChangeListener);
-        cbPencilAntiAlias.setOnCheckedChangeListener(onAntiAliasCheckedChangeListener);
-        cbShapeFill.setOnCheckedChangeListener((buttonView, isChecked) -> paint.setStyle(isChecked ? Paint.Style.FILL_AND_STROKE : Paint.Style.STROKE));
+        cbPatcherAntiAlias.setOnCheckedChangeListener(onAntiAliasCBCheckedChangeListener);
+        cbPencilAntiAlias.setOnCheckedChangeListener(onAntiAliasCBCheckedChangeListener);
+        cbShapeFill.setOnCheckedChangeListener(onFillCBCheckedChangeListener);
         cbZoom.setOnCheckedChangeListener(onZoomToolCheckBoxCheckedChangeListener);
         cbZoom.setTag(onImageViewTouchWithPencilListener);
-        etCloneStampBlurRadius.addTextChangedListener(onBlurRadiusTextChangedListener);
-        etCloneStampStrokeWidth.addTextChangedListener(onStrokeWidthTextChangedListener);
-        etMagicEraserStrokeWidth.addTextChangedListener(onStrokeWidthTextChangedListener);
-        etMagicPaintBlurRadius.addTextChangedListener(onBlurRadiusTextChangedListener);
-        etMagicPaintStrokeWidth.addTextChangedListener(onStrokeWidthTextChangedListener);
-        etGradientBlurRadius.addTextChangedListener(onBlurRadiusTextChangedListener);
-        etGradientStrokeWidth.addTextChangedListener(onStrokeWidthTextChangedListener);
-        etPatcherBlurRadius.addTextChangedListener(onBlurRadiusTextChangedListener);
-        etPatcherStrokeWidth.addTextChangedListener(onStrokeWidthTextChangedListener);
-        etPencilBlurRadius.addTextChangedListener(onBlurRadiusTextChangedListener);
-        etPencilStrokeWidth.addTextChangedListener(onStrokeWidthTextChangedListener);
-        etShapeStrokeWidth.addTextChangedListener(onStrokeWidthTextChangedListener);
-        etText.addTextChangedListener((AfterTextChangedListener) s -> drawTextOnView());
-        etTextSize.addTextChangedListener(onTextSizeChangedListener);
         flImageView.setOnTouchListener(onImageViewTouchWithPencilListener);
-        ((CompoundButton) findViewById(R.id.rb_bucket_fill)).setOnCheckedChangeListener(onBucketFillRadioButtonCheckedChangeListener);
+        ivRulerH.setOnTouchListener(onRulerHTouchListener);
+        ivRulerV.setOnTouchListener(onRulerVTouchListener);
+        ((CompoundButton) findViewById(R.id.rb_bucket_fill)).setOnCheckedChangeListener(onBucketFillRBCheckedChangeListener);
         ((CompoundButton) findViewById(R.id.rb_circle)).setOnCheckedChangeListener((OnCheckedListener) () -> shape = circle);
-        rbCloneStamp.setOnCheckedChangeListener(onCloneStampRadioButtonCheckedChangeListener);
-        ((CompoundButton) findViewById(R.id.rb_magic_eraser)).setOnCheckedChangeListener(onMagicEraserRadioButtonCheckedChangeListener);
-        ((CompoundButton) findViewById(R.id.rb_magic_paint)).setOnCheckedChangeListener(onMagicPaintRadioButtonCheckedChangeListener);
-        ((CompoundButton) findViewById(R.id.rb_eraser)).setOnCheckedChangeListener((buttonView, isChecked) -> onToolChange(isChecked, onImageViewTouchWithEraserListener, llOptionsEraser));
-        rbEyedropper.setOnCheckedChangeListener((buttonView, isChecked) -> onToolChange(isChecked, onImageViewTouchWithEyedropperListener, llOptionsEyedropper));
-        ((CompoundButton) findViewById(R.id.rb_gradient)).setOnCheckedChangeListener(onGradientRadioButtonCheckedChangeListener);
+        rbCloneStamp.setOnCheckedChangeListener(onCloneStampRBCheckedChangeListener);
+        ((CompoundButton) findViewById(R.id.rb_eraser)).setOnCheckedChangeListener((buttonView, isChecked) -> onToolChange(isChecked, onImageViewTouchWithEraserListener, hsvOptionsEraser));
+        rbEyedropper.setOnCheckedChangeListener((buttonView, isChecked) -> onToolChange(isChecked, onImageViewTouchWithEyedropperListener, hsvOptionsEyedropper));
+        ((CompoundButton) findViewById(R.id.rb_gradient)).setOnCheckedChangeListener(onGradientRBCheckedChangeListener);
         ((CompoundButton) findViewById(R.id.rb_line)).setOnCheckedChangeListener((OnCheckedListener) () -> shape = line);
+        ((CompoundButton) findViewById(R.id.rb_magic_eraser)).setOnCheckedChangeListener(onMagicEraserRBCheckedChangeListener);
+        ((CompoundButton) findViewById(R.id.rb_magic_paint)).setOnCheckedChangeListener(onMagicPaintRBCheckedChangeListener);
         ((CompoundButton) findViewById(R.id.rb_oval)).setOnCheckedChangeListener((OnCheckedListener) () -> shape = oval);
-        ((CompoundButton) findViewById(R.id.rb_patcher)).setOnCheckedChangeListener(onPatcherRadioButtonCheckedChangeListener);
-        rbPencil.setOnCheckedChangeListener(onPencilRadioButtonCheckedChangeListener);
+        ((CompoundButton) findViewById(R.id.rb_paint)).setOnCheckedChangeListener(onPaintRBCheckedChangeListener);
+        ((CompoundButton) findViewById(R.id.rb_patcher)).setOnCheckedChangeListener(onPatcherRBCheckedChangeListener);
+        rbPencil.setOnCheckedChangeListener(onPencilRBCheckedChangeListener);
         ((CompoundButton) findViewById(R.id.rb_rect)).setOnCheckedChangeListener((OnCheckedListener) () -> shape = rect);
-        rbRuler.setOnCheckedChangeListener(onRulerRadioButtonCheckedChangeListener);
+        rbRuler.setOnCheckedChangeListener(onRulerRBCheckedChangeListener);
         ((CompoundButton) findViewById(R.id.rb_selector)).setOnCheckedChangeListener((buttonView, isChecked) -> onToolChange(isChecked, onImageViewTouchWithSelectorListener));
-        ((CompoundButton) findViewById(R.id.rb_shape)).setOnCheckedChangeListener(onShapeRadioButtonCheckedChangeListener);
-        ((CompoundButton) findViewById(R.id.rb_text)).setOnCheckedChangeListener(onTextRadioButtonCheckedChangeListener);
-        rbTransformer.setOnCheckedChangeListener(onTransformerRadioButtonCheckedChangeListener);
+        ((CompoundButton) findViewById(R.id.rb_shape)).setOnCheckedChangeListener(onShapeRBCheckedChangeListener);
+        ((CompoundButton) findViewById(R.id.rb_text)).setOnCheckedChangeListener(onTextRBCheckedChangeListener);
+        rbTransformer.setOnCheckedChangeListener(onTransformerRBCheckedChangeListener);
         ((CompoundButton) findViewById(R.id.rb_transformer_rotation)).setOnCheckedChangeListener((OnCheckedListener) () -> onTransformerChange(onImageViewTouchWithTransformerOfRotationListener));
         ((CompoundButton) findViewById(R.id.rb_transformer_scale)).setOnCheckedChangeListener((OnCheckedListener) () -> onTransformerChange(onImageViewTouchWithTransformerOfScaleListener));
         ((CompoundButton) findViewById(R.id.rb_transformer_translation)).setOnCheckedChangeListener((OnCheckedListener) () -> onTransformerChange(onImageViewTouchWithTransformerOfTranslationListener));
         tabLayout.addOnTabSelectedListener(onTabSelectedListener);
+        tietCloneStampBlurRadius.addTextChangedListener(onBlurRadiusTextChangedListener);
+        tietCloneStampStrokeWidth.addTextChangedListener(onStrokeWidthETTextChangedListener);
+        tietMagicEraserStrokeWidth.addTextChangedListener(onStrokeWidthETTextChangedListener);
+        tietMagicPaintBlurRadius.addTextChangedListener(onBlurRadiusTextChangedListener);
+        tietMagicPaintStrokeWidth.addTextChangedListener(onStrokeWidthETTextChangedListener);
+        tietGradientBlurRadius.addTextChangedListener(onBlurRadiusTextChangedListener);
+        tietGradientStrokeWidth.addTextChangedListener(onStrokeWidthETTextChangedListener);
+        tietPaintBlurRadius.addTextChangedListener(onBlurRadiusTextChangedListener);
+        tietPaintStrokeWidth.addTextChangedListener(onStrokeWidthETTextChangedListener);
+        tietPatcherBlurRadius.addTextChangedListener(onBlurRadiusTextChangedListener);
+        tietPatcherStrokeWidth.addTextChangedListener(onStrokeWidthETTextChangedListener);
+        tietPencilBlurRadius.addTextChangedListener(onBlurRadiusTextChangedListener);
+        tietPencilStrokeWidth.addTextChangedListener(onStrokeWidthETTextChangedListener);
+        tietShapeStrokeWidth.addTextChangedListener(onStrokeWidthETTextChangedListener);
+        tietText.addTextChangedListener((AfterTextChangedListener) s -> drawTextOnView());
+        tietTextSize.addTextChangedListener(onTextSizeChangedListener);
         findViewById(R.id.tv_color_add).setOnClickListener(onAddSwatchViewClickListener);
         vBackgroundColor.setOnClickListener(onBackgroundColorClickListener);
         vForegroundColor.setOnClickListener(onForegroundColorClickListener);
@@ -3263,7 +3470,7 @@ public class MainActivity extends AppCompatActivity {
             drawTextOnView();
         });
 
-        etEraserBlurRadius.addTextChangedListener((AfterTextChangedListener) s -> {
+        tietEraserBlurRadius.addTextChangedListener((AfterTextChangedListener) s -> {
             try {
                 final float f = Float.parseFloat(s);
                 blurRadiusEraser = f;
@@ -3272,7 +3479,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        etEraserStrokeWidth.addTextChangedListener((AfterTextChangedListener) s -> {
+        tietEraserStrokeWidth.addTextChangedListener((AfterTextChangedListener) s -> {
             try {
                 final float f = Float.parseFloat(s);
                 strokeHalfWidthEraser = f / 2.0f;
@@ -3349,7 +3556,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
                 setOnItemLongClickListener(view -> {
-                    ArgbColorIntPicker.make(MainActivity.this,
+                    ArgbColorPicker.make(MainActivity.this,
                                     R.string.swatch,
                                     (oldColor, newColor) -> {
                                         if (newColor != null) {
@@ -3398,12 +3605,10 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("NonConstantResourceId")
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.i_cell_grid: {
-                CellGridManager.make(this, tab.cellGrid,
-                                onUpdateCellGridListener)
-                        .show();
+            case R.id.i_cell_grid:
+                new CellGridManager(this, tab.cellGrid, onUpdateCellGridListener).show();
                 break;
-            }
+
             case R.id.i_clone:
                 if (transformer == null) {
                     drawFloatingLayers();
@@ -3432,7 +3637,7 @@ public class MainActivity extends AppCompatActivity {
                                 Bitmap.createBitmap(bitmap, selection.left, selection.top, selection.width(), selection.height()) :
                                 Bitmap.createBitmap(transformer.getBitmap()) :
                         Bitmap.createBitmap(bitmap);
-                addBitmap(bm, tabLayout.getSelectedTabPosition() + 1);
+                addTab(bm, tabLayout.getSelectedTabPosition() + 1);
                 break;
             }
             case R.id.i_copy:
@@ -3531,9 +3736,26 @@ public class MainActivity extends AppCompatActivity {
                 clearStatus();
                 break;
 
+            case R.id.i_file_close: {
+                if (tabs.get(0).getBackground() == tabs.get(tabs.size() - 1)) {
+                    break;
+                }
+                final Tab background = tab.getBackground();
+                for (int i = tab.getBackgroundPosition(); i >= 0; --i) {
+                    final Tab t = tabs.get(i);
+                    if (t.getBackground() != background) {
+                        break;
+                    }
+                    if (t != tab) {
+                        closeTab(i, false);
+                    }
+                }
+                closeTab();
+                break;
+            }
             case R.id.i_file_new: {
-                new NewGraphicPropertiesDialog(this)
-                        .setOnFinishSettingListener(onFinishSettingNewGraphicPropertiesListener)
+                new NewImageDialog(this)
+                        .setOnFinishSettingListener(onFinishSettingNewImagePropertiesListener)
                         .show();
                 break;
             }
@@ -3555,17 +3777,6 @@ public class MainActivity extends AppCompatActivity {
                 openFile(clipData.getItemAt(0).getUri());
                 break;
             }
-            case R.id.i_file_close:
-            case R.id.i_layer_delete:
-                if (tabs.size() == 1) {
-                    break;
-                }
-                if (transformer != null) {
-                    recycleTransformer();
-                }
-                closeTab();
-                break;
-
             case R.id.i_file_refer_to_clipboard: {
                 if (tab.path == null) {
                     Toast.makeText(this, getString(R.string.please_save_first), Toast.LENGTH_SHORT).show();
@@ -3680,12 +3891,10 @@ public class MainActivity extends AppCompatActivity {
             case R.id.i_filter_matrix:
                 drawFloatingLayers();
                 createPreviewBitmap();
-                ColorMatrixManager
-                        .make(this,
-                                R.string.channel_mixer,
-                                onColorMatrixChangeListener,
-                                onPreviewPBClickListener,
-                                onPreviewCancelListener)
+                new ColorMatrixManager(this,
+                        onColorMatrixChangeListener,
+                        onPreviewPBClickListener,
+                        onPreviewCancelListener)
                         .show();
                 clearStatus();
                 break;
@@ -3748,6 +3957,23 @@ public class MainActivity extends AppCompatActivity {
                 scale(1.0f, -1.0f, false);
                 break;
             }
+            case R.id.i_guides_clear:
+                tab.guides.clear();
+                drawGridOnView();
+                break;
+
+            case R.id.i_guides_new: {
+                final Point guide = new Point();
+                tab.guides.offerFirst(guide); // Add at the front for faster removal if necessary later
+                new GuideEditor(this, guide, bitmap.getWidth(), bitmap.getHeight(),
+                        g -> drawGridOnView(),
+                        dialog -> {
+                            tab.guides.remove(guide);
+                            drawGridOnView();
+                        })
+                        .show();
+                break;
+            }
             case R.id.i_has_alpha: {
                 final boolean checked = !item.isChecked();
                 item.setChecked(checked);
@@ -3774,7 +4000,6 @@ public class MainActivity extends AppCompatActivity {
                 t.isBackground = false;
                 t.setLevel(tab.getLevel() + 1);
                 t.moveTo(tab.left, tab.top);
-                t.paint = new Paint();
                 t.paint.setBlendMode(BlendMode.DST_OUT);
                 t.visible = true;
                 final Canvas cv = new Canvas(t.bitmap);
@@ -3782,7 +4007,7 @@ public class MainActivity extends AppCompatActivity {
                     t.bitmap.eraseColor(Color.BLACK);
                     cv.drawRect(selection, PAINT_DST_OUT);
                 }
-                addBitmap(t, tabLayout.getSelectedTabPosition(), getString(R.string.mask));
+                addTab(t, tabLayout.getSelectedTabPosition(), getString(R.string.mask));
                 break;
             }
             case R.id.i_layer_alpha:
@@ -3863,6 +4088,13 @@ public class MainActivity extends AppCompatActivity {
                 drawBitmapOnView(true);
                 break;
             }
+            case R.id.i_layer_delete:
+                if (tabs.size() == 1) {
+                    break;
+                }
+                closeTab();
+                break;
+
             case R.id.i_layer_delete_invisible: {
                 final Tab background = tab.getBackground();
                 for (int i = tab.getBackgroundPosition(); i >= 0; --i) {
@@ -3928,11 +4160,9 @@ public class MainActivity extends AppCompatActivity {
                 }
                 switch (tab.filter) {
                     case COLOR_MATRIX:
-                        ColorMatrixManager.make(this,
-                                        R.string.channel_mixer,
-                                        onLayerColorMatrixChangeListener,
-                                        null,
-                                        tab.colorMatrix)
+                        new ColorMatrixManager(this,
+                                onLayerColorMatrixChangeListener,
+                                tab.colorMatrix)
                                 .show();
                         clearStatus();
                         break;
@@ -4110,13 +4340,10 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(new Intent(this, SettingsActivity.class));
                 break;
 
-            case R.id.i_size: {
+            case R.id.i_size:
                 drawFloatingLayers();
-                ImageSizeManager
-                        .make(this, bitmap, onUpdateImageSizeListener)
-                        .show();
+                new ImageSizeManager(this, bitmap, onUpdateImageSizeListener).show();
                 break;
-            }
 
             case R.id.i_undo: {
                 if (transformer != null) {
@@ -4129,12 +4356,22 @@ public class MainActivity extends AppCompatActivity {
                 }
                 break;
             }
+            case R.id.i_view_actual_pixels:
+                translationX = tab.translationX = 0.0f;
+                translationY = tab.translationY = 0.0f;
+                scale = tab.scale = 1.0f;
+                imageWidth = tab.bitmap.getWidth();
+                imageHeight = tab.bitmap.getHeight();
+                drawAfterTranslatingOrScaling(false);
+                break;
 
-            case R.id.i_view_refit:
-                resetTranslAndScale();
+            case R.id.i_view_fit_on_screen:
+                fitOnScreen();
                 translationX = tab.translationX;
                 translationY = tab.translationY;
                 scale = tab.scale;
+                imageWidth = (int) toScaled(bitmap.getWidth());
+                imageHeight = (int) toScaled(bitmap.getHeight());
                 drawAfterTranslatingOrScaling(false);
                 break;
         }
@@ -4155,6 +4392,7 @@ public class MainActivity extends AppCompatActivity {
         eraseBitmapAndInvalidateView(previewBitmap, ivPreview);
         paint.setAntiAlias(antiAlias);
         setBlurRadius(paint, blurRadius);
+        paint.setStyle(style);
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -4219,9 +4457,9 @@ public class MainActivity extends AppCompatActivity {
             if (compressFormat != null) {
                 path = UriToPathUtil.getRealFilePath(this, uri);
             }
-            addBitmap(bm, tabs.size(), documentFile.getName(), path, compressFormat);
+            addTab(bm, tabs.size(), documentFile.getName(), path, compressFormat);
         } else {
-            addBitmap(bm, tabs.size());
+            addTab(bm, tabs.size());
         }
     }
 
@@ -4260,18 +4498,6 @@ public class MainActivity extends AppCompatActivity {
     private void recycleTransformer() {
         transformer.recycle();
         transformer = null;
-    }
-
-    private void resetTranslAndScale() {
-        resetTranslAndScale(tab);
-    }
-
-    private void resetTranslAndScale(Tab tab) {
-        tab.translationX = 0.0f;
-        tab.translationY = 0.0f;
-        tab.scale = (float) ((double) viewWidth / (double) tab.bitmap.getWidth());
-        imageWidth = viewWidth;
-        imageHeight = (int) (tab.bitmap.getHeight() * tab.scale);
     }
 
     private void resizeBitmap(int width, int height, boolean stretch) {

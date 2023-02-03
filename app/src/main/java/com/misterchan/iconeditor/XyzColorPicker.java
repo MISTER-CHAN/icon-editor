@@ -18,28 +18,28 @@ class XyzColorPicker extends ColorPicker {
 
     private static final ColorSpace XYZ = ColorSpace.get(ColorSpace.Named.CIE_XYZ);
 
-    private ColorSpace oldColorSpace;
-    private ColorSpace.Connector connectorFromXyz, connectorToXyz;
+    private final ColorSpace.Connector connectorFromXyz, connectorToXyz;
     private SeekBar sbX, sbY, sbZ;
     private TextInputEditText tietX, tietY, tietZ;
 
     @Size(3)
     private float[] xyz;
 
-    public static ColorPicker make(Context context, final OnColorPickListener onColorPickListener, @ColorLong final Long oldColor) {
-        final XyzColorPicker picker = new XyzColorPicker();
-        picker.oldColorSpace = Color.colorSpace(oldColor);
-        picker.connectorFromXyz = ColorSpace.connect(XYZ, picker.oldColorSpace);
-        picker.connectorToXyz = ColorSpace.connect(picker.oldColorSpace, XYZ);
-        picker.dialogBuilder = new AlertDialog.Builder(context)
+    private XyzColorPicker(Context context, final OnColorPickListener onColorPickListener, @ColorLong final Long oldColor) {
+        final ColorSpace oldColorSpace = Color.colorSpace(oldColor);
+        connectorFromXyz = ColorSpace.connect(XYZ, oldColorSpace);
+        connectorToXyz = ColorSpace.connect(oldColorSpace, XYZ);
+        dialogBuilder = new AlertDialog.Builder(context)
                 .setNegativeButton(R.string.cancel, null)
-                .setPositiveButton(R.string.ok, (dialog, which) -> onColorPickListener.onPick(oldColor, picker.newColor))
+                .setPositiveButton(R.string.ok, (dialog, which) -> onColorPickListener.onPick(oldColor, newColor))
                 .setTitle(R.string.convert_xyz_to_rgb)
                 .setView(R.layout.color_picker);
 
-        picker.oldColor = oldColor;
+        this.oldColor = oldColor;
+    }
 
-        return picker;
+    public static ColorPicker make(Context context, final OnColorPickListener onColorPickListener, @ColorLong final Long oldColor) {
+        return new XyzColorPicker(context, onColorPickListener, oldColor);
     }
 
     private void onComponentChanged(@IntRange(from = 0, to = 2) int index, String s, SeekBar seekBar) {

@@ -1,11 +1,13 @@
 package com.misterchan.iconeditor;
 
+import android.content.Context;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.GridLayout;
 import android.widget.TextView;
 
 import androidx.annotation.ColorInt;
+import androidx.annotation.ColorLong;
 import androidx.appcompat.app.AlertDialog;
 
 abstract class ColorPicker {

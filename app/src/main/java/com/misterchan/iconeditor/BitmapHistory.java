@@ -1,11 +1,21 @@
 package com.misterchan.iconeditor;
 
 import android.graphics.Bitmap;
+import android.graphics.BlendMode;
+import android.graphics.Canvas;
 import android.graphics.Paint;
 
 class BitmapHistory {
 
     private static final int MAX_SIZE = 50;
+
+    private static final Paint PAINT_SRC = new Paint() {
+        {
+            setAntiAlias(false);
+            setBlendMode(BlendMode.SRC);
+            setFilterBitmap(false);
+        }
+    };
 
     private static class Node {
         private Bitmap val;
@@ -24,6 +34,31 @@ class BitmapHistory {
     private int size = 0;
     private Node current = null;
     private Node earliest, latest;
+
+    public void add(Bitmap bitmap) {
+        if (size > 0) {
+            while (latest != current) {
+                deleteLatest();
+            }
+        }
+        final Bitmap bm = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(),
+                bitmap.getConfig(), bitmap.hasAlpha(), bitmap.getColorSpace());
+        new Canvas(bm).drawBitmap(bm, 0.0f, 0.0f, PAINT_SRC);
+        current = new Node(current, bm);
+        add(current);
+        while (size > MAX_SIZE) {
+            deleteEarliest();
+        }
+    }
+
+    private void add(Node node) {
+        if (latest == null)
+            earliest = node;
+        else
+            latest.later = node;
+        latest = node;
+        ++size;
+    }
 
     public boolean canRedo() {
         return current != null && current.later != null;
@@ -74,27 +109,6 @@ class BitmapHistory {
 
     public Bitmap getCurrent() {
         return Bitmap.createBitmap(current.val);
-    }
-
-    public void offer(Bitmap bitmap) {
-        if (size > 0) {
-            while (latest != current) {
-                deleteLatest();
-            }
-        }
-        offer(current = new Node(current, Bitmap.createBitmap(bitmap)));
-        while (size > MAX_SIZE) {
-            deleteEarliest();
-        }
-    }
-
-    private void offer(Node node) {
-        if (latest == null)
-            earliest = node;
-        else
-            latest.later = node;
-        latest = node;
-        ++size;
     }
 
     public Bitmap redo() {

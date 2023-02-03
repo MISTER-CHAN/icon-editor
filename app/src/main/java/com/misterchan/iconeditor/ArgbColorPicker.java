@@ -3,6 +3,7 @@ package com.misterchan.iconeditor;
 import android.content.Context;
 import android.widget.SeekBar;
 
+import androidx.annotation.ColorInt;
 import androidx.annotation.ColorLong;
 import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
@@ -11,7 +12,7 @@ import com.google.android.material.textfield.TextInputEditText;
 
 abstract class ArgbColorPicker extends ColorPicker {
 
-    protected Context context;
+    protected final Context context;
     protected SeekBar sbAlpha;
     protected SeekBar sbRed, sbGreen, sbBlue;
     protected TextInputEditText tietAlpha;
@@ -29,41 +30,45 @@ abstract class ArgbColorPicker extends ColorPicker {
         vPreview = dialog.findViewById(R.id.v_color_preview);
     }
 
-    public static ColorPicker make(Context context, int titleId,
-                                   final OnColorPickListener onColorPickListener, @ColorLong final Long oldColor) {
-        return make(context, titleId,
-                onColorPickListener, oldColor, 0);
-    }
-
-    public static ColorPicker make(Context context, int titleId,
+    protected ArgbColorPicker(Context context, int titleId, Settings settings,
                                    final OnColorPickListener onColorPickListener,
                                    @ColorLong final Long oldColor, @StringRes int neutralFunction) {
-        final Settings settings = ((MainApplication) context.getApplicationContext()).getSettings();
-        final ArgbColorPicker picker = settings.getArgbColorType() ? new ArgbColorLongPicker() : new ArgbColorIntPicker();
-        picker.context = context;
-        picker.dialogBuilder = new AlertDialog.Builder(context)
+        this.context = context;
+        dialogBuilder = new AlertDialog.Builder(context)
                 .setNegativeButton(R.string.cancel, null)
                 .setPositiveButton(R.string.ok,
-                        (dialog, which) -> onColorPickListener.onPick(oldColor, picker.newColor))
+                        (dialog, which) -> onColorPickListener.onPick(oldColor, newColor))
                 .setTitle(titleId)
                 .setView(R.layout.color_picker);
 
         if (oldColor != null) {
-            picker.oldColor = oldColor;
+            this.oldColor = oldColor;
             if (neutralFunction != 0) {
-                picker.dialogBuilder.setNeutralButton(neutralFunction,
+                dialogBuilder.setNeutralButton(neutralFunction,
                         (dialog, which) -> onColorPickListener.onPick(oldColor, null));
             }
         } else {
-            picker.oldColor = Color.BLACK;
+            this.oldColor = Color.BLACK;
         }
 
-        picker.make(settings);
-
-        return picker;
+        make(settings);
     }
 
     protected void make(Settings settings) {
+    }
+
+    public static ColorPicker make(Context context, int titleId,
+                            final OnColorPickListener onColorPickListener, @ColorLong final Long oldColor) {
+        return make(context, titleId, onColorPickListener, oldColor, 0);
+    }
+
+    public static ColorPicker make(Context context, int titleId,
+                            final OnColorPickListener onColorPickListener,
+                            @ColorLong final Long oldColor, @StringRes int neutralFunction) {
+        final Settings settings = ((MainApplication) context.getApplicationContext()).getSettings();
+        return settings.getArgbColorType() ?
+                new ArgbColorLongPicker(context, titleId, settings, onColorPickListener, oldColor, neutralFunction) :
+                new ArgbColorIntPicker(context, titleId, settings, onColorPickListener, oldColor, neutralFunction);
     }
 
     protected void showOtherColorPickers(AlertDialog dialog, OnColorPickListener l) {

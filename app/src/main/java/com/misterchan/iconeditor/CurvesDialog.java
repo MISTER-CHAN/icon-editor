@@ -22,6 +22,7 @@ import android.widget.RadioButton;
 import androidx.annotation.IntRange;
 import androidx.annotation.Size;
 import androidx.appcompat.app.AlertDialog;
+import androidx.core.view.OneShotPreDrawListener;
 
 import java.util.function.Function;
 
@@ -293,28 +294,13 @@ class CurvesDialog {
         ((CompoundButton) dialog.findViewById(R.id.rb_alpha)).setOnCheckedChangeListener((OnCheckedListener) () -> selectComp(3));
         rbRgbOutputs.setOnCheckedChangeListener((OnCheckedListener) () -> selectComp(4));
 
-        {
-            final ViewTreeObserver vto = fl.getViewTreeObserver();
-            final ViewTreeObserver.OnPreDrawListener l = new ViewTreeObserver.OnPreDrawListener() {
-
-                private boolean preDrawn = false;
-
-                @Override
-                public boolean onPreDraw() {
-                    if (preDrawn) {
-                        return true;
-                    }
-                    preDrawn = true;
-                    final int width = fl.getMeasuredWidth();
-                    density = width / 256.0f;
-                    final LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) fl.getLayoutParams();
-                    lp.height = width;
-                    fl.setLayoutParams(lp);
-                    return true;
-                }
-            };
-            vto.addOnPreDrawListener(l);
-        }
+        OneShotPreDrawListener.add(fl, () -> {
+            final int width = fl.getMeasuredWidth();
+            density = width / 256.0f;
+            final LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) fl.getLayoutParams();
+            lp.height = width;
+            fl.setLayoutParams(lp);
+        });
 
         dialog.findViewById(R.id.tv_reset).setOnClickListener(v -> {
             reset();

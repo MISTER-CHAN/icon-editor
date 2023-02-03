@@ -2,6 +2,7 @@
     <string name="a" translatable="false">A</string>
     <string name="a_" translatable="false">a*</string>
     <string name="about">About</string>
+    <string name="actual_pixels">Actual Pixels</string>
     <string name="add">Add</string>
     <string name="add_symbol" translatable="false">+</string>
     <string name="all_layers">All Layers</string>
@@ -34,6 +35,7 @@
     <string name="circle">Circle</string>
     <string name="clear">Clear</string>
     <string name="clear_destination">Clear Destination</string>
+    <string name="clear_guides">Clear Guides</string>
     <string name="clone">Clone</string>
     <string name="clone_as_new">Clone as New</string>
     <string name="cloner">Cloner</string>
@@ -96,6 +98,7 @@
     <string name="filter_displayed_image_after_zooming_out">Filter the Displayed Image after Zooming out</string>
     <string name="filter_image">Filter Image</string>
     <string name="filters">Filters</string>
+    <string name="fit_on_screen">Fit on Screen</string>
     <string name="flip">Flip</string>
     <string name="float_">Float</string>
     <string name="foreground_color">Foreground Color</string>
@@ -113,6 +116,7 @@
     <string name="hidden_image">Hidden Image</string>
     <string name="highlights">Highlights</string>
     <string name="homepage">Homepage</string>
+    <string name="horizontal">Horizontally</string>
     <string name="horizontally">Horizontally</string>
     <string name="hsv" translatable="false">HSV</string>
     <string name="hue_to_alpha">Hue to Alpha</string>
@@ -159,6 +163,7 @@
     <string name="more">More</string>
     <string name="move_layer">Move Layer</string>
     <string name="new_">New</string>
+    <string name="new_guide">New Guide</string>
     <string name="ninety_degrees">90°</string>
     <string name="noise">Noise</string>
     <string name="not_supported_file_type">Not supported file type</string>
@@ -168,8 +173,10 @@
     <string name="one_eighty_degrees">180°</string>
     <string name="open">Open</string>
     <string name="open_from_clipboard">Open from Clipboard</string>
+    <string name="orientation">Orientation</string>
     <string name="output">Output</string>
     <string name="oval">Oval</string>
+    <string name="paint">Paint</string>
     <string name="palette">Palette</string>
     <string name="paste">Paste</string>
     <string name="patch">Patch</string>
@@ -178,6 +185,7 @@
     <string name="percent" translatable="false">%</string>
     <string name="performance">Performance</string>
     <string name="please_save_first">Please save first.</string>
+    <string name="position">Position</string>
     <string name="precise">Precise</string>
     <string name="preferences">Preferences</string>
     <string name="properties">Properties</string>
@@ -185,7 +193,6 @@
     <string name="rectangle">Rectangle</string>
     <string name="redo" translatable="false">↷</string>
     <string name="refer_to_clipboard">Refer to Clipboard</string>
-    <string name="refit">Refit</string>
     <string name="rename">Rename</string>
     <string name="reset">Reset</string>
     <string name="reset_source">Reset Source</string>
@@ -261,6 +268,7 @@
     <string name="untitled">Untitled</string>
     <string name="v" translatable="false">V</string>
     <string name="version">Version (Release Date)</string>
+    <string name="vertical">Vertically</string>
     <string name="vertically">Vertically</string>
     <string name="view">View</string>
     <string name="visible">Visible</string>

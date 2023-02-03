@@ -16,25 +16,25 @@ class LabColorPicker extends ColorPicker {
 
     private static final ColorSpace LAB = ColorSpace.get(ColorSpace.Named.CIE_LAB);
 
-    private ColorSpace oldColorSpace;
-    private ColorSpace.Connector connectorFromLab, connectorToLab;
+    private final ColorSpace.Connector connectorFromLab, connectorToLab;
     private SeekBar sbL, sbA, sbB;
     private TextInputEditText tietL, tietA, tietB;
 
-    public static ColorPicker make(Context context, final OnColorPickListener onColorPickListener, @ColorLong final Long oldColor) {
-        final LabColorPicker picker = new LabColorPicker();
-        picker.oldColorSpace = Color.colorSpace(oldColor);
-        picker.connectorFromLab = ColorSpace.connect(LAB, picker.oldColorSpace);
-        picker.connectorToLab = ColorSpace.connect(picker.oldColorSpace, LAB);
-        picker.dialogBuilder = new AlertDialog.Builder(context)
+    private LabColorPicker(Context context, final OnColorPickListener onColorPickListener, @ColorLong final Long oldColor) {
+        final ColorSpace oldColorSpace = Color.colorSpace(oldColor);
+        connectorFromLab = ColorSpace.connect(LAB, oldColorSpace);
+        connectorToLab = ColorSpace.connect(oldColorSpace, LAB);
+        dialogBuilder = new AlertDialog.Builder(context)
                 .setNegativeButton(R.string.cancel, null)
-                .setPositiveButton(R.string.ok, (dialog, which) -> onColorPickListener.onPick(oldColor, picker.newColor))
+                .setPositiveButton(R.string.ok, (dialog, which) -> onColorPickListener.onPick(oldColor, newColor))
                 .setTitle(R.string.convert_lab_to_rgb)
                 .setView(R.layout.color_picker);
 
-        picker.oldColor = oldColor;
+        this.oldColor = oldColor;
+    }
 
-        return picker;
+    public static ColorPicker make(Context context, final OnColorPickListener onColorPickListener, @ColorLong final Long oldColor) {
+        return new LabColorPicker(context, onColorPickListener, oldColor);
     }
 
     private void onComponentChanged(String s, SeekBar seekBar) {

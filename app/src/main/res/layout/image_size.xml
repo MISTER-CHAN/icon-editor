@@ -28,7 +28,7 @@
                 android:layout_weight="1">
 
                 <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/et_img_size_x"
+                    android:id="@+id/tiet_size_x"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:background="@color/transparent"
@@ -44,7 +44,7 @@
                 android:layout_weight="1">
 
                 <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/et_img_size_y"
+                    android:id="@+id/tiet_size_y"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:background="@color/transparent"
@@ -57,7 +57,7 @@
         <View android:visibility="gone" />
 
         <CheckBox
-            android:id="@+id/cb_img_lar"
+            android:id="@+id/cb_lar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="8dp"
@@ -73,7 +73,7 @@
             android:orientation="horizontal">
 
             <RadioButton
-                android:id="@+id/rb_img_stretch"
+                android:id="@+id/rb_stretch"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_margin="8dp"
@@ -81,7 +81,7 @@
                 android:text="@string/stretch" />
 
             <RadioButton
-                android:id="@+id/rb_img_crop"
+                android:id="@+id/rb_crop"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_margin="8dp"

@@ -74,16 +74,12 @@ class LayerTree {
     private int size = 0;
     private Node background, foreground;
 
-    public boolean isEmpty() {
-        return size == 0;
-    }
-
-    public Node peekBackground() {
+    public Node getBackground() {
         return background;
     }
 
-    public Node peekForeground() {
-        return foreground;
+    public boolean isEmpty() {
+        return size == 0;
     }
 
     public Node push(Tab tab) {

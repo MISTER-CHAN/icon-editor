@@ -13,25 +13,26 @@ import com.google.android.material.textfield.TextInputLayout;
 
 class CmykColorPicker extends ColorPicker {
 
-    private int radix = 16;
+    private final int radix;
     private SeekBar sbCyan, sbMagenta, sbYellow, sbKey;
-    private String format;
+    private final String format;
     private TextInputEditText tietCyan, tietMagenta, tietYellow, tietKey;
 
-    public static ColorPicker make(Context context, final OnColorPickListener onColorPickListener, @ColorLong final Long oldColor) {
+    private CmykColorPicker(Context context, final OnColorPickListener onColorPickListener, @ColorLong final Long oldColor) {
         final Settings settings = ((MainApplication) context.getApplicationContext()).getSettings();
-        final CmykColorPicker picker = new CmykColorPicker();
-        picker.format = settings.getArgbComponentFormat();
-        picker.radix = settings.getArgbComponentRadix();
-        picker.dialogBuilder = new AlertDialog.Builder(context)
+        format = settings.getArgbComponentFormat();
+        radix = settings.getArgbComponentRadix();
+        dialogBuilder = new AlertDialog.Builder(context)
                 .setNegativeButton(R.string.cancel, null)
-                .setPositiveButton(R.string.ok, (dialog, which) -> onColorPickListener.onPick(oldColor, picker.newColor))
+                .setPositiveButton(R.string.ok, (dialog, which) -> onColorPickListener.onPick(oldColor, newColor))
                 .setTitle(R.string.convert_cmyk_to_rgb)
                 .setView(R.layout.color_picker);
 
-        picker.oldColor = oldColor;
+        this.oldColor = oldColor;
+    }
 
-        return picker;
+    public static ColorPicker make(Context context, final OnColorPickListener onColorPickListener, @ColorLong final Long oldColor) {
+        return new CmykColorPicker(context, onColorPickListener, oldColor);
     }
 
     private void onComponentChanged(String s, SeekBar seekBar) {

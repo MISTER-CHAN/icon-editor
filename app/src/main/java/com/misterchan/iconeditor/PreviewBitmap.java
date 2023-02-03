@@ -16,7 +16,9 @@ class PreviewBitmap {
 
     private static final Paint PAINT_SRC = new Paint() {
         {
-            setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC));
+            setAntiAlias(false);
+            setBlendMode(BlendMode.SRC);
+            setFilterBitmap(false);
         }
     };
 

@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.graphics.BlendMode;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.view.View;
 import android.widget.CheckBox;
@@ -14,6 +15,8 @@ import androidx.annotation.IntRange;
 import androidx.annotation.Size;
 import androidx.annotation.StringRes;
 
+import java.util.Deque;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
 
@@ -24,7 +27,9 @@ class Tab {
 
     private static final Paint PAINT_SRC = new Paint() {
         {
+            setAntiAlias(false);
             setBlendMode(BlendMode.SRC);
+            setFilterBitmap(false);
         }
     };
 
@@ -35,15 +40,16 @@ class Tab {
     public boolean visible = false;
     public Bitmap bitmap;
     public Bitmap.CompressFormat compressFormat;
-    public BitmapHistory history;
-    public CellGrid cellGrid;
+    public final BitmapHistory history = new BitmapHistory();
+    public final CellGrid cellGrid = new CellGrid();
     private CheckBox cbVisible;
+    public final Deque<Point> guides = new LinkedList<>();
     public Filter filter;
     public float scale;
     public float translationX, translationY;
     private int level = 0;
     public int left = 0, top = 0;
-    public Paint paint;
+    public final Paint paint = new Paint();
     public String path;
     private Tab background;
     private int backgroundPosition;
@@ -106,6 +112,7 @@ class Tab {
         int backgroundPos = first;
         background.isBackground = true;
         boolean isInProject = false;
+        Tab lastTabInProject = null;
         stack.push(layerTree);
         for (int i = first; i >= 0; --i) {
             final Tab t = tabs.get(i);
@@ -123,6 +130,7 @@ class Tab {
                 if (t.level > 0) {
                     t.tvLowerLevel.setText("→");
                 }
+                lastTabInProject = t;
                 // If current layer is background layer
                 if (prev == null) {
                     for (int j = 1; j < t.level; j++) {
@@ -176,7 +184,6 @@ class Tab {
 
             }
         }
-        final Tab lastTabInProject = layerTree.peekForeground().getTab();
         for (int i = lastTabInProject.level; i > 1; --i) {
             lastTabInProject.tvLeaf.append("[");
         }
@@ -290,7 +297,7 @@ class Tab {
 
     public static Bitmap mergeLayers(final LayerTree tree, final Rect rect, final Bitmap background,
                                      final Tab excludedTab, final Bitmap excludedBitmap, final Tab extraExclTab) {
-        final LayerTree.Node backgroundNode = tree.peekBackground();
+        final LayerTree.Node backgroundNode = tree.getBackground();
         final Bitmap bitmap = Bitmap.createBitmap(rect.width(), rect.height(), Bitmap.Config.ARGB_8888);
         final Canvas canvas = new Canvas(bitmap);
         if (background != null) {
