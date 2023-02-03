@@ -43,7 +43,7 @@ class BitmapHistory {
         }
         final Bitmap bm = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(),
                 bitmap.getConfig(), bitmap.hasAlpha(), bitmap.getColorSpace());
-        new Canvas(bm).drawBitmap(bm, 0.0f, 0.0f, PAINT_SRC);
+        new Canvas(bm).drawBitmap(bitmap, 0.0f, 0.0f, PAINT_SRC);
         current = new Node(current, bm);
         add(current);
         while (size > MAX_SIZE) {
