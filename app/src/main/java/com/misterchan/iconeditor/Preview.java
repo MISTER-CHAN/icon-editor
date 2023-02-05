@@ -4,15 +4,13 @@ import android.graphics.Bitmap;
 import android.graphics.BlendMode;
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.RectF;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.Size;
 
-class PreviewBitmap {
+class Preview {
 
     private static final Paint PAINT_SRC = new Paint() {
         {
@@ -39,7 +37,7 @@ class PreviewBitmap {
         }
     };
 
-    public PreviewBitmap(Bitmap bitmap, Rect rect) {
+    public Preview(Bitmap bitmap, Rect rect) {
         final int w = rect.width(), h = rect.height();
         this.bitmap = Bitmap.createBitmap(bitmap);
         bm = Bitmap.createBitmap(w, h, bitmap.getConfig(), true, bitmap.getColorSpace());

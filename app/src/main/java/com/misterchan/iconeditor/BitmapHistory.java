@@ -9,14 +9,6 @@ class BitmapHistory {
 
     private static final int MAX_SIZE = 50;
 
-    private static final Paint PAINT_SRC = new Paint() {
-        {
-            setAntiAlias(false);
-            setBlendMode(BlendMode.SRC);
-            setFilterBitmap(false);
-        }
-    };
-
     private static class Node {
         private Bitmap val;
         private Node later;
@@ -41,10 +33,7 @@ class BitmapHistory {
                 deleteLatest();
             }
         }
-        final Bitmap bm = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(),
-                bitmap.getConfig(), bitmap.hasAlpha(), bitmap.getColorSpace());
-        new Canvas(bm).drawBitmap(bitmap, 0.0f, 0.0f, PAINT_SRC);
-        current = new Node(current, bm);
+        current = new Node(current, Bitmap.createBitmap(bitmap));
         add(current);
         while (size > MAX_SIZE) {
             deleteEarliest();

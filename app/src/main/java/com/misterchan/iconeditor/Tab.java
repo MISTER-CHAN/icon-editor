@@ -37,7 +37,7 @@ class Tab {
 
     public boolean drawBelow = false;
     public boolean isBackground = true;
-    public boolean visible = false;
+    public boolean visible = true;
     public Bitmap bitmap;
     public Bitmap.CompressFormat compressFormat;
     public final BitmapHistory history = new BitmapHistory();
@@ -50,7 +50,7 @@ class Tab {
     private int level = 0;
     public int left = 0, top = 0;
     public final Paint paint = new Paint();
-    public String path;
+    public String filePath, mimeType;
     private Tab background;
     private int backgroundPosition;
     private TextView tvBackground;
@@ -163,7 +163,7 @@ class Tab {
                 prev = lt.push(t);
 
             } else /* if (levelDiff < 0) */ {
-                // If current level is lower than or equals to background's level
+                // If current level is lower than or equal to background's level
                 if (-levelDiff < stack.size()) {
                     for (int j = 0; j > levelDiff; --j) {
                         stack.pop();
@@ -237,6 +237,10 @@ class Tab {
         return i == -1 ? s : s.substring(0, i);
     }
 
+    public CharSequence getTitle() {
+        return tvTitle != null ? tvTitle.getText() : "";
+    }
+
     public void initViews(View view) {
         cbVisible = view.findViewById(R.id.cb_visible);
         tvRoot = view.findViewById(R.id.tv_root);
@@ -286,17 +290,22 @@ class Tab {
         lCv.drawBitmap(uBm, upper.left - lower.left, upper.top - lower.top, upper.paint);
     }
 
-    public static Bitmap mergeLayers(final LayerTree tree, final Rect rect) {
-        return mergeLayers(tree, rect, null, null, null);
+    public static Bitmap mergeLayers(final LayerTree tree) {
+        final Bitmap background = tree.getBackground().getTab().bitmap;
+        return mergeLayers(tree, new Rect(0, 0, background.getWidth(), background.getHeight()),
+                null, null, null);
     }
 
     public static Bitmap mergeLayers(final LayerTree tree, final Rect rect,
-                                     final Tab excludedTab, final Bitmap excludedBitmap, final Tab extraExclTab) {
-        return mergeLayers(tree, rect, null, excludedTab, excludedBitmap, extraExclTab);
+                                     final Tab excludedTab, final Bitmap bmToReplWith, final Tab extraTab) {
+        return mergeLayers(tree, rect, null, excludedTab, bmToReplWith, extraTab);
     }
 
+    /**
+     * @param bmToReplWith Bitmap to replace with
+     */
     public static Bitmap mergeLayers(final LayerTree tree, final Rect rect, final Bitmap background,
-                                     final Tab excludedTab, final Bitmap excludedBitmap, final Tab extraExclTab) {
+                                     final Tab excludedTab, final Bitmap bmToReplWith, final Tab extraTab) {
         final LayerTree.Node backgroundNode = tree.getBackground();
         final Bitmap bitmap = Bitmap.createBitmap(rect.width(), rect.height(), Bitmap.Config.ARGB_8888);
         final Canvas canvas = new Canvas(bitmap);
@@ -307,7 +316,7 @@ class Tab {
         try {
             for (LayerTree.Node node = backgroundNode; node != null; node = node.getAbove()) {
                 final Tab tab = node.getTab();
-                if (!tab.visible && tab != excludedTab) {
+                if (!tab.visible) {
                     continue;
                 }
                 final LayerTree children = node.getChildren();
@@ -327,13 +336,13 @@ class Tab {
                     final Rect intRel = new Rect(0, 0, intW, intH); // Intersection relative rectangle
 
                     Rect ees = null, eed = null; // Intersection between intersection and extra excluded layer
-                    if (tab == excludedTab && extraExclTab != null) {
-                        final int w = extraExclTab.bitmap.getWidth(), h = extraExclTab.bitmap.getHeight();
+                    if (tab == excludedTab && extraTab != null) {
+                        final int w = extraTab.bitmap.getWidth(), h = extraTab.bitmap.getHeight();
                         ees = new Rect(0, 0, w, h);
-                        final int sol = -extraExclTab.left - tab.left + rect.left, sot = -extraExclTab.top - tab.top + rect.top; // Origin location related to extra excluded layer
+                        final int sol = -extraTab.left - tab.left + rect.left, sot = -extraTab.top - tab.top + rect.top; // Origin location related to extra excluded layer
                         if (ees.intersect(sol + dst.left, sot + dst.top, sol + dst.right, sot + dst.bottom)) {
                             eed = new Rect(intRel);
-                            final int dl = -dst.left - rect.left + tab.left + extraExclTab.left, dt = -dst.top - rect.top + tab.top + extraExclTab.top; // Extra excluded location related to intersection
+                            final int dl = -dst.left - rect.left + tab.left + extraTab.left, dt = -dst.top - rect.top + tab.top + extraTab.top; // Extra excluded location related to intersection
                             eed.intersect(dl, dt, dl + w, dt + h);
                         }
                     }
@@ -346,14 +355,14 @@ class Tab {
                                 final Bitmap bm = Bitmap.createBitmap(intW, intH, Bitmap.Config.ARGB_8888); // Intersection bitmap
                                 final Canvas cv = new Canvas(bm);
                                 try {
-                                    cv.drawBitmap(excludedBitmap, src, intRel, PAINT_SRC);
-                                    cv.drawBitmap(extraExclTab.bitmap, ees, eed, PAINT_SRC_OVER);
+                                    cv.drawBitmap(bmToReplWith, src, intRel, PAINT_SRC);
+                                    cv.drawBitmap(extraTab.bitmap, ees, eed, PAINT_SRC_OVER);
                                     canvas.drawBitmap(bm, intRel, dst, paint);
                                 } finally {
                                     bm.recycle();
                                 }
                             } else {
-                                canvas.drawBitmap(excludedBitmap, src, dst, paint);
+                                canvas.drawBitmap(bmToReplWith, src, dst, paint);
                             }
                         } else {
                             canvas.drawBitmap(tab.bitmap, src, dst, paint);
@@ -365,9 +374,9 @@ class Tab {
                             if (tab.drawBelow) {
                                 cv.drawBitmap(bitmap, dst, intRel, PAINT_SRC);
                             } else if (tab == excludedTab) {
-                                cv.drawBitmap(excludedBitmap, src, intRel, PAINT_SRC);
+                                cv.drawBitmap(bmToReplWith, src, intRel, PAINT_SRC);
                                 if (eed != null) {
-                                    cv.drawBitmap(extraExclTab.bitmap, ees, eed, PAINT_SRC_OVER);
+                                    cv.drawBitmap(extraTab.bitmap, ees, eed, PAINT_SRC_OVER);
                                 }
                             } else {
                                 cv.drawBitmap(tab.bitmap, src, intRel, PAINT_SRC);
@@ -381,7 +390,7 @@ class Tab {
                 } else {
                     final Bitmap branchBitmap = mergeLayers(children, rect,
                             !tab.drawBelow || node == backgroundNode ? null : bitmap,
-                            excludedTab, excludedBitmap, extraExclTab);
+                            excludedTab, bmToReplWith, extraTab);
                     canvas.drawBitmap(branchBitmap, 0.0f, 0.0f, tab.paint);
                     branchBitmap.recycle();
                 }
@@ -426,12 +435,12 @@ class Tab {
         tvTitle.setText(resId);
     }
 
-    public void setVisible(boolean visible) {
-        cbVisible.setChecked(visible);
-    }
-
     public void setTitle(CharSequence text) {
         tvTitle.setText(text);
+    }
+
+    public void setVisible(boolean visible) {
+        cbVisible.setChecked(visible);
     }
 
     private void showBackground() {

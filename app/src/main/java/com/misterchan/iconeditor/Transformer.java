@@ -2,12 +2,10 @@ package com.misterchan.iconeditor;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
-import android.graphics.RectF;
 
 class Transformer {
 
@@ -20,8 +18,7 @@ class Transformer {
     private Bitmap bitmap;
     private double aspectRatio;
     private float centerX, centerY;
-    private final RectF dpb = new RectF(); // Distance from point to bounds
-    private Rect rect;
+    private final Rect rect;
 
     public Transformer(Bitmap bitmap, Rect rect) {
         this.bitmap = bitmap;
@@ -56,10 +53,6 @@ class Transformer {
 
     public float getCenterY() {
         return centerY;
-    }
-
-    public RectF getDpb() {
-        return dpb;
     }
 
     public int getHeight() {

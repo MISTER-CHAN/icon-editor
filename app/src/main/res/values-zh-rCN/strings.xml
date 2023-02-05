@@ -20,6 +20,7 @@
     <string name="blend_modes">混合模式</string>
     <string name="blur_radius">模糊半径</string>
     <string name="bottom">底</string>
+    <string name="brush">笔刷</string>
     <string name="bucket_fill">油漆桶</string>
     <string name="cancel">取消</string>
     <string name="cell_grid">网格</string>
@@ -140,6 +141,7 @@
     <string name="merge_as">合并为</string>
     <string name="merge_as_a_hidden_image">合并为隐藏图</string>
     <string name="merge_as_new">合并为新图层</string>
+    <string name="merge_down">向下合并</string>
     <string name="merge_visible">合并可见</string>
     <string name="min">最小</string>
     <string name="more">更多</string>
@@ -161,6 +163,7 @@
     <string name="palette">调色板</string>
     <string name="paste">粘贴</string>
     <string name="patch">修补</string>
+    <string name="path">路径</string>
     <string name="pencil">铅笔</string>
     <string name="pen_with_filter">滤光笔</string>
     <string name="performance">性能</string>
@@ -204,8 +207,10 @@
     <string name="state_axes">轴长：%d, %d</string>
     <string name="state_color_range">色相：%d° – %d°，明度：%d%% – %d%%</string>
     <string name="state_contrast">对比度：%.1f</string>
-    <string name="state_invert">反相：%.1f</string>
+    <string name="state_from_to_size">由：(%d, %d)，至：(%d, %d)，尺寸：%d × %d</string>
+    <string name="state_from_to_size_1">由：(%d, %d)，至：(%d, %d)，尺寸：1 × 1</string>
     <string name="state_hue">色相：%.0f°</string>
+    <string name="state_invert">反相：%.1f</string>
     <string name="state_left_top">左：%d，上：%d</string>
     <string name="state_length">长度：%f</string>
     <string name="state_lightness">明度：%d</string>
@@ -215,8 +220,6 @@
     <string name="state_saturation">饱和度：%.1f</string>
     <string name="state_selected_bound">选定边界：%s</string>
     <string name="state_size">尺寸：%d × %d</string>
-    <string name="state_start_end_size">始：(%d, %d)，止：(%d, %d)，尺寸：%d × %d</string>
-    <string name="state_start_end_size_1">始：(%d, %d)，止：(%d, %d)，尺寸：1 × 1</string>
     <string name="state_start_stop">始：(%d, %d)，止：(%d, %d)</string>
     <string name="state_start_stop_">始：(%d, %d)，止：(%d, %d)，</string>
     <string name="state_threshold">阈值：%d</string>

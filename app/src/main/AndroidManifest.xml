@@ -19,8 +19,9 @@
 
         <activity
             android:name=".MainActivity"
-            android:configChanges="screenSize"
+            android:configChanges="fontScale|keyboardHidden|locale|orientation"
             android:exported="true"
+            android:resizeableActivity="true"
             android:screenOrientation="portrait"
             tools:ignore="LockedOrientationActivity">
             <intent-filter>
@@ -46,8 +47,8 @@
             android:label="@string/settings" />
 
         <provider
-            android:authorities="${applicationId}.provider"
             android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.provider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data

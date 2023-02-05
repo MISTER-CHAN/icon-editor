@@ -54,7 +54,6 @@
             android:id="@+id/sb_position"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_margin="8dp"
             android:layout_weight="1" />
     </LinearLayout>
 </LinearLayout>

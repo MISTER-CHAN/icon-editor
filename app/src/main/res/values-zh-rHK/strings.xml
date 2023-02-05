@@ -20,6 +20,7 @@
     <string name="blend_modes">混合模式</string>
     <string name="blur_radius">模糊半徑</string>
     <string name="bottom">底</string>
+    <string name="brush">筆刷</string>
     <string name="bucket_fill">油漆桶</string>
     <string name="cancel">取消</string>
     <string name="cell_grid">網格</string>
@@ -140,6 +141,7 @@
     <string name="merge_as">合倂爲</string>
     <string name="merge_as_a_hidden_image">合倂爲隱藏圖</string>
     <string name="merge_as_new">合倂爲新圖層</string>
+    <string name="merge_down">向下合併</string>
     <string name="merge_visible">合倂可見</string>
     <string name="min">最小</string>
     <string name="more">更多</string>
@@ -161,6 +163,7 @@
     <string name="palette">調色板</string>
     <string name="paste">貼上</string>
     <string name="patch">修補</string>
+    <string name="path">路徑</string>
     <string name="pencil">鉛筆</string>
     <string name="pen_with_filter">濾光筆</string>
     <string name="performance">效能</string>
@@ -205,6 +208,8 @@
     <string name="state_lightness">明度：%d</string>
     <string name="state_color_range">色相：%d° – %d°，明度：%d%% – %d%%</string>
     <string name="state_contrast">對比度：%.1f</string>
+    <string name="state_from_to_size">由：(%d, %d)，至：(%d, %d)，尺寸：%d × %d</string>
+    <string name="state_from_to_size_1">由：(%d, %d)，至：(%d, %d)，尺寸：1 × 1</string>
     <string name="state_hue">色相: %.0f°</string>
     <string name="state_invert">反相：%.1f</string>
     <string name="state_left_top">左：%d，上：%d</string>
@@ -215,8 +220,6 @@
     <string name="state_saturation">飽和度：%.1f</string>
     <string name="state_selected_bound">選定邊界：%s</string>
     <string name="state_size">尺寸：%d × %d</string>
-    <string name="state_start_end_size">始：(%d, %d)，止：(%d, %d)，尺寸：%d × %d</string>
-    <string name="state_start_end_size_1">始：(%d, %d)，止：(%d, %d)，尺寸：1 × 1</string>
     <string name="state_start_stop">始：(%d, %d)，止：(%d, %d)</string>
     <string name="state_start_stop_">始：(%d, %d)，止：(%d, %d)，</string>
     <string name="state_threshold">閾値：%d</string>

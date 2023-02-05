@@ -195,8 +195,8 @@
                 android:title="@string/delete_invisible" />
 
             <item
-                android:id="@+id/i_layer_merge"
-                android:title="@string/merge" />
+                android:id="@+id/i_layer_merge_down"
+                android:title="@string/merge_down" />
 
             <item
                 android:id="@+id/i_layer_merge_visible"

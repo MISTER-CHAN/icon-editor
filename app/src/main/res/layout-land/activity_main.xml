@@ -4,139 +4,112 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
+    android:orientation="horizontal"
     tools:context=".MainActivity">
 
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="?android:attr/colorBackground"
-        android:elevation="4dp">
-
-        <com.google.android.material.tabs.TabLayout
-            android:id="@+id/tl"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:tabMode="scrollable" />
-    </LinearLayout>
-
-    <TextView
-        android:id="@+id/tv_status"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="4dp"
-        android:maxLines="1" />
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1">
-
-        <View
-            android:id="@+id/v_ruler"
-            android:layout_width="22dp"
-            android:layout_height="22dp"
-            android:background="?android:attr/colorBackground"
-            android:elevation="8dp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <ImageView
-            android:id="@+id/iv_ruler_horizontal"
-            android:layout_width="0dp"
-            android:layout_height="22dp"
-            android:background="?android:attr/colorBackground"
-            android:elevation="8dp"
-            android:scaleType="centerCrop"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/v_ruler"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <ImageView
-            android:id="@+id/iv_ruler_vertical"
-            android:layout_width="22dp"
-            android:layout_height="0dp"
-            android:background="?android:attr/colorBackground"
-            android:elevation="8dp"
-            android:scaleType="centerCrop"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/v_ruler" />
-
-        <FrameLayout
-            android:id="@+id/fl_iv"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/iv_ruler_vertical"
-            app:layout_constraintTop_toBottomOf="@+id/iv_ruler_horizontal">
-
-            <ImageView
-                android:id="@+id/iv_chessboard"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:scaleType="center" />
-
-            <ImageView
-                android:id="@+id/iv"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:scaleType="centerCrop" />
-
-            <ImageView
-                android:id="@+id/iv_preview"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:scaleType="centerCrop" />
-
-            <ImageView
-                android:id="@+id/iv_grid"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:scaleType="centerCrop" />
-
-            <ImageView
-                android:id="@+id/iv_selection"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:scaleType="centerCrop" />
-        </FrameLayout>
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:background="?android:attr/colorBackground"
         android:elevation="8dp"
-        android:orientation="vertical">
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_margin="4dp"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@color/black"
+                android:orientation="vertical">
+
+                <FrameLayout
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_margin="1dp">
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:scaleType="center"
+                        android:src="@mipmap/chessboard" />
+
+                    <View
+                        android:id="@+id/v_foreground_color"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@color/black" />
+                </FrameLayout>
+
+                <FrameLayout
+                    android:layout_width="16dp"
+                    android:layout_height="32dp"
+                    android:layout_marginVertical="1dp"
+                    android:layout_marginEnd="1dp">
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:scaleType="center"
+                        android:src="@mipmap/chessboard" />
+
+                    <View
+                        android:id="@+id/v_background_color"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@color/transparent" />
+                </FrameLayout>
+            </LinearLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_swatches"
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:fadingEdgeLength="16dp"
+                android:requiresFadingEdge="vertical" />
+
+            <TextView
+                android:id="@+id/tv_color_add"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:gravity="center"
+                android:text="@string/add_symbol"
+                android:textAppearance="?android:attr/textAppearanceLarge" />
+        </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
-            android:orientation="horizontal">
+            android:orientation="vertical">
 
             <FrameLayout
                 android:id="@+id/fl_tool_options"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:visibility="gone">
 
-                <HorizontalScrollView
+                <ScrollView
                     android:id="@+id/sv_options_brush"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center_horizontal"
                     android:fadingEdgeLength="16dp"
-                    android:requiresFadingEdge="horizontal"
+                    android:requiresFadingEdge="vertical"
                     android:scrollbars="none"
                     android:visibility="invisible">
 
                     <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal">
+                        android:gravity="center_horizontal"
+                        android:orientation="vertical">
 
                         <com.google.android.material.textfield.TextInputLayout
                             android:layout_width="96dp"
@@ -168,23 +141,23 @@
                                 android:textAlignment="textEnd" />
                         </com.google.android.material.textfield.TextInputLayout>
                     </LinearLayout>
-                </HorizontalScrollView>
+                </ScrollView>
 
-                <HorizontalScrollView
+                <ScrollView
                     android:id="@+id/sv_options_bucket_fill"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center_horizontal"
                     android:fadingEdgeLength="16dp"
-                    android:requiresFadingEdge="horizontal"
+                    android:requiresFadingEdge="vertical"
                     android:scrollbars="none"
                     android:visibility="invisible">
 
                     <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal">
+                        android:gravity="center_horizontal"
+                        android:orientation="vertical">
 
                         <CheckBox
                             android:id="@+id/cb_bucket_fill_contiguous"
@@ -205,23 +178,23 @@
                             android:layout_marginHorizontal="2dp"
                             android:text="@string/threshold" />
                     </LinearLayout>
-                </HorizontalScrollView>
+                </ScrollView>
 
-                <HorizontalScrollView
+                <ScrollView
                     android:id="@+id/sv_options_clone_stamp"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center_horizontal"
                     android:fadingEdgeLength="16dp"
-                    android:requiresFadingEdge="horizontal"
+                    android:requiresFadingEdge="vertical"
                     android:scrollbars="none"
                     android:visibility="invisible">
 
                     <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal">
+                        android:gravity="center_horizontal"
+                        android:orientation="vertical">
 
                         <com.google.android.material.textfield.TextInputLayout
                             android:layout_width="96dp"
@@ -267,28 +240,28 @@
                             android:maxLines="1"
                             android:text="@string/reset_source" />
                     </LinearLayout>
-                </HorizontalScrollView>
+                </ScrollView>
 
-                <HorizontalScrollView
+                <ScrollView
                     android:id="@+id/sv_options_eyedropper"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center_horizontal"
                     android:fadingEdgeLength="16dp"
-                    android:requiresFadingEdge="horizontal"
+                    android:requiresFadingEdge="vertical"
                     android:scrollbars="none"
                     android:visibility="invisible">
 
                     <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal">
+                        android:gravity="center_horizontal"
+                        android:orientation="vertical">
 
                         <RadioGroup
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:orientation="horizontal">
+                            android:orientation="vertical">
 
                             <RadioButton
                                 android:id="@+id/rb_eyedropper_current_layer"
@@ -305,23 +278,23 @@
                                 android:text="@string/all_layers" />
                         </RadioGroup>
                     </LinearLayout>
-                </HorizontalScrollView>
+                </ScrollView>
 
-                <HorizontalScrollView
+                <ScrollView
                     android:id="@+id/sv_options_eraser"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center_horizontal"
                     android:fadingEdgeLength="16dp"
-                    android:requiresFadingEdge="horizontal"
+                    android:requiresFadingEdge="vertical"
                     android:scrollbars="none"
                     android:visibility="invisible">
 
                     <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal">
+                        android:gravity="center_horizontal"
+                        android:orientation="vertical">
 
                         <com.google.android.material.textfield.TextInputLayout
                             android:layout_width="96dp"
@@ -360,23 +333,23 @@
                             android:layout_height="wrap_content"
                             android:text="@string/anti_alias" />
                     </LinearLayout>
-                </HorizontalScrollView>
+                </ScrollView>
 
-                <HorizontalScrollView
+                <ScrollView
                     android:id="@+id/sv_options_gradient"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center_horizontal"
                     android:fadingEdgeLength="16dp"
-                    android:requiresFadingEdge="horizontal"
+                    android:requiresFadingEdge="vertical"
                     android:scrollbars="none"
                     android:visibility="invisible">
 
                     <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal">
+                        android:gravity="center_horizontal"
+                        android:orientation="vertical">
 
                         <com.google.android.material.textfield.TextInputLayout
                             android:layout_width="96dp"
@@ -414,23 +387,23 @@
                             android:layout_height="wrap_content"
                             android:text="@string/anti_alias" />
                     </LinearLayout>
-                </HorizontalScrollView>
+                </ScrollView>
 
-                <HorizontalScrollView
+                <ScrollView
                     android:id="@+id/sv_options_magic_eraser"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center_horizontal"
                     android:fadingEdgeLength="16dp"
-                    android:requiresFadingEdge="horizontal"
+                    android:requiresFadingEdge="vertical"
                     android:scrollbars="none"
                     android:visibility="invisible">
 
                     <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal">
+                        android:gravity="center_horizontal"
+                        android:orientation="vertical">
 
                         <com.google.android.material.textfield.TextInputLayout
                             android:layout_width="96dp"
@@ -485,23 +458,23 @@
                                 android:visibility="gone" />
                         </FrameLayout>
                     </LinearLayout>
-                </HorizontalScrollView>
+                </ScrollView>
 
-                <HorizontalScrollView
+                <ScrollView
                     android:id="@+id/sv_options_magic_paint"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center_horizontal"
                     android:fadingEdgeLength="16dp"
-                    android:requiresFadingEdge="horizontal"
+                    android:requiresFadingEdge="vertical"
                     android:scrollbars="none"
                     android:visibility="invisible">
 
                     <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal">
+                        android:gravity="center_horizontal"
+                        android:orientation="vertical">
 
                         <com.google.android.material.textfield.TextInputLayout
                             android:layout_width="96dp"
@@ -552,23 +525,23 @@
                             android:layout_marginHorizontal="2dp"
                             android:text="@string/tolerance" />
                     </LinearLayout>
-                </HorizontalScrollView>
+                </ScrollView>
 
-                <HorizontalScrollView
+                <ScrollView
                     android:id="@+id/sv_options_patcher"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center_horizontal"
                     android:fadingEdgeLength="16dp"
-                    android:requiresFadingEdge="horizontal"
+                    android:requiresFadingEdge="vertical"
                     android:scrollbars="none"
                     android:visibility="invisible">
 
                     <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal">
+                        android:gravity="center_horizontal"
+                        android:orientation="vertical">
 
                         <com.google.android.material.textfield.TextInputLayout
                             android:layout_width="96dp"
@@ -606,23 +579,23 @@
                             android:layout_height="wrap_content"
                             android:text="@string/anti_alias" />
                     </LinearLayout>
-                </HorizontalScrollView>
+                </ScrollView>
 
-                <HorizontalScrollView
+                <ScrollView
                     android:id="@+id/sv_options_path"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center_horizontal"
                     android:fadingEdgeLength="16dp"
-                    android:requiresFadingEdge="horizontal"
+                    android:requiresFadingEdge="vertical"
                     android:scrollbars="none"
                     android:visibility="invisible">
 
                     <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal">
+                        android:gravity="center_horizontal"
+                        android:orientation="vertical">
 
                         <com.google.android.material.textfield.TextInputLayout
                             android:layout_width="96dp"
@@ -666,23 +639,23 @@
                             android:layout_height="wrap_content"
                             android:text="@string/fill" />
                     </LinearLayout>
-                </HorizontalScrollView>
+                </ScrollView>
 
-                <HorizontalScrollView
+                <ScrollView
                     android:id="@+id/sv_options_pencil"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center_horizontal"
                     android:fadingEdgeLength="16dp"
-                    android:requiresFadingEdge="horizontal"
+                    android:requiresFadingEdge="vertical"
                     android:scrollbars="none"
                     android:visibility="invisible">
 
                     <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal">
+                        android:gravity="center_horizontal"
+                        android:orientation="vertical">
 
                         <com.google.android.material.textfield.TextInputLayout
                             android:layout_width="96dp"
@@ -726,15 +699,15 @@
                             android:layout_height="wrap_content"
                             android:text="@string/with_eraser" />
                     </LinearLayout>
-                </HorizontalScrollView>
+                </ScrollView>
 
                 <LinearLayout
                     android:id="@+id/ll_options_shape"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center_horizontal"
+                    android:gravity="center_horizontal"
+                    android:orientation="vertical"
                     android:visibility="invisible">
 
                     <com.google.android.material.textfield.TextInputLayout
@@ -759,16 +732,16 @@
                         android:checked="true"
                         android:text="@string/fill" />
 
-                    <HorizontalScrollView
+                    <ScrollView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:fadingEdgeLength="16dp"
-                        android:requiresFadingEdge="horizontal">
+                        android:requiresFadingEdge="vertical">
 
                         <RadioGroup
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:orientation="horizontal">
+                            android:orientation="vertical">
 
                             <RadioButton
                                 android:id="@+id/rb_line"
@@ -795,16 +768,16 @@
                                 android:layout_height="wrap_content"
                                 android:text="@string/circle" />
                         </RadioGroup>
-                    </HorizontalScrollView>
+                    </ScrollView>
                 </LinearLayout>
 
                 <LinearLayout
                     android:id="@+id/ll_options_text"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center_horizontal"
+                    android:gravity="center_horizontal"
+                    android:orientation="vertical"
                     android:visibility="invisible">
 
                     <com.google.android.material.textfield.TextInputLayout
@@ -853,26 +826,26 @@
                         android:text="@string/draw" />
                 </LinearLayout>
 
-                <HorizontalScrollView
+                <ScrollView
                     android:id="@+id/sv_options_transformer"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center_horizontal"
                     android:fadingEdgeLength="16dp"
-                    android:requiresFadingEdge="horizontal"
+                    android:requiresFadingEdge="vertical"
                     android:scrollbars="none"
                     android:visibility="invisible">
 
                     <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal">
+                        android:gravity="center_horizontal"
+                        android:orientation="vertical">
 
                         <RadioGroup
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:orientation="horizontal">
+                            android:orientation="vertical">
 
                             <RadioButton
                                 android:id="@+id/rb_transformer_translation"
@@ -901,15 +874,15 @@
                             android:text="@string/lock_aspect_ratio"
                             android:visibility="gone" />
                     </LinearLayout>
-                </HorizontalScrollView>
+                </ScrollView>
             </FrameLayout>
         </LinearLayout>
 
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
 
             <CheckBox
                 android:id="@+id/cb_zoom"
@@ -917,18 +890,18 @@
                 android:layout_height="wrap_content"
                 android:text="@string/zoom" />
 
-            <HorizontalScrollView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
+            <ScrollView
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
                 android:layout_weight="1"
                 android:fadingEdgeLength="16dp"
-                android:requiresFadingEdge="horizontal"
+                android:requiresFadingEdge="vertical"
                 android:scrollbars="none">
 
                 <RadioGroup
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal">
+                    android:orientation="vertical">
 
                     <RadioButton
                         android:id="@+id/rb_selector"
@@ -1027,75 +1000,106 @@
                         android:layout_height="wrap_content"
                         android:text="@string/magic_eraser" />
                 </RadioGroup>
-            </HorizontalScrollView>
+            </ScrollView>
         </LinearLayout>
+    </LinearLayout>
 
-        <LinearLayout
-            android:layout_width="match_parent"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1">
+
+        <View
+            android:id="@+id/v_ruler"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:background="?android:attr/colorBackground"
+            android:elevation="8dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/iv_ruler_horizontal"
+            android:layout_width="0dp"
+            android:layout_height="22dp"
+            android:background="?android:attr/colorBackground"
+            android:elevation="8dp"
+            android:scaleType="centerCrop"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/v_ruler"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/iv_ruler_vertical"
+            android:layout_width="22dp"
+            android:layout_height="0dp"
+            android:background="?android:attr/colorBackground"
+            android:elevation="8dp"
+            android:scaleType="centerCrop"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/v_ruler" />
+
+        <FrameLayout
+            android:id="@+id/fl_iv"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/iv_ruler_vertical"
+            app:layout_constraintTop_toBottomOf="@+id/iv_ruler_horizontal">
+
+            <ImageView
+                android:id="@+id/iv_chessboard"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="center" />
+
+            <ImageView
+                android:id="@+id/iv"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop" />
+
+            <ImageView
+                android:id="@+id/iv_preview"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop" />
+
+            <ImageView
+                android:id="@+id/iv_grid"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop" />
+
+            <ImageView
+                android:id="@+id/iv_selection"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop" />
+        </FrameLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <TextView
+        android:id="@+id/tv_status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="4dp"
+        android:maxLines="1"
+        android:visibility="gone" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:background="?android:attr/colorBackground"
+        android:elevation="4dp"
+        android:visibility="gone">
+
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/tl"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="4dp"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@color/black"
-                android:orientation="horizontal">
-
-                <FrameLayout
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
-                    android:layout_margin="1dp">
-
-                    <ImageView
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:scaleType="center"
-                        android:src="@mipmap/chessboard" />
-
-                    <View
-                        android:id="@+id/v_foreground_color"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:background="@color/black" />
-                </FrameLayout>
-
-                <FrameLayout
-                    android:layout_width="16dp"
-                    android:layout_height="32dp"
-                    android:layout_marginVertical="1dp"
-                    android:layout_marginEnd="1dp">
-
-                    <ImageView
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:scaleType="center"
-                        android:src="@mipmap/chessboard" />
-
-                    <View
-                        android:id="@+id/v_background_color"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:background="@color/transparent" />
-                </FrameLayout>
-            </LinearLayout>
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rv_swatches"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:fadingEdgeLength="16dp"
-                android:requiresFadingEdge="horizontal" />
-
-            <TextView
-                android:id="@+id/tv_color_add"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:gravity="center"
-                android:text="@string/add_symbol"
-                android:textAppearance="?android:attr/textAppearanceLarge" />
-        </LinearLayout>
+            app:tabMode="scrollable" />
     </LinearLayout>
 </LinearLayout>
