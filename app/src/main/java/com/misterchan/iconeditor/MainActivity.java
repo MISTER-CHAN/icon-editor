@@ -29,6 +29,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Looper;
+import android.os.MessageQueue;
 import android.text.Editable;
 import android.text.InputFilter;
 import android.view.Gravity;
@@ -62,7 +63,9 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatSpinner;
 import androidx.core.content.FileProvider;
+import androidx.core.view.OneShotPreDrawListener;
 import androidx.documentfile.provider.DocumentFile;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -77,8 +80,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
@@ -287,8 +288,8 @@ public class MainActivity extends AppCompatActivity {
     private LayerTree layerTree;
     private LinearLayout llOptionsShape;
     private LinearLayout llOptionsText;
-    private LinkedList<Long> palette = new LinkedList<>();
-    private final List<Tab> tabs = new ArrayList<>();
+    private LinkedList<Long> palette;
+    private List<Tab> tabs;
     private MenuItem miHasAlpha;
     private MenuItem miLayerColorMatrix;
     private MenuItem miLayerCurves;
@@ -2446,6 +2447,23 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    private final MessageQueue.IdleHandler onUiThreadWaitForMsgSinceMAHasBeenCreatedHandler = () -> {
+        load();
+        return false;
+    };
+
+    private void addDefaultTab() {
+        if (fileToBeOpened != null) {
+            openFile(fileToBeOpened);
+        } else {
+            tab = new Tab();
+            tab.bitmap = Bitmap.createBitmap(48, 48, Bitmap.Config.ARGB_8888);
+            tab.paint.setBlendMode(BlendMode.SRC_OVER);
+            tab.filePath = null;
+            addTab(tab, 0, getString(R.string.untitled));
+        }
+    }
+
     private void addTab(Bitmap bitmap, int position) {
         final Tab t = new Tab();
         t.bitmap = bitmap;
@@ -2465,42 +2483,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void addTab(Tab tab, int position, CharSequence title) {
-        addTab(tab, position, title, true);
-    }
-
-    private void addTab(Tab tab, int position, CharSequence title, boolean setSelected) {
         tabs.add(position, tab);
         addToHistory(tab);
 
-        fitOnScreen(tab);
-
-        final TabLayout.Tab t = tabLayout.newTab().setCustomView(R.layout.tab).setTag(tab);
-        tab.initViews(t.getCustomView());
-        tab.setTitle(title);
-        tab.setVisible(tab.visible);
-        tab.addOVCBCCListener(getOVCBCCListener(tab));
-        tabLayout.addTab(t, position, true);
-    }
-
-    private void addToHistory() {
-        addToHistory(tab);
-    }
-
-    private void addToHistory(Tab tab) {
-        tab.history.add(tab.bitmap);
-    }
-
-    private void checkLayerBlendModeMenuItem(BlendMode blendMode) {
-        for (int i = 0; i < BLEND_MODES.length; ++i) {
-            final MenuItem mi = smBlendModes.getItem(i);
-            mi.setChecked(BLEND_MODES[i] == blendMode);
-        }
-    }
-
-    private void checkLayerFilterMenuItem(Tab.Filter filter) {
-        miLayerColorMatrix.setChecked(filter == Tab.Filter.COLOR_MATRIX);
-        miLayerCurves.setChecked(filter == Tab.Filter.CURVES);
-        miLayerHsv.setChecked(filter == Tab.Filter.HSV);
+        loadTab(tab, position, title, true);
     }
 
     private void addLayer(Bitmap bitmap, int position) {
@@ -2520,6 +2506,14 @@ public class MainActivity extends AppCompatActivity {
         t.paint.setBlendMode(BlendMode.SRC_OVER);
         t.visible = visible;
         addTab(t, position, title);
+    }
+
+    private void addToHistory() {
+        addToHistory(tab);
+    }
+
+    private void addToHistory(Tab tab) {
+        tab.history.add(tab.bitmap);
     }
 
     private void calculateBackgroundSizeOnView() {
@@ -2558,6 +2552,19 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return marqueeBoundBeingDragged;
+    }
+
+    private void checkLayerBlendModeMenuItem(BlendMode blendMode) {
+        for (int i = 0; i < BLEND_MODES.length; ++i) {
+            final MenuItem mi = smBlendModes.getItem(i);
+            mi.setChecked(BLEND_MODES[i] == blendMode);
+        }
+    }
+
+    private void checkLayerFilterMenuItem(Tab.Filter filter) {
+        miLayerColorMatrix.setChecked(filter == Tab.Filter.COLOR_MATRIX);
+        miLayerCurves.setChecked(filter == Tab.Filter.CURVES);
+        miLayerHsv.setChecked(filter == Tab.Filter.HSV);
     }
 
     private void clearStatus() {
@@ -2638,21 +2645,6 @@ public class MainActivity extends AppCompatActivity {
                 selection);
         canvas.drawRect(selection.left, selection.top, selection.right, selection.bottom,
                 eraser);
-    }
-
-    private LinkedList<Long> defaultPalette() {
-        return new LinkedList<>() {
-            {
-                offer(Color.pack(Color.BLACK));
-                offer(Color.pack(Color.WHITE));
-                offer(Color.pack(Color.RED));
-                offer(Color.pack(Color.YELLOW));
-                offer(Color.pack(Color.GREEN));
-                offer(Color.pack(Color.CYAN));
-                offer(Color.pack(Color.BLUE));
-                offer(Color.pack(Color.MAGENTA));
-            }
-        };
     }
 
     private boolean dragMarqueeBound(float viewX, float viewY) {
@@ -3268,7 +3260,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void initColorAdapter(ColorAdapter colorAdapter) {
+    private void initColorAdapter() {
         colorAdapter.setOnItemClickListener(view -> {
             final long color = (Long) view.getTag();
             paint.setColor(color);
@@ -3336,23 +3328,28 @@ public class MainActivity extends AppCompatActivity {
         selectionCanvas = new Canvas(selectionImage);
         ivSelection.setImageBitmap(selectionImage);
 
-        tietPencilBlurRadius.setText(String.valueOf(0.0f));
-        tietEraserBlurRadius.setText(String.valueOf(0.0f));
-        tietEraserStrokeWidth.setText(String.valueOf(eraser.getStrokeWidth()));
-        tietPencilStrokeWidth.setText(String.valueOf(paint.getStrokeWidth()));
-        tietTextSize.setText(String.valueOf(paint.getTextSize()));
-
-        if (fileToBeOpened != null) {
-            openFile(fileToBeOpened);
+        if (tabs.isEmpty()) {
+            addDefaultTab();
+            rbPencil.setChecked(true);
         } else {
-            tab = new Tab();
-            tab.bitmap = Bitmap.createBitmap(48, 48, Bitmap.Config.ARGB_8888);
-            tab.paint.setBlendMode(BlendMode.SRC_OVER);
-            tab.filePath = null;
-            addTab(tab, 0, getString(R.string.untitled));
+            for (int i = 0; i < tabs.size(); ++i) {
+                final Tab tab = tabs.get(i);
+                loadTab(tab, i, tab.getTitle(), false);
+            }
+            onTabSelectedListener.onTabSelected(tabLayout.getTabAt(tabLayout.getSelectedTabPosition()));
         }
 
-        rbPencil.setChecked(true);
+    }
+
+    private void loadTab(Tab tab, int position, CharSequence title, boolean setSelected) {
+        fitOnScreen(tab);
+
+        final TabLayout.Tab t = tabLayout.newTab().setCustomView(R.layout.tab).setTag(tab);
+        tab.initViews(t.getCustomView());
+        tab.setTitle(title);
+        tab.setVisible(tab.visible);
+        tab.addOVCBCCListener(getOVCBCCListener(tab));
+        tabLayout.addTab(t, position, true);
     }
 
     @Override
@@ -3390,6 +3387,13 @@ public class MainActivity extends AppCompatActivity {
             configuration.setLocale(locale);
             Locale.setDefault(locale);
             resources.updateConfiguration(configuration, resources.getDisplayMetrics());
+        }
+
+        final boolean isLandscape = getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
+
+        if (isLandscape) {
+//            supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
+            getSupportActionBar().hide();
         }
 
         // Content view
@@ -3468,6 +3472,7 @@ public class MainActivity extends AppCompatActivity {
         tvStatus = findViewById(R.id.tv_status);
         vBackgroundColor = findViewById(R.id.v_background_color);
         vForegroundColor = findViewById(R.id.v_foreground_color);
+        final ViewModel viewModel = new ViewModelProvider(this).get(ViewModel.class);
 
         findViewById(R.id.b_bucket_fill_threshold).setOnClickListener(onThresholdButtonClickListener);
         findViewById(R.id.b_clone_stamp_src).setOnClickListener(onCloneStampSrcButtonClickListener);
@@ -3512,6 +3517,7 @@ public class MainActivity extends AppCompatActivity {
         ((CompoundButton) findViewById(R.id.rb_transformer_rotation)).setOnCheckedChangeListener((OnCheckedListener) () -> onTransformerChange(onImageViewTouchWithTransformerOfRotationListener));
         ((CompoundButton) findViewById(R.id.rb_transformer_scale)).setOnCheckedChangeListener((OnCheckedListener) () -> onTransformerChange(onImageViewTouchWithTransformerOfScaleListener));
         ((CompoundButton) findViewById(R.id.rb_transformer_translation)).setOnCheckedChangeListener((OnCheckedListener) () -> onTransformerChange(onImageViewTouchWithTransformerOfTranslationListener));
+        rvSwatches.setItemAnimator(new DefaultItemAnimator());
         tabLayout.addOnTabSelectedListener(onTabSelectedListener);
         tietCloneStampBlurRadius.addTextChangedListener(onBlurRadiusTextChangedListener);
         tietCloneStampStrokeWidth.addTextChangedListener(onStrokeWidthETTextChangedListener);
@@ -3599,14 +3605,47 @@ public class MainActivity extends AppCompatActivity {
             return true;
         });
 
-        rvSwatches.setItemAnimator(new DefaultItemAnimator());
-        final LinearLayoutManager layoutManager = new LinearLayoutManager(this);
-        layoutManager.setOrientation(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE ? RecyclerView.VERTICAL : RecyclerView.HORIZONTAL);
-        rvSwatches.setLayoutManager(layoutManager);
+        {
+            final LinearLayoutManager llm = new LinearLayoutManager(this);
+            llm.setOrientation(isLandscape ? RecyclerView.VERTICAL : RecyclerView.HORIZONTAL);
+            rvSwatches.setLayoutManager(llm);
+        }
+
+        tietPencilBlurRadius.setText(String.valueOf(0.0f));
+        tietPencilStrokeWidth.setText(String.valueOf(paint.getStrokeWidth()));
+        tietEraserBlurRadius.setText(String.valueOf(0.0f));
+        tietEraserStrokeWidth.setText(String.valueOf(eraser.getStrokeWidth()));
+        tietTextSize.setText(String.valueOf(paint.getTextSize()));
 
         chessboard = BitmapFactory.decodeResource(getResources(), R.mipmap.chessboard);
-
         fileToBeOpened = getIntent().getData();
+        tabs = viewModel.getTabs();
+
+        palette = viewModel.getPalette();
+        colorAdapter = new ColorAdapter(palette);
+        initColorAdapter();
+        rvSwatches.setAdapter(colorAdapter);
+
+        if (isLandscape) {
+            final LinearLayout ll = findViewById(R.id.ll_tl);
+            OneShotPreDrawListener.add(ll, () -> {
+                final int width = ll.getMeasuredHeight(), height = tabLayout.getMeasuredHeight();
+                final FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) ll.getLayoutParams();
+                lp.width = width;
+                lp.height = height;
+                ll.setLayoutParams(lp);
+                final float radius = height >> 1;
+                ll.setPivotX(width - radius);
+                ll.setPivotY(radius);
+                ll.setRotation(90.0f);
+            });
+            Toast.makeText(this, getString(R.string.please_switch_orientation_to_vertical_to_get_all_functions), Toast.LENGTH_LONG).show();
+        }
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
     }
 
     @Override
@@ -3626,7 +3665,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-
+        recycleAllBitmaps(this);
         super.onDestroy();
     }
 
@@ -4401,37 +4440,12 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private static MainActivity lastMa;
-
     @Override
     protected void onResume() {
         super.onResume();
         if (hasNotLoaded) {
             hasNotLoaded = false;
-            MAIN_LOOPER.getQueue().addIdleHandler(() -> {
-                if (lastMa == null) {
-                    palette = defaultPalette();
-
-                } else {
-                    palette = lastMa.palette;
-
-                    closeTab(0, false);
-                    for (int i = 0; i < lastMa.tabs.size(); ++i) {
-                        final Tab tab = lastMa.tabs.get(i);
-                        addTab(tab, i, tab.getTitle(), false);
-                    }
-                    onTabSelectedListener.onTabSelected(tabLayout.getTabAt(0));
-                }
-                lastMa = this;
-
-                colorAdapter = new ColorAdapter(palette);
-                initColorAdapter(colorAdapter);
-                rvSwatches.setAdapter(colorAdapter);
-
-                load();
-
-                return false;
-            });
+            MAIN_LOOPER.getQueue().addIdleHandler(onUiThreadWaitForMsgSinceMAHasBeenCreatedHandler);
         }
     }
 
@@ -4473,14 +4487,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    @Override
-    public void onWindowFocusChanged(boolean hasFocus) {
-        if (hasNotLoaded && hasFocus) {
-            hasNotLoaded = false;
-//            load();
-        }
-    }
-
     private void openImage(Bitmap bitmap, Uri uri) {
         final int width = bitmap.getWidth(), height = bitmap.getHeight();
         final Bitmap bm = Bitmap.createBitmap(width, height,
@@ -4489,29 +4495,18 @@ public class MainActivity extends AppCompatActivity {
         bitmap.recycle();
         final DocumentFile documentFile = DocumentFile.fromSingleUri(this, uri);
         final String type = documentFile.getType();
-        Toast.makeText(this, type, Toast.LENGTH_LONG).show();
         if (type != null) {
             String path = null;
-            Bitmap.CompressFormat compressFormat = null;
-            switch (type) {
-                case "image/jpeg":
-                    compressFormat = Bitmap.CompressFormat.JPEG;
-                    break;
-                case "image/png":
-                    compressFormat = Bitmap.CompressFormat.PNG;
-                    break;
-                case "image/webp":
-                    compressFormat = Bitmap.CompressFormat.WEBP_LOSSLESS;
-                    break;
-                case "image/bmp":
-                case "image/x-ms-bmp":
-                case "image/gif":
-                default:
-                    Toast.makeText(this, R.string.not_supported_file_type, Toast.LENGTH_SHORT).show();
-                    break;
-            }
+            final Bitmap.CompressFormat compressFormat = switch (type) {
+                case "image/jpeg" -> Bitmap.CompressFormat.JPEG;
+                case "image/png" -> Bitmap.CompressFormat.PNG;
+                case "image/webp" -> Bitmap.CompressFormat.WEBP_LOSSLESS;
+                default -> null;
+            };
             if (compressFormat != null) {
                 path = UriToPathUtil.getRealFilePath(this, uri);
+            } else {
+                Toast.makeText(this, R.string.not_supported_file_type, Toast.LENGTH_SHORT).show();
             }
             addTab(bm, tabs.size(), documentFile.getName(), path, type, compressFormat);
         } else {
@@ -4542,6 +4537,58 @@ public class MainActivity extends AppCompatActivity {
                     Math.min(imageWidth, selection.right), Math.min(imageHeight, selection.bottom));
         } else {
             hasSelection = false;
+        }
+    }
+
+    private static void recycleAllBitmaps(MainActivity ma) {
+        if (ma.bitmapSrc != null) {
+            ma.bitmapSrc.recycle();
+            ma.bitmapSrc = null;
+        }
+        if (ma.chessboard != null) {
+            ma.chessboard.recycle();
+            ma.chessboard = null;
+        }
+        if (ma.chessboardImage != null) {
+            ma.chessboardImage.recycle();
+            ma.chessboardImage = null;
+            ma.chessboardCanvas = null;
+        }
+        if (ma.clipboard != null) {
+            ma.clipboard.recycle();
+            ma.clipboard = null;
+        }
+        if (ma.gridImage != null) {
+            ma.gridImage.recycle();
+            ma.gridImage = null;
+            ma.gridCanvas = null;
+        }
+        if (ma.lastMerged != null) {
+            ma.lastMerged.recycle();
+            ma.lastMerged = null;
+        }
+        if (ma.previewImage != null) {
+            ma.previewImage.recycle();
+            ma.previewImage = null;
+            ma.previewCanvas = null;
+        }
+        if (ma.rulerHImage != null) {
+            ma.rulerHImage.recycle();
+            ma.rulerHImage = null;
+        }
+        if (ma.rulerVImage != null) {
+            ma.rulerVImage.recycle();
+            ma.rulerVImage = null;
+        }
+        if (ma.selectionImage != null) {
+            ma.selectionImage.recycle();
+            ma.selectionImage = null;
+            ma.selectionCanvas = null;
+        }
+        if (ma.viewImage != null) {
+            ma.viewImage.recycle();
+            ma.viewImage = null;
+            ma.viewCanvas = null;
         }
     }
 
@@ -4644,7 +4691,7 @@ public class MainActivity extends AppCompatActivity {
             bitmap.compress(tab.compressFormat, 100, fos);
             fos.flush();
         } catch (IOException e) {
-            Toast.makeText(this, "Failed\n" + e.getMessage(), Toast.LENGTH_LONG).show();
+            Toast.makeText(this, getString(R.string.failed) + "\n" + e.getMessage(), Toast.LENGTH_LONG).show();
             e.printStackTrace();
         }
 

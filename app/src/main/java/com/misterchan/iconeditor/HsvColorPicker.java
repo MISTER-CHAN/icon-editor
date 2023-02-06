@@ -74,7 +74,7 @@ class HsvColorPicker extends ColorPicker {
         tietHue = (TextInputEditText) tilHue.getEditText();
         tietSaturation = (TextInputEditText) tilSaturation.getEditText();
         tietValue = (TextInputEditText) tilValue.getEditText();
-        vPreview = dialog.findViewById(R.id.v_color_preview);
+        vPreview = dialog.findViewById(R.id.v_color);
 
         hideOtherColorPickers(dialog);
         hideAlphaComp(gl);

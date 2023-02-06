@@ -3,7 +3,6 @@ package com.misterchan.iconeditor;
 import android.content.Context;
 import android.widget.SeekBar;
 
-import androidx.annotation.ColorInt;
 import androidx.annotation.ColorLong;
 import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
@@ -27,7 +26,7 @@ abstract class ArgbColorPicker extends ColorPicker {
         tietRed = dialog.findViewById(R.id.tiet_comp_0);
         tietGreen = dialog.findViewById(R.id.tiet_comp_1);
         tietBlue = dialog.findViewById(R.id.tiet_comp_2);
-        vPreview = dialog.findViewById(R.id.v_color_preview);
+        vPreview = dialog.findViewById(R.id.v_color);
     }
 
     protected ArgbColorPicker(Context context, int titleId, Settings settings,

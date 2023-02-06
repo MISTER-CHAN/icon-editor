@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/gl"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    android:columnCount="2"
+    android:gravity="center"
+    android:orientation="horizontal"
+    android:rowCount="5">
+
+    <com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/tiet_alpha"
+            android:layout_width="64dp"
+            android:layout_height="wrap_content"
+            android:background="@color/transparent"
+            android:hint="@string/a"
+            android:inputType="text"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:textAlignment="textEnd" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <SeekBar
+        android:id="@+id/sb_alpha"
+        android:layout_gravity="center_vertical|fill_horizontal"
+        android:max="0xFF" />
+
+    <com.google.android.material.textfield.TextInputLayout android:id="@+id/til_comp_0">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/tiet_comp_0"
+            android:layout_width="64dp"
+            android:layout_height="wrap_content"
+            android:background="@color/transparent"
+            android:hint="@string/r"
+            android:inputType="text"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:textAlignment="textEnd" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <SeekBar
+        android:id="@+id/sb_comp_0"
+        android:layout_gravity="center_vertical|fill_horizontal"
+        android:max="0xFF" />
+
+    <com.google.android.material.textfield.TextInputLayout android:id="@+id/til_comp_1">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/tiet_comp_1"
+            android:layout_width="64dp"
+            android:layout_height="wrap_content"
+            android:background="@color/transparent"
+            android:hint="@string/g"
+            android:inputType="text"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:textAlignment="textEnd" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <SeekBar
+        android:id="@+id/sb_comp_1"
+        android:layout_gravity="center_vertical|fill_horizontal"
+        android:max="0xFF" />
+
+    <com.google.android.material.textfield.TextInputLayout android:id="@+id/til_comp_2">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/tiet_comp_2"
+            android:layout_width="64dp"
+            android:layout_height="wrap_content"
+            android:background="@color/transparent"
+            android:hint="@string/b"
+            android:inputType="text"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:textAlignment="textEnd" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <SeekBar
+        android:id="@+id/sb_comp_2"
+        android:layout_gravity="center_vertical|fill_horizontal"
+        android:max="0xFF" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/til_comp_3"
+        android:visibility="gone">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/tiet_comp_3"
+            android:layout_width="64dp"
+            android:layout_height="wrap_content"
+            android:background="@color/transparent"
+            android:hint="@string/k"
+            android:inputType="text"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:textAlignment="textEnd" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <SeekBar
+        android:id="@+id/sb_comp_3"
+        android:layout_gravity="center_vertical|fill_horizontal"
+        android:max="0xFF"
+        android:visibility="gone" />
+</GridLayout>

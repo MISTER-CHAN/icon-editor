@@ -2,7 +2,6 @@ package com.misterchan.iconeditor;
 
 import android.content.Context;
 import android.graphics.ColorSpace;
-import android.view.inputmethod.EditorInfo;
 import android.widget.SeekBar;
 
 import androidx.annotation.ColorInt;
@@ -81,7 +80,7 @@ class XyYColorPicker extends ColorPicker {
         tietX_ = (TextInputEditText) tilX_.getEditText();
         tietY_ = (TextInputEditText) tilY_.getEditText();
         tietY = (TextInputEditText) tilY.getEditText();
-        vPreview = dialog.findViewById(R.id.v_color_preview);
+        vPreview = dialog.findViewById(R.id.v_color);
 
         hideOtherColorPickers(dialog);
         hideAlphaComp(dialog.findViewById(R.id.gl));

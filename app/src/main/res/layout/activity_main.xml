@@ -17,6 +17,7 @@
             android:id="@+id/tl"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            app:tabGravity="start"
             app:tabMode="scrollable" />
     </LinearLayout>
 
@@ -27,82 +28,11 @@
         android:layout_margin="4dp"
         android:maxLines="1" />
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <include
+        layout="@layout/canvas"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1">
-
-        <View
-            android:id="@+id/v_ruler"
-            android:layout_width="22dp"
-            android:layout_height="22dp"
-            android:background="?android:attr/colorBackground"
-            android:elevation="8dp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <ImageView
-            android:id="@+id/iv_ruler_horizontal"
-            android:layout_width="0dp"
-            android:layout_height="22dp"
-            android:background="?android:attr/colorBackground"
-            android:elevation="8dp"
-            android:scaleType="centerCrop"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/v_ruler"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <ImageView
-            android:id="@+id/iv_ruler_vertical"
-            android:layout_width="22dp"
-            android:layout_height="0dp"
-            android:background="?android:attr/colorBackground"
-            android:elevation="8dp"
-            android:scaleType="centerCrop"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/v_ruler" />
-
-        <FrameLayout
-            android:id="@+id/fl_iv"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/iv_ruler_vertical"
-            app:layout_constraintTop_toBottomOf="@+id/iv_ruler_horizontal">
-
-            <ImageView
-                android:id="@+id/iv_chessboard"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:scaleType="center" />
-
-            <ImageView
-                android:id="@+id/iv"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:scaleType="centerCrop" />
-
-            <ImageView
-                android:id="@+id/iv_preview"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:scaleType="centerCrop" />
-
-            <ImageView
-                android:id="@+id/iv_grid"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:scaleType="centerCrop" />
-
-            <ImageView
-                android:id="@+id/iv_selection"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:scaleType="centerCrop" />
-        </FrameLayout>
-    </androidx.constraintlayout.widget.ConstraintLayout>
+        android:layout_weight="1" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -817,7 +747,6 @@
                             android:id="@+id/tiet_text"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:autofillHints="0"
                             android:background="@color/transparent"
                             android:hint="@string/text"
                             android:inputType="text" />
@@ -832,7 +761,6 @@
                             android:id="@+id/tiet_text_size"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:autofillHints="0"
                             android:background="@color/transparent"
                             android:hint="@string/size"
                             android:inputType="numberDecimal"
@@ -928,104 +856,10 @@
                 <RadioGroup
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
                     android:orientation="horizontal">
 
-                    <RadioButton
-                        android:id="@+id/rb_selector"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/select" />
-
-                    <RadioButton
-                        android:id="@+id/rb_transformer"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/transform" />
-
-                    <RadioButton
-                        android:id="@+id/rb_eyedropper"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/eyedropper" />
-
-                    <RadioButton
-                        android:id="@+id/rb_ruler"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/ruler"
-                        android:visibility="gone" />
-
-                    <RadioButton
-                        android:id="@+id/rb_pencil"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/pencil" />
-
-                    <RadioButton
-                        android:id="@+id/rb_eraser"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/eraser" />
-
-                    <RadioButton
-                        android:id="@+id/rb_shape"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/shape" />
-
-                    <RadioButton
-                        android:id="@+id/rb_path"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/path" />
-
-                    <RadioButton
-                        android:id="@+id/rb_bucket_fill"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/bucket_fill" />
-
-                    <RadioButton
-                        android:id="@+id/rb_gradient"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/gradient" />
-
-                    <RadioButton
-                        android:id="@+id/rb_text"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/text" />
-
-                    <RadioButton
-                        android:id="@+id/rb_patcher"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/patch" />
-
-                    <RadioButton
-                        android:id="@+id/rb_clone_stamp"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/stamp" />
-
-                    <RadioButton
-                        android:id="@+id/rb_brush"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/brush" />
-
-                    <RadioButton
-                        android:id="@+id/rb_magic_paint"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/magic_paint" />
-
-                    <RadioButton
-                        android:id="@+id/rb_magic_eraser"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/magic_eraser" />
+                    <include layout="@layout/tools" />
                 </RadioGroup>
             </HorizontalScrollView>
         </LinearLayout>

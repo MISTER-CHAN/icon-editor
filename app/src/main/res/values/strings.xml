@@ -90,6 +90,7 @@
     <string name="eraser">Eraser</string>
     <string name="exception_merge_as_hidden">Exception: Please select the first tab of two images.</string>
     <string name="eyedropper">Eyedropper</string>
+    <string name="failed">Failed</string>
     <string name="fast_add_layer_mask">Fast Add a Layer Mask</string>
     <string name="fast_create_clipping_mask">Fast Create a Clipping Mask</string>
     <string name="file">File</string>
@@ -188,6 +189,7 @@
     <string name="percent" translatable="false">%</string>
     <string name="performance">Performance</string>
     <string name="please_save_first">Please save first.</string>
+    <string name="please_switch_orientation_to_vertical_to_get_all_functions">Please switch the orientation to vertical to get all functions.</string>
     <string name="position">Position</string>
     <string name="precise">Precise</string>
     <string name="preferences">Preferences</string>

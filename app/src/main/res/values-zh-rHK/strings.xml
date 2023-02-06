@@ -82,6 +82,7 @@
     <string name="eraser">擦膠</string>
     <string name="exception_merge_as_hidden">異常：請選中兩張圖像中第一個分頁。</string>
     <string name="eyedropper">滴管</string>
+    <string name="failed">失敗</string>
     <string name="fast_add_layer_mask">快速新增圖層遮色片</string>
     <string name="fast_create_clipping_mask">快速建立剪裁遮色片</string>
     <string name="file">檔案</string>
@@ -168,6 +169,7 @@
     <string name="pen_with_filter">濾光筆</string>
     <string name="performance">效能</string>
     <string name="please_save_first">請先儲存。</string>
+    <string name="please_switch_orientation_to_vertical_to_get_all_functions">請切換至縱向以獲取所有功能。</string>
     <string name="position">位置</string>
     <string name="precise">精密</string>
     <string name="preferences">偏好</string>

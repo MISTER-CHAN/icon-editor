@@ -16,7 +16,7 @@ class ColorAdapter extends RecyclerView.Adapter<ColorAdapter.ViewHolder> {
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            view = itemView.findViewById(R.id.v_color_item);
+            view = itemView.findViewById(R.id.v_color);
         }
     }
 

@@ -1,7 +1,6 @@
 package com.misterchan.iconeditor;
 
 import android.content.Context;
-import android.view.inputmethod.EditorInfo;
 import android.widget.GridLayout;
 import android.widget.SeekBar;
 
@@ -64,7 +63,7 @@ class CmykColorPicker extends ColorPicker {
         tietMagenta = (TextInputEditText) tilMagenta.getEditText();
         tietYellow = (TextInputEditText) tilYellow.getEditText();
         tietKey = dialog.findViewById(R.id.tiet_comp_3);
-        vPreview = dialog.findViewById(R.id.v_color_preview);
+        vPreview = dialog.findViewById(R.id.v_color);
 
         hideOtherColorPickers(dialog);
         hideAlphaComp(gl);

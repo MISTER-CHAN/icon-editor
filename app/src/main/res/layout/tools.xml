@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <RadioButton
+        android:id="@+id/rb_selector"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/select" />
+
+    <RadioButton
+        android:id="@+id/rb_transformer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/transform" />
+
+    <RadioButton
+        android:id="@+id/rb_eyedropper"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/eyedropper" />
+
+    <RadioButton
+        android:id="@+id/rb_ruler"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/ruler"
+        android:visibility="gone" />
+
+    <RadioButton
+        android:id="@+id/rb_pencil"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/pencil" />
+
+    <RadioButton
+        android:id="@+id/rb_eraser"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/eraser" />
+
+    <RadioButton
+        android:id="@+id/rb_shape"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/shape" />
+
+    <RadioButton
+        android:id="@+id/rb_path"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/path" />
+
+    <RadioButton
+        android:id="@+id/rb_bucket_fill"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/bucket_fill" />
+
+    <RadioButton
+        android:id="@+id/rb_gradient"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/gradient" />
+
+    <RadioButton
+        android:id="@+id/rb_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/text" />
+
+    <RadioButton
+        android:id="@+id/rb_patcher"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/patch" />
+
+    <RadioButton
+        android:id="@+id/rb_clone_stamp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/stamp" />
+
+    <RadioButton
+        android:id="@+id/rb_brush"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/brush" />
+
+    <RadioButton
+        android:id="@+id/rb_magic_paint"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/magic_paint" />
+
+    <RadioButton
+        android:id="@+id/rb_magic_eraser"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/magic_eraser" />
+</merge>

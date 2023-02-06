@@ -19,10 +19,10 @@
 
         <activity
             android:name=".MainActivity"
-            android:configChanges="fontScale|keyboardHidden|locale|orientation"
+            android:configChanges="fontScale|keyboard|keyboardHidden|locale"
             android:exported="true"
-            android:resizeableActivity="true"
-            android:screenOrientation="portrait"
+            android:resizeableActivity="false"
+            android:screenOrientation="fullUser"
             tools:ignore="LockedOrientationActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
