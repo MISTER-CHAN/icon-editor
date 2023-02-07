@@ -43,7 +43,7 @@ class Tab {
     public final BitmapHistory history = new BitmapHistory();
     public final CellGrid cellGrid = new CellGrid();
     private CheckBox cbVisible;
-    public final Deque<Point> guides = new LinkedList<>();
+    public final Deque<Guide> guides = new LinkedList<>();
     public Filter filter;
     public float scale;
     public float translationX, translationY;

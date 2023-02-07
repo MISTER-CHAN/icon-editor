@@ -310,7 +310,6 @@ public class MainActivity extends AppCompatActivity {
     private RadioButton rbPencil;
     private RadioButton rbTransformer;
     private final Rect selection = new Rect();
-    private RecyclerView rvSwatches;
     private final Ruler ruler = new Ruler();
     private Settings settings;
     private String tree = "";
@@ -322,8 +321,6 @@ public class MainActivity extends AppCompatActivity {
     private TextInputEditText tietBrushStrokeWidth;
     private TextInputEditText tietCloneStampBlurRadius;
     private TextInputEditText tietCloneStampStrokeWidth;
-    private TextInputEditText tietEraserBlurRadius;
-    private TextInputEditText tietEraserStrokeWidth;
     private TextInputEditText tietGradientBlurRadius;
     private TextInputEditText tietGradientStrokeWidth;
     private TextInputEditText tietMagicEraserStrokeWidth;
@@ -337,7 +334,6 @@ public class MainActivity extends AppCompatActivity {
     private TextInputEditText tietPencilStrokeWidth;
     private TextInputEditText tietShapeStrokeWidth;
     private TextInputEditText tietText;
-    private TextInputEditText tietTextSize;
     private TextView tvStatus;
     private Thread thread = new Thread();
     private Transformer transformer;
@@ -567,12 +563,10 @@ public class MainActivity extends AppCompatActivity {
                             R.string.swap)
                     .show();
 
-    private final ColorMatrixManager.OnMatrixElementsChangeListener onColorMatrixChangeListener = matrix -> {
-        runOrStart(() -> {
-            imagePreview.addColorMatrixColorFilter(matrix);
-            drawImagePreviewOnView(true);
-        }, true);
-    };
+    private final ColorMatrixManager.OnMatrixElementsChangeListener onColorMatrixChangeListener = matrix -> runOrStart(() -> {
+        imagePreview.addColorMatrixColorFilter(matrix);
+        drawImagePreviewOnView(true);
+    }, true);
 
     private final ColorMatrixManager.OnMatrixElementsChangeListener onLayerColorMatrixChangeListener = matrix -> {
         tab.colorMatrix = matrix;
@@ -621,15 +615,13 @@ public class MainActivity extends AppCompatActivity {
         clearStatus();
     };
 
-    private final CurvesDialog.OnCurvesChangeListener onFilterCurvesChangeListener = (curves, stopped) -> {
-        runOrStart(() -> {
-            final int w = imagePreview.getWidth(), h = imagePreview.getHeight();
-            final int[] src = imagePreview.getPixels(), dst = new int[w * h];
-            BitmapUtil.applyCurves(src, dst, curves);
-            imagePreview.setPixels(dst, w, h);
-            drawImagePreviewOnView(stopped);
-        }, stopped);
-    };
+    private final CurvesDialog.OnCurvesChangeListener onFilterCurvesChangeListener = (curves, stopped) -> runOrStart(() -> {
+        final int w = imagePreview.getWidth(), h = imagePreview.getHeight();
+        final int[] src = imagePreview.getPixels(), dst = new int[w * h];
+        BitmapUtil.applyCurves(src, dst, curves);
+        imagePreview.setPixels(dst, w, h);
+        drawImagePreviewOnView(stopped);
+    }, stopped);
 
     private final HiddenImageMaker.OnFinishSettingListener onFinishMakingHiddenImageListener = bitmap -> {
         final Bitmap bm = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
@@ -683,12 +675,10 @@ public class MainActivity extends AppCompatActivity {
         }, stopped);
     };
 
-    private final LightingDialog.OnLightingChangeListener onLightingChangeListener = (lighting, stopped) -> {
-        runOrStart(() -> {
-            imagePreview.addLightingColorFilter(lighting);
-            drawImagePreviewOnView(stopped);
-        }, stopped);
-    };
+    private final LightingDialog.OnLightingChangeListener onLightingChangeListener = (lighting, stopped) -> runOrStart(() -> {
+        imagePreview.addLightingColorFilter(lighting);
+        drawImagePreviewOnView(stopped);
+    }, stopped);
 
     private final NewImageDialog.OnFinishSettingListener onFinishSettingNewImagePropertiesListener = this::createImage;
 
@@ -934,29 +924,28 @@ public class MainActivity extends AppCompatActivity {
 
     @SuppressLint("ClickableViewAccessibility")
     private final View.OnTouchListener onRulerHTouchListener = new View.OnTouchListener() {
-        Point guide;
+        private Guide guide;
 
         @Override
         public boolean onTouch(View v, MotionEvent event) {
             switch (event.getAction()) {
-                case MotionEvent.ACTION_DOWN:
-                    guide = new Point();
+                case MotionEvent.ACTION_DOWN -> {
+                    guide = new Guide();
+                    guide.orientation = Guide.ORIENTATION_HORIZONTAL;
                     tab.guides.offerFirst(guide); // Add at the front for faster removal if necessary later
-                    break;
-
-                case MotionEvent.ACTION_MOVE:
-                    guide.y = toBitmapY(event.getY() - rulerHHeight);
+                }
+                case MotionEvent.ACTION_MOVE -> {
+                    guide.position = toBitmapY(event.getY() - rulerHHeight);
                     drawGridOnView();
-                    break;
-
-                case MotionEvent.ACTION_UP:
-                case MotionEvent.ACTION_CANCEL:
-                    if (!(0 < guide.y && guide.y < bitmap.getHeight())) {
+                }
+                case MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    final float y = event.getY();
+                    if (!(rulerHHeight <= y && y < rulerHHeight + viewHeight)) {
                         tab.guides.remove(guide);
                         drawGridOnView();
                     }
                     guide = null;
-                    break;
+                }
             }
             return true;
         }
@@ -964,29 +953,28 @@ public class MainActivity extends AppCompatActivity {
 
     @SuppressLint("ClickableViewAccessibility")
     private final View.OnTouchListener onRulerVTouchListener = new View.OnTouchListener() {
-        Point guide;
+        private Guide guide;
 
         @Override
         public boolean onTouch(View v, MotionEvent event) {
             switch (event.getAction()) {
-                case MotionEvent.ACTION_DOWN:
-                    guide = new Point();
+                case MotionEvent.ACTION_DOWN -> {
+                    guide = new Guide();
+                    guide.orientation = Guide.ORIENTATION_VERTICAL;
                     tab.guides.offerFirst(guide); // Add at the front for faster removal if necessary later
-                    break;
-
-                case MotionEvent.ACTION_MOVE:
-                    guide.x = toBitmapX(event.getX() - rulerVWidth);
+                }
+                case MotionEvent.ACTION_MOVE -> {
+                    guide.position = toBitmapX(event.getX() - rulerVWidth);
                     drawGridOnView();
-                    break;
-
-                case MotionEvent.ACTION_UP:
-                case MotionEvent.ACTION_CANCEL:
-                    if (!(0 < guide.x && guide.x < bitmap.getWidth())) {
+                }
+                case MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    final float x = event.getX();
+                    if (!(rulerVWidth <= x && x < rulerVWidth + viewWidth)) {
                         tab.guides.remove(guide);
                         drawGridOnView();
                     }
                     guide = null;
-                    break;
+                }
             }
             return true;
         }
@@ -1128,29 +1116,26 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public boolean onTouch(View v, MotionEvent event) {
             switch (event.getAction()) {
-                case MotionEvent.ACTION_DOWN: {
+                case MotionEvent.ACTION_DOWN -> {
                     final float x = event.getX(), y = event.getY();
                     final int bx = toBitmapX(x), by = toBitmapY(y);
                     path = new Path();
                     path.moveTo(bx, by);
                     tvStatus.setText(String.format(getString(R.string.coordinate), bx, by));
-                    break;
                 }
-                case MotionEvent.ACTION_MOVE: {
+                case MotionEvent.ACTION_MOVE -> {
                     final float x = event.getX(), y = event.getY();
                     final int bx = toBitmapX(x), by = toBitmapY(y);
                     path.lineTo(bx, by);
                     canvas.drawPath(path, paint);
                     drawBitmapOnView();
                     tvStatus.setText(String.format(getString(R.string.coordinate), bx, by));
-                    break;
                 }
-                case MotionEvent.ACTION_UP:
-                case MotionEvent.ACTION_CANCEL:
+                case MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                     path = null;
                     addToHistory();
                     clearStatus();
-                    break;
+                }
             }
             return true;
         }
@@ -1159,7 +1144,7 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("ClickableViewAccessibility")
     private final View.OnTouchListener onImageViewTouchWithBucketListener = (v, event) -> {
         switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN: {
+            case MotionEvent.ACTION_DOWN -> {
                 final float x = event.getX(), y = event.getY();
                 final int bx = toBitmapX(x), by = toBitmapY(y);
                 if (!(0 <= bx && bx < bitmap.getWidth() && 0 <= by && by < bitmap.getHeight())) {
@@ -1182,7 +1167,6 @@ public class MainActivity extends AppCompatActivity {
                     addToHistory();
                 }, true);
                 clearStatus();
-                break;
             }
         }
         return true;
@@ -1292,8 +1276,7 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint({"ClickableViewAccessibility"})
     private final View.OnTouchListener onImageViewTouchWithEyedropperImpreciseListener = (v, event) -> {
         switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-            case MotionEvent.ACTION_MOVE: {
+            case MotionEvent.ACTION_DOWN, MotionEvent.ACTION_MOVE -> {
                 final float x = event.getX(), y = event.getY();
                 final int bx = satX(bitmap, toBitmapX(x)), by = satY(bitmap, toBitmapY(y));
                 final int color = rbEyedropperAllLayers.isChecked()
@@ -1304,12 +1287,8 @@ public class MainActivity extends AppCompatActivity {
                         String.format(getString(R.string.state_eyedropper_imprecise), settings.getArgbComponentFormat()),
                         bx, by,
                         Color.alpha(color), Color.red(color), Color.green(color), Color.blue(color)));
-                break;
             }
-            case MotionEvent.ACTION_CANCEL:
-            case MotionEvent.ACTION_UP:
-                clearStatus();
-                break;
+            case MotionEvent.ACTION_CANCEL, MotionEvent.ACTION_UP -> clearStatus();
         }
         return true;
     };
@@ -1317,8 +1296,7 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint({"ClickableViewAccessibility"})
     private final View.OnTouchListener onImageViewTouchWithEyedropperPreciseListener = (v, event) -> {
         switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-            case MotionEvent.ACTION_MOVE: {
+            case MotionEvent.ACTION_DOWN, MotionEvent.ACTION_MOVE -> {
                 final float x = event.getX(), y = event.getY();
                 final int bx = satX(bitmap, toBitmapX(x)), by = satY(bitmap, toBitmapY(y));
                 final android.graphics.Color color = rbEyedropperAllLayers.isChecked()
@@ -1329,12 +1307,8 @@ public class MainActivity extends AppCompatActivity {
                         getString(R.string.state_eyedropper_precise),
                         bx, by, String.valueOf(color.alpha()),
                         String.valueOf(color.red()), String.valueOf(color.green()), String.valueOf(color.blue())));
-                break;
             }
-            case MotionEvent.ACTION_CANCEL:
-            case MotionEvent.ACTION_UP:
-                clearStatus();
-                break;
+            case MotionEvent.ACTION_CANCEL, MotionEvent.ACTION_UP -> clearStatus();
         }
         return true;
     };
@@ -1407,12 +1381,11 @@ public class MainActivity extends AppCompatActivity {
         public boolean onTouch(View v, MotionEvent event) {
             final float x = event.getX(), y = event.getY();
             switch (event.getAction()) {
-                case MotionEvent.ACTION_DOWN:
+                case MotionEvent.ACTION_DOWN -> {
                     lastX = x;
                     lastY = y;
-                    break;
-
-                case MotionEvent.ACTION_MOVE: {
+                }
+                case MotionEvent.ACTION_MOVE -> {
                     final int bx = toBitmapX(x), by = toBitmapY(y);
                     final int lastBX = toBitmapX(lastX), lastBY = toBitmapY(lastY);
                     final int rad = (int) (strokeWidth / 2.0f + blurRadius);
@@ -1451,13 +1424,11 @@ public class MainActivity extends AppCompatActivity {
                     tvStatus.setText(String.format(getString(R.string.coordinate), bx, by));
                     lastX = x;
                     lastY = y;
-                    break;
                 }
-                case MotionEvent.ACTION_UP:
-                case MotionEvent.ACTION_CANCEL:
+                case MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                     addToHistory();
                     clearStatus();
-                    break;
+                }
             }
             return true;
         }
@@ -1466,10 +1437,9 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("ClickableViewAccessibility")
     private final View.OnTouchListener onImageViewTouchWithMagicEraserPreciseListener = (v, event) -> {
         switch (event.getPointerCount()) {
-
-            case 1:
+            case 1 -> {
                 switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN: {
+                    case MotionEvent.ACTION_DOWN -> {
                         final float x = event.getX(), y = event.getY();
                         final Rect vs = getVisibleSubset();
                         if (magErB == null || magErF == null
@@ -1479,18 +1449,13 @@ public class MainActivity extends AppCompatActivity {
                             magErF = new Point(bx, by);
                             drawCrossOnView(bx, by);
                         }
-                        break;
                     }
-                    case MotionEvent.ACTION_UP:
-                    case MotionEvent.ACTION_CANCEL:
-                        addToHistory();
-                        break;
+                    case MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> addToHistory();
                 }
-                break;
-
-            case 2:
+            }
+            case 2 -> {
                 switch (event.getActionMasked()) {
-                    case MotionEvent.ACTION_MOVE: {
+                    case MotionEvent.ACTION_MOVE -> {
                         final float x0 = event.getX(0), y0 = event.getY(0);
                         final float x1 = event.getX(1), y1 = event.getY(1);
                         magErB.set(toBitmapX(x0 + magErBD.x), toBitmapY(y0 + magErBD.y));
@@ -1531,17 +1496,15 @@ public class MainActivity extends AppCompatActivity {
                         bLine.recycle();
 
                         drawBitmapOnView(left, top, right, bottom);
-                        break;
                     }
-                    case MotionEvent.ACTION_POINTER_DOWN: {
+                    case MotionEvent.ACTION_POINTER_DOWN -> {
                         final float x0 = event.getX(0), y0 = event.getY(0);
                         final float x1 = event.getX(1), y1 = event.getY(1);
                         magErBD.set(toViewX(magErB.x) - x0, toViewY(magErB.y) - y0);
                         magErFD.set(toViewX(magErF.x) - x1, toViewY(magErF.y) - y1);
-                        break;
                     }
                 }
-                break;
+            }
         }
         return true;
     };
@@ -1618,7 +1581,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public boolean onTouch(View v, MotionEvent event) {
             switch (event.getAction()) {
-                case MotionEvent.ACTION_DOWN: {
+                case MotionEvent.ACTION_DOWN -> {
                     final float x = event.getX(), y = event.getY();
                     if (marqueeBoundBeingDragged == null) {
                         if (hasSelection && checkDraggingMarqueeBound(x, y) != null) {
@@ -1646,9 +1609,8 @@ public class MainActivity extends AppCompatActivity {
                                 selection.left, selection.top, selection.right - 1, selection.bottom - 1,
                                 selection.width(), selection.height()));
                     }
-                    break;
                 }
-                case MotionEvent.ACTION_MOVE: {
+                case MotionEvent.ACTION_MOVE -> {
                     final float x = event.getX(), y = event.getY();
                     if (marqueeBoundBeingDragged == null) {
                         stopX = toBitmapX(x) + 1;
@@ -1661,10 +1623,8 @@ public class MainActivity extends AppCompatActivity {
                     tvStatus.setText(String.format(getString(R.string.state_l_t_r_b_size),
                             selection.left, selection.top, selection.right - 1, selection.bottom - 1,
                             selection.width(), selection.height()));
-                    break;
                 }
-                case MotionEvent.ACTION_CANCEL:
-                case MotionEvent.ACTION_UP:
+                case MotionEvent.ACTION_CANCEL, MotionEvent.ACTION_UP -> {
                     optimizeSelection();
                     drawSelectionOnView();
                     if (marqueeBoundBeingDragged != null) {
@@ -1684,7 +1644,7 @@ public class MainActivity extends AppCompatActivity {
                                         selection.width(), selection.height()) :
                                 "");
                     }
-                    break;
+                }
             }
             return true;
         }
@@ -1744,7 +1704,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public boolean onTouch(View v, MotionEvent event) {
             switch (event.getAction()) {
-                case MotionEvent.ACTION_DOWN: {
+                case MotionEvent.ACTION_DOWN -> {
                     final float x = event.getX(), y = event.getY();
                     final int bx = toBitmapX(x), by = toBitmapY(y);
                     path = new Path();
@@ -1752,9 +1712,8 @@ public class MainActivity extends AppCompatActivity {
                     previewPath = new Path();
                     previewPath.moveTo(x, y);
                     tvStatus.setText(String.format(getString(R.string.coordinate), bx, by));
-                    break;
                 }
-                case MotionEvent.ACTION_MOVE: {
+                case MotionEvent.ACTION_MOVE -> {
                     final float x = event.getX(), y = event.getY();
                     final int bx = toBitmapX(x), by = toBitmapY(y);
                     path.lineTo(bx, by);
@@ -1763,10 +1722,8 @@ public class MainActivity extends AppCompatActivity {
                     previewCanvas.drawPath(previewPath, selector);
                     ivPreview.invalidate();
                     tvStatus.setText(String.format(getString(R.string.coordinate), bx, by));
-                    break;
                 }
-                case MotionEvent.ACTION_UP:
-                case MotionEvent.ACTION_CANCEL: {
+                case MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                     canvas.drawPath(path, paint);
                     final RectF bounds = new RectF();
                     path.computeBounds(bounds, false);
@@ -1778,7 +1735,6 @@ public class MainActivity extends AppCompatActivity {
                     clearStatus();
                     path = null;
                     previewPath = null;
-                    break;
                 }
             }
             return true;
@@ -1905,33 +1861,33 @@ public class MainActivity extends AppCompatActivity {
             if (isEditingText) {
 
                 switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        dx = event.getX() - toViewX(textX);
-                        dy = event.getY() - toViewY(textY);
-                        drawTextOnView();
-                        break;
-
-                    case MotionEvent.ACTION_MOVE: {
+                    case MotionEvent.ACTION_DOWN -> {
                         final float x = event.getX(), y = event.getY();
-                        textX = toBitmapX(x - dx);
-                        textY = toBitmapY(y - dy);
+                        dx = x - toScaled(textX);
+                        dy = y - toScaled(textY);
                         drawTextOnView();
-                        break;
+                    }
+                    case MotionEvent.ACTION_MOVE -> {
+                        final float x = event.getX(), y = event.getY();
+                        textX = toUnscaled(x - dx);
+                        textY = toUnscaled(y - dy);
+                        drawTextOnView();
                     }
                 }
 
             } else {
 
                 switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        textX = toBitmapX(event.getX());
-                        textY = toBitmapY(event.getY());
+                    case MotionEvent.ACTION_DOWN -> {
+                        final float x = event.getX(), y = event.getY();
+                        textX = toBitmapX(x);
+                        textY = toBitmapY(y);
                         llOptionsText.setVisibility(View.VISIBLE);
                         isEditingText = true;
                         drawTextOnView();
-                        dx = translationX;
-                        dy = translationY;
-                        break;
+                        dx = toViewX(0);
+                        dy = toViewY(0);
+                    }
                 }
             }
             return true;
@@ -1948,7 +1904,7 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
             switch (event.getAction()) {
-                case MotionEvent.ACTION_DOWN: {
+                case MotionEvent.ACTION_DOWN -> {
                     if (selection.isEmpty()) {
                         break;
                     }
@@ -1960,9 +1916,8 @@ public class MainActivity extends AppCompatActivity {
                     ivSelection.setPivotY(toViewY(selection.exactCenterY()));
                     lastTheta = (float) Math.atan2(y - ivSelection.getPivotY(), x - ivSelection.getPivotX());
                     clearStatus();
-                    break;
                 }
-                case MotionEvent.ACTION_MOVE: {
+                case MotionEvent.ACTION_MOVE -> {
                     if (transformer == null) {
                         break;
                     }
@@ -1971,10 +1926,8 @@ public class MainActivity extends AppCompatActivity {
                     ivSelection.setRotation(degrees);
                     drawSelectionOnView();
                     tvStatus.setText(String.format(getString(R.string.degrees_), degrees));
-                    break;
                 }
-                case MotionEvent.ACTION_UP:
-                case MotionEvent.ACTION_CANCEL: {
+                case MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                     if (transformer == null) {
                         break;
                     }
@@ -1989,7 +1942,6 @@ public class MainActivity extends AppCompatActivity {
                     drawBitmapOnView(selection);
                     drawSelectionOnView();
                     clearStatus();
-                    break;
                 }
             }
             return true;
@@ -2006,12 +1958,10 @@ public class MainActivity extends AppCompatActivity {
             if (!hasSelection) {
                 return true;
             }
-
             switch (event.getPointerCount()) {
-
-                case 1:
+                case 1 -> {
                     switch (event.getAction()) {
-                        case MotionEvent.ACTION_DOWN: {
+                        case MotionEvent.ACTION_DOWN -> {
                             if (selection.isEmpty()) {
                                 break;
                             }
@@ -2033,9 +1983,8 @@ public class MainActivity extends AppCompatActivity {
                                 tvStatus.setText(String.format(getString(R.string.state_left_top),
                                         selection.left, selection.top));
                             }
-                            break;
                         }
-                        case MotionEvent.ACTION_MOVE: {
+                        case MotionEvent.ACTION_MOVE -> {
                             if (transformer == null) {
                                 break;
                             }
@@ -2045,10 +1994,8 @@ public class MainActivity extends AppCompatActivity {
                                 tvStatus.setText(String.format(getString(R.string.state_size),
                                         selection.width(), selection.height()));
                             }
-                            break;
                         }
-                        case MotionEvent.ACTION_UP:
-                        case MotionEvent.ACTION_CANCEL:
+                        case MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                             if (transformer == null) {
                                 break;
                             }
@@ -2060,13 +2007,12 @@ public class MainActivity extends AppCompatActivity {
                                 drawBitmapOnView(true);
                                 drawSelectionOnView(false);
                             }
-                            break;
+                        }
                     }
-                    break;
-
-                case 2:
+                }
+                case 2 -> {
                     switch (event.getActionMasked()) {
-                        case MotionEvent.ACTION_MOVE: {
+                        case MotionEvent.ACTION_MOVE -> {
                             final float x0 = event.getX(0), y0 = event.getY(0),
                                     x1 = event.getX(1), y1 = event.getY(1);
                             float marqLOnView = toViewX(selection.left), marqTOnView = toViewY(selection.top),
@@ -2108,9 +2054,8 @@ public class MainActivity extends AppCompatActivity {
                             drawSelectionOnView();
                             tvStatus.setText(String.format(getString(R.string.state_size),
                                     selection.width(), selection.height()));
-                            break;
                         }
-                        case MotionEvent.ACTION_POINTER_DOWN: {
+                        case MotionEvent.ACTION_POINTER_DOWN -> {
                             marqueeBoundBeingDragged = null;
                             final float x0 = event.getX(0), y0 = event.getY(0),
                                     x1 = event.getX(1), y1 = event.getY(1);
@@ -2126,17 +2071,15 @@ public class MainActivity extends AppCompatActivity {
                             }
                             tvStatus.setText(String.format(getString(R.string.state_size),
                                     selection.width(), selection.height()));
-                            break;
                         }
-                        case MotionEvent.ACTION_POINTER_UP: {
+                        case MotionEvent.ACTION_POINTER_UP -> {
                             transformer.stretch(selection.width(), selection.height());
                             selection.sort();
                             drawBitmapOnView(true);
                             drawSelectionOnView();
-                            break;
                         }
                     }
-                    break;
+                }
             }
             return true;
         }
@@ -2149,7 +2092,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public boolean onTouch(View v, MotionEvent event) {
             switch (event.getAction()) {
-                case MotionEvent.ACTION_DOWN: {
+                case MotionEvent.ACTION_DOWN -> {
                     final float x = event.getX(), y = event.getY();
                     if (hasSelection) {
                         if (transformer == null) {
@@ -2166,9 +2109,8 @@ public class MainActivity extends AppCompatActivity {
                         dx = x - toViewX(0);
                         dy = y - toViewY(0);
                     }
-                    break;
                 }
-                case MotionEvent.ACTION_MOVE: {
+                case MotionEvent.ACTION_MOVE -> {
                     final float x = event.getX(), y = event.getY();
                     if (transformer != null) {
                         selection.offsetTo(toBitmapX(x - dx), toBitmapY(y - dy));
@@ -2184,15 +2126,13 @@ public class MainActivity extends AppCompatActivity {
                                 tab.left, tab.top));
                     }
                     drawBitmapOnView();
-                    break;
                 }
-                case MotionEvent.ACTION_UP:
-                case MotionEvent.ACTION_CANCEL:
+                case MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                     if (transformer != null) {
                         drawSelectionOnView(false);
                     }
                     drawBitmapOnView(true);
-                    break;
+                }
             }
             return true;
         }
@@ -2209,10 +2149,9 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public boolean onTouch(View v, MotionEvent event) {
             switch (event.getPointerCount()) {
-
-                case 1: {
+                case 1 -> {
                     switch (event.getAction()) {
-                        case MotionEvent.ACTION_DOWN: {
+                        case MotionEvent.ACTION_DOWN -> {
                             final float x = event.getX(), y = event.getY();
                             tvStatus.setText(String.format(getString(R.string.coordinate),
                                     toBitmapX(x), toBitmapY(y)));
@@ -2221,9 +2160,8 @@ public class MainActivity extends AppCompatActivity {
                             }
                             dx = x;
                             dy = y;
-                            break;
                         }
-                        case MotionEvent.ACTION_MOVE: {
+                        case MotionEvent.ACTION_MOVE -> {
                             final float x = event.getX(), y = event.getY();
                             final float deltaX = x - dx, deltaY = y - dy;
                             translationX += deltaX;
@@ -2231,19 +2169,16 @@ public class MainActivity extends AppCompatActivity {
                             drawAfterTranslatingOrScaling(true);
                             dx = x;
                             dy = y;
-                            break;
                         }
-                        case MotionEvent.ACTION_UP:
+                        case MotionEvent.ACTION_UP -> {
                             drawBitmapLastOnView(true);
                             clearStatus();
-                            break;
+                        }
                     }
-                    break;
                 }
-
-                case 2: {
+                case 2 -> {
                     switch (event.getActionMasked()) {
-                        case MotionEvent.ACTION_MOVE: {
+                        case MotionEvent.ACTION_MOVE -> {
                             final float x0 = event.getX(0), y0 = event.getY(0),
                                     x1 = event.getX(1), y1 = event.getY(1);
                             final double diagonal = Math.sqrt(Math.pow(x0 - x1, 2.0) + Math.pow(y0 - y1, 2.0));
@@ -2257,18 +2192,16 @@ public class MainActivity extends AppCompatActivity {
                             lastPivotX = pivotX;
                             lastPivotY = pivotY;
                             lastDiagonal = diagonal;
-                            break;
                         }
-                        case MotionEvent.ACTION_POINTER_DOWN: {
+                        case MotionEvent.ACTION_POINTER_DOWN -> {
                             final float x0 = event.getX(0), y0 = event.getY(0),
                                     x1 = event.getX(1), y1 = event.getY(1);
                             lastPivotX = (x0 + x1) / 2.0f - translationX;
                             lastPivotY = (y0 + y1) / 2.0f - translationY;
                             lastDiagonal = Math.sqrt(Math.pow(x0 - x1, 2.0) + Math.pow(y0 - y1, 2.0));
                             clearStatus();
-                            break;
                         }
-                        case MotionEvent.ACTION_POINTER_UP: {
+                        case MotionEvent.ACTION_POINTER_UP -> {
                             final int index = 1 - event.getActionIndex();
                             final float x = event.getX(index);
                             final float y = event.getY(index);
@@ -2276,10 +2209,8 @@ public class MainActivity extends AppCompatActivity {
                                     toBitmapX(x), toBitmapY(y)));
                             dx = x;
                             dy = y;
-                            break;
                         }
                     }
-                    break;
                 }
             }
             return true;
@@ -2612,20 +2543,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void createImage(int width, int height) {
-        createImage(width, height, -1);
-    }
-
-    private void createImage(int width, int height, int position) {
         final Bitmap bm = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-        if (position == -1) {
-            position = tabs.size();
-        }
-        addTab(bm, position);
+        addTab(bm, tabs.size());
     }
 
-    private void createLayer(int width, int height, Bitmap.Config config, boolean hasAlpha, ColorSpace colorSpace,
+    private void createLayer(int width, int height, Bitmap.Config config, ColorSpace colorSpace,
                              int level, int left, int top, int position) {
-        addLayer(Bitmap.createBitmap(width, height, config, hasAlpha, colorSpace), level, left, top, position);
+        addLayer(Bitmap.createBitmap(width, height, config, true, colorSpace), level, left, top, position);
     }
 
     private void createImagePreview() {
@@ -2653,29 +2577,25 @@ public class MainActivity extends AppCompatActivity {
             return false;
         }
         switch (marqueeBoundBeingDragged) {
-            case LEFT: {
+            case LEFT -> {
                 final int left = toBitmapX(viewX + halfScale);
                 if (left != selection.left) selection.left = left;
                 else return false;
-                break;
             }
-            case TOP: {
+            case TOP -> {
                 final int top = toBitmapY(viewY + halfScale);
                 if (top != selection.top) selection.top = top;
                 else return false;
-                break;
             }
-            case RIGHT: {
+            case RIGHT -> {
                 final int right = toBitmapX(viewX + halfScale);
                 if (right != selection.right) selection.right = right;
                 else return false;
-                break;
             }
-            case BOTTOM: {
+            case BOTTOM -> {
                 final int bottom = toBitmapY(viewY + halfScale);
                 if (bottom != selection.bottom) selection.bottom = bottom;
                 else return false;
-                break;
             }
         }
         return true;
@@ -3003,12 +2923,12 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        for (final Point guide : tab.guides) {
-            if (0 < guide.x && guide.x < tab.bitmap.getWidth()) {
-                final float x = toViewX(guide.x);
+        for (final Guide guide : tab.guides) {
+            if (guide.orientation) {
+                final float x = toViewX(guide.position);
                 gridCanvas.drawLine(x, 0.0f, x, viewHeight, PAINT_GUIDE);
-            } else if (0 < guide.y && guide.y < tab.bitmap.getHeight()) {
-                final float y = toViewY(guide.y);
+            } else {
+                final float y = toViewY(guide.position);
                 gridCanvas.drawLine(0.0f, y, viewWidth, y, PAINT_GUIDE);
             }
         }
@@ -3426,7 +3346,7 @@ public class MainActivity extends AppCompatActivity {
         llOptionsShape = findViewById(R.id.ll_options_shape);
         llOptionsText = findViewById(R.id.ll_options_text);
         svOptionsTransformer = findViewById(R.id.sv_options_transformer);
-        rvSwatches = findViewById(R.id.rv_swatches);
+        final RecyclerView rvSwatches = findViewById(R.id.rv_swatches);
         rbCloneStamp = findViewById(R.id.rb_clone_stamp);
         rbEyedropper = findViewById(R.id.rb_eyedropper);
         rbEyedropperAllLayers = findViewById(R.id.rb_eyedropper_all_layers);
@@ -3453,8 +3373,8 @@ public class MainActivity extends AppCompatActivity {
         tietBrushStrokeWidth = findViewById(R.id.tiet_brush_stroke_width);
         tietCloneStampBlurRadius = findViewById(R.id.tiet_clone_stamp_blur_radius);
         tietCloneStampStrokeWidth = findViewById(R.id.tiet_clone_stamp_stroke_width);
-        tietEraserBlurRadius = findViewById(R.id.tiet_eraser_blur_radius);
-        tietEraserStrokeWidth = findViewById(R.id.tiet_eraser_stroke_width);
+        final TextInputEditText tietEraserBlurRadius = findViewById(R.id.tiet_eraser_blur_radius);
+        final TextInputEditText tietEraserStrokeWidth = findViewById(R.id.tiet_eraser_stroke_width);
         tietGradientBlurRadius = findViewById(R.id.tiet_gradient_blur_radius);
         tietGradientStrokeWidth = findViewById(R.id.tiet_gradient_stroke_width);
         tietMagicEraserStrokeWidth = findViewById(R.id.tiet_magic_eraser_stroke_width);
@@ -3468,7 +3388,7 @@ public class MainActivity extends AppCompatActivity {
         tietPencilStrokeWidth = findViewById(R.id.tiet_pencil_stroke_width);
         tietShapeStrokeWidth = findViewById(R.id.tiet_shape_stroke_width);
         tietText = findViewById(R.id.tiet_text);
-        tietTextSize = findViewById(R.id.tiet_text_size);
+        final TextInputEditText tietTextSize = findViewById(R.id.tiet_text_size);
         tvStatus = findViewById(R.id.tv_status);
         vBackgroundColor = findViewById(R.id.v_background_color);
         vForegroundColor = findViewById(R.id.v_foreground_color);
@@ -3542,7 +3462,7 @@ public class MainActivity extends AppCompatActivity {
         vForegroundColor.setOnClickListener(onForegroundColorClickListener);
 
         cbTextFill.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            paint.setStyle(isChecked ? Paint.Style.FILL : Paint.Style.STROKE);
+            paint.setStyle(isChecked ? Paint.Style.FILL_AND_STROKE : Paint.Style.STROKE);
             drawTextOnView();
         });
 
@@ -3673,11 +3593,8 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("NonConstantResourceId")
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.i_cell_grid:
-                new CellGridManager(this, tab.cellGrid, onUpdateCellGridListener).show();
-                break;
-
-            case R.id.i_clone:
+            case R.id.i_cell_grid -> new CellGridManager(this, tab.cellGrid, onUpdateCellGridListener).show();
+            case R.id.i_clone -> {
                 if (transformer == null) {
                     drawFloatingLayers();
                     final Bitmap bm = hasSelection
@@ -3697,18 +3614,16 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     drawBitmapOnView(true);
                 }
-                break;
-
-            case R.id.i_clone_as_new: {
+            }
+            case R.id.i_clone_as_new -> {
                 final Bitmap bm = hasSelection ?
                         transformer == null ?
                                 Bitmap.createBitmap(bitmap, selection.left, selection.top, selection.width(), selection.height()) :
                                 Bitmap.createBitmap(transformer.getBitmap()) :
                         Bitmap.createBitmap(bitmap);
                 addTab(bm, tabLayout.getSelectedTabPosition() + 1);
-                break;
             }
-            case R.id.i_copy:
+            case R.id.i_copy -> {
                 if (transformer == null) {
                     if (clipboard != null) {
                         clipboard.recycle();
@@ -3719,8 +3634,8 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     clipboard = Bitmap.createBitmap(transformer.getBitmap());
                 }
-                break;
-            case R.id.i_crop: {
+            }
+            case R.id.i_crop -> {
                 if (!hasSelection) {
                     break;
                 }
@@ -3732,9 +3647,8 @@ public class MainActivity extends AppCompatActivity {
                 bm.recycle();
                 drawBitmapOnView(true, true);
                 addToHistory();
-                break;
             }
-            case R.id.i_cut:
+            case R.id.i_cut -> {
                 if (transformer == null) {
                     if (clipboard != null) {
                         clipboard.recycle();
@@ -3757,9 +3671,8 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     drawBitmapOnView(true);
                 }
-                break;
-
-            case R.id.i_delete:
+            }
+            case R.id.i_delete -> {
                 if (transformer == null) {
                     if (hasSelection) {
                         canvas.drawRect(selection.left, selection.top, selection.right, selection.bottom, eraser);
@@ -3776,16 +3689,14 @@ public class MainActivity extends AppCompatActivity {
                     drawBitmapOnView(true);
                 }
                 clearStatus();
-                break;
-
-            case R.id.i_deselect:
+            }
+            case R.id.i_deselect -> {
                 drawFloatingLayers();
                 hasSelection = false;
                 eraseBitmapAndInvalidateView(selectionImage, ivSelection);
                 clearStatus();
-                break;
-
-            case R.id.i_draw_color:
+            }
+            case R.id.i_draw_color -> {
                 if (transformer == null) {
                     if (hasSelection) {
                         canvas.drawRect(selection.left, selection.top, selection.right, selection.bottom, paint);
@@ -3802,9 +3713,8 @@ public class MainActivity extends AppCompatActivity {
                     drawBitmapOnView(true);
                 }
                 clearStatus();
-                break;
-
-            case R.id.i_file_close: {
+            }
+            case R.id.i_file_close -> {
                 if (tabs.get(0).getBackground() == tabs.get(tabs.size() - 1)) {
                     break;
                 }
@@ -3819,19 +3729,14 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
                 closeTab();
-                break;
             }
-            case R.id.i_file_new: {
+            case R.id.i_file_new -> {
                 new NewImageDialog(this)
                         .setOnFinishSettingListener(onFinishSettingNewImagePropertiesListener)
                         .show();
-                break;
             }
-            case R.id.i_file_open: {
-                pickMultipleMedia.launch(pickVisualMediaRequest);
-                break;
-            }
-            case R.id.i_file_open_from_clipboard: {
+            case R.id.i_file_open -> pickMultipleMedia.launch(pickVisualMediaRequest);
+            case R.id.i_file_open_from_clipboard -> {
                 final ClipboardManager clipboardManager = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
                 if (!clipboardManager.hasPrimaryClip()) {
                     break;
@@ -3843,9 +3748,8 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 openFile(clipData.getItemAt(0).getUri());
-                break;
             }
-            case R.id.i_file_refer_to_clipboard: {
+            case R.id.i_file_refer_to_clipboard -> {
                 if (tab.filePath == null) {
                     Toast.makeText(this, getString(R.string.please_save_first), Toast.LENGTH_SHORT).show();
                     break;
@@ -3855,18 +3759,10 @@ public class MainActivity extends AppCompatActivity {
                                 FileProvider.getUriForFile(this,
                                         getApplicationContext().getPackageName() + ".provider",
                                         new File(tab.filePath))));
-                break;
             }
-            case R.id.i_file_save:
-            case R.id.i_save:
-                save();
-                break;
-
-            case R.id.i_file_save_as:
-                saveAs();
-                break;
-
-            case R.id.i_filter_channel_lighting:
+            case R.id.i_file_save, R.id.i_save -> save();
+            case R.id.i_file_save_as -> saveAs();
+            case R.id.i_filter_channel_lighting -> {
                 drawFloatingLayers();
                 createImagePreview();
                 new LightingDialog(this)
@@ -3875,9 +3771,8 @@ public class MainActivity extends AppCompatActivity {
                         .setOnCancelListener(onImagePreviewCancelListener)
                         .show();
                 clearStatus();
-                break;
-
-            case R.id.i_filter_color_balance:
+            }
+            case R.id.i_filter_color_balance -> {
                 drawFloatingLayers();
                 createImagePreview();
                 new ColorBalanceDialog(this)
@@ -3886,9 +3781,8 @@ public class MainActivity extends AppCompatActivity {
                         .setOnCancelListener(onImagePreviewCancelListener)
                         .show();
                 clearStatus();
-                break;
-
-            case R.id.i_filter_contrast:
+            }
+            case R.id.i_filter_contrast -> {
                 drawFloatingLayers();
                 createImagePreview();
                 new SeekBarDialog(this).setTitle(R.string.contrast).setMin(-10).setMax(100).setProgress(10)
@@ -3897,9 +3791,8 @@ public class MainActivity extends AppCompatActivity {
                         .setOnCancelListener(onImagePreviewCancelListener)
                         .show();
                 clearStatus();
-                break;
-
-            case R.id.i_filter_curves:
+            }
+            case R.id.i_filter_curves -> {
                 drawFloatingLayers();
                 createImagePreview();
                 new CurvesDialog(this)
@@ -3909,9 +3802,8 @@ public class MainActivity extends AppCompatActivity {
                         .setOnCancelListener(onImagePreviewCancelListener)
                         .show();
                 clearStatus();
-                break;
-
-            case R.id.i_filter_hsv:
+            }
+            case R.id.i_filter_hsv -> {
                 drawFloatingLayers();
                 createImagePreview();
                 new HsvDialog(this)
@@ -3920,9 +3812,8 @@ public class MainActivity extends AppCompatActivity {
                         .setOnCancelListener(onImagePreviewCancelListener)
                         .show();
                 clearStatus();
-                break;
-
-            case R.id.i_filter_hue_to_alpha:
+            }
+            case R.id.i_filter_hue_to_alpha -> {
                 drawFloatingLayers();
                 createImagePreview();
                 new SeekBarDialog(this).setTitle(R.string.hue).setMin(0).setMax(360).setProgress(0)
@@ -3931,9 +3822,8 @@ public class MainActivity extends AppCompatActivity {
                         .setOnCancelListener(onImagePreviewCancelListener)
                         .show();
                 onFilterHToASeekBarProgressChangeListener.onChanged(0, true);
-                break;
-
-            case R.id.i_filter_levels:
+            }
+            case R.id.i_filter_levels -> {
                 drawFloatingLayers();
                 createImagePreview();
                 new LevelsDialog(this)
@@ -3943,9 +3833,8 @@ public class MainActivity extends AppCompatActivity {
                         .show()
                         .drawHistogram(imagePreview.getPixels());
                 clearStatus();
-                break;
-
-            case R.id.i_filter_lightness:
+            }
+            case R.id.i_filter_lightness -> {
                 drawFloatingLayers();
                 createImagePreview();
                 new SeekBarDialog(this).setTitle(R.string.lightness).setMin(-0xFF).setMax(0xFF).setProgress(0)
@@ -3954,9 +3843,8 @@ public class MainActivity extends AppCompatActivity {
                         .setOnCancelListener(onImagePreviewCancelListener)
                         .show();
                 clearStatus();
-                break;
-
-            case R.id.i_filter_matrix:
+            }
+            case R.id.i_filter_matrix -> {
                 drawFloatingLayers();
                 createImagePreview();
                 new ColorMatrixManager(this,
@@ -3965,9 +3853,8 @@ public class MainActivity extends AppCompatActivity {
                         onImagePreviewCancelListener)
                         .show();
                 clearStatus();
-                break;
-
-            case R.id.i_filter_saturation:
+            }
+            case R.id.i_filter_saturation -> {
                 drawFloatingLayers();
                 createImagePreview();
                 new SeekBarDialog(this).setTitle(R.string.saturation).setMin(0).setMax(100).setProgress(10)
@@ -3976,9 +3863,8 @@ public class MainActivity extends AppCompatActivity {
                         .setOnCancelListener(onImagePreviewCancelListener)
                         .show();
                 clearStatus();
-                break;
-
-            case R.id.i_filter_threshold:
+            }
+            case R.id.i_filter_threshold -> {
                 drawFloatingLayers();
                 createImagePreview();
                 new SeekBarDialog(this).setTitle(R.string.threshold).setMin(0).setMax(255).setProgress(128)
@@ -3988,9 +3874,8 @@ public class MainActivity extends AppCompatActivity {
                         .show();
                 onFilterThresholdSeekBarProgressChangeListener.onChanged(128, true);
                 clearStatus();
-                break;
-
-            case R.id.i_filter_white_balance: {
+            }
+            case R.id.i_filter_white_balance -> {
                 drawFloatingLayers();
                 createImagePreview();
                 final AlertDialog dialog = new AlertDialog.Builder(this).setTitle(R.string.white_balance)
@@ -4013,25 +3898,21 @@ public class MainActivity extends AppCompatActivity {
                     drawBitmapOnView(imagePreview.getEntire(), selection);
                 });
                 clearStatus();
-                break;
             }
-            case R.id.i_flip_horizontally: {
+            case R.id.i_flip_horizontally -> {
                 drawFloatingLayers();
                 scale(-1.0f, 1.0f, false);
-                break;
             }
-            case R.id.i_flip_vertically: {
+            case R.id.i_flip_vertically -> {
                 drawFloatingLayers();
                 scale(1.0f, -1.0f, false);
-                break;
             }
-            case R.id.i_guides_clear:
+            case R.id.i_guides_clear -> {
                 tab.guides.clear();
                 drawGridOnView();
-                break;
-
-            case R.id.i_guides_new: {
-                final Point guide = new Point();
+            }
+            case R.id.i_guides_new -> {
+                final Guide guide = new Guide();
                 tab.guides.offerFirst(guide); // Add at the front for faster removal if necessary later
                 new GuideEditor(this, guide, bitmap.getWidth(), bitmap.getHeight(),
                         g -> drawGridOnView(),
@@ -4040,16 +3921,14 @@ public class MainActivity extends AppCompatActivity {
                             drawGridOnView();
                         })
                         .show();
-                break;
             }
-            case R.id.i_has_alpha: {
+            case R.id.i_has_alpha -> {
                 final boolean checked = !item.isChecked();
                 item.setChecked(checked);
                 bitmap.setHasAlpha(checked);
                 drawBitmapOnView(true);
-                break;
             }
-            case R.id.i_information: {
+            case R.id.i_information -> {
                 final StringBuilder message = new StringBuilder()
                         .append(getString(R.string.config)).append('\n').append(bitmap.getConfig()).append("\n\n")
                         .append(getString(R.string.has_alpha)).append('\n').append(bitmap.hasAlpha()).append("\n\n")
@@ -4059,9 +3938,8 @@ public class MainActivity extends AppCompatActivity {
                         .setMessage(message)
                         .setPositiveButton(R.string.ok, null)
                         .show();
-                break;
             }
-            case R.id.i_layer_add_layer_mask: {
+            case R.id.i_layer_add_layer_mask -> {
                 final Tab t = new Tab();
                 t.bitmap = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(),
                         bitmap.getConfig(), true, bitmap.getColorSpace());
@@ -4069,16 +3947,14 @@ public class MainActivity extends AppCompatActivity {
                 t.setLevel(tab.getLevel() + 1);
                 t.moveTo(tab.left, tab.top);
                 t.paint.setBlendMode(BlendMode.DST_OUT);
-                t.visible = true;
                 final Canvas cv = new Canvas(t.bitmap);
                 if (hasSelection) {
                     t.bitmap.eraseColor(Color.BLACK);
                     cv.drawRect(selection, PAINT_DST_OUT);
                 }
                 addTab(t, tabLayout.getSelectedTabPosition(), getString(R.string.mask));
-                break;
             }
-            case R.id.i_layer_alpha:
+            case R.id.i_layer_alpha -> {
                 new SeekBarDialog(this).setTitle(R.string.alpha_value).setMin(0).setMax(255)
                         .setProgress(tab.paint.getAlpha())
                         .setOnChangeListener(onLayerAlphaSeekBarProgressChangeListener)
@@ -4086,37 +3962,20 @@ public class MainActivity extends AppCompatActivity {
                         .setOnCancelListener(dialog -> clearStatus(), false)
                         .show();
                 clearStatus();
-                break;
-
-            case R.id.i_layer_blend_mode_clear:
-            case R.id.i_layer_blend_mode_src:
-            case R.id.i_layer_blend_mode_dst:
-            case R.id.i_layer_blend_mode_src_over:
-            case R.id.i_layer_blend_mode_dst_over:
-            case R.id.i_layer_blend_mode_src_in:
-            case R.id.i_layer_blend_mode_dst_in:
-            case R.id.i_layer_blend_mode_src_out:
-            case R.id.i_layer_blend_mode_dst_out:
-            case R.id.i_layer_blend_mode_src_atop:
-            case R.id.i_layer_blend_mode_dst_atop:
-            case R.id.i_layer_blend_mode_xor:
-            case R.id.i_layer_blend_mode_plus:
-            case R.id.i_layer_blend_mode_modulate:
-            case R.id.i_layer_blend_mode_screen:
-            case R.id.i_layer_blend_mode_overlay:
-            case R.id.i_layer_blend_mode_darken:
-            case R.id.i_layer_blend_mode_lighten:
-            case R.id.i_layer_blend_mode_color_dodge:
-            case R.id.i_layer_blend_mode_color_burn:
-            case R.id.i_layer_blend_mode_hard_light:
-            case R.id.i_layer_blend_mode_soft_light:
-            case R.id.i_layer_blend_mode_difference:
-            case R.id.i_layer_blend_mode_exclusion:
-            case R.id.i_layer_blend_mode_multiply:
-            case R.id.i_layer_blend_mode_hue:
-            case R.id.i_layer_blend_mode_saturation:
-            case R.id.i_layer_blend_mode_color:
-            case R.id.i_layer_blend_mode_luminosity:
+            }
+            case R.id.i_layer_blend_mode_clear,
+                    R.id.i_layer_blend_mode_src, R.id.i_layer_blend_mode_dst,
+                    R.id.i_layer_blend_mode_src_over, R.id.i_layer_blend_mode_dst_over,
+                    R.id.i_layer_blend_mode_src_in, R.id.i_layer_blend_mode_dst_in,
+                    R.id.i_layer_blend_mode_src_out, R.id.i_layer_blend_mode_dst_out,
+                    R.id.i_layer_blend_mode_src_atop, R.id.i_layer_blend_mode_dst_atop,
+                    R.id.i_layer_blend_mode_xor, R.id.i_layer_blend_mode_plus,
+                    R.id.i_layer_blend_mode_modulate, R.id.i_layer_blend_mode_screen, R.id.i_layer_blend_mode_overlay,
+                    R.id.i_layer_blend_mode_darken, R.id.i_layer_blend_mode_lighten,
+                    R.id.i_layer_blend_mode_color_dodge, R.id.i_layer_blend_mode_color_burn,
+                    R.id.i_layer_blend_mode_hard_light, R.id.i_layer_blend_mode_soft_light,
+                    R.id.i_layer_blend_mode_difference, R.id.i_layer_blend_mode_exclusion, R.id.i_layer_blend_mode_multiply,
+                    R.id.i_layer_blend_mode_hue, R.id.i_layer_blend_mode_saturation, R.id.i_layer_blend_mode_color, R.id.i_layer_blend_mode_luminosity -> {
                 for (int i = 0; i < BLEND_MODES.length; ++i) {
                     final MenuItem mi = smBlendModes.getItem(i);
                     if (mi == item) {
@@ -4127,43 +3986,38 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
                 drawBitmapOnView(true);
-                break;
-
-            case R.id.i_layer_color_matrix: {
+            }
+            case R.id.i_layer_color_matrix -> {
                 final boolean checked = !item.isChecked();
                 final Tab.Filter filter = checked ? Tab.Filter.COLOR_MATRIX : null;
                 checkLayerFilterMenuItem(filter);
                 tab.filter = filter;
                 miLayerFilterSet.setEnabled(checked);
                 drawBitmapOnView(true);
-                break;
             }
-            case R.id.i_layer_create_clipping_mask:
+            case R.id.i_layer_create_clipping_mask -> {
                 tab.paint.setBlendMode(BlendMode.SRC_ATOP);
                 checkLayerBlendModeMenuItem(BlendMode.SRC_ATOP);
                 Tab.levelDown(tabs, tabLayout.getSelectedTabPosition());
                 miLayerLevelUp.setEnabled(true);
                 computeLayerTree();
                 drawBitmapOnView(true);
-                break;
-
-            case R.id.i_layer_curves: {
+            }
+            case R.id.i_layer_curves -> {
                 final boolean checked = !item.isChecked();
                 final Tab.Filter filter = checked ? Tab.Filter.CURVES : null;
                 checkLayerFilterMenuItem(filter);
                 tab.filter = filter;
                 miLayerFilterSet.setEnabled(checked);
                 drawBitmapOnView(true);
-                break;
             }
-            case R.id.i_layer_delete:
+            case R.id.i_layer_delete -> {
                 if (tabs.size() == 1) {
                     break;
                 }
                 closeTab();
-                break;
-
-            case R.id.i_layer_delete_invisible: {
+            }
+            case R.id.i_layer_delete_invisible -> {
                 final Tab background = tab.getBackground();
                 for (int i = tab.getBackgroundPosition(); i >= 0; --i) {
                     final Tab t = tabs.get(i);
@@ -4179,16 +4033,14 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     onTabSelectedListener.onTabSelected(tabLayout.getTabAt(tabLayout.getSelectedTabPosition()));
                 }
-                break;
             }
-            case R.id.i_layer_draw_below: {
+            case R.id.i_layer_draw_below -> {
                 final boolean checked = !item.isChecked();
                 item.setChecked(checked);
                 tab.drawBelow = checked;
                 drawBitmapOnView(true);
-                break;
             }
-            case R.id.i_layer_duplicate: {
+            case R.id.i_layer_duplicate -> {
                 drawFloatingLayers();
                 final Bitmap bm = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(),
                         bitmap.getConfig(), true, bitmap.getColorSpace());
@@ -4201,9 +4053,8 @@ public class MainActivity extends AppCompatActivity {
                 addLayer(bm,
                         tab.visible, tab.getLevel(), tab.left, tab.top,
                         tabLayout.getSelectedTabPosition(), getString(R.string.copy_noun));
-                break;
             }
-            case R.id.i_layer_duplicate_by_color_range: {
+            case R.id.i_layer_duplicate_by_color_range -> {
                 drawFloatingLayers();
                 createImagePreview();
                 new ColorRangeDialog(this)
@@ -4211,30 +4062,28 @@ public class MainActivity extends AppCompatActivity {
                         .setOnPositiveButtonClickListener(onLayerDuplicatingByColorRangeConfirmListener)
                         .setOnCancelListener(onImagePreviewCancelListener)
                         .show();
-                break;
             }
-            case R.id.i_layer_hsv: {
+            case R.id.i_layer_hsv -> {
                 final boolean checked = !item.isChecked();
                 final Tab.Filter filter = checked ? Tab.Filter.HSV : null;
                 checkLayerFilterMenuItem(filter);
                 tab.filter = filter;
                 miLayerFilterSet.setEnabled(checked);
                 drawBitmapOnView(true);
-                break;
             }
-            case R.id.i_layer_filter_set:
+            case R.id.i_layer_filter_set -> {
                 if (tab.filter == null) {
                     break;
                 }
                 switch (tab.filter) {
-                    case COLOR_MATRIX:
+                    case COLOR_MATRIX -> {
                         new ColorMatrixManager(this,
                                 onLayerColorMatrixChangeListener,
                                 tab.colorMatrix)
                                 .show();
                         clearStatus();
-                        break;
-                    case CURVES:
+                    }
+                    case CURVES -> {
                         new CurvesDialog(this)
                                 .setSource(bitmap)
                                 .setDefaultCurves(tab.curves)
@@ -4242,8 +4091,8 @@ public class MainActivity extends AppCompatActivity {
                                 .setOnPositiveButtonClickListener(null)
                                 .show();
                         clearStatus();
-                        break;
-                    case HSV:
+                    }
+                    case HSV -> {
                         new HsvDialog(this)
                                 .setOnHsvChangeListener(onLayerHsvChangeListener)
                                 .setOnPositiveButtonClickListener(null)
@@ -4251,25 +4100,22 @@ public class MainActivity extends AppCompatActivity {
                                 .show();
                         tvStatus.setText(String.format(getString(R.string.state_hsv),
                                 tab.deltaHsv[0], tab.deltaHsv[1], tab.deltaHsv[2]));
-                        break;
+                    }
                 }
-                break;
-
-            case R.id.i_layer_level_down:
+            }
+            case R.id.i_layer_level_down -> {
                 tab.levelDown();
                 miLayerLevelUp.setEnabled(true);
                 computeLayerTree();
                 drawBitmapOnView(true);
-                break;
-
-            case R.id.i_layer_level_up:
+            }
+            case R.id.i_layer_level_up -> {
                 tab.levelUp();
                 miLayerLevelUp.setEnabled(tab.getLevel() > 0);
                 computeLayerTree();
                 drawBitmapOnView(true);
-                break;
-
-            case R.id.i_layer_merge_as_hidden: {
+            }
+            case R.id.i_layer_merge_as_hidden -> {
                 final int j = tabLayout.getSelectedTabPosition() + 1;
                 if (j >= tabs.size()) {
                     break;
@@ -4278,9 +4124,8 @@ public class MainActivity extends AppCompatActivity {
                 HiddenImageMaker.merge(this,
                         new Bitmap[]{bitmap, tabs.get(j).bitmap},
                         onFinishMakingHiddenImageListener);
-                break;
             }
-            case R.id.i_layer_merge_down: {
+            case R.id.i_layer_merge_down -> {
                 final int pos = tabLayout.getSelectedTabPosition(), below = pos + 1;
                 if (below >= tabs.size()) {
                     break;
@@ -4291,9 +4136,8 @@ public class MainActivity extends AppCompatActivity {
                 if (tabLayout.getSelectedTabPosition() != pos) {
                     tabLayout.getTabAt(pos).select();
                 }
-                break;
             }
-            case R.id.i_layer_merge_visible: {
+            case R.id.i_layer_merge_visible -> {
                 drawFloatingLayers();
                 final Tab background = tab.getBackground();
                 final Bitmap bm = Tab.mergeLayers(layerTree);
@@ -4310,16 +4154,20 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
                 addLayer(bm, i + 1);
-                break;
             }
-            case R.id.i_layer_new:
-                createLayer(bitmap.getWidth(), bitmap.getHeight(),
-                        bitmap.getConfig(), true, bitmap.getColorSpace(),
-                        settings.getNewLayerLevel() ? tab.getLevel() : 0,
-                        tab.left, tab.top, tabLayout.getSelectedTabPosition());
-                break;
-
-            case R.id.i_layer_rename: {
+            case R.id.i_layer_new -> {
+                if (settings.getNewLayerLevel()) {
+                    createLayer(bitmap.getWidth(), bitmap.getHeight(),
+                            bitmap.getConfig(), bitmap.getColorSpace(),
+                            tab.getLevel(), tab.left, tab.top, tabLayout.getSelectedTabPosition());
+                } else {
+                    final Bitmap background = tab.getBackground().bitmap;
+                    createLayer(background.getWidth(), background.getHeight(),
+                            background.getConfig(), background.getColorSpace(),
+                            0, 0, 0, tabLayout.getSelectedTabPosition());
+                }
+            }
+            case R.id.i_layer_rename -> {
                 final AlertDialog dialog = new AlertDialog.Builder(this)
                         .setNegativeButton(R.string.cancel, null)
                         .setPositiveButton(R.string.ok, onLayerRenameDialogPBClickListener)
@@ -4334,10 +4182,8 @@ public class MainActivity extends AppCompatActivity {
                 tiet.setText(tab.getName());
                 til.setHint(R.string.layer_name);
                 dialog.findViewById(R.id.s_file_type).setVisibility(View.GONE);
-
-                break;
             }
-            case R.id.i_noise:
+            case R.id.i_noise -> {
                 drawFloatingLayers();
                 createImagePreview();
                 new SeekBarDialog(this).setTitle(R.string.noise).setMin(0).setMax(100).setProgress(0)
@@ -4346,9 +4192,8 @@ public class MainActivity extends AppCompatActivity {
                         .setOnCancelListener(onImagePreviewCancelListener)
                         .show();
                 clearStatus();
-                break;
-
-            case R.id.i_paste: {
+            }
+            case R.id.i_paste -> {
                 if (clipboard == null) {
                     break;
                 }
@@ -4370,46 +4215,36 @@ public class MainActivity extends AppCompatActivity {
                 rbTransformer.setChecked(true);
                 drawBitmapOnView(selection);
                 drawSelectionOnView();
-                break;
             }
-            case R.id.i_redo:
+            case R.id.i_redo -> {
                 if (tab.history.canRedo()) {
                     undoOrRedo(tab.history.redo());
                 }
-                break;
-
-            case R.id.i_rotate_90:
+            }
+            case R.id.i_rotate_90 -> {
                 drawFloatingLayers();
                 rotate(90.0f, false);
-                break;
-
-            case R.id.i_rotate_180:
+            }
+            case R.id.i_rotate_180 -> {
                 drawFloatingLayers();
                 rotate(180.0f, false);
-                break;
-
-            case R.id.i_rotate_270:
+            }
+            case R.id.i_rotate_270 -> {
                 drawFloatingLayers();
                 rotate(270.0f, false);
-                break;
-
-            case R.id.i_select_all:
+            }
+            case R.id.i_select_all -> {
                 selectAll();
                 hasSelection = true;
                 drawSelectionOnView();
                 clearStatus();
-                break;
-
-            case R.id.i_settings:
-                startActivity(new Intent(this, SettingsActivity.class));
-                break;
-
-            case R.id.i_size:
+            }
+            case R.id.i_settings -> startActivity(new Intent(this, SettingsActivity.class));
+            case R.id.i_size -> {
                 drawFloatingLayers();
                 new ImageSizeManager(this, bitmap, onUpdateImageSizeListener).show();
-                break;
-
-            case R.id.i_undo: {
+            }
+            case R.id.i_undo -> {
                 if (transformer != null) {
                     undoOrRedo(tab.history.getCurrent());
                 } else if (!isShapeStopped) {
@@ -4418,24 +4253,22 @@ public class MainActivity extends AppCompatActivity {
                 } else if (tab.history.canUndo()) {
                     undoOrRedo(tab.history.undo());
                 }
-                break;
             }
-            case R.id.i_view_actual_pixels:
+            case R.id.i_view_actual_pixels -> {
                 translationX = tab.translationX = 0.0f;
                 translationY = tab.translationY = 0.0f;
                 scale = tab.scale = 1.0f;
                 calculateBackgroundSizeOnView();
                 drawAfterTranslatingOrScaling(false);
-                break;
-
-            case R.id.i_view_fit_on_screen:
+            }
+            case R.id.i_view_fit_on_screen -> {
                 fitOnScreen();
                 translationX = tab.translationX;
                 translationY = tab.translationY;
                 scale = tab.scale;
                 calculateBackgroundSizeOnView();
                 drawAfterTranslatingOrScaling(false);
-                break;
+            }
         }
         return super.onOptionsItemSelected(item);
     }

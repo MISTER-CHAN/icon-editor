@@ -2,7 +2,6 @@ package com.misterchan.iconeditor;
 
 import android.content.Context;
 import android.content.DialogInterface;
-import android.graphics.Point;
 import android.view.Gravity;
 import android.view.Window;
 import android.view.WindowManager;
@@ -16,19 +15,19 @@ import com.google.android.material.textfield.TextInputEditText;
 public class GuideEditor {
 
     public interface OnNewGuideChangeListener {
-        void onAdd(Point guide);
+        void onChange(Guide guide);
     }
 
     private final AlertDialog.Builder builder;
+    private final Guide guide;
     private final int width, height;
     private final OnNewGuideChangeListener onNewGuideChangeListener;
-    private final Point guide;
     private RadioButton rbHorizontal, rbVertical;
     private TextInputEditText tietPosition;
 
     private AfterTextChangedListener onPositionTextChangedListener;
 
-    public GuideEditor(Context context, Point guide, int width, int height,
+    public GuideEditor(Context context, Guide guide, int width, int height,
                        OnNewGuideChangeListener onNewGuideChangeListener, DialogInterface.OnCancelListener onCancelListener) {
         builder = new AlertDialog.Builder(context)
                 .setOnCancelListener(onCancelListener)
@@ -43,36 +42,7 @@ public class GuideEditor {
         this.height = height;
     }
 
-    /**
-     * For orientation equality, let's not use 'else' or '? :'
-     */
-    private Integer onGuideChange(RadioButton orientation, Integer position) {
-        if (position == null) {
-            try {
-                position = Integer.parseUnsignedInt(tietPosition.getText().toString());
-            } catch (NumberFormatException e) {
-                return null;
-            }
-        }
-        if (orientation == null) {
-            if (rbHorizontal.isChecked()) {
-                orientation = rbHorizontal;
-            } else if (rbVertical.isChecked()) {
-                orientation = rbVertical;
-            }
-        }
-        if (orientation == rbHorizontal) {
-            guide.y = position;
-            guide.x = 0;
-        } else if (orientation == rbVertical) {
-            guide.x = position;
-            guide.y = 0;
-        }
-        onNewGuideChangeListener.onAdd(guide);
-        return position;
-    }
-
-    public void setPositionTextSilently(int progress) {
+    private void setPositionTextSilently(int progress) {
         tietPosition.removeTextChangedListener(onPositionTextChangedListener);
         tietPosition.setText(String.valueOf(progress));
         tietPosition.addTextChangedListener(onPositionTextChangedListener);
@@ -92,15 +62,19 @@ public class GuideEditor {
         final SeekBar sbPosition = dialog.findViewById(R.id.sb_position);
         tietPosition = dialog.findViewById(R.id.tiet_position);
         final OnSeekBarProgressChangeListener onPositionSBProgressChange = (seekBar, progress) -> {
+            guide.position = progress;
+            onNewGuideChangeListener.onChange(guide);
             setPositionTextSilently(progress);
-            onGuideChange(null, progress);
         };
 
         onPositionTextChangedListener = s -> {
-            final Integer position = onGuideChange(null, null);
-            if (position != null) {
+            try {
+                final int position = Integer.parseUnsignedInt(tietPosition.getText().toString());
+                guide.position = position;
                 sbPosition.setProgress(position);
+            } catch (NumberFormatException e) {
             }
+            onNewGuideChangeListener.onChange(guide);
         };
 
         sbPosition.setMax(height);
@@ -108,17 +82,23 @@ public class GuideEditor {
         tietPosition.addTextChangedListener(onPositionTextChangedListener);
 
         rbHorizontal.setOnCheckedChangeListener((OnCheckedListener) () -> {
-            sbPosition.setMax(height);
-            final int position = sbPosition.getProgress();
-            setPositionTextSilently(position);
-            onGuideChange(rbHorizontal, position);
+            guide.orientation = Guide.ORIENTATION_HORIZONTAL;
+            if (guide.position > height) {
+                guide.position = height;
+                sbPosition.setMax(height);
+                setPositionTextSilently(height);
+            }
+            onNewGuideChangeListener.onChange(guide);
         });
 
         rbVertical.setOnCheckedChangeListener((OnCheckedListener) () -> {
-            sbPosition.setMax(width);
-            final int position = sbPosition.getProgress();
-            setPositionTextSilently(position);
-            onGuideChange(rbVertical, position);
+            guide.orientation = Guide.ORIENTATION_VERTICAL;
+            if (guide.position > width) {
+                guide.position = width;
+                sbPosition.setMax(width);
+                setPositionTextSilently(width);
+            }
+            onNewGuideChangeListener.onChange(guide);
         });
     }
 }
