@@ -3593,7 +3593,8 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("NonConstantResourceId")
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.i_cell_grid -> new CellGridManager(this, tab.cellGrid, onUpdateCellGridListener).show();
+            case R.id.i_cell_grid ->
+                    new CellGridManager(this, tab.cellGrid, onUpdateCellGridListener).show();
             case R.id.i_clone -> {
                 if (transformer == null) {
                     drawFloatingLayers();
@@ -4250,6 +4251,12 @@ public class MainActivity extends AppCompatActivity {
                 } else if (!isShapeStopped) {
                     isShapeStopped = true;
                     eraseBitmapAndInvalidateView(previewImage, ivPreview);
+                } else if (isEditingText) {
+                    isEditingText = false;
+                    paint.setTextSize(textSize);
+                    eraseBitmapAndInvalidateView(previewImage, ivPreview);
+                    hideSoftInputFromWindow();
+                    llOptionsText.setVisibility(View.INVISIBLE);
                 } else if (tab.history.canUndo()) {
                     undoOrRedo(tab.history.undo());
                 }
