@@ -47,6 +47,7 @@ import android.widget.CompoundButton;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
@@ -75,8 +76,11 @@ import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.misterchan.iconeditor.util.UriToPathUtil;
+import com.waynejo.androidndkgif.GifDecoder;
+import com.waynejo.androidndkgif.GifEncoder;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -107,13 +111,6 @@ public class MainActivity extends AppCompatActivity {
     private static final Looper MAIN_LOOPER = Looper.getMainLooper();
 
     private static final Pattern PATTERN_TREE = Pattern.compile("^content://com\\.android\\.externalstorage\\.documents/tree/primary%3A(?<path>.*)$");
-
-    private static final Bitmap.CompressFormat[] COMPRESS_FORMATS = {
-            Bitmap.CompressFormat.PNG,
-            Bitmap.CompressFormat.JPEG,
-            null,
-            null
-    };
 
     private static final Paint PAINT_BITMAP = new Paint() {
         {
@@ -194,10 +191,6 @@ public class MainActivity extends AppCompatActivity {
             setColor(Color.BLUE);
             setStrokeWidth(2.0f);
         }
-    };
-
-    private static final String[] MIME_TYPES = new String[]{
-            "image/png", "image/jpeg", "image/bmp", "image/gif"
     };
 
     private static final class FileNameHelper {
@@ -425,8 +418,8 @@ public class MainActivity extends AppCompatActivity {
         }
         final int position = sFileType.getSelectedItemPosition();
         tab.filePath = Environment.getExternalStorageDirectory().getPath() + File.separator + tree + File.separator + fileName;
-        tab.mimeType = MIME_TYPES[position];
-        tab.compressFormat = COMPRESS_FORMATS[position];
+        tab.fileType = Tab.FileType.values()[position];
+        tab.compressFormat = Tab.COMPRESS_FORMATS[position];
         save();
         tab.setTitle(fileName);
     };
@@ -807,7 +800,7 @@ public class MainActivity extends AppCompatActivity {
             final int position = tab.getPosition();
             final Tab t = tabs.get(position);
             MainActivity.this.tab = t;
-            layerTree = Tab.computeLayerTree(tabs, position);
+            computeLayerTree(position);
             final Tab background = t.getBackground();
             final boolean areInDiffProj = background != oldBackground;
             oldBackground = null;
@@ -907,6 +900,7 @@ public class MainActivity extends AppCompatActivity {
                             .setCustomView(cv)
                             .setTag(selected);
                     tabLayout.addTab(nt, p, true);
+                    Tab.distinguishProjects(tabs);
                 }
 
                 @Override
@@ -2395,29 +2389,21 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void addTab(Bitmap bitmap, int position) {
+    private void addFrame(Bitmap bitmap, CharSequence title, boolean isFirst, int delay, String path, Tab.FileType type, boolean setSelected) {
         final Tab t = new Tab();
         t.bitmap = bitmap;
         t.paint.setBlendMode(BlendMode.SRC_OVER);
-        addTab(t, position, getString(R.string.untitled));
-    }
-
-    private void addTab(Bitmap bitmap, int position,
-                        CharSequence title, String path, String type, Bitmap.CompressFormat compressFormat) {
-        final Tab t = new Tab();
-        t.bitmap = bitmap;
-        t.paint.setBlendMode(BlendMode.SRC_OVER);
+        t.isFirstFrame = isFirst;
+        t.delay = delay;
         t.filePath = path;
-        t.mimeType = type;
-        t.compressFormat = compressFormat;
-        addTab(t, position, title);
-    }
-
-    private void addTab(Tab tab, int position, CharSequence title) {
-        tabs.add(position, tab);
-        addToHistory(tab);
-
-        loadTab(tab, position, title, true);
+        t.fileType = type;
+        final int position = tabs.size();
+        tabs.add(position, t);
+        addToHistory(t);
+        loadTab(t, position, title, setSelected);
+        if (setSelected) {
+            Tab.distinguishProjects(tabs);
+        }
     }
 
     private void addLayer(Bitmap bitmap, int position) {
@@ -2432,11 +2418,37 @@ public class MainActivity extends AppCompatActivity {
         final Tab t = new Tab();
         t.bitmap = bitmap;
         t.isBackground = false;
+        t.isFirstFrame = false;
         t.setLevel(level);
         t.moveTo(left, top);
         t.paint.setBlendMode(BlendMode.SRC_OVER);
         t.visible = visible;
         addTab(t, position, title);
+    }
+
+    private void addTab(Bitmap bitmap, int position) {
+        final Tab t = new Tab();
+        t.bitmap = bitmap;
+        t.paint.setBlendMode(BlendMode.SRC_OVER);
+        addTab(t, position, getString(R.string.untitled));
+    }
+
+    private void addTab(Bitmap bitmap, int position,
+                        CharSequence title, String path, Tab.FileType type, Bitmap.CompressFormat compressFormat) {
+        final Tab t = new Tab();
+        t.bitmap = bitmap;
+        t.paint.setBlendMode(BlendMode.SRC_OVER);
+        t.filePath = path;
+        t.fileType = type;
+        t.compressFormat = compressFormat;
+        addTab(t, position, title);
+    }
+
+    private void addTab(Tab tab, int position, CharSequence title) {
+        tabs.add(position, tab);
+        addToHistory(tab);
+        loadTab(tab, position, title, true);
+        Tab.distinguishProjects(tabs);
     }
 
     private void addToHistory() {
@@ -2522,7 +2534,8 @@ public class MainActivity extends AppCompatActivity {
         tab.history.clear();
         if (select) {
             final Tab above = Tab.getAbove(tabs, position), below = Tab.getBelow(tabs, position);
-            tabs.remove(position);
+            tabs.remove(position); // Remove tab
+            Tab.distinguishProjects(tabs);
             if (above != null && tab.isBackground) {
                 above.isBackground = true;
             }
@@ -2534,12 +2547,17 @@ public class MainActivity extends AppCompatActivity {
                 tabLayout.selectTab(tabLayout.getTabAt(position));
             }
         } else {
-            tabs.remove(position);
+            tabs.remove(position); // Remove tab
         }
     }
 
     private void computeLayerTree() {
-        layerTree = Tab.computeLayerTree(tabs, tabLayout.getSelectedTabPosition());
+        computeLayerTree(tabLayout.getSelectedTabPosition());
+    }
+
+    private void computeLayerTree(int position) {
+        layerTree = Tab.computeLayerTree(tabs, position);
+        Tab.showIcons(tabs, position);
     }
 
     private void createImage(int width, int height) {
@@ -3269,7 +3287,7 @@ public class MainActivity extends AppCompatActivity {
         tab.setTitle(title);
         tab.setVisible(tab.visible);
         tab.addOVCBCCListener(getOVCBCCListener(tab));
-        tabLayout.addTab(t, position, true);
+        tabLayout.addTab(t, position, setSelected);
     }
 
     @Override
@@ -3715,7 +3733,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 clearStatus();
             }
-            case R.id.i_file_close -> {
+            case R.id.i_file_close, R.id.i_frame_delete -> {
                 if (tabs.get(0).getBackground() == tabs.get(tabs.size() - 1)) {
                     break;
                 }
@@ -3907,6 +3925,18 @@ public class MainActivity extends AppCompatActivity {
             case R.id.i_flip_vertically -> {
                 drawFloatingLayers();
                 scale(1.0f, -1.0f, false);
+            }
+            case R.id.i_frame_delay -> {
+                new EditNumberDialog(this)
+                        .setTitle(R.string.delay)
+                        .setOnPositiveButtonClickListener(number -> tab.delay = number)
+                        .show(tab.delay, "ms");
+            }
+            case R.id.i_frame_unify_delay -> {
+
+            }
+            case R.id.i_frame_unify_size -> {
+
             }
             case R.id.i_guides_clear -> {
                 tab.guides.clear();
@@ -4327,33 +4357,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void openImage(Bitmap bitmap, Uri uri) {
-        final int width = bitmap.getWidth(), height = bitmap.getHeight();
-        final Bitmap bm = Bitmap.createBitmap(width, height,
-                bitmap.getConfig(), bitmap.hasAlpha(), bitmap.getColorSpace());
-        new Canvas(bm).drawBitmap(bitmap, 0.0f, 0.0f, PAINT_SRC);
-        bitmap.recycle();
-        final DocumentFile documentFile = DocumentFile.fromSingleUri(this, uri);
-        final String type = documentFile.getType();
-        if (type != null) {
-            String path = null;
-            final Bitmap.CompressFormat compressFormat = switch (type) {
-                case "image/jpeg" -> Bitmap.CompressFormat.JPEG;
-                case "image/png" -> Bitmap.CompressFormat.PNG;
-                case "image/webp" -> Bitmap.CompressFormat.WEBP_LOSSLESS;
-                default -> null;
-            };
-            if (compressFormat != null) {
-                path = UriToPathUtil.getRealFilePath(this, uri);
-            } else {
-                Toast.makeText(this, R.string.not_supported_file_type, Toast.LENGTH_SHORT).show();
-            }
-            addTab(bm, tabs.size(), documentFile.getName(), path, type, compressFormat);
-        } else {
-            addTab(bm, tabs.size());
-        }
-    }
-
     private void openFile(Uri uri) {
         if (uri == null) {
             return;
@@ -4364,6 +4367,53 @@ public class MainActivity extends AppCompatActivity {
             bm.recycle();
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    private void openImage(Bitmap bitmap, Uri uri) {
+        final int width = bitmap.getWidth(), height = bitmap.getHeight();
+        final Bitmap bm = Bitmap.createBitmap(width, height,
+                bitmap.getConfig(), bitmap.hasAlpha(), bitmap.getColorSpace());
+        new Canvas(bm).drawBitmap(bitmap, 0.0f, 0.0f, PAINT_SRC);
+        bitmap.recycle();
+        final DocumentFile documentFile = DocumentFile.fromSingleUri(this, uri);
+        final String name = documentFile.getName(), mimeType = documentFile.getType();
+        if (mimeType != null) {
+            final String path;
+            final Tab.FileType type = switch (mimeType) {
+                case "image/jpeg" -> Tab.FileType.JPEG;
+                case "image/png" -> Tab.FileType.PNG;
+                case "image/gif" -> Tab.FileType.GIF;
+                case "image/webp" -> Tab.FileType.WEBP;
+                default -> null;
+            };
+            final Bitmap.CompressFormat compressFormat = switch (mimeType) {
+                case "image/jpeg" -> Bitmap.CompressFormat.JPEG;
+                case "image/png" -> Bitmap.CompressFormat.PNG;
+                case "image/webp" -> Bitmap.CompressFormat.WEBP_LOSSLESS;
+                default -> null;
+            };
+            if (compressFormat != null) {
+                path = UriToPathUtil.getRealFilePath(this, uri);
+                addTab(bm, tabs.size(), name, path, type, compressFormat);
+            } else if ("image/gif".equals(mimeType)) {
+                path = UriToPathUtil.getRealFilePath(this, uri);
+                final GifDecoder gifDecoder = new GifDecoder();
+                if (gifDecoder.load(path)) {
+                    for (int i = 0; i < gifDecoder.frameNum(); ++i) {
+                        addFrame(gifDecoder.frame(i), String.format("[%d] %s", i, name), i == 0, gifDecoder.delay(i), path, type, false);
+                    }
+                    Tab.distinguishProjects(tabs);
+                    onTabSelectedListener.onTabSelected(tabLayout.getTabAt(tabLayout.getSelectedTabPosition()));
+                } else {
+                    addTab(bm, tabs.size(), name, null, type, null);
+                }
+            } else {
+                Toast.makeText(this, R.string.not_supported_file_type, Toast.LENGTH_SHORT).show();
+                addTab(bm, tabs.size(), name, null, null, null);
+            }
+        } else {
+            addTab(bm, tabs.size());
         }
     }
 
@@ -4527,15 +4577,57 @@ public class MainActivity extends AppCompatActivity {
         drawFloatingLayers();
 
         final File file = new File(tab.filePath);
-        try (FileOutputStream fos = new FileOutputStream(file)) {
-            bitmap.compress(tab.compressFormat, 100, fos);
-            fos.flush();
-        } catch (IOException e) {
-            Toast.makeText(this, getString(R.string.failed) + "\n" + e.getMessage(), Toast.LENGTH_LONG).show();
-            e.printStackTrace();
+        if (tab.compressFormat != null) {
+            final Bitmap merged = Tab.mergeLayers(layerTree);
+            try (FileOutputStream fos = new FileOutputStream(file)) {
+                merged.compress(tab.compressFormat, 100, fos);
+                fos.flush();
+            } catch (IOException e) {
+                Toast.makeText(this, getString(R.string.failed) + "\n" + e.getMessage(), Toast.LENGTH_LONG).show();
+                e.printStackTrace();
+            } finally {
+                merged.recycle();
+            }
+            MediaScannerConnection.scanFile(this, new String[]{file.toString()}, null, null);
+
+        } else if (tab.fileType == Tab.FileType.GIF) {
+            final GifEncoder gifEncoder = new GifEncoder();
+            final Tab firstFrame = tab.getBackground().getFirstFrame();
+            final int width = firstFrame.bitmap.getWidth(), height = firstFrame.bitmap.getHeight();
+            try {
+                gifEncoder.init(width, height, tab.filePath);
+            } catch (FileNotFoundException e) {
+                return;
+            }
+            final int size = tabs.size();
+            final AlertDialog dialog = new AlertDialog.Builder(this)
+                    .setTitle(R.string.exporting)
+                    .setView(R.layout.progress_bar)
+                    .show();
+            final ProgressBar pb = dialog.findViewById(R.id.progress_bar);
+            pb.setMax(size - 1);
+            new Thread(() -> {
+                for (int i = 0; i < size; ++i) {
+                    final Tab t = tabs.get(i);
+                    if (!t.isBackground) {
+                        continue;
+                    }
+                    if (t.getFirstFrame() == firstFrame
+                            && t.bitmap.getWidth() == width && t.bitmap.getHeight() == height
+                            && t.bitmap.getColorSpace().getId() == ColorSpace.Named.SRGB.ordinal()) {
+                        final Bitmap merged = Tab.mergeLayers(Tab.computeLayerTree(tabs, i));
+                        gifEncoder.encodeFrame(merged, t.delay);
+                        merged.recycle();
+                    }
+                    final int progress = i;
+                    runOnUiThread(() -> pb.setProgress(progress));
+                }
+                gifEncoder.close();
+                runOnUiThread(dialog::dismiss);
+                MediaScannerConnection.scanFile(this, new String[]{file.toString()}, null, null);
+            }).start();
         }
 
-        MediaScannerConnection.scanFile(this, new String[]{file.toString()}, null, null);
     }
 
     private void saveAs() {

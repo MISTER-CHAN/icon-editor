@@ -165,6 +165,69 @@
     </item>
 
     <item
+        android:title="@string/filters"
+        app:showAsAction="collapseActionView">
+
+        <menu>
+
+            <item
+                android:id="@+id/i_filter_lightness"
+                android:title="@string/lightness" />
+
+            <item
+                android:id="@+id/i_filter_contrast"
+                android:title="@string/contrast" />
+
+            <item
+                android:id="@+id/i_filter_levels"
+                android:title="@string/levels" />
+
+            <item
+                android:id="@+id/i_filter_curves"
+                android:title="@string/curves" />
+
+            <item
+                android:id="@+id/i_filter_saturation"
+                android:title="@string/saturation" />
+
+            <item
+                android:id="@+id/i_filter_hsv"
+                android:title="@string/hsv" />
+
+            <item
+                android:id="@+id/i_filter_color_balance"
+                android:title="@string/color_balance" />
+
+            <item
+                android:id="@+id/i_filter_white_balance"
+                android:title="@string/white_balance"
+                android:visible="false" />
+
+            <item
+                android:id="@+id/i_filter_channel_lighting"
+                android:title="@string/channel_lighting" />
+
+            <item
+                android:id="@+id/i_filter_matrix"
+                android:title="@string/channel_mixer" />
+
+            <item
+                android:id="@+id/i_filter_threshold"
+                android:title="@string/threshold" />
+
+            <item android:title="@string/more">
+
+                <menu>
+
+                    <item
+                        android:id="@+id/i_filter_hue_to_alpha"
+                        android:title="@string/hue_to_alpha" />
+                </menu>
+            </item>
+        </menu>
+    </item>
+
+    <item
         android:title="@string/layer"
         app:showAsAction="collapseActionView">
 
@@ -433,67 +496,31 @@
     </item>
 
     <item
-        android:title="@string/filters"
+        android:title="@string/frame"
         app:showAsAction="collapseActionView">
 
         <menu>
 
             <item
-                android:id="@+id/i_filter_lightness"
-                android:title="@string/lightness" />
-
-            <item
-                android:id="@+id/i_filter_contrast"
-                android:title="@string/contrast" />
-
-            <item
-                android:id="@+id/i_filter_levels"
-                android:title="@string/levels" />
-
-            <item
-                android:id="@+id/i_filter_curves"
-                android:title="@string/curves" />
-
-            <item
-                android:id="@+id/i_filter_saturation"
-                android:title="@string/saturation" />
-
-            <item
-                android:id="@+id/i_filter_hsv"
-                android:title="@string/hsv" />
-
-            <item
-                android:id="@+id/i_filter_color_balance"
-                android:title="@string/color_balance" />
-
-            <item
-                android:id="@+id/i_filter_white_balance"
-                android:title="@string/white_balance"
+                android:id="@+id/i_frame_unify_size"
+                android:title="@string/unify_size"
                 android:visible="false" />
 
             <item
-                android:id="@+id/i_filter_channel_lighting"
-                android:title="@string/channel_lighting" />
+                android:id="@+id/i_frame_delay"
+                android:title="@string/delay" />
 
             <item
-                android:id="@+id/i_filter_matrix"
-                android:title="@string/channel_mixer" />
+                android:id="@+id/i_frame_unify_delay"
+                android:title="@string/unify_delay"
+                android:visible="false" />
 
             <item
-                android:id="@+id/i_filter_threshold"
-                android:title="@string/threshold" />
-
-            <item android:title="@string/more">
-
-                <menu>
-
-                    <item
-                        android:id="@+id/i_filter_hue_to_alpha"
-                        android:title="@string/hue_to_alpha" />
-                </menu>
-            </item>
+                android:id="@+id/i_frame_delete"
+                android:title="@string/delete" />
         </menu>
     </item>
+
 
     <item
         android:title="@string/view"

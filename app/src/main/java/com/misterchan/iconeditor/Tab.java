@@ -4,7 +4,6 @@ import android.graphics.Bitmap;
 import android.graphics.BlendMode;
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.graphics.Point;
 import android.graphics.Rect;
 import android.view.View;
 import android.widget.CheckBox;
@@ -21,9 +20,18 @@ import java.util.List;
 import java.util.Stack;
 
 class Tab {
+    public enum FileType {
+        PNG, JPEG, WEBP, GIF
+    }
+
     public enum Filter {
         COLOR_MATRIX, CURVES, HSV
     }
+
+    public static final Bitmap.CompressFormat[] COMPRESS_FORMATS = {
+            Bitmap.CompressFormat.PNG,
+            Bitmap.CompressFormat.JPEG,
+    };
 
     private static final Paint PAINT_SRC = new Paint() {
         {
@@ -37,6 +45,7 @@ class Tab {
 
     public boolean drawBelow = false;
     public boolean isBackground = true;
+    public boolean isFirstFrame = true;
     public boolean visible = true;
     public Bitmap bitmap;
     public Bitmap.CompressFormat compressFormat;
@@ -44,15 +53,19 @@ class Tab {
     public final CellGrid cellGrid = new CellGrid();
     private CheckBox cbVisible;
     public final Deque<Guide> guides = new LinkedList<>();
+    public FileType fileType;
     public Filter filter;
     public float scale;
     public float translationX, translationY;
+    private int backgroundPosition;
+    public int delay;
     private int level = 0;
     public int left = 0, top = 0;
+    public int quality = 0;
     public final Paint paint = new Paint();
-    public String filePath, mimeType;
+    public String filePath;
     private Tab background;
-    private int backgroundPosition;
+    private Tab firstFrame;
     private TextView tvBackground;
     private TextView tvLowerLevel, tvRoot, tvParent, tvLeaf;
     private TextView tvTitle;
@@ -95,15 +108,15 @@ class Tab {
     }
 
     private void clearLevelIcons() {
-        tvLowerLevel.setText("");
-        tvRoot.setText("");
-        tvParent.setText("");
         tvLeaf.setText("");
+        tvLowerLevel.setText("");
+        tvParent.setText("");
+        tvRoot.setText("");
     }
 
     public static LayerTree computeLayerTree(List<Tab> tabs, int pos) {
         final Stack<LayerTree> stack = new Stack<>();
-        LayerTree layerTree = new LayerTree();
+        LayerTree layerTree = new LayerTree(0);
         LayerTree.Node prev = null;
 
         final Tab projBegin = findBackground(tabs, pos);
@@ -112,12 +125,10 @@ class Tab {
         int backgroundPos = first;
         background.isBackground = true;
         boolean isInProject = false;
-        Tab lastTabInProject = null;
         stack.push(layerTree);
         for (int i = first; i >= 0; --i) {
             final Tab t = tabs.get(i);
             if (t.isBackground) {
-                t.showBackground();
                 background = t;
                 backgroundPos = i;
                 isInProject = t == projBegin;
@@ -125,22 +136,12 @@ class Tab {
             t.background = background;
             t.backgroundPosition = backgroundPos;
             if (isInProject) {
-                t.cbVisible.setVisibility(View.VISIBLE);
-                t.clearLevelIcons();
-                if (t.level > 0) {
-                    t.tvLowerLevel.setText("→");
-                }
-                lastTabInProject = t;
                 // If current layer is background layer
                 if (prev == null) {
-                    for (int j = 1; j < t.level; j++) {
-                        t.tvRoot.append("]");
-                    }
                     prev = layerTree.push(t);
                     continue;
                 }
             } else {
-                t.cbVisible.setVisibility(View.GONE);
                 continue;
             }
             final Tab prevTab = prev.getTab();
@@ -152,13 +153,10 @@ class Tab {
             } else if (levelDiff > 0) {
                 LayerTree lt = null;
                 for (int j = 0; j < levelDiff; ++j) {
-                    lt = new LayerTree();
+                    lt = new LayerTree(t.level);
                     prev.setChildren(lt);
                     prev = lt.push(prevTab);
                     stack.push(lt);
-                }
-                for (int j = prevTab.level > 0 ? 0 : 1; j < levelDiff; ++j) {
-                    prevTab.tvParent.append("]");
                 }
                 prev = lt.push(t);
 
@@ -168,27 +166,31 @@ class Tab {
                     for (int j = 0; j > levelDiff; --j) {
                         stack.pop();
                     }
-                    for (int j = t.level > 0 ? 0 : -1; j > levelDiff; --j) {
-                        prevTab.tvLeaf.append("[");
-                    }
                     prev = stack.peek().push(t);
                 } else {
                     // Re-compute layer tree
                     stack.clear();
-                    layerTree = stack.push(new LayerTree());
-                    for (int j = t.level > 0 ? 0 : -1; j > levelDiff; --j) {
-                        prevTab.tvLeaf.append("[");
-                    }
+                    layerTree = stack.push(new LayerTree(0));
                     prev = layerTree.push(t);
                 }
 
             }
         }
-        for (int i = lastTabInProject.level; i > 1; --i) {
-            lastTabInProject.tvLeaf.append("[");
-        }
 
         return layerTree;
+    }
+
+    public static void distinguishProjects(List<Tab> tabs) {
+        Tab firstFrame = null;
+        for (final Tab tab : tabs) {
+            if (!tab.isBackground) {
+                continue;
+            }
+            if (tab.isFirstFrame) {
+                firstFrame = tab;
+            }
+            tab.firstFrame = firstFrame;
+        }
     }
 
     private static Tab findBackground(List<Tab> tabs, int pos) {
@@ -200,6 +202,34 @@ class Tab {
             }
         }
         return t;
+    }
+
+    private static Tab findFirstFrame(List<Tab> tabs, int pos) {
+        Tab f = null;
+
+        // Find rightward
+        for (int i = pos; i < tabs.size(); ++i) {
+            final Tab t = tabs.get(i);
+            if (t.isBackground) {
+                if (t.isFirstFrame) {
+                    return t;
+                }
+                break;
+            }
+        }
+
+        // Find leftward
+        for (int i = pos - 1; i >= 0; --i) {
+            f = tabs.get(i);
+            if (!f.isBackground) {
+                continue;
+            }
+            if (f.isFirstFrame) {
+                break;
+            }
+        }
+
+        return f;
     }
 
     public static Tab getAbove(List<Tab> tabs, int pos) {
@@ -225,6 +255,10 @@ class Tab {
 
     public int getBackgroundPosition() {
         return backgroundPosition;
+    }
+
+    public Tab getFirstFrame() {
+        return firstFrame;
     }
 
     public int getLevel() {
@@ -443,23 +477,72 @@ class Tab {
         cbVisible.setChecked(visible);
     }
 
-    private void showBackground() {
-        if (tvBackground == null) {
-            return;
+    private static void showBackgroundIcons(List<Tab> tabs) {
+        Tab lastTab = null;
+        for (final Tab tab : tabs) {
+            tab.tvBackground.setText("");
+            if (!tab.isBackground) {
+                continue;
+            }
+            if (lastTab != null) {
+                lastTab.tvBackground.setText(tab.isFirstFrame ? "┃" : "│");
+            }
+            lastTab = tab;
         }
-        final StringBuilder sb = new StringBuilder();
-        if (isBackground) {
-            sb.append('▕');
+        lastTab.tvBackground.setText("┃");
+    }
+
+    public static void showIcons(List<Tab> tabs, int pos) {
+        final Tab tab = tabs.get(pos);
+        showVisibilityIcons(tabs, tab.background);
+        showBackgroundIcons(tabs);
+        showLevelIcons(tabs, tab.backgroundPosition);
+    }
+
+    public static void showLevelIcons(List<Tab> tabs, int backgroundPos) {
+        Tab lastTab = null;
+        for (int i = backgroundPos; i >= 0; --i) {
+            final Tab t = tabs.get(i);
+            if (t.isBackground && i != backgroundPos) {
+                break;
+            }
+
+            t.clearLevelIcons();
+            if (t.level > 0) {
+                t.tvLowerLevel.append("→");
+            }
+            if (lastTab == null) {
+                if (t.level > 0) {
+                    t.tvRoot.append("]".repeat(t.level - 1));
+                }
+            } else {
+                final int levelDiff = t.level - lastTab.level;
+                if (levelDiff > 0) {
+                    lastTab.tvParent.append("]".repeat(lastTab.level > 0 ? levelDiff : levelDiff - 1));
+                } else if (levelDiff < 0) {
+                    lastTab.tvLeaf.append("[".repeat(t.level > 0 ? -levelDiff : -levelDiff - 1));
+                }
+            }
+            lastTab = t;
         }
-        tvBackground.setText(sb);
+        if (lastTab.level > 0) {
+            lastTab.tvLeaf.append("[".repeat(lastTab.level - 1));
+        }
     }
 
     public void showTo(View view) {
-        ((TextView) view.findViewById(R.id.tv_parent)).setText(tvParent.getText());
-        ((TextView) view.findViewById(R.id.tv_leaf)).setText(tvLeaf.getText());
-        ((TextView) view.findViewById(R.id.tv_root)).setText(tvRoot.getText());
         ((TextView) view.findViewById(R.id.tv_background)).setText(tvBackground.getText());
+        ((TextView) view.findViewById(R.id.tv_leaf)).setText(tvLeaf.getText());
         ((TextView) view.findViewById(R.id.tv_lower_level)).setText(tvLowerLevel.getText());
+        ((TextView) view.findViewById(R.id.tv_parent)).setText(tvParent.getText());
+        ((TextView) view.findViewById(R.id.tv_root)).setText(tvRoot.getText());
         ((TextView) view.findViewById(R.id.tv_title)).setText(tvTitle.getText());
+    }
+
+    private static void showVisibilityIcons(List<Tab> tabs, Tab background) {
+        for (int i = 0; i < tabs.size(); ++i) {
+            final Tab tab = tabs.get(i);
+            tab.cbVisible.setVisibility(tab.background == background ? View.VISIBLE : View.GONE);
+        }
     }
 }

@@ -69,6 +69,7 @@
     <string name="dec">十進制</string>
     <string name="default_">缺省</string>
     <string name="degrees_">角度：%f°</string>
+    <string name="delay">延遲</string>
     <string name="delete">刪除</string>
     <string name="delete_invisible">刪除不可見</string>
     <string name="deselect">不選取</string>
@@ -81,6 +82,8 @@
     <string name="enabled">啟用</string>
     <string name="eraser">擦膠</string>
     <string name="exception_merge_as_hidden">異常：請選中兩張圖像中第一個分頁。</string>
+    <string name="export">匯出</string>
+    <string name="exporting">匯出中</string>
     <string name="eyedropper">滴管</string>
     <string name="failed">失敗</string>
     <string name="fast_add_layer_mask">快速新增圖層遮色片</string>
@@ -96,6 +99,7 @@
     <string name="flip">翻轉</string>
     <string name="float_">浮點數</string>
     <string name="foreground_color">畫筆顏色</string>
+    <string name="frame">幀</string>
     <string name="fuzziness">容差</string>
     <string name="general">一般</string>
     <string name="gradient">漸變</string>
@@ -232,6 +236,7 @@
     <string name="synchronously_draw_image_and_ui">同步繪畫圖像與用戶介面</string>
     <string name="text">文本</string>
     <string name="threshold">閾値</string>
+    <string name="timeline">時間線</string>
     <string name="tolerance">容許度</string>
     <string name="tool_options">工具選項</string>
     <string name="top">頂</string>
@@ -241,6 +246,8 @@
     <string name="tutorial_merge_as_hidden">Tutorial</string>
     <string name="two_seventy_degrees">270°</string>
     <string name="unified_transl_and_scale">統一各圖層之可見子集</string>
+    <string name="unify_delay">統一延遲</string>
+    <string name="unify_size">統一尺寸</string>
     <string name="untitled">無標題</string>
     <string name="version">版本（發布日期）</string>
     <string name="vertical">垂直</string>

@@ -7,6 +7,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.SeekBar;
 
+import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
 
 class SeekBarDialog {
@@ -57,7 +58,7 @@ class SeekBarDialog {
         return this;
     }
 
-    public SeekBarDialog setTitle(int titleId) {
+    public SeekBarDialog setTitle(@StringRes int titleId) {
         builder.setTitle(titleId);
         return this;
     }

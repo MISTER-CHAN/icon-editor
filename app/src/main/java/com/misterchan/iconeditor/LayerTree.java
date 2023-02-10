@@ -71,11 +71,21 @@ class LayerTree {
         }
     }
 
+    public LayerTree(int level) {
+        this.level = level;
+    }
+
+    private final int level;
+
     private int size = 0;
     private Node background, foreground;
 
     public Node getBackground() {
         return background;
+    }
+
+    public int getLevel() {
+        return level;
     }
 
     public boolean isEmpty() {

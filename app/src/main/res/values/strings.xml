@@ -76,6 +76,7 @@
     <string name="default_">Default</string>
     <string name="degree" translatable="false">°</string>
     <string name="degrees_">Degrees: %f°</string>
+    <string name="delay">Delay</string>
     <string name="delete">Delete</string>
     <string name="delete_invisible">Delete Invisible</string>
     <string name="deselect">Deselect</string>
@@ -89,6 +90,8 @@
     <string name="enabled">Enabled</string>
     <string name="eraser">Eraser</string>
     <string name="exception_merge_as_hidden">Exception: Please select the first tab of two images.</string>
+    <string name="export">Export</string>
+    <string name="exporting">Exporting</string>
     <string name="eyedropper">Eyedropper</string>
     <string name="failed">Failed</string>
     <string name="fast_add_layer_mask">Fast Add a Layer Mask</string>
@@ -105,6 +108,7 @@
     <string name="float_">Float</string>
     <string name="foreground_color">Foreground Color</string>
     <string name="forty_eight" translatable="false">48</string>
+    <string name="frame">Frame</string>
     <string name="fuzziness">Fuzziness</string>
     <string name="g" translatable="false">G</string>
     <string name="general">General</string>
@@ -260,6 +264,7 @@
     <string name="synchronously_draw_image_and_ui">Synchronously draw image and U.I.</string>
     <string name="text">Text</string>
     <string name="threshold">Threshold</string>
+    <string name="timeline">Timeline</string>
     <string name="tolerance">Tolerance</string>
     <string name="tool_options">Tool Options</string>
     <string name="top">Top</string>
@@ -270,6 +275,8 @@
     <string name="two_seventy_degrees">270°</string>
     <string name="undo" translatable="false">↶</string>
     <string name="unified_transl_and_scale">Unified Visible Subset of Each Layer</string>
+    <string name="unify_delay">Unify Delay</string>
+    <string name="unify_size">Unify Size</string>
     <string name="untitled">Untitled</string>
     <string name="v" translatable="false">V</string>
     <string name="version">Version (Release Date)</string>
