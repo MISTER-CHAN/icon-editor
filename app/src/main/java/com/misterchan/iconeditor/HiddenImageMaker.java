@@ -14,15 +14,15 @@ import androidx.appcompat.app.AlertDialog;
 
 class HiddenImageMaker {
 
-    public interface OnFinishSettingListener {
-        void onFinish(Bitmap bitmap);
+    public interface OnMakeListener {
+        void onMake(Bitmap bitmap);
     }
 
     private AlertDialog dialog;
     private SeekBar sbScaleToBlack, sbScaleToWhite;
 
     public static void merge(Context context, @Size(2) final Bitmap[] bitmaps,
-                             final OnFinishSettingListener listener) {
+                             final OnMakeListener listener) {
 
         final HiddenImageMaker merger = new HiddenImageMaker();
 
@@ -35,7 +35,7 @@ class HiddenImageMaker {
                             merger.sbScaleToWhite.getProgress() / 8.0f,
                             merger.sbScaleToBlack.getProgress() / 8.0f
                     };
-                    listener.onFinish(mergeAsHidden(bitmaps, scale));
+                    listener.onMake(mergeAsHidden(bitmaps, scale));
                 })
                 .show();
 

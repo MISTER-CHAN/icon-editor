@@ -1,11 +1,6 @@
 package com.misterchan.iconeditor;
 
 import android.content.Context;
-import android.content.DialogInterface;
-import android.view.Gravity;
-import android.view.Window;
-import android.view.WindowManager;
-import android.widget.SeekBar;
 
 import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
@@ -27,8 +22,7 @@ class EditNumberDialog {
                 .setNegativeButton(R.string.cancel, null);
     }
 
-
-    public EditNumberDialog setOnPositiveButtonClickListener(OnPositiveButtonClickListener listener) {
+    public EditNumberDialog setOnApplyListener(OnPositiveButtonClickListener listener) {
         builder.setPositiveButton(R.string.ok, (dialog, which) -> {
             try {
                 listener.onClick(Integer.parseUnsignedInt(tiet.getText().toString()));

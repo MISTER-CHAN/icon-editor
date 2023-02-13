@@ -12,12 +12,12 @@ import androidx.appcompat.app.AlertDialog;
 
 class HsvDialog {
 
-    public interface OnHsvChangeListener {
-        void onChange(@Size(3) float[] deltaHsv, boolean stopped);
+    public interface OnHsvChangedListener {
+        void onChanged(@Size(3) float[] deltaHsv, boolean stopped);
     }
 
     private final AlertDialog.Builder builder;
-    private OnHsvChangeListener listener;
+    private OnHsvChangedListener listener;
 
     @Size(3)
     private float[] deltaHsv = new float[3];
@@ -44,7 +44,7 @@ class HsvDialog {
         return this;
     }
 
-    public HsvDialog setOnHsvChangeListener(OnHsvChangeListener listener) {
+    public HsvDialog setOnHsvChangeListener(OnHsvChangedListener listener) {
         this.listener = listener;
         return this;
     }
@@ -65,19 +65,19 @@ class HsvDialog {
         sbHue.setProgress((int) deltaHsv[0]);
         sbHue.setOnSeekBarChangeListener((OnSeekBarChangeListener) (progress, stopped) -> {
             deltaHsv[0] = progress;
-            listener.onChange(deltaHsv, stopped);
+            listener.onChanged(deltaHsv, stopped);
         });
 
         sbSaturation.setProgress((int) (deltaHsv[1] * 100.0f));
         sbSaturation.setOnSeekBarChangeListener((OnSeekBarChangeListener) (progress, stopped) -> {
             deltaHsv[1] = progress / 100.0f;
-            listener.onChange(deltaHsv, stopped);
+            listener.onChanged(deltaHsv, stopped);
         });
 
         sbValue.setProgress((int) (deltaHsv[2] * 100.0f));
         sbValue.setOnSeekBarChangeListener((OnSeekBarChangeListener) (progress, stopped) -> {
             deltaHsv[2] = progress / 100.0f;
-            listener.onChange(deltaHsv, stopped);
+            listener.onChanged(deltaHsv, stopped);
         });
     }
 }

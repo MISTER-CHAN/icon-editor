@@ -10,7 +10,6 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.CompoundButton;
@@ -28,8 +27,8 @@ import java.util.function.Function;
 
 class CurvesDialog {
 
-    public interface OnCurvesChangeListener {
-        void onChange(int[][] curves, boolean stopped);
+    public interface OnCurvesChangedListener {
+        void onChanged(int[][] curves, boolean stopped);
     }
 
     private Bitmap bitmap;
@@ -43,7 +42,7 @@ class CurvesDialog {
     private int prevBX, prevBY;
     private int selectedCompIndex;
     private int[] srcPixels;
-    private OnCurvesChangeListener listener;
+    private OnCurvesChangedListener listener;
 
     @Size(5)
     private Bitmap[] histBitmaps = new Bitmap[5];
@@ -247,7 +246,7 @@ class CurvesDialog {
         return this;
     }
 
-    public CurvesDialog setOnCurvesChangeListener(OnCurvesChangeListener listener) {
+    public CurvesDialog setOnCurvesChangeListener(OnCurvesChangedListener listener) {
         this.listener = listener;
         return this;
     }
@@ -335,6 +334,6 @@ class CurvesDialog {
     }
 
     private void update(boolean stopped) {
-        listener.onChange(curves, stopped);
+        listener.onChanged(curves, stopped);
     }
 }

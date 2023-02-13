@@ -1,7 +1,6 @@
 package com.misterchan.iconeditor;
 
 import android.content.Context;
-import android.view.inputmethod.EditorInfo;
 import android.widget.SeekBar;
 
 import androidx.annotation.ColorInt;
@@ -56,10 +55,10 @@ class ArgbColorIntPicker extends ArgbColorPicker {
             tietBlue.setInputType(EDITOR_TYPE_NUM);
         }
 
-        sbAlpha.setOnSeekBarChangeListener((OnSeekBarProgressChangeListener) (seekBar, progress) -> tietAlpha.setText(String.format(format, progress)));
-        sbRed.setOnSeekBarChangeListener((OnSeekBarProgressChangeListener) (seekBar, progress) -> tietRed.setText(String.format(format, progress)));
-        sbGreen.setOnSeekBarChangeListener((OnSeekBarProgressChangeListener) (seekBar, progress) -> tietGreen.setText(String.format(format, progress)));
-        sbBlue.setOnSeekBarChangeListener((OnSeekBarProgressChangeListener) (seekBar, progress) -> tietBlue.setText(String.format(format, progress)));
+        sbAlpha.setOnSeekBarChangeListener((OnSeekBarProgressChangedListener) (seekBar, progress) -> tietAlpha.setText(String.format(format, progress)));
+        sbRed.setOnSeekBarChangeListener((OnSeekBarProgressChangedListener) (seekBar, progress) -> tietRed.setText(String.format(format, progress)));
+        sbGreen.setOnSeekBarChangeListener((OnSeekBarProgressChangedListener) (seekBar, progress) -> tietGreen.setText(String.format(format, progress)));
+        sbBlue.setOnSeekBarChangeListener((OnSeekBarProgressChangedListener) (seekBar, progress) -> tietBlue.setText(String.format(format, progress)));
         tietAlpha.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(s, sbAlpha));
         tietRed.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(s, sbRed));
         tietGreen.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(s, sbGreen));

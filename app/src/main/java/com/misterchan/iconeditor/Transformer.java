@@ -2,7 +2,9 @@ package com.misterchan.iconeditor;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.DrawFilter;
 import android.graphics.Paint;
+import android.graphics.PaintFlagsDrawFilter;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
@@ -19,6 +21,12 @@ class Transformer {
     private double aspectRatio;
     private float centerX, centerY;
     private final Rect rect;
+
+    private final Paint paint = new Paint() {
+        {
+            setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC));
+        }
+    };
 
     public Transformer(Bitmap bitmap, Rect rect) {
         this.bitmap = bitmap;
@@ -78,26 +86,28 @@ class Transformer {
         }
     }
 
-    public void rotate(float degrees) {
+    public void rotate(float degrees, boolean filter) {
         final int w = bitmap.getWidth(), h = bitmap.getHeight();
         final float diagonal = (float) Math.sqrt(w * w + h * h), semiDiag = diagonal / 2.0f;
         final Bitmap bm = Bitmap.createBitmap((int) Math.ceil(diagonal), (int) Math.ceil(diagonal), Bitmap.Config.ARGB_8888);
         final Canvas cv = new Canvas(bm);
         cv.rotate(degrees, semiDiag, semiDiag);
+        paint.setFilterBitmap(filter);
         cv.drawBitmap(bitmap,
                 (float) Math.ceil(semiDiag - (w >> 1)), (float) Math.ceil(semiDiag - (h >> 1)),
-                PAINT);
+                paint);
         bitmap.recycle();
         bitmap = bm;
     }
 
-    public void stretch(int width, int height) {
+    public void stretch(int width, int height, boolean filter) {
         final int absWidth = Math.abs(width), absHeight = Math.abs(height);
         final Bitmap bm = Bitmap.createBitmap(absWidth, absHeight, Bitmap.Config.ARGB_8888);
         final Canvas cv = new Canvas(bm);
         cv.translate(width >= 0 ? 0.0f : absWidth, height >= 0 ? 0.0f : absHeight);
         cv.scale((float) width / (float) bitmap.getWidth(), (float) height / (float) bitmap.getHeight());
-        cv.drawBitmap(bitmap, 0.0f, 0.0f, PAINT);
+        paint.setFilterBitmap(filter);
+        cv.drawBitmap(bitmap, 0.0f, 0.0f, paint);
         bitmap.recycle();
         bitmap = bm;
     }

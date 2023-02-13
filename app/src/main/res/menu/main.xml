@@ -44,6 +44,10 @@
                 android:title="@string/save_as" />
 
             <item
+                android:id="@+id/i_file_export"
+                android:title="@string/export" />
+
+            <item
                 android:id="@+id/i_file_refer_to_clipboard"
                 android:title="@string/refer_to_clipboard" />
 
@@ -502,18 +506,20 @@
         <menu>
 
             <item
-                android:id="@+id/i_frame_unify_size"
-                android:title="@string/unify_size"
-                android:visible="false" />
+                android:id="@+id/i_frame_new"
+                android:title="@string/new_" />
+
+            <item
+                android:id="@+id/i_frame_unify_sizes"
+                android:title="@string/unify_sizes" />
 
             <item
                 android:id="@+id/i_frame_delay"
                 android:title="@string/delay" />
 
             <item
-                android:id="@+id/i_frame_unify_delay"
-                android:title="@string/unify_delay"
-                android:visible="false" />
+                android:id="@+id/i_frame_unify_delays"
+                android:title="@string/unify_delays" />
 
             <item
                 android:id="@+id/i_frame_delete"

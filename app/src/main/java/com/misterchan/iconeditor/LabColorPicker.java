@@ -75,9 +75,9 @@ class LabColorPicker extends ColorPicker {
         tilL.setHint(R.string.l_);
         tilA.setHint(R.string.a_);
         tilB.setHint(R.string.b_);
-        sbL.setOnSeekBarChangeListener((OnSeekBarProgressChangeListener) (seekBar, progress) -> tietL.setText(String.valueOf(progress)));
-        sbA.setOnSeekBarChangeListener((OnSeekBarProgressChangeListener) (seekBar, progress) -> tietA.setText(String.valueOf(progress)));
-        sbB.setOnSeekBarChangeListener((OnSeekBarProgressChangeListener) (seekBar, progress) -> tietB.setText(String.valueOf(progress)));
+        sbL.setOnSeekBarChangeListener((OnSeekBarProgressChangedListener) (seekBar, progress) -> tietL.setText(String.valueOf(progress)));
+        sbA.setOnSeekBarChangeListener((OnSeekBarProgressChangedListener) (seekBar, progress) -> tietA.setText(String.valueOf(progress)));
+        sbB.setOnSeekBarChangeListener((OnSeekBarProgressChangedListener) (seekBar, progress) -> tietB.setText(String.valueOf(progress)));
         tietL.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(s, sbL));
         tietA.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(s, sbA));
         tietB.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(s, sbB));

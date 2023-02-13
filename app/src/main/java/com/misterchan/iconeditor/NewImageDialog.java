@@ -8,12 +8,12 @@ import com.google.android.material.textfield.TextInputEditText;
 
 class NewImageDialog {
 
-    public interface OnFinishSettingListener {
-        void onFinish(int width, int height);
+    public interface OnApplyListener {
+        void onApply(int width, int height);
     }
 
     private final AlertDialog.Builder builder;
-    private TextInputEditText tietSizeX, tietSizeY;
+    private TextInputEditText tietWidth, tietHeight;
 
     public NewImageDialog(Context context) {
         builder = new AlertDialog.Builder(context)
@@ -22,12 +22,12 @@ class NewImageDialog {
                 .setView(R.layout.new_image);
     }
 
-    public NewImageDialog setOnFinishSettingListener(OnFinishSettingListener listener) {
+    public NewImageDialog setOnFinishSettingListener(OnApplyListener listener) {
         builder.setPositiveButton(R.string.ok, (dialog, which) -> {
             try {
-                int width = Integer.parseUnsignedInt(tietSizeX.getText().toString());
-                int height = Integer.parseUnsignedInt(tietSizeY.getText().toString());
-                listener.onFinish(width, height);
+                int width = Integer.parseUnsignedInt(tietWidth.getText().toString());
+                int height = Integer.parseUnsignedInt(tietHeight.getText().toString());
+                listener.onApply(width, height);
             } catch (NumberFormatException e) {
             }
         });
@@ -37,7 +37,7 @@ class NewImageDialog {
     public void show() {
         final AlertDialog dialog = builder.show();
 
-        tietSizeX = dialog.findViewById(R.id.tiet_size_x);
-        tietSizeY = dialog.findViewById(R.id.tiet_size_y);
+        tietWidth = dialog.findViewById(R.id.tiet_width);
+        tietHeight = dialog.findViewById(R.id.tiet_height);
     }
 }

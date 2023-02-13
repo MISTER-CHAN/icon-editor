@@ -14,6 +14,8 @@ import androidx.annotation.IntRange;
 import androidx.annotation.Size;
 import androidx.annotation.StringRes;
 
+import com.waynejo.androidndkgif.GifEncoder;
+
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
@@ -21,17 +23,12 @@ import java.util.Stack;
 
 class Tab {
     public enum FileType {
-        PNG, JPEG, WEBP, GIF
+        PNG, JPEG, GIF, WEBP
     }
 
     public enum Filter {
         COLOR_MATRIX, CURVES, HSV
     }
-
-    public static final Bitmap.CompressFormat[] COMPRESS_FORMATS = {
-            Bitmap.CompressFormat.PNG,
-            Bitmap.CompressFormat.JPEG,
-    };
 
     private static final Paint PAINT_SRC = new Paint() {
         {
@@ -44,28 +41,30 @@ class Tab {
     private static final Paint PAINT_SRC_OVER = new Paint();
 
     public boolean drawBelow = false;
+    public boolean gifDither = true; // Ignored if not background
     public boolean isBackground = true;
-    public boolean isFirstFrame = true;
+    public boolean isFirstFrame = true; // Ignored if not background
     public boolean visible = true;
     public Bitmap bitmap;
-    public Bitmap.CompressFormat compressFormat;
+    public Bitmap.CompressFormat compressFormat; // Ignored if not background
     public final BitmapHistory history = new BitmapHistory();
     public final CellGrid cellGrid = new CellGrid();
     private CheckBox cbVisible;
     public final Deque<Guide> guides = new LinkedList<>();
-    public FileType fileType;
+    public GifEncoder.EncodingType gifEncodingType; // Ignored if not background
+    public FileType fileType; // Ignored if not background
     public Filter filter;
     public float scale;
     public float translationX, translationY;
     private int backgroundPosition;
-    public int delay;
+    public int delay; // Ignored if not background
     private int level = 0;
     public int left = 0, top = 0;
-    public int quality = 0;
+    public int quality = -1; // Ignored if not background
     public final Paint paint = new Paint();
-    public String filePath;
+    public String filePath; // Ignored if not background
     private Tab background;
-    private Tab firstFrame;
+    private Tab firstFrame; // Ignored if not background
     private TextView tvBackground;
     private TextView tvLowerLevel, tvRoot, tvParent, tvLeaf;
     private TextView tvTitle;
@@ -455,7 +454,7 @@ class Tab {
     }
 
     /**
-     * @param listener Listener on {@link #cbVisible} checked change
+     * @param listener the callback to call on checked state of {@link #cbVisible} change
      */
     public void addOVCBCCListener(CompoundButton.OnCheckedChangeListener listener) {
         cbVisible.setOnCheckedChangeListener(listener);

@@ -18,18 +18,18 @@ class ColorMatrixManager {
 
     private static final DecimalFormat DEC_FORMAT = new DecimalFormat("0.#######");
 
-    public interface OnMatrixElementsChangeListener {
+    public interface OnMatrixElementsChangedListener {
         void onChanged(float[] matrix);
     }
 
     private final AlertDialog.Builder dialogBuilder;
-    private final OnMatrixElementsChangeListener onMatrixElementsChangeListener;
+    private final OnMatrixElementsChangedListener onMatrixElementsChangeListener;
 
     @Size(20)
     private float[] m;
 
     public ColorMatrixManager(Context context,
-                                          final OnMatrixElementsChangeListener onMatrixElementsChangeListener,
+                                          final OnMatrixElementsChangedListener onMatrixElementsChangeListener,
                                           @Size(value = 20) float[] defaultMatrix) {
         this(context,
                 onMatrixElementsChangeListener,
@@ -38,7 +38,7 @@ class ColorMatrixManager {
     }
 
     public ColorMatrixManager(Context context,
-                                          final OnMatrixElementsChangeListener onMatrixElementsChangeListener,
+                                          final OnMatrixElementsChangedListener onMatrixElementsChangeListener,
                                           final DialogInterface.OnClickListener onPosButtonClickListener,
                                           final DialogInterface.OnCancelListener onCancelListener) {
         this(context,
@@ -54,7 +54,7 @@ class ColorMatrixManager {
     }
 
     public ColorMatrixManager(Context context,
-                                          final OnMatrixElementsChangeListener onMatrixElementsChangeListener,
+                                          final OnMatrixElementsChangedListener onMatrixElementsChangeListener,
                                           final DialogInterface.OnClickListener onPosButtonClickListener,
                                           final DialogInterface.OnCancelListener onCancelListener,
                                           @Size(value = 20) float[] defaultMatrix) {

@@ -80,6 +80,7 @@
     <string name="delete">Delete</string>
     <string name="delete_invisible">Delete Invisible</string>
     <string name="deselect">Deselect</string>
+    <string name="dither">Dither</string>
     <string name="draw">Draw</string>
     <string name="draw_below">Draw Layers below</string>
     <string name="draw_color">Draw Color</string>
@@ -88,18 +89,21 @@
     <string name="duplicate_by_color_range">Duplicate by Color Range</string>
     <string name="edit" translatable="false">✎</string>
     <string name="enabled">Enabled</string>
+    <string name="encoding_type">Encoding Type</string>
     <string name="eraser">Eraser</string>
     <string name="exception_merge_as_hidden">Exception: Please select the first tab of two images.</string>
     <string name="export">Export</string>
     <string name="exporting">Exporting</string>
     <string name="eyedropper">Eyedropper</string>
     <string name="failed">Failed</string>
+    <string name="fast">Fast</string>
     <string name="fast_add_layer_mask">Fast Add a Layer Mask</string>
     <string name="fast_create_clipping_mask">Fast Create a Clipping Mask</string>
     <string name="file">File</string>
     <string name="file_name">File name</string>
     <string name="fill">Fill</string>
-    <string name="filter">Filter</string>
+    <string name="filter_noun">Filter</string>
+    <string name="filter_verb">Filter</string>
     <string name="filter_displayed_image_after_zooming_out">Filter the Displayed Image after Zooming out</string>
     <string name="filter_image">Filter Image</string>
     <string name="filters">Filters</string>
@@ -151,6 +155,8 @@
     <string name="locale">Locale</string>
     <string name="lock_aspect_ratio">Lock Aspect Ratio</string>
     <string name="long_integer">Long Integer</string>
+    <string name="lossless">Lossless</string>
+    <string name="lossy">Lossy</string>
     <string name="lt" translatable="false"><![CDATA[<]]></string>
     <string name="luminance">Luminance</string>
     <string name="m" translatable="false">M</string>
@@ -173,6 +179,7 @@
     <string name="new_guide">New Guide</string>
     <string name="ninety_degrees">90°</string>
     <string name="noise">Noise</string>
+    <string name="normal">Normal</string>
     <string name="not_supported_file_type">Not supported file type</string>
     <string name="offset">Offset</string>
     <string name="ok">OK</string>
@@ -198,6 +205,7 @@
     <string name="precise">Precise</string>
     <string name="preferences">Preferences</string>
     <string name="properties">Properties</string>
+    <string name="quality">Quality</string>
     <string name="r" translatable="false">R</string>
     <string name="rectangle">Rectangle</string>
     <string name="redo" translatable="false">↷</string>
@@ -229,9 +237,11 @@
     <string name="shadows">Shadows</string>
     <string name="shape">Shape</string>
     <string name="shift">Shift</string>
+    <string name="simple_fast">Simple Fast</string>
     <string name="size">Size</string>
     <string name="source">Source</string>
     <string name="spacing">Spacing</string>
+    <string name="stable">Stable</string>
     <string name="stamp">Stamp</string>
     <string name="state_alpha" translatable="false">Alpha: %s</string>
     <string name="state_axes">"Axes: %d, %d"</string>
@@ -275,8 +285,8 @@
     <string name="two_seventy_degrees">270°</string>
     <string name="undo" translatable="false">↶</string>
     <string name="unified_transl_and_scale">Unified Visible Subset of Each Layer</string>
-    <string name="unify_delay">Unify Delay</string>
-    <string name="unify_size">Unify Size</string>
+    <string name="unify_delays">Unify Delays</string>
+    <string name="unify_sizes">Unify Sizes</string>
     <string name="untitled">Untitled</string>
     <string name="v" translatable="false">V</string>
     <string name="version">Version (Release Date)</string>

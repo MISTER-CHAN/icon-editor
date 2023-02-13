@@ -79,10 +79,10 @@ class CmykColorPicker extends ColorPicker {
         tilCyan.setHint(R.string.c);
         tilMagenta.setHint(R.string.m);
         tilYellow.setHint(R.string.y);
-        sbCyan.setOnSeekBarChangeListener((OnSeekBarProgressChangeListener) (seekBar, progress) -> tietCyan.setText(String.format(format, progress)));
-        sbMagenta.setOnSeekBarChangeListener((OnSeekBarProgressChangeListener) (seekBar, progress) -> tietMagenta.setText(String.format(format, progress)));
-        sbYellow.setOnSeekBarChangeListener((OnSeekBarProgressChangeListener) (seekBar, progress) -> tietYellow.setText(String.format(format, progress)));
-        sbKey.setOnSeekBarChangeListener((OnSeekBarProgressChangeListener) (seekBar, progress) -> tietKey.setText(String.format(format, progress)));
+        sbCyan.setOnSeekBarChangeListener((OnSeekBarProgressChangedListener) (seekBar, progress) -> tietCyan.setText(String.format(format, progress)));
+        sbMagenta.setOnSeekBarChangeListener((OnSeekBarProgressChangedListener) (seekBar, progress) -> tietMagenta.setText(String.format(format, progress)));
+        sbYellow.setOnSeekBarChangeListener((OnSeekBarProgressChangedListener) (seekBar, progress) -> tietYellow.setText(String.format(format, progress)));
+        sbKey.setOnSeekBarChangeListener((OnSeekBarProgressChangedListener) (seekBar, progress) -> tietKey.setText(String.format(format, progress)));
         tietCyan.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(s, sbCyan));
         tietMagenta.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(s, sbMagenta));
         tietYellow.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(s, sbYellow));

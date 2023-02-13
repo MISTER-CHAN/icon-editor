@@ -1,7 +1,6 @@
 package com.misterchan.iconeditor;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.widget.CheckBox;
 
 import androidx.appcompat.app.AlertDialog;
@@ -10,19 +9,19 @@ import com.google.android.material.textfield.TextInputEditText;
 
 class CellGridManager {
 
-    public interface OnUpdateListener {
-        void onUpdate();
+    public interface OnApplyListener {
+        void onApply();
     }
 
     private final AlertDialog.Builder builder;
     private final CellGrid cellGrid;
     private CheckBox cbEnabled;
-    private final OnUpdateListener onUpdateListener;
+    private final OnApplyListener onUpdateListener;
     private TextInputEditText tietOffsetX, tietOffsetY;
     private TextInputEditText tietSizeX, tietSizeY;
     private TextInputEditText tietSpacingX, tietSpacingY;
 
-    public CellGridManager(Context context, CellGrid cellGrid, OnUpdateListener onUpdateListener) {
+    public CellGridManager(Context context, CellGrid cellGrid, OnApplyListener onUpdateListener) {
         this.cellGrid = cellGrid;
         this.onUpdateListener = onUpdateListener;
 
@@ -34,7 +33,6 @@ class CellGridManager {
     }
 
     public void show() {
-
         final AlertDialog dialog = builder.show();
 
         cbEnabled = dialog.findViewById(R.id.cb_enabled);
@@ -73,6 +71,6 @@ class CellGridManager {
         } catch (NumberFormatException e) {
         }
 
-        onUpdateListener.onUpdate();
+        onUpdateListener.onApply();
     }
 }

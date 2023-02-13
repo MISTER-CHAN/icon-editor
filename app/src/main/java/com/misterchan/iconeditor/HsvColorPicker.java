@@ -91,9 +91,9 @@ class HsvColorPicker extends ColorPicker {
         tilSaturation.setSuffixText("%");
         tilValue.setHint(R.string.v);
         tilValue.setSuffixText("%");
-        sbHue.setOnSeekBarChangeListener((OnSeekBarProgressChangeListener) (seekBar, progress) -> tietHue.setText(String.valueOf(progress)));
-        sbSaturation.setOnSeekBarChangeListener((OnSeekBarProgressChangeListener) (seekBar, progress) -> tietSaturation.setText(String.valueOf(progress)));
-        sbValue.setOnSeekBarChangeListener((OnSeekBarProgressChangeListener) (seekBar, progress) -> tietValue.setText(String.valueOf(progress)));
+        sbHue.setOnSeekBarChangeListener((OnSeekBarProgressChangedListener) (seekBar, progress) -> tietHue.setText(String.valueOf(progress)));
+        sbSaturation.setOnSeekBarChangeListener((OnSeekBarProgressChangedListener) (seekBar, progress) -> tietSaturation.setText(String.valueOf(progress)));
+        sbValue.setOnSeekBarChangeListener((OnSeekBarProgressChangedListener) (seekBar, progress) -> tietValue.setText(String.valueOf(progress)));
         tietHue.addTextChangedListener((AfterTextChangedListener) this::onHueChanged);
         tietSaturation.addTextChangedListener((AfterTextChangedListener) s -> onSatOrValChanged(1, s, sbSaturation));
         tietValue.addTextChangedListener((AfterTextChangedListener) s -> onSatOrValChanged(2, s, sbValue));

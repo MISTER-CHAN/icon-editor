@@ -31,6 +31,11 @@ class SeekBarDialog {
         return this;
     }
 
+    public SeekBarDialog setOnApplyListener(DialogInterface.OnClickListener listener) {
+        builder.setPositiveButton(R.string.ok, listener);
+        return this;
+    }
+
     public SeekBarDialog setOnCancelListener(DialogInterface.OnCancelListener listener) {
         return setOnCancelListener(listener, true);
     }
@@ -45,11 +50,6 @@ class SeekBarDialog {
 
     public SeekBarDialog setOnChangeListener(OnSeekBarChangeListener listener) {
         onChangeListener = listener;
-        return this;
-    }
-
-    public SeekBarDialog setOnPositiveButtonClickListener(DialogInterface.OnClickListener listener) {
-        builder.setPositiveButton(R.string.ok, listener);
         return this;
     }
 

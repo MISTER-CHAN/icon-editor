@@ -13,7 +13,7 @@ import androidx.appcompat.app.AlertDialog;
 class ColorBalanceDialog {
 
     private final AlertDialog.Builder builder;
-    private LightingDialog.OnLightingChangeListener listener;
+    private LightingDialog.OnLightingChangedListener listener;
     private SeekBar sbRed, sbGreen, sbBlue;
 
     @Size(8)
@@ -47,7 +47,7 @@ class ColorBalanceDialog {
         return this;
     }
 
-    public ColorBalanceDialog setOnColorBalanceChangeListener(LightingDialog.OnLightingChangeListener listener) {
+    public ColorBalanceDialog setOnColorBalanceChangeListener(LightingDialog.OnLightingChangedListener listener) {
         this.listener = listener;
         return this;
     }

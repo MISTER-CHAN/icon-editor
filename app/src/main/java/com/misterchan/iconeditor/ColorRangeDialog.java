@@ -11,12 +11,12 @@ import androidx.appcompat.app.AlertDialog;
 
 class ColorRangeDialog {
 
-    public interface OnColorRangeChangeListener {
-        void onChange(int hueMin, int hueMax, int lumMin, int lumMax, boolean stopped);
+    public interface OnColorRangeChangedListener {
+        void onChanged(int hueMin, int hueMax, int lumMin, int lumMax, boolean stopped);
     }
 
     private final AlertDialog.Builder builder;
-    private OnColorRangeChangeListener listener;
+    private OnColorRangeChangedListener listener;
 
     private SeekBar sbHueMin, sbHueMax;
     private SeekBar sbLumMin, sbLumMax;
@@ -34,21 +34,20 @@ class ColorRangeDialog {
         return this;
     }
 
-    public ColorRangeDialog setOnPositiveButtonClickListener(OnColorRangeChangeListener listener) {
+    public ColorRangeDialog setOnPositiveButtonClickListener(OnColorRangeChangedListener listener) {
         builder.setPositiveButton(R.string.ok, (dialog, which) ->
-                listener.onChange(sbHueMin.getProgress(), sbHueMax.getProgress(),
+                listener.onChanged(sbHueMin.getProgress(), sbHueMax.getProgress(),
                         sbLumMin.getProgress(), sbLumMax.getProgress(),
                         true));
         return this;
     }
 
-    public ColorRangeDialog setOnColorRangeChangeListener(OnColorRangeChangeListener listener) {
+    public ColorRangeDialog setOnColorRangeChangeListener(OnColorRangeChangedListener listener) {
         this.listener = listener;
         return this;
     }
 
     public void show() {
-
         final AlertDialog dialog = builder.show();
 
         final Window window = dialog.getWindow();
@@ -62,7 +61,7 @@ class ColorRangeDialog {
         sbLumMin = dialog.findViewById(R.id.sb_luminance_min);
         sbLumMax = dialog.findViewById(R.id.sb_luminance_max);
         final OnSeekBarChangeListener l = (progress, stopped) ->
-                listener.onChange(sbHueMin.getProgress(), sbHueMax.getProgress(),
+                listener.onChanged(sbHueMin.getProgress(), sbHueMax.getProgress(),
                         sbLumMin.getProgress(), sbLumMax.getProgress(),
                         stopped);
 

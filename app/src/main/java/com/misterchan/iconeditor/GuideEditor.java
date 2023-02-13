@@ -61,7 +61,7 @@ public class GuideEditor {
         rbVertical = dialog.findViewById(R.id.rb_vertical);
         final SeekBar sbPosition = dialog.findViewById(R.id.sb_position);
         tietPosition = dialog.findViewById(R.id.tiet_position);
-        final OnSeekBarProgressChangeListener onPositionSBProgressChange = (seekBar, progress) -> {
+        final OnSeekBarProgressChangedListener onPositionSBProgressChange = (seekBar, progress) -> {
             guide.position = progress;
             onNewGuideChangeListener.onChange(guide);
             setPositionTextSilently(progress);

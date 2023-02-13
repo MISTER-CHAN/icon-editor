@@ -18,8 +18,8 @@ import java.util.function.Function;
 
 class LevelsDialog {
 
-    public interface OnLevelsChangeListener {
-        void onChange(int inputShadows, int inputHighlights, int outputShadows, int outputHighlights, boolean stopped);
+    public interface OnLevelsChangedListener {
+        void onChanged(int inputShadows, int inputHighlights, int outputShadows, int outputHighlights, boolean stopped);
     }
 
     private Bitmap bitmap;
@@ -28,7 +28,7 @@ class LevelsDialog {
     private Canvas progressCanvas;
     private ImageView iv;
     private ImageView ivProgress;
-    private OnLevelsChangeListener listener;
+    private OnLevelsChangedListener listener;
     private final Paint paint = new Paint();
     private SeekBar sbInputHighlights, sbInputShadows;
     private SeekBar sbOutputHighlights, sbOutputShadows;
@@ -99,7 +99,7 @@ class LevelsDialog {
         return this;
     }
 
-    public LevelsDialog setOnLevelsChangeListener(OnLevelsChangeListener listener) {
+    public LevelsDialog setOnLevelsChangeListener(OnLevelsChangedListener listener) {
         this.listener = listener;
         return this;
     }
@@ -141,7 +141,7 @@ class LevelsDialog {
 
     private void update(boolean stopped) {
         drawProgress();
-        listener.onChange(sbInputShadows.getProgress(), sbInputHighlights.getProgress(),
+        listener.onChanged(sbInputShadows.getProgress(), sbInputHighlights.getProgress(),
                 sbOutputShadows.getProgress(), sbOutputHighlights.getProgress(),
                 stopped);
     }

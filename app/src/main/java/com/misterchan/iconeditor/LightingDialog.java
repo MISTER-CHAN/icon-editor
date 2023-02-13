@@ -12,12 +12,12 @@ import androidx.appcompat.app.AlertDialog;
 
 class LightingDialog {
 
-    public interface OnLightingChangeListener {
+    public interface OnLightingChangedListener {
         void onChanged(@Size(8) float[] lighting, boolean stopped);
     }
 
     private final AlertDialog.Builder builder;
-    private OnLightingChangeListener onLightingChangeListener;
+    private OnLightingChangedListener onLightingChangeListener;
 
     @Size(8)
     private final float[] lighting = new float[]{1.0f, 0.0f, 1.0f, 0.0f, 1.0f ,0.0f, 1.0f ,0.0f};
@@ -45,7 +45,7 @@ class LightingDialog {
         return this;
     }
 
-    public LightingDialog setOnLightingChangeListener(OnLightingChangeListener listener) {
+    public LightingDialog setOnLightingChangeListener(OnLightingChangedListener listener) {
         onLightingChangeListener = listener;
         return this;
     }

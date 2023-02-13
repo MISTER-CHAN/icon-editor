@@ -27,6 +27,16 @@
     <string-array name="file_types">
         <item>.png</item>
         <item>.jpg</item>
+        <item>.gif</item>
+        <item>.webp</item>
+    </string-array>
+
+    <!-- GIF Encoding Types -->
+    <string-array name="gif_encoding_types">
+        <item>@string/simple_fast</item>
+        <item>@string/fast</item>
+        <item>@string/normal</item>
+        <item>@string/stable</item>
     </string-array>
 
     <!-- Level of New Layer Preference -->

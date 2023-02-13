@@ -823,6 +823,13 @@
                         </RadioGroup>
 
                         <CheckBox
+                            android:id="@+id/cb_transformer_filter"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/filter_verb"
+                            android:visibility="gone" />
+
+                        <CheckBox
                             android:id="@+id/cb_transformer_lar"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"

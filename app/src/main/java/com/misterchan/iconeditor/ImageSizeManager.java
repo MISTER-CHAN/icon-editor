@@ -2,8 +2,8 @@ package com.misterchan.iconeditor;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.widget.CheckBox;
 import android.widget.CompoundButton;
-import android.widget.EditText;
 import android.widget.RadioButton;
 
 import androidx.appcompat.app.AlertDialog;
@@ -12,22 +12,26 @@ import com.google.android.material.textfield.TextInputEditText;
 
 class ImageSizeManager {
 
-    public interface OnUpdateListener {
-        void onUpdate(int width, int height, boolean stretch);
+    public interface OnApplyListener {
+        void onApply(int width, int height, boolean stretch, boolean filter);
     }
 
     private final AlertDialog.Builder builder;
-    private final Bitmap bitmap;
-    private TextInputEditText tietSizeX, tietSizeY;
-    private final OnUpdateListener listener;
+    private CheckBox cbFilter;
+    private final double ratio;
+    private final int defaultWidth, defaultHeight;
+    private final OnApplyListener listener;
     private RadioButton rbStretch;
+    private TextInputEditText tietWidth, tietHeight;
 
-    private final AfterTextChangedListener onSizeXTextChangedListener = this::onSizeXTextChanged;
+    private final AfterTextChangedListener onSizeXTextChangedListener = this::onWidthTextChanged;
 
-    private final AfterTextChangedListener onSizeYTextChangedListener = this::onSizeYTextChanged;
+    private final AfterTextChangedListener onSizeYTextChangedListener = this::onHeightTextChanged;
 
-    public ImageSizeManager(Context context, Bitmap bitmap, OnUpdateListener listener) {
-        this.bitmap = bitmap;
+    public ImageSizeManager(Context context, Bitmap bitmap, OnApplyListener listener) {
+        defaultWidth = bitmap.getWidth();
+        defaultHeight = bitmap.getHeight();
+        ratio = (double) defaultWidth / (double) defaultHeight;
         this.listener = listener;
 
         builder = new AlertDialog.Builder(context)
@@ -37,56 +41,56 @@ class ImageSizeManager {
 
         builder.setPositiveButton(R.string.ok, (dialog, which) -> {
             try {
-                int width = Integer.parseUnsignedInt(tietSizeX.getText().toString());
-                int height = Integer.parseUnsignedInt(tietSizeY.getText().toString());
+                int width = Integer.parseUnsignedInt(tietWidth.getText().toString());
+                int height = Integer.parseUnsignedInt(tietHeight.getText().toString());
                 boolean stretch = rbStretch.isChecked();
-                this.listener.onUpdate(width, height, stretch);
+                this.listener.onApply(width, height, stretch, cbFilter.isChecked());
             } catch (NumberFormatException e) {
             }
         });
     }
 
-    private void onSizeXTextChanged(String s) {
+    private void onWidthTextChanged(String s) {
         try {
             final int i = Integer.parseUnsignedInt(s);
-            final double ratio = (double) bitmap.getWidth() / (double) bitmap.getHeight();
-            tietSizeY.removeTextChangedListener(onSizeYTextChangedListener);
-            tietSizeY.setText(String.valueOf((int) (i * ratio)));
-            tietSizeY.addTextChangedListener(onSizeYTextChangedListener);
+            tietHeight.removeTextChangedListener(onSizeYTextChangedListener);
+            tietHeight.setText(String.valueOf((int) (i / ratio)));
+            tietHeight.addTextChangedListener(onSizeYTextChangedListener);
         } catch (NumberFormatException e) {
         }
     }
 
-    private void onSizeYTextChanged(String s) {
+    private void onHeightTextChanged(String s) {
         try {
             final int i = Integer.parseUnsignedInt(s);
-            final double ratio = (double) bitmap.getWidth() / (double) bitmap.getHeight();
-            tietSizeX.removeTextChangedListener(onSizeXTextChangedListener);
-            tietSizeX.setText(String.valueOf((int) (i * ratio)));
-            tietSizeX.addTextChangedListener(onSizeXTextChangedListener);
+            tietWidth.removeTextChangedListener(onSizeXTextChangedListener);
+            tietWidth.setText(String.valueOf((int) (i * ratio)));
+            tietWidth.addTextChangedListener(onSizeXTextChangedListener);
         } catch (NumberFormatException e) {
         }
     }
 
     public void show() {
-
         final AlertDialog dialog = builder.show();
 
-        tietSizeX = dialog.findViewById(R.id.tiet_size_x);
-        tietSizeY = dialog.findViewById(R.id.tiet_size_y);
+        cbFilter = dialog.findViewById(R.id.cb_filter);
+        tietWidth = dialog.findViewById(R.id.tiet_width);
+        tietHeight = dialog.findViewById(R.id.tiet_height);
         rbStretch = dialog.findViewById(R.id.rb_stretch);
 
-        tietSizeX.setText(String.valueOf(bitmap.getWidth()));
-        tietSizeY.setText(String.valueOf(bitmap.getHeight()));
+        cbFilter.setChecked(true);
+        tietWidth.setText(String.valueOf(defaultWidth));
+        tietHeight.setText(String.valueOf(defaultHeight));
+        rbStretch.setOnCheckedChangeListener((buttonView, isChecked) -> cbFilter.setEnabled(isChecked));
         rbStretch.setChecked(true);
 
         ((CompoundButton) dialog.findViewById(R.id.cb_lar)).setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked) {
-                tietSizeX.addTextChangedListener(onSizeXTextChangedListener);
-                tietSizeY.addTextChangedListener(onSizeYTextChangedListener);
+                tietWidth.addTextChangedListener(onSizeXTextChangedListener);
+                tietHeight.addTextChangedListener(onSizeYTextChangedListener);
             } else {
-                tietSizeX.removeTextChangedListener(onSizeXTextChangedListener);
-                tietSizeY.removeTextChangedListener(onSizeYTextChangedListener);
+                tietWidth.removeTextChangedListener(onSizeXTextChangedListener);
+                tietHeight.removeTextChangedListener(onSizeYTextChangedListener);
             }
         });
     }

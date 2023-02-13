@@ -82,9 +82,9 @@ class XyzColorPicker extends ColorPicker {
         tilX.setHint(R.string.x);
         tilY.setHint(R.string.y);
         tilZ.setHint(R.string.z);
-        sbX.setOnSeekBarChangeListener((OnSeekBarProgressChangeListener) (seekBar, progress) -> tietX.setText(String.valueOf((float) progress / 100.0f)));
-        sbY.setOnSeekBarChangeListener((OnSeekBarProgressChangeListener) (seekBar, progress) -> tietY.setText(String.valueOf((float) progress / 100.0f)));
-        sbZ.setOnSeekBarChangeListener((OnSeekBarProgressChangeListener) (seekBar, progress) -> tietZ.setText(String.valueOf((float) progress / 100.0f)));
+        sbX.setOnSeekBarChangeListener((OnSeekBarProgressChangedListener) (seekBar, progress) -> tietX.setText(String.valueOf((float) progress / 100.0f)));
+        sbY.setOnSeekBarChangeListener((OnSeekBarProgressChangedListener) (seekBar, progress) -> tietY.setText(String.valueOf((float) progress / 100.0f)));
+        sbZ.setOnSeekBarChangeListener((OnSeekBarProgressChangedListener) (seekBar, progress) -> tietZ.setText(String.valueOf((float) progress / 100.0f)));
         tietX.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(0, s, sbX));
         tietY.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(1, s, sbY));
         tietZ.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(2, s, sbZ));
