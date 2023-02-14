@@ -87,6 +87,7 @@ import java.io.InputStream;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -418,21 +419,32 @@ public class MainActivity extends AppCompatActivity {
         if (fileName.length() <= 0) {
             return;
         }
-        tab.filePath = Environment.getExternalStorageDirectory().getPath() + File.separator + tree + File.separator + fileName;
-        tab.fileType = switch (fileType) {
+        final Tab firstFrame = tab.getBackground().getFirstFrame();
+        firstFrame.filePath = Environment.getExternalStorageDirectory().getPath() + File.separator + tree + File.separator + fileName;
+        firstFrame.fileType = switch (fileType) {
             case ".png" -> Tab.FileType.PNG;
             case ".jpg" -> Tab.FileType.JPEG;
             case ".gif" -> Tab.FileType.GIF;
             case ".webp" -> Tab.FileType.WEBP;
             default -> tab.fileType;
         };
-        tab.compressFormat = switch (fileType) {
+        firstFrame.compressFormat = switch (fileType) {
             case ".png" -> Bitmap.CompressFormat.PNG;
             case ".jpg" -> Bitmap.CompressFormat.JPEG;
             case ".webp" -> tab.compressFormat == Bitmap.CompressFormat.WEBP_LOSSY
                     ? Bitmap.CompressFormat.WEBP_LOSSY : Bitmap.CompressFormat.WEBP_LOSSLESS;
             default -> tab.compressFormat;
         };
+        for (int i = firstFrame.getBackgroundPosition() + 1; i < tabs.size(); ++i) {
+            final Tab tab = tabs.get(i).getBackground();
+            if (tab.getFirstFrame() != firstFrame) {
+                break;
+            }
+            i = tab.getBackgroundPosition();
+            tab.filePath = firstFrame.filePath;
+            tab.fileType = firstFrame.fileType;
+            tab.compressFormat = firstFrame.compressFormat;
+        }
         save();
         tab.setTitle(fileName);
     };
@@ -482,6 +494,13 @@ public class MainActivity extends AppCompatActivity {
     private final PickVisualMediaRequest pickVisualMediaRequest = new PickVisualMediaRequest.Builder()
             .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE)
             .build();
+
+    private final ActivityResultLauncher<Intent> requestPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+                if (Environment.isExternalStorageManager()) {
+                    save();
+                }
+            });
 
     private final AfterTextChangedListener onBlurRadiusTextChangedListener = s -> {
         try {
@@ -624,9 +643,9 @@ public class MainActivity extends AppCompatActivity {
         }
         imagePreview.recycle();
         imagePreview = null;
-        addLayer(bm,
-                tab.visible, tab.getLevel(), tab.left, tab.top,
-                tabLayout.getSelectedTabPosition(), getString(R.string.copy_noun));
+        addLayer(bm, tabLayout.getSelectedTabPosition(),
+                tab.getLevel(), tab.left, tab.top,
+                tab.visible, getString(R.string.copy_noun));
         clearStatus();
     };
 
@@ -700,14 +719,12 @@ public class MainActivity extends AppCompatActivity {
     private final EditNumberDialog.OnPositiveButtonClickListener onApplyUniformFrameDelayListener = number -> {
         final Tab firstFrame = tab.getBackground().getFirstFrame();
         for (int i = firstFrame.getBackgroundPosition(); i < tabs.size(); ++i) {
-            final Tab t = tabs.get(i);
-            if (!t.isBackground) {
-                continue;
-            }
-            if (t.getFirstFrame() != firstFrame) {
+            final Tab frame = tabs.get(i).getBackground();
+            if (frame.getFirstFrame() != firstFrame) {
                 break;
             }
-            t.delay = number;
+            i = frame.getBackgroundPosition();
+            frame.delay = number;
         }
     };
 
@@ -826,7 +843,6 @@ public class MainActivity extends AppCompatActivity {
     };
 
     private final TabLayout.OnTabSelectedListener onTabSelectedListener = new TabLayout.OnTabSelectedListener() {
-
         private Tab oldFirstFrame;
 
         @Override
@@ -836,10 +852,10 @@ public class MainActivity extends AppCompatActivity {
             final int position = tab.getPosition();
             final Tab t = tabs.get(position);
             MainActivity.this.tab = t;
-            computeLayerTree(position);
+            computeLayerTree(t);
             final Tab firstFrame = t.getBackground().getFirstFrame();
             final boolean areInDiffProj = firstFrame != oldFirstFrame;
-            oldFirstFrame = null;
+            oldFirstFrame = firstFrame;
             bitmap = t.bitmap;
             canvas = new Canvas(bitmap);
 
@@ -891,7 +907,6 @@ public class MainActivity extends AppCompatActivity {
             final int i = tab.getPosition();
             if (i >= 0) {
                 final Tab t = tabs.get(i);
-                oldFirstFrame = t.getBackground().getFirstFrame();
                 t.translationX = translationX;
                 t.translationY = translationY;
                 t.scale = scale;
@@ -1022,14 +1037,12 @@ public class MainActivity extends AppCompatActivity {
     private final ImageSizeManager.OnApplyListener onApplyUniformFrameImageSizeListener = (width, height, stretch, filter) -> {
         final Tab firstFrame = tab.getBackground().getFirstFrame();
         for (int i = firstFrame.getBackgroundPosition(); i < tabs.size(); ++i) {
-            final Tab t = tabs.get(i);
-            if (!t.isBackground) {
-                continue;
-            }
-            if (t.getFirstFrame() != firstFrame) {
+            final Tab frame = tabs.get(i).getBackground();
+            if (frame.getFirstFrame() != firstFrame) {
                 break;
             }
-            resizeImage(t, width, height, stretch, filter);
+            i = frame.getBackgroundPosition();
+            resizeImage(frame, width, height, stretch, filter);
         }
         drawBitmapOnView(true, true);
     };
@@ -2444,16 +2457,17 @@ public class MainActivity extends AppCompatActivity {
         if (fileToBeOpened != null) {
             openFile(fileToBeOpened);
         } else {
-            tab = new Tab();
-            tab.bitmap = Bitmap.createBitmap(48, 48, Bitmap.Config.ARGB_8888);
-            tab.paint.setBlendMode(BlendMode.SRC_OVER);
-            tab.filePath = null;
-            addTab(tab, 0, getString(R.string.untitled));
+            addTab(Bitmap.createBitmap(48, 48, Bitmap.Config.ARGB_8888), 0);
         }
     }
 
-    private void addFrame(Bitmap bitmap, CharSequence title, boolean isFirst, int delay, String
-            path, Tab.FileType type, boolean setSelected) {
+    private void addFrame(Bitmap bitmap, int position, boolean isFirst, int delay,
+                          CharSequence title, String path, Tab.FileType type) {
+        addFrame(bitmap, position, isFirst, delay, title, path, type, false);
+    }
+
+    private void addFrame(Bitmap bitmap, int position, boolean isFirst, int delay,
+                          CharSequence title, String path, Tab.FileType type, boolean setSelected) {
         final Tab t = new Tab();
         t.bitmap = bitmap;
         t.paint.setBlendMode(BlendMode.SRC_OVER);
@@ -2461,26 +2475,24 @@ public class MainActivity extends AppCompatActivity {
         t.delay = delay;
         t.filePath = path;
         t.fileType = type;
-        final int position = tabs.size();
-        tabs.add(position, t);
-        addToHistory(t);
-        final TabLayout.Tab tab = loadTab(t, position, title);
-        if (setSelected) {
-            Tab.distinguishProjects(tabs);
-            tab.select();
-        }
+        addTab(t, position, title, setSelected);
     }
 
     private void addLayer(Bitmap bitmap, int position) {
-        addLayer(bitmap, 0, 0, 0, position);
+        addLayer(bitmap, position, 0, 0, 0);
     }
 
-    private void addLayer(Bitmap bitmap, int level, int left, int top, int position) {
-        addLayer(bitmap, true, level, left, top, position, getString(R.string.untitled));
+    private void addLayer(Bitmap bitmap, int position, int level, int left, int top) {
+        addLayer(bitmap, position, level, left, top, true, getString(R.string.untitled));
     }
 
-    private void addLayer(Bitmap bitmap, boolean visible, int level, int left, int top,
-                          int position, String title) {
+    private void addLayer(Bitmap bitmap, int position, int level, int left, int top,
+                          boolean visible, CharSequence title) {
+        addLayer(bitmap, position, level, left, top, visible, title, true);
+    }
+
+    private void addLayer(Bitmap bitmap, int position, int level, int left, int top,
+                          boolean visible, CharSequence title, boolean setSelected) {
         final Tab t = new Tab();
         t.bitmap = bitmap;
         t.isBackground = false;
@@ -2489,7 +2501,7 @@ public class MainActivity extends AppCompatActivity {
         t.moveTo(left, top);
         t.paint.setBlendMode(BlendMode.SRC_OVER);
         t.visible = visible;
-        addTab(t, position, title);
+        addTab(t, position, title, setSelected);
     }
 
     private void addTab(Bitmap bitmap, int position) {
@@ -2512,11 +2524,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void addTab(Tab tab, int position, CharSequence title) {
+        addTab(tab, position, title, true);
+    }
+
+    private void addTab(Tab tab, int position, CharSequence title, boolean setSelected) {
         tabs.add(position, tab);
         addToHistory(tab);
         final TabLayout.Tab t = loadTab(tab, position, title);
-        Tab.distinguishProjects(tabs);
-        tabLayout.selectTab(t);
+        if (setSelected) {
+            Tab.distinguishProjects(tabs);
+            tabLayout.selectTab(t);
+        }
     }
 
     private void addToHistory() {
@@ -2578,6 +2596,23 @@ public class MainActivity extends AppCompatActivity {
         miLayerHsv.setChecked(filter == Tab.Filter.HSV);
     }
 
+    private boolean checkOrRequestPermission() {
+        if (!Environment.isExternalStorageManager()) {
+            try {
+                final Intent intent = new Intent()
+                        .setAction(android.provider.Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
+                        .setData(Uri.fromParts("package", getPackageName(), null));
+                requestPermissionLauncher.launch(intent);
+            } catch (RuntimeException e) {
+                final Intent intent = new Intent()
+                        .setAction(android.provider.Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
+                requestPermissionLauncher.launch(intent);
+            }
+            return false;
+        }
+        return true;
+    }
+
     private void clearStatus() {
         tvStatus.setText("");
     }
@@ -2620,20 +2655,31 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void computeLayerTree() {
-        computeLayerTree(tabLayout.getSelectedTabPosition());
+        computeLayerTree(tab);
     }
 
-    private void computeLayerTree(int position) {
-        layerTree = Tab.computeLayerTree(tabs, position);
-        Tab.showIcons(tabs, position);
+    private void computeLayerTree(Tab tab) {
+        layerTree = Tab.computeLayerTree(tabs, tab);
+        Tab.showIcons(tabs, tab);
     }
 
     private void createFrame() {
         final Tab firstFrame = tab.getBackground().getFirstFrame();
         final Bitmap bm = Bitmap.createBitmap(firstFrame.bitmap.getWidth(), firstFrame.bitmap.getHeight(),
                 firstFrame.bitmap.getConfig(), firstFrame.bitmap.hasAlpha(), firstFrame.bitmap.getColorSpace());
-        addFrame(bm, getString(R.string.untitled), false,
-                firstFrame.delay, firstFrame.filePath, firstFrame.fileType, true);
+        int pos = tab.getBackgroundPosition() + 1;
+        for (; pos < tabs.size(); ++pos) {
+            final Tab tab = tabs.get(pos), b = tab.getBackground();
+            if (b.getFirstFrame() == firstFrame) {
+                if (b != tab) {
+                    pos = tab.getBackgroundPosition();
+                }
+            } else {
+                break;
+            }
+        }
+        addFrame(bm, pos, false, firstFrame.delay,
+                getString(R.string.untitled), firstFrame.filePath, firstFrame.fileType, true);
     }
 
     private void createImage(int width, int height) {
@@ -2645,7 +2691,7 @@ public class MainActivity extends AppCompatActivity {
                              Bitmap.Config config, ColorSpace colorSpace,
                              int level, int left, int top, int position) {
         final Bitmap bm = Bitmap.createBitmap(width, height, config, true, colorSpace);
-        addLayer(bm, level, left, top, position);
+        addLayer(bm, position, level, left, top);
     }
 
     private void createImagePreview() {
@@ -3228,26 +3274,30 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        if (tab.fileType == Tab.FileType.GIF) {
-            new QualityManager(this,
-                    tab.gifEncodingType == null ? GifEncoder.EncodingType.ENCODING_TYPE_NORMAL_LOW_MEMORY : tab.gifEncodingType,
-                    tab.gifDither,
-                    (encodingType, dither) -> {
-                        tab.gifEncodingType = encodingType;
-                        tab.gifDither = dither;
-                        save();
-                    })
-                    .show();
-        } else {
-            new QualityManager(this,
-                    tab.quality < 0 ? 100 : tab.quality,
-                    tab.compressFormat,
-                    (quality, format) -> {
-                        tab.quality = quality;
-                        tab.compressFormat = format;
-                        save();
-                    })
-                    .show();
+        switch (tab.fileType) {
+            case PNG -> save();
+            case GIF -> {
+                new QualityManager(this,
+                        tab.gifEncodingType == null ? GifEncoder.EncodingType.ENCODING_TYPE_NORMAL_LOW_MEMORY : tab.gifEncodingType,
+                        tab.gifDither,
+                        (encodingType, dither) -> {
+                            tab.gifEncodingType = encodingType;
+                            tab.gifDither = dither;
+                            save();
+                        })
+                        .show();
+            }
+            default -> {
+                new QualityManager(this,
+                        tab.quality < 0 ? 100 : tab.quality,
+                        tab.compressFormat,
+                        (quality, format) -> {
+                            tab.quality = quality;
+                            tab.compressFormat = format;
+                            save();
+                        })
+                        .show();
+            }
         }
     }
 
@@ -4051,28 +4101,54 @@ public class MainActivity extends AppCompatActivity {
                 drawFloatingLayers();
                 scale(1.0f, -1.0f, false);
             }
-            case R.id.i_frame_delete -> {
-                if (tabs.get(0).getBackground() == tabs.get(tabs.size() - 1)) {
-                    break;
-                }
-                final Tab background = tab.getBackground();
-                for (int i = tab.getBackgroundPosition(); i >= 0; --i) {
-                    final Tab t = tabs.get(i);
-                    if (t.getBackground() != background) {
-                        break;
-                    }
-                    if (t != tab) {
-                        closeTab(i, false);
-                    }
-                }
-                closeTab();
-            }
             case R.id.i_frame_delay -> {
-                final Tab t = tab.getBackground();
+                final Tab frame = this.tab.getBackground();
                 new EditNumberDialog(this)
                         .setTitle(R.string.delay)
-                        .setOnApplyListener(number -> t.delay = number)
-                        .show(t.delay, "ms");
+                        .setOnApplyListener(number -> frame.delay = number)
+                        .show(frame.delay, "ms");
+            }
+            case R.id.i_frame_delete -> {
+                final int last = tabs.size() - 1;
+                if (tabs.get(0).getBackground() == tabs.get(last)) {
+                    break;
+                }
+                final Tab frame = tab.getBackground();
+                final int pos = frame.getBackgroundPosition();
+                boolean isFirstOfMultipleFrames = false; // Do we need to select next frame
+                if (frame.isFirstFrame && pos < last) {
+                    final Tab nextFrame = tabs.get(pos + 1).getBackground();
+                    if (!nextFrame.isFirstFrame) {
+                        isFirstOfMultipleFrames = true;
+                        nextFrame.isFirstFrame = true;
+                    }
+                }
+                int i = pos;
+                for (; i >= 0; --i) {
+                    final Tab tab = tabs.get(i);
+                    if (tab.getBackground() != frame) {
+                        break;
+                    }
+                    closeTab(i, false);
+                }
+                Tab.distinguishProjects(tabs);
+                selectTab(isFirstOfMultipleFrames ? i + 1 : i);
+            }
+            case R.id.i_frame_duplicate -> {
+                final Tab background = tab.getBackground();
+                final int backgroundPos = background.getBackgroundPosition(), newPos = backgroundPos + 1;
+                addFrame(Bitmap.createBitmap(background.bitmap), newPos, false, background.delay,
+                        background.getTitle(), background.filePath, background.fileType, false);
+                for (int i = backgroundPos - 1; i >= 0; --i) {
+                    final Tab tab = tabs.get(i);
+                    if (tab.isBackground) {
+                        break;
+                    }
+                    addLayer(Bitmap.createBitmap(tab.bitmap), newPos,
+                            tab.getLevel(), tab.left, tab.top, tab.visible, tab.getTitle(), false);
+                }
+                Tab.distinguishProjects(tabs);
+                tabLayout.getTabAt(newPos).select();
             }
             case R.id.i_frame_new -> createFrame();
             case R.id.i_frame_unify_delays -> {
@@ -4228,9 +4304,9 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     cv.drawBitmap(bitmap, 0.0f, 0.0f, PAINT_SRC);
                 }
-                addLayer(bm,
-                        tab.visible, tab.getLevel(), tab.left, tab.top,
-                        tabLayout.getSelectedTabPosition(), getString(R.string.copy_noun));
+                addLayer(bm, tabLayout.getSelectedTabPosition(),
+                        tab.getLevel(), tab.left, tab.top,
+                        tab.visible, getString(R.string.copy_noun));
             }
             case R.id.i_layer_duplicate_by_color_range -> {
                 drawFloatingLayers();
@@ -4310,10 +4386,9 @@ public class MainActivity extends AppCompatActivity {
                 }
                 drawFloatingLayers();
                 Tab.mergeLayers(tabs.get(pos), tabs.get(below));
-                closeTab();
-                if (tabLayout.getSelectedTabPosition() != pos) {
-                    tabLayout.getTabAt(pos).select();
-                }
+                closeTab(pos, false);
+                selectTab(pos);
+                addToHistory();
             }
             case R.id.i_layer_merge_visible -> {
                 drawFloatingLayers();
@@ -4544,13 +4619,15 @@ public class MainActivity extends AppCompatActivity {
             if (compressFormat != null) {
                 path = UriToPathUtil.getRealFilePath(this, uri);
                 addTab(bm, tabs.size(), name, path, type, compressFormat);
-            } else if ("image/gif".equals(mimeType)) {
+            } else if (type == Tab.FileType.GIF) {
                 path = UriToPathUtil.getRealFilePath(this, uri);
                 final GifDecoder gifDecoder = new GifDecoder();
                 if (gifDecoder.load(path)) {
                     final int begin = tabs.size();
                     for (int i = 0; i < gifDecoder.frameNum(); ++i) {
-                        addFrame(gifDecoder.frame(i), String.format("[%d] %s", i, name), i == 0, gifDecoder.delay(i), path, type, false);
+                        addFrame(gifDecoder.frame(i), tabs.size(),
+                                i == 0, gifDecoder.delay(i),
+                                String.format("[%d] %s", i, name), path, type);
                     }
                     Tab.distinguishProjects(tabs);
                     tabLayout.getTabAt(begin).select();
@@ -4745,6 +4822,9 @@ public class MainActivity extends AppCompatActivity {
     private void save() {
         final Tab tab = this.tab.getBackground().getFirstFrame();
         if (tab.filePath == null) {
+            if (!checkOrRequestPermission()) {
+                return;
+            }
             saveAs();
             return;
         }
@@ -4796,16 +4876,14 @@ public class MainActivity extends AppCompatActivity {
             pb.setMax(size - 1);
             new Thread(() -> {
                 for (int i = tab.getBackgroundPosition(); i < size; ++i) {
-                    final Tab t = tabs.get(i);
-                    if (!t.isBackground) {
-                        continue;
-                    }
+                    final Tab t = tabs.get(i).getBackground();
+                    i = t.getBackgroundPosition();
                     if (t.getFirstFrame() != tab) {
                         break;
                     }
                     if (t.bitmap.getWidth() == width && t.bitmap.getHeight() == height
                             && t.bitmap.getColorSpace().getId() == ColorSpace.Named.SRGB.ordinal()) {
-                        final Bitmap merged = Tab.mergeLayers(Tab.computeLayerTree(tabs, i));
+                        final Bitmap merged = Tab.mergeLayers(Tab.computeLayerTree(tabs, t));
                         gifEncoder.encodeFrame(merged, t.delay);
                         merged.recycle();
                     }
@@ -4844,6 +4922,15 @@ public class MainActivity extends AppCompatActivity {
 
     private void selectAll() {
         selection.set(0, 0, bitmap.getWidth(), bitmap.getHeight());
+    }
+
+    private void selectTab(int position) {
+        final TabLayout.Tab tabToBeSelected = tabLayout.getTabAt(position);
+        if (position != tabLayout.getSelectedTabPosition()) {
+            tabToBeSelected.select();
+        } else {
+            onTabSelectedListener.onTabSelected(tabToBeSelected);
+        }
     }
 
     @SuppressLint("ClickableViewAccessibility")

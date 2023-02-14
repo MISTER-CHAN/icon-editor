@@ -18,7 +18,7 @@ class Settings {
 
     private boolean argbColorType = false;
     private boolean independentTranslAndScale = false;
-    private boolean multithreaded = false;
+    private boolean multithreaded = true;
     private boolean newLayerLevel = false;
     private int argbComponentRadix = 16;
     private MainActivity mainActivity;
@@ -85,7 +85,7 @@ class Settings {
                 break;
 
             case KEY_MT:
-                multithreaded = preferences.getBoolean(KEY_MT, false);
+                multithreaded = preferences.getBoolean(KEY_MT, true);
                 mainActivity.setRunnableRunner(multithreaded);
                 break;
 

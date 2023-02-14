@@ -113,36 +113,24 @@ class Tab {
         tvRoot.setText("");
     }
 
-    public static LayerTree computeLayerTree(List<Tab> tabs, int pos) {
+    public static LayerTree computeLayerTree(List<Tab> tabs, Tab tab) {
         final Stack<LayerTree> stack = new Stack<>();
         LayerTree layerTree = new LayerTree(0);
         LayerTree.Node prev = null;
 
-        final Tab projBegin = findBackground(tabs, pos);
-        final int first = tabs.size() - 1; // last = 0
-        Tab background = tabs.get(first);
-        int backgroundPos = first;
-        background.isBackground = true;
-        boolean isInProject = false;
+        final Tab background = tab.getBackground();
         stack.push(layerTree);
-        for (int i = first; i >= 0; --i) {
+        for (int i = background.getBackgroundPosition(); i >= 0; --i) {
             final Tab t = tabs.get(i);
             if (t.isBackground) {
-                background = t;
-                backgroundPos = i;
-                isInProject = t == projBegin;
-            }
-            t.background = background;
-            t.backgroundPosition = backgroundPos;
-            if (isInProject) {
-                // If current layer is background layer
-                if (prev == null) {
+                if (t == background) {
                     prev = layerTree.push(t);
                     continue;
+                } else {
+                    break;
                 }
-            } else {
-                continue;
             }
+
             final Tab prevTab = prev.getTab();
             final int levelDiff = t.level - prevTab.level;
 
@@ -180,11 +168,24 @@ class Tab {
     }
 
     public static void distinguishProjects(List<Tab> tabs) {
-        Tab firstFrame = null;
-        for (final Tab tab : tabs) {
-            if (!tab.isBackground) {
-                continue;
+        final int last = tabs.size() - 1;
+        Tab background = tabs.get(last);
+        int backgroundPos = last;
+        background.isBackground = true;
+        for (int i = last; i >= 0; --i) {
+            final Tab tab = tabs.get(i);
+            if (tab.isBackground) {
+                background = tab;
+                backgroundPos = i;
             }
+            tab.background = background;
+            tab.backgroundPosition = backgroundPos;
+        }
+
+        Tab firstFrame = null;
+        for (int i = 0; i < tabs.size(); ++i) {
+            final Tab tab = tabs.get(i).getBackground();
+            i = tab.getBackgroundPosition();
             if (tab.isFirstFrame) {
                 firstFrame = tab;
             }
@@ -491,8 +492,7 @@ class Tab {
         lastTab.tvBackground.setText("┃");
     }
 
-    public static void showIcons(List<Tab> tabs, int pos) {
-        final Tab tab = tabs.get(pos);
+    public static void showIcons(List<Tab> tabs, Tab tab) {
         showVisibilityIcons(tabs, tab.background);
         showBackgroundIcons(tabs);
         showLevelIcons(tabs, tab.backgroundPosition);

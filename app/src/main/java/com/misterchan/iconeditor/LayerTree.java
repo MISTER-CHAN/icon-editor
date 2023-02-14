@@ -18,7 +18,7 @@ package com.misterchan.iconeditor;
  * </nobr></code>
  * <br />
  * The tab bar should display it like this:<br />
- * <code><u>Layer 2</u> &nbsp;<u>[Layer Mask of Clipping Mask →</u> &nbsp;<u>Clipping Mask] →</u> &nbsp;<u>Layer Mask →</u> &nbsp;<u>Layer 1</u> &nbsp;<u>Background ▕</u></code><br />
+ * <code><u>Layer 2</u> &nbsp;<u>[Layer Mask of Clipping Mask →</u> &nbsp;<u>Clipping Mask] →</u> &nbsp;<u>Layer Mask →</u> &nbsp;<u>Layer 1</u> &nbsp;<u>Background │</u></code><br />
  * <br />
  * In Adobe Photoshop, it should be displayed on layer panel like this:<br />
  * <code><nobr>

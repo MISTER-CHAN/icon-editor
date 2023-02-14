@@ -510,6 +510,10 @@
                 android:title="@string/new_" />
 
             <item
+                android:id="@+id/i_frame_duplicate"
+                android:title="@string/duplicate" />
+
+            <item
                 android:id="@+id/i_frame_unify_sizes"
                 android:title="@string/unify_sizes" />
 

@@ -62,7 +62,7 @@
             app:title="@string/filter_image" />
 
         <SwitchPreferenceCompat
-            app:defaultValue="false"
+            app:defaultValue="true"
             app:key="mt"
             app:singleLineTitle="false"
             app:summaryOff="@string/synchronously_draw_image_and_ui"
