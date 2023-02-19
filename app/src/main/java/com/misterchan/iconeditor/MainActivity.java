@@ -4761,7 +4761,17 @@ public class MainActivity extends AppCompatActivity {
         bitmap = bm;
         tab.bitmap = bitmap;
         canvas = cv;
-        tab.moveBy(offsetX, offsetY);
+        if (tab.isBackground) {
+            for (int i = tabLayout.getSelectedTabPosition() - 1; i >= 0; --i) {
+                final Tab t = tabs.get(i);
+                if (t.isBackground) {
+                    break;
+                }
+                t.moveBy(-offsetX, -offsetY);
+            }
+        } else {
+            tab.moveBy(offsetX, offsetY);
+        }
         calculateBackgroundSizeOnView();
 
         if (transformer != null) {
