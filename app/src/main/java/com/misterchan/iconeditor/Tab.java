@@ -330,8 +330,8 @@ class Tab {
     }
 
     public static Bitmap mergeLayers(final LayerTree tree, final Rect rect,
-                                     final Tab excludedTab, final Bitmap bmToReplWith, final Tab extraTab) {
-        return mergeLayers(tree, rect, null, excludedTab, bmToReplWith, extraTab);
+                                     final Tab tabWithExclBm, final Bitmap bmToReplWith, final Tab extraTab) {
+        return mergeLayers(tree, rect, null, tabWithExcluBm, bmToReplWith, extraTab);
     }
 
     /**
