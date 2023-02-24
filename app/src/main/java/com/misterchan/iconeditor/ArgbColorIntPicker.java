@@ -1,6 +1,7 @@
 package com.misterchan.iconeditor;
 
 import android.content.Context;
+import android.text.method.DigitsKeyListener;
 import android.widget.SeekBar;
 
 import androidx.annotation.ColorInt;
@@ -53,6 +54,11 @@ class ArgbColorIntPicker extends ArgbColorPicker {
             tietRed.setInputType(EDITOR_TYPE_NUM);
             tietGreen.setInputType(EDITOR_TYPE_NUM);
             tietBlue.setInputType(EDITOR_TYPE_NUM);
+        } else if (radix == 16) {
+            tietAlpha.setKeyListener(KEY_LISTENER_HEX);
+            tietRed.setKeyListener(KEY_LISTENER_HEX);
+            tietGreen.setKeyListener(KEY_LISTENER_HEX);
+            tietBlue.setKeyListener(KEY_LISTENER_HEX);
         }
 
         sbAlpha.setOnSeekBarChangeListener((OnSeekBarProgressChangedListener) (seekBar, progress) -> tietAlpha.setText(String.format(format, progress)));

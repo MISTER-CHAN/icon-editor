@@ -1,21 +1,16 @@
 package com.misterchan.iconeditor;
 
 import android.graphics.Bitmap;
-import android.graphics.BlendMode;
-import android.graphics.Canvas;
-import android.graphics.Paint;
 
-class BitmapHistory {
-
-    private static final int MAX_SIZE = 50;
+class History {
 
     private static class Node {
-        private Bitmap val;
+        private Bitmap bitmap;
         private Node later;
         private Node earlier;
 
-        private Node(Node earlier, Bitmap val) {
-            this.val = val;
+        private Node(Node earlier, Bitmap bitmap) {
+            this.bitmap = bitmap;
             this.earlier = earlier;
             if (earlier != null) {
                 earlier.later = this;
@@ -23,6 +18,7 @@ class BitmapHistory {
         }
     }
 
+    private static int maxSize = 50;
     private int size = 0;
     private Node current = null;
     private Node earliest, latest;
@@ -35,7 +31,7 @@ class BitmapHistory {
         }
         current = new Node(current, Bitmap.createBitmap(bitmap));
         add(current);
-        while (size > MAX_SIZE) {
+        while (size > maxSize) {
             deleteEarliest();
         }
     }
@@ -60,8 +56,8 @@ class BitmapHistory {
     public void clear() {
         for (Node n = earliest; n != null; ) {
             final Node later = n.later;
-            n.val.recycle();
-            n.val = null;
+            n.bitmap.recycle();
+            n.bitmap = null;
             n.earlier = null;
             n.later = null;
             n = later;
@@ -73,8 +69,8 @@ class BitmapHistory {
     private void deleteEarliest() {
         if (earliest == null)
             return;
-        earliest.val.recycle();
-        earliest.val = null;
+        earliest.bitmap.recycle();
+        earliest.bitmap = null;
         earliest = earliest.later;
         if (earliest == null)
             latest = null;
@@ -86,8 +82,8 @@ class BitmapHistory {
     private void deleteLatest() {
         if (latest == null)
             return;
-        latest.val.recycle();
-        latest.val = null;
+        latest.bitmap.recycle();
+        latest.bitmap = null;
         latest = latest.earlier;
         if (latest == null)
             earliest = null;
@@ -97,16 +93,20 @@ class BitmapHistory {
     }
 
     public Bitmap getCurrent() {
-        return Bitmap.createBitmap(current.val);
+        return Bitmap.createBitmap(current.bitmap);
     }
 
     public Bitmap redo() {
         current = current.later;
-        return Bitmap.createBitmap(current.val);
+        return Bitmap.createBitmap(current.bitmap);
+    }
+
+    public static void setMaxSize(int maxSize) {
+        History.maxSize = maxSize;
     }
 
     public Bitmap undo() {
         current = current.earlier;
-        return Bitmap.createBitmap(current.val);
+        return Bitmap.createBitmap(current.bitmap);
     }
 }

@@ -87,7 +87,6 @@ import java.io.InputStream;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -3435,7 +3434,7 @@ public class MainActivity extends AppCompatActivity {
                 final Tab tab = tabs.get(i);
                 loadTab(tab, i, tab.getTitle());
             }
-            onTabSelectedListener.onTabSelected(tabLayout.getTabAt(tabLayout.getSelectedTabPosition()));
+            tabLayout.getTabAt(0).select();
         }
 
     }
@@ -4285,6 +4284,7 @@ public class MainActivity extends AppCompatActivity {
                 if (!tab.visible && tabs.size() > 1) {
                     closeTab();
                 } else {
+                    Tab.distinguishProjects(tabs);
                     onTabSelectedListener.onTabSelected(tabLayout.getTabAt(tabLayout.getSelectedTabPosition()));
                 }
             }
@@ -4387,6 +4387,7 @@ public class MainActivity extends AppCompatActivity {
                 drawFloatingLayers();
                 Tab.mergeLayers(tabs.get(pos), tabs.get(below));
                 closeTab(pos, false);
+                Tab.distinguishProjects(tabs);
                 selectTab(pos);
                 addToHistory();
             }
@@ -4400,7 +4401,7 @@ public class MainActivity extends AppCompatActivity {
                     if (t.getBackground() != background) {
                         break;
                     } else if (t.visible) {
-                        t.removeOLVCBCCListener();
+                        t.removeOVCBCCListener();
                         t.setVisible(false);
                         t.visible = false;
                         t.addOVCBCCListener(getOVCBCCListener(t));

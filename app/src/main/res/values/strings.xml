@@ -125,6 +125,7 @@
     <string name="hex">Hex</string>
     <string name="hidden_image">Hidden Image</string>
     <string name="highlights">Highlights</string>
+    <string name="history_max_size">History Maximum Size</string>
     <string name="homepage">Homepage</string>
     <string name="horizontal">Horizontally</string>
     <string name="horizontally">Horizontally</string>
@@ -273,6 +274,7 @@
     <string name="swatch">Swatch</string>
     <string name="synchronously_draw_image_and_ui">Synchronously draw image and U.I.</string>
     <string name="text">Text</string>
+    <string name="this_would_affect_size_of_memory_used">This would affect the size of memory used</string>
     <string name="threshold">Threshold</string>
     <string name="timeline">Timeline</string>
     <string name="tolerance">Tolerance</string>

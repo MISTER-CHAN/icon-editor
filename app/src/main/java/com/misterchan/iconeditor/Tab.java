@@ -38,7 +38,12 @@ class Tab {
         }
     };
 
-    private static final Paint PAINT_SRC_OVER = new Paint();
+    private static final Paint PAINT_SRC_OVER = new Paint() {
+        {
+            setAntiAlias(false);
+            setFilterBitmap(false);
+        }
+    };
 
     public boolean drawBelow = false;
     public boolean gifDither = true; // Ignored if not background
@@ -47,7 +52,6 @@ class Tab {
     public boolean visible = true;
     public Bitmap bitmap;
     public Bitmap.CompressFormat compressFormat; // Ignored if not background
-    public final BitmapHistory history = new BitmapHistory();
     public final CellGrid cellGrid = new CellGrid();
     private CheckBox cbVisible;
     public final Deque<Guide> guides = new LinkedList<>();
@@ -56,6 +60,7 @@ class Tab {
     public Filter filter;
     public float scale;
     public float translationX, translationY;
+    public final History history = new History();
     private int backgroundPosition;
     public int delay; // Ignored if not background
     private int level = 0;
@@ -70,18 +75,18 @@ class Tab {
     private TextView tvTitle;
 
     @Size(20)
-    public float[] colorMatrix = new float[]{
+    public float[] colorMatrix = {
             1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
             0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
             0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
             0.0f, 0.0f, 0.0f, 1.0f, 0.0f
     };
 
+    @Size(3)
+    public float[] deltaHsv = {0.0f, 0.0f, 0.0f};
+
     @Size(5)
     public int[][] curves = {new int[0x100], new int[0x100], new int[0x100], new int[0x100], new int[0x100]};
-
-    @Size(3)
-    public float[] deltaHsv = new float[]{0.0f, 0.0f, 0.0f};
 
     {
         for (int i = 0; i <= 4; ++i) {
@@ -93,16 +98,10 @@ class Tab {
 
     private static void addFilters(Bitmap bitmap, Tab tab) {
         switch (tab.filter) {
-            case COLOR_MATRIX:
-                BitmapUtil.addColorMatrixColorFilter(
-                        bitmap, 0, 0, bitmap, 0, 0, tab.colorMatrix);
-                break;
-            case CURVES:
-                BitmapUtil.applyCurves(bitmap, tab.curves);
-                break;
-            case HSV:
-                BitmapUtil.shiftHsv(bitmap, tab.deltaHsv);
-                break;
+            case COLOR_MATRIX -> BitmapUtil.addColorMatrixColorFilter(
+                    bitmap, 0, 0, bitmap, 0, 0, tab.colorMatrix);
+            case CURVES -> BitmapUtil.applyCurves(bitmap, tab.curves);
+            case HSV -> BitmapUtil.shiftHsv(bitmap, tab.deltaHsv);
         }
     }
 
@@ -115,7 +114,7 @@ class Tab {
 
     public static LayerTree computeLayerTree(List<Tab> tabs, Tab tab) {
         final Stack<LayerTree> stack = new Stack<>();
-        LayerTree layerTree = new LayerTree(0);
+        LayerTree layerTree = new LayerTree();
         LayerTree.Node prev = null;
 
         final Tab background = tab.getBackground();
@@ -140,7 +139,7 @@ class Tab {
             } else if (levelDiff > 0) {
                 LayerTree lt = null;
                 for (int j = 0; j < levelDiff; ++j) {
-                    lt = new LayerTree(t.level);
+                    lt = new LayerTree();
                     prev.setChildren(lt);
                     prev = lt.push(prevTab);
                     stack.push(lt);
@@ -157,7 +156,7 @@ class Tab {
                 } else {
                     // Re-compute layer tree
                     stack.clear();
-                    layerTree = stack.push(new LayerTree(0));
+                    layerTree = stack.push(new LayerTree());
                     prev = layerTree.push(t);
                 }
 
@@ -336,10 +335,11 @@ class Tab {
     }
 
     /**
-     * @param bmToReplWith Bitmap to replace with
+     * @param tabWithExclBm The tab with excluded bitmap
+     * @param bmToReplWith The bitmap to replace with
      */
     public static Bitmap mergeLayers(final LayerTree tree, final Rect rect, final Bitmap background,
-                                     final Tab excludedTab, final Bitmap bmToReplWith, final Tab extraTab) {
+                                     final Tab tabWithExclBm, final Bitmap bmToReplWith, final Tab extraTab) {
         final LayerTree.Node backgroundNode = tree.getBackground();
         final Bitmap bitmap = Bitmap.createBitmap(rect.width(), rect.height(), Bitmap.Config.ARGB_8888);
         final Canvas canvas = new Canvas(bitmap);
@@ -359,38 +359,38 @@ class Tab {
                     final int bmW = tab.bitmap.getWidth(), bmH = tab.bitmap.getHeight();
                     // Rectangle src and dst are intersection between background layer subset and current layer
                     final Rect src = new Rect(0, 0, bmW, bmH);
-                    final int srcOrigLeft = -tab.left, srcOrigTop = -tab.top; // Origin location related to layer
+                    final int srcOrigLeft = -tab.left, srcOrigTop = -tab.top; // Origin location relative to layer
                     if (!src.intersect(srcOrigLeft + rect.left, srcOrigTop + rect.top, srcOrigLeft + rect.right, srcOrigTop + rect.bottom)) {
                         continue; // No intersection
                     }
                     final Rect dst = new Rect(0, 0, rect.width(), rect.height());
-                    final int dstLeft = -rect.left + tab.left, dstTop = -rect.top + tab.top; // Layer location related to background layer subset
+                    final int dstLeft = -rect.left + tab.left, dstTop = -rect.top + tab.top; // Layer location relative to background layer subset
                     dst.intersect(dstLeft, dstTop, dstLeft + bmW, dstTop + bmH);
                     final int intW = src.width(), intH = src.height(); // Intersection size, src size == dst size
                     final Rect intRel = new Rect(0, 0, intW, intH); // Intersection relative rectangle
 
-                    Rect ees = null, eed = null; // Intersection between intersection and extra excluded layer
-                    if (tab == excludedTab && extraTab != null) {
+                    Rect extraSrc = null, extraDst = null; // Intersection between intersection and extra layer
+                    if (tab == tabWithExclBm && extraTab != null) {
                         final int w = extraTab.bitmap.getWidth(), h = extraTab.bitmap.getHeight();
-                        ees = new Rect(0, 0, w, h);
-                        final int sol = -extraTab.left - tab.left + rect.left, sot = -extraTab.top - tab.top + rect.top; // Origin location related to extra excluded layer
-                        if (ees.intersect(sol + dst.left, sot + dst.top, sol + dst.right, sot + dst.bottom)) {
-                            eed = new Rect(intRel);
-                            final int dl = -dst.left - rect.left + tab.left + extraTab.left, dt = -dst.top - rect.top + tab.top + extraTab.top; // Extra excluded location related to intersection
-                            eed.intersect(dl, dt, dl + w, dt + h);
+                        extraSrc = new Rect(0, 0, w, h);
+                        final int sol = -extraTab.left - tab.left + rect.left, sot = -extraTab.top - tab.top + rect.top; // Origin location relative to extra layer
+                        if (extraSrc.intersect(sol + dst.left, sot + dst.top, sol + dst.right, sot + dst.bottom)) {
+                            extraDst = new Rect(intRel);
+                            final int dl = -dst.left - rect.left + tab.left + extraTab.left, dt = -dst.top - rect.top + tab.top + extraTab.top; // Extra location relative to intersection
+                            extraDst.intersect(dl, dt, dl + w, dt + h);
                         }
                     }
 
                     if (tab.filter == null) {
                         if (tab.drawBelow) {
                             canvas.drawBitmap(bitmap, 0.0f, 0.0f, paint);
-                        } else if (tab == excludedTab) {
-                            if (eed != null) {
+                        } else if (tab == tabWithExclBm) {
+                            if (extraDst != null) {
                                 final Bitmap bm = Bitmap.createBitmap(intW, intH, Bitmap.Config.ARGB_8888); // Intersection bitmap
                                 final Canvas cv = new Canvas(bm);
                                 try {
                                     cv.drawBitmap(bmToReplWith, src, intRel, PAINT_SRC);
-                                    cv.drawBitmap(extraTab.bitmap, ees, eed, PAINT_SRC_OVER);
+                                    cv.drawBitmap(extraTab.bitmap, extraSrc, extraDst, PAINT_SRC_OVER);
                                     canvas.drawBitmap(bm, intRel, dst, paint);
                                 } finally {
                                     bm.recycle();
@@ -407,10 +407,10 @@ class Tab {
                         try {
                             if (tab.drawBelow) {
                                 cv.drawBitmap(bitmap, dst, intRel, PAINT_SRC);
-                            } else if (tab == excludedTab) {
+                            } else if (tab == tabWithExclBm) {
                                 cv.drawBitmap(bmToReplWith, src, intRel, PAINT_SRC);
-                                if (eed != null) {
-                                    cv.drawBitmap(extraTab.bitmap, ees, eed, PAINT_SRC_OVER);
+                                if (extraDst != null) {
+                                    cv.drawBitmap(extraTab.bitmap, extraSrc, extraDst, PAINT_SRC_OVER);
                                 }
                             } else {
                                 cv.drawBitmap(tab.bitmap, src, intRel, PAINT_SRC);
@@ -424,7 +424,7 @@ class Tab {
                 } else {
                     final Bitmap branchBitmap = mergeLayers(children, rect,
                             !tab.drawBelow || node == backgroundNode ? null : bitmap,
-                            excludedTab, bmToReplWith, extraTab);
+                            tabWithExclBm, bmToReplWith, extraTab);
                     canvas.drawBitmap(branchBitmap, 0.0f, 0.0f, tab.paint);
                     branchBitmap.recycle();
                 }
@@ -461,7 +461,7 @@ class Tab {
         cbVisible.setOnCheckedChangeListener(listener);
     }
 
-    public void removeOLVCBCCListener() {
+    public void removeOVCBCCListener() {
         cbVisible.setOnCheckedChangeListener(null);
     }
 
@@ -485,11 +485,11 @@ class Tab {
                 continue;
             }
             if (lastTab != null) {
-                lastTab.tvBackground.setText(tab.isFirstFrame ? "┃" : "│");
+                lastTab.tvBackground.append(tab.isFirstFrame ? "┃" : "│");
             }
             lastTab = tab;
         }
-        lastTab.tvBackground.setText("┃");
+        lastTab.tvBackground.append("┃");
     }
 
     public static void showIcons(List<Tab> tabs, Tab tab) {

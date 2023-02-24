@@ -113,6 +113,7 @@
     <string name="hex">十六進制</string>
     <string name="hidden_image">隱藏圖</string>
     <string name="highlights">重點</string>
+    <string name="history_max_size">歷史記錄最大数量</string>
     <string name="homepage">主頁</string>
     <string name="horizontal">水平</string>
     <string name="horizontally">水平</string>
@@ -245,6 +246,7 @@
     <string name="swatch">顏色</string>
     <string name="synchronously_draw_image_and_ui">同步繪畫圖像與用戶介面</string>
     <string name="text">文本</string>
+    <string name="this_would_affect_size_of_memory_used">此項將影響記憶體使用量</string>
     <string name="threshold">閾値</string>
     <string name="timeline">時間線</string>
     <string name="tolerance">容許度</string>

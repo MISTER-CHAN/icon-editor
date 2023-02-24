@@ -11,6 +11,7 @@ class Settings {
     static final String KEY_ACT = "act"; // ARGB Color Type
     static final String KEY_CFU = "cfu"; // Check for Updates
     static final String KEY_FB = "fb"; // Filter Bitmap
+    static final String KEY_HMS = "hms"; // History Max Size
     static final String KEY_ITS = "its"; // Independent Translation and Scale
     static final String KEY_LOC = "loc"; // Locale
     static final String KEY_MT = "mt"; // Multithreaded
@@ -18,7 +19,6 @@ class Settings {
 
     private boolean argbColorType = false;
     private boolean independentTranslAndScale = false;
-    private boolean multithreaded = true;
     private boolean newLayerLevel = false;
     private int argbComponentRadix = 16;
     private MainActivity mainActivity;
@@ -52,6 +52,7 @@ class Settings {
         update(preferences, KEY_ACR);
         update(preferences, KEY_ACT);
         update(preferences, KEY_FB);
+        update(preferences, KEY_HMS);
         update(preferences, KEY_ITS);
         update(preferences, KEY_MT);
         update(preferences, KEY_NLL);
@@ -59,39 +60,29 @@ class Settings {
 
     public void update(SharedPreferences preferences, String key) {
         switch (key) {
-            case KEY_ACR:
+            case KEY_ACR -> {
                 try {
                     argbComponentRadix = Integer.parseUnsignedInt(preferences.getString(KEY_ACR, "16"));
                 } catch (NumberFormatException e) {
                     argbComponentRadix = 16;
                 }
                 argbComponentFormat = argbComponentRadix == 16 ? FORMAT_02X : FORMAT_D;
-                break;
-
-            case KEY_ACT:
+            }
+            case KEY_ACT -> {
                 argbColorType = Boolean.parseBoolean(preferences.getString(KEY_ACT, "false"));
                 mainActivity.setArgbColorType();
-                break;
-
-            case KEY_FB:
-                mainActivity.setFilterBitmap(preferences.getBoolean(KEY_FB, false));
-                break;
-
-            case KEY_ITS:
-                independentTranslAndScale = preferences.getBoolean(KEY_ITS, false);
-                break;
-
-            case KEY_LOC:
-                break;
-
-            case KEY_MT:
-                multithreaded = preferences.getBoolean(KEY_MT, true);
-                mainActivity.setRunnableRunner(multithreaded);
-                break;
-
-            case KEY_NLL:
-                newLayerLevel = Boolean.parseBoolean(preferences.getString(KEY_NLL, "false"));
-                break;
+            }
+            case KEY_FB -> mainActivity.setFilterBitmap(preferences.getBoolean(KEY_FB, false));
+            case KEY_HMS -> {
+                try {
+                    History.setMaxSize(Integer.parseUnsignedInt(preferences.getString(KEY_HMS, "50")));
+                } catch (NumberFormatException e) {
+                }
+            }
+            case KEY_ITS -> independentTranslAndScale = preferences.getBoolean(KEY_ITS, false);
+            case KEY_MT -> mainActivity.setRunnableRunner(preferences.getBoolean(KEY_MT, true));
+            case KEY_NLL ->
+                    newLayerLevel = Boolean.parseBoolean(preferences.getString(KEY_NLL, "false"));
         }
     }
 }

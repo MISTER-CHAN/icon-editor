@@ -5,9 +5,14 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.View;
+import android.view.inputmethod.EditorInfo;
+import android.widget.EditText;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.preference.EditTextPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
@@ -49,13 +54,18 @@ public class SettingsActivity extends AppCompatActivity {
             setPreferencesFromResource(R.xml.root_preferences, rootKey);
             final Context context = getContext();
             String versionName = null;
+            final EditTextPreference etpHms = findPreference(Settings.KEY_HMS);
 
             try {
                 versionName = context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionName;
             } catch (PackageManager.NameNotFoundException e) {
             }
-
             findPreference(Settings.KEY_CFU).setSummary(versionName);
+
+            etpHms.setOnBindEditTextListener(editText -> {
+                editText.setInputType(EditorInfo.TYPE_CLASS_NUMBER | EditorInfo.TYPE_NUMBER_FLAG_DECIMAL);
+                editText.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_END);
+            });
         }
 
         @Override

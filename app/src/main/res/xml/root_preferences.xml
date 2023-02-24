@@ -68,6 +68,13 @@
             app:summaryOff="@string/synchronously_draw_image_and_ui"
             app:summaryOn="@string/asynchronously_draw_image_and_ui"
             app:title="@string/draw_on_not_ui_thread" />
+
+        <EditTextPreference
+            app:defaultValue="50"
+            app:key="hms"
+            app:singleLineTitle="false"
+            app:summary="@string/this_would_affect_size_of_memory_used"
+            app:title="@string/history_max_size" />
     </PreferenceCategory>
 
     <PreferenceCategory app:title="@string/about">

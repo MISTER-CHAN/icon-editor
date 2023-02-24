@@ -74,6 +74,11 @@ class CmykColorPicker extends ColorPicker {
             tietMagenta.setInputType(EDITOR_TYPE_NUM);
             tietYellow.setInputType(EDITOR_TYPE_NUM);
             tietKey.setInputType(EDITOR_TYPE_NUM);
+        } else if (radix == 16) {
+            tietCyan.setKeyListener(KEY_LISTENER_HEX);
+            tietMagenta.setKeyListener(KEY_LISTENER_HEX);
+            tietYellow.setKeyListener(KEY_LISTENER_HEX);
+            tietKey.setKeyListener(KEY_LISTENER_HEX);
         }
 
         tilCyan.setHint(R.string.c);
