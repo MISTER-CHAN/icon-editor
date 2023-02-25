@@ -1042,7 +1042,8 @@ public class MainActivity extends AppCompatActivity {
             if (j <= 0) {
                 continue;
             }
-            if (from <= j && j <= to) {
+            if (from <= j && j <= to
+                    || from > to && (from <= j || j <= to)) {
                 if (tab.isBackground) {
                     firstFrameKept = tab;
                 }
