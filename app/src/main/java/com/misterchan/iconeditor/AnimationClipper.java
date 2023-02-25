@@ -68,7 +68,21 @@ class AnimationClipper {
         sbFrom = dialog.findViewById(R.id.sb_from);
         sbTo = dialog.findViewById(R.id.sb_to);
 
-        final OnSeekBarChangeListener l = (progress, stopped) -> iv.setImageBitmap(frames.get(progress));
+        final SeekBar.OnSeekBarChangeListener l = new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                iv.setImageBitmap(frames.get(progress));
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                iv.setImageBitmap(frames.get(seekBar.getProgress()));
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+            }
+        };
 
         sbFrom.setMax(lastPos);
         sbFrom.setOnSeekBarChangeListener(l);
