@@ -79,7 +79,7 @@ class AnimationClipper {
         OneShotPreDrawListener.add(flIv, () -> {
             final int w = flIv.getMeasuredWidth();
             final LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) flIv.getLayoutParams();
-            lp.height = w * width / height;
+            lp.height = w * height / width;
             flIv.setLayoutParams(lp);
         });
 
