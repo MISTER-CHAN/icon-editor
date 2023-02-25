@@ -1065,14 +1065,18 @@ public class MainActivity extends AppCompatActivity {
     private final CellGridManager.OnApplyListener onApplyCellGridListener = this::drawGridOnView;
 
     private final ImageSizeManager.OnApplyListener onApplyImageSizeListener = (width, height, stretch, filter) -> {
-        final Tab firstFrame = tab.getBackground().getFirstFrame();
-        for (int i = firstFrame.getBackgroundPosition(); i < tabs.size(); ++i) {
-            final Tab frame = tabs.get(i).getBackground();
-            if (frame.getFirstFrame() != firstFrame) {
-                break;
+        if (tab.isBackground) {
+            final Tab firstFrame = tab.getBackground().getFirstFrame();
+            for (int i = firstFrame.getBackgroundPosition(); i < tabs.size(); ++i) {
+                final Tab frame = tabs.get(i).getBackground();
+                if (frame.getFirstFrame() != firstFrame) {
+                    break;
+                }
+                i = frame.getBackgroundPosition();
+                resizeImage(frame, width, height, stretch, filter, 0, 0);
             }
-            i = frame.getBackgroundPosition();
-            resizeImage(frame, width, height, stretch, filter, 0, 0);
+        } else {
+            resizeImage(tab, width, height, stretch, filter, 0, 0);
         }
         drawBitmapOnView(true, true);
     };
