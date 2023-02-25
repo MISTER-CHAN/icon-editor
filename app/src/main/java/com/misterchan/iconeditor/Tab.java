@@ -330,16 +330,17 @@ class Tab {
     }
 
     public static Bitmap mergeLayers(final LayerTree tree, final Rect rect,
-                                     final Tab tabWithExclBm, final Bitmap bmToReplWith, final Tab extraTab) {
-        return mergeLayers(tree, rect, null, tabWithExcluBm, bmToReplWith, extraTab);
+                                     final Tab specialTab, final Bitmap bmOfSpecialTab, final Tab extraTab) {
+        return mergeLayers(tree, rect, null, specialTab, bmOfSpecialTab, extraTab);
     }
 
     /**
-     * @param tabWithExclBm The tab with excluded bitmap
-     * @param bmToReplWith The bitmap to replace with
+     * @param specialTab The layer whose bitmap is going to be replaced
+     * @param bmOfSpecialTab The bitmap to replace with
+     * @param extraTab The extra layer to draw over the special layer
      */
     public static Bitmap mergeLayers(final LayerTree tree, final Rect rect, final Bitmap background,
-                                     final Tab tabWithExclBm, final Bitmap bmToReplWith, final Tab extraTab) {
+                                     final Tab specialTab, final Bitmap bmOfSpecialTab, final Tab extraTab) {
         final LayerTree.Node backgroundNode = tree.getBackground();
         final Bitmap bitmap = Bitmap.createBitmap(rect.width(), rect.height(), Bitmap.Config.ARGB_8888);
         final Canvas canvas = new Canvas(bitmap);
@@ -370,7 +371,7 @@ class Tab {
                     final Rect intRel = new Rect(0, 0, intW, intH); // Intersection relative rectangle
 
                     Rect extraSrc = null, extraDst = null; // Intersection between intersection and extra layer
-                    if (tab == tabWithExclBm && extraTab != null) {
+                    if (tab == specialTab && extraTab != null) {
                         final int w = extraTab.bitmap.getWidth(), h = extraTab.bitmap.getHeight();
                         extraSrc = new Rect(0, 0, w, h);
                         final int sol = -extraTab.left - tab.left + rect.left, sot = -extraTab.top - tab.top + rect.top; // Origin location relative to extra layer
@@ -384,19 +385,19 @@ class Tab {
                     if (tab.filter == null) {
                         if (tab.drawBelow) {
                             canvas.drawBitmap(bitmap, 0.0f, 0.0f, paint);
-                        } else if (tab == tabWithExclBm) {
+                        } else if (tab == specialTab) {
                             if (extraDst != null) {
                                 final Bitmap bm = Bitmap.createBitmap(intW, intH, Bitmap.Config.ARGB_8888); // Intersection bitmap
                                 final Canvas cv = new Canvas(bm);
                                 try {
-                                    cv.drawBitmap(bmToReplWith, src, intRel, PAINT_SRC);
+                                    cv.drawBitmap(bmOfSpecialTab, src, intRel, PAINT_SRC);
                                     cv.drawBitmap(extraTab.bitmap, extraSrc, extraDst, PAINT_SRC_OVER);
                                     canvas.drawBitmap(bm, intRel, dst, paint);
                                 } finally {
                                     bm.recycle();
                                 }
                             } else {
-                                canvas.drawBitmap(bmToReplWith, src, dst, paint);
+                                canvas.drawBitmap(bmOfSpecialTab, src, dst, paint);
                             }
                         } else {
                             canvas.drawBitmap(tab.bitmap, src, dst, paint);
@@ -407,8 +408,8 @@ class Tab {
                         try {
                             if (tab.drawBelow) {
                                 cv.drawBitmap(bitmap, dst, intRel, PAINT_SRC);
-                            } else if (tab == tabWithExclBm) {
-                                cv.drawBitmap(bmToReplWith, src, intRel, PAINT_SRC);
+                            } else if (tab == specialTab) {
+                                cv.drawBitmap(bmOfSpecialTab, src, intRel, PAINT_SRC);
                                 if (extraDst != null) {
                                     cv.drawBitmap(extraTab.bitmap, extraSrc, extraDst, PAINT_SRC_OVER);
                                 }
@@ -424,7 +425,7 @@ class Tab {
                 } else {
                     final Bitmap branchBitmap = mergeLayers(children, rect,
                             !tab.drawBelow || node == backgroundNode ? null : bitmap,
-                            tabWithExclBm, bmToReplWith, extraTab);
+                            specialTab, bmOfSpecialTab, extraTab);
                     canvas.drawBitmap(branchBitmap, 0.0f, 0.0f, tab.paint);
                     branchBitmap.recycle();
                 }
