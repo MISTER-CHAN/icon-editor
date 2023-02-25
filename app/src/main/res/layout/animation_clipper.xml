@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <FrameLayout
+        android:id="@+id/fl_iv"
+        android:layout_width="match_parent"
+        android:layout_height="128dp"
+        android:layout_margin="8dp">
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="center"
+            android:src="@mipmap/chessboard" />
+
+        <ImageView
+            android:id="@+id/iv"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="fitCenter" />
+    </FrameLayout>
+
+    <GridLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:columnCount="2"
+        android:orientation="horizontal"
+        android:rowCount="2">
+
+        <TextView
+            android:layout_gravity="center_vertical|start"
+            android:layout_margin="8dp"
+            android:text="@string/from" />
+
+        <SeekBar
+            android:id="@+id/sb_from"
+            android:layout_gravity="center_vertical|fill_horizontal"
+            android:max="1"
+            android:progress="0" />
+
+        <TextView
+            android:layout_gravity="center_vertical|start"
+            android:layout_margin="8dp"
+            android:text="@string/to" />
+
+        <SeekBar
+            android:id="@+id/sb_to"
+            android:layout_gravity="center_vertical|fill_horizontal"
+            android:max="1"
+            android:progress="1" />
+    </GridLayout>
+</LinearLayout>

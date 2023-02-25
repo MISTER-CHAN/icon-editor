@@ -1,6 +1,7 @@
 package com.misterchan.iconeditor;
 
 import android.graphics.Bitmap;
+import android.graphics.BlendMode;
 import android.graphics.Canvas;
 import android.graphics.DrawFilter;
 import android.graphics.Paint;
@@ -10,12 +11,6 @@ import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 
 class Transformer {
-
-    private final static Paint PAINT = new Paint() {
-        {
-            setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC));
-        }
-    };
 
     private Bitmap bitmap;
     private double aspectRatio;

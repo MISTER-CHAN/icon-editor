@@ -32,6 +32,7 @@
     <string name="clear">清除</string>
     <string name="clear_destination">清除目标</string>
     <string name="clear_guides">清除参考线</string>
+    <string name="clip">剪辑</string>
     <string name="clone">克隆</string>
     <string name="clone_as_new">克隆为新图像</string>
     <string name="cloner">克隆笔</string>
@@ -104,6 +105,7 @@
     <string name="float_">浮点数</string>
     <string name="foreground_color">画笔颜色</string>
     <string name="frame">帧</string>
+    <string name="from">从</string>
     <string name="fuzziness">容差</string>
     <string name="general">一般</string>
     <string name="gradient">渐变</string>
@@ -249,6 +251,7 @@
     <string name="this_would_affect_size_of_memory_used">此项将影响内存使用量</string>
     <string name="threshold">阈值</string>
     <string name="timeline">时间线</string>
+    <string name="to">至</string>
     <string name="tolerance">容差</string>
     <string name="tool_options">工具选项</string>
     <string name="top">顶</string>
@@ -259,7 +262,6 @@
     <string name="two_seventy_degrees">270°</string>
     <string name="unified_transl_and_scale">统一各图层的可见子集</string>
     <string name="unify_delays">统一延迟</string>
-    <string name="unify_sizes">统一尺寸</string>
     <string name="untitled">无标题</string>
     <string name="version">版本（发布日期）</string>
     <string name="vertical">垂直</string>

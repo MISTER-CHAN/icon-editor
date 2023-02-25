@@ -10,10 +10,10 @@ import androidx.annotation.ColorInt;
 import androidx.appcompat.app.AlertDialog;
 
 abstract class ColorPicker {
-    protected static final KeyListener KEY_LISTENER_HEX = DigitsKeyListener.getInstance("0123456789ABCDEFabcdef");
     protected static final int EDITOR_TYPE_NUM = EditorInfo.TYPE_CLASS_NUMBER;
     protected static final int EDITOR_TYPE_NUM_DEC = EDITOR_TYPE_NUM | EditorInfo.TYPE_NUMBER_FLAG_DECIMAL;
     protected static final int EDITOR_TYPE_NUM_DEC_SIGNED = EDITOR_TYPE_NUM_DEC | EditorInfo.TYPE_NUMBER_FLAG_SIGNED;
+    protected static final KeyListener KEY_LISTENER_HEX = DigitsKeyListener.getInstance("0123456789ABCDEFabcdef");
 
     // Positions of first view and last view in alpha row
     private static final int GL_POS_ALPHA_BEGIN = 0, GL_POS_ALPHA_END = 2;

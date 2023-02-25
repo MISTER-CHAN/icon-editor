@@ -156,11 +156,11 @@ class BitmapUtil {
         final int[] srcPixels = new int[area], dstPixels = src == dst ? srcPixels : new int[area];
         src.getPixels(srcPixels, 0, w, rect.left, rect.top, w, h);
 //      final long a = System.currentTimeMillis();
-        final Queue<Point> pointsToBeSet = new LinkedList<>();
+        final Queue<Point> pointsToSet = new LinkedList<>();
         final boolean[] havePointsBeenSet = new boolean[area];
-        pointsToBeSet.offer(new Point(x, y));
+        pointsToSet.offer(new Point(x, y));
         Point point;
-        while ((point = pointsToBeSet.poll()) != null) {
+        while ((point = pointsToSet.poll()) != null) {
             final int i = (point.y - rect.top) * w + (point.x - rect.left);
             if (havePointsBeenSet[i]) {
                 continue;
@@ -188,13 +188,13 @@ class BitmapUtil {
                 }
                 final int xn = point.x - 1, xp = point.x + 1, yn = point.y - 1, yp = point.y + 1; // n - negative, p - positive
                 if (rect.left <= xn && !havePointsBeenSet[i - 1])
-                    pointsToBeSet.offer(new Point(xn, point.y));
+                    pointsToSet.offer(new Point(xn, point.y));
                 if (xp < rect.right && !havePointsBeenSet[i + 1])
-                    pointsToBeSet.offer(new Point(xp, point.y));
+                    pointsToSet.offer(new Point(xp, point.y));
                 if (rect.top <= yn && !havePointsBeenSet[i - w])
-                    pointsToBeSet.offer(new Point(point.x, yn));
+                    pointsToSet.offer(new Point(point.x, yn));
                 if (yp < rect.bottom && !havePointsBeenSet[i + w])
-                    pointsToBeSet.offer(new Point(point.x, yp));
+                    pointsToSet.offer(new Point(point.x, yp));
             }
         }
 //      final long b = System.currentTimeMillis();

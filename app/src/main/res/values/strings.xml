@@ -37,6 +37,7 @@
     <string name="clear">Clear</string>
     <string name="clear_destination">Clear Destination</string>
     <string name="clear_guides">Clear Guides</string>
+    <string name="clip">Clip</string>
     <string name="clone">Clone</string>
     <string name="clone_as_new">Clone as New</string>
     <string name="cloner">Cloner</string>
@@ -113,6 +114,7 @@
     <string name="foreground_color">Foreground Color</string>
     <string name="forty_eight" translatable="false">48</string>
     <string name="frame">Frame</string>
+    <string name="from">From</string>
     <string name="fuzziness">Fuzziness</string>
     <string name="g" translatable="false">G</string>
     <string name="general">General</string>
@@ -277,6 +279,7 @@
     <string name="this_would_affect_size_of_memory_used">This would affect the size of memory used</string>
     <string name="threshold">Threshold</string>
     <string name="timeline">Timeline</string>
+    <string name="to">To</string>
     <string name="tolerance">Tolerance</string>
     <string name="tool_options">Tool Options</string>
     <string name="top">Top</string>
@@ -288,7 +291,6 @@
     <string name="undo" translatable="false">↶</string>
     <string name="unified_transl_and_scale">Unified Visible Subset of Each Layer</string>
     <string name="unify_delays">Unify Delays</string>
-    <string name="unify_sizes">Unify Sizes</string>
     <string name="untitled">Untitled</string>
     <string name="v" translatable="false">V</string>
     <string name="version">Version (Release Date)</string>

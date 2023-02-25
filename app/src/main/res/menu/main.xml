@@ -514,16 +514,16 @@
                 android:title="@string/duplicate" />
 
             <item
-                android:id="@+id/i_frame_unify_sizes"
-                android:title="@string/unify_sizes" />
-
-            <item
                 android:id="@+id/i_frame_delay"
                 android:title="@string/delay" />
 
             <item
                 android:id="@+id/i_frame_unify_delays"
                 android:title="@string/unify_delays" />
+
+            <item
+                android:id="@+id/i_frame_clip"
+                android:title="@string/clip" />
 
             <item
                 android:id="@+id/i_frame_delete"
