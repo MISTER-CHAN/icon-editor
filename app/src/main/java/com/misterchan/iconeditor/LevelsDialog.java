@@ -120,7 +120,7 @@ class LevelsDialog {
         sbOutputHighlights = dialog.findViewById(R.id.sb_output_highlights);
         sbOutputShadows = dialog.findViewById(R.id.sb_output_shadows);
 
-        final OnSeekBarChangeListener l = (progress, stopped) -> update(stopped);
+        final SeekBar.OnSeekBarChangeListener l = (OnSeekBarChangeListener) (progress, stopped) -> update(stopped);
 
         sbInputHighlights.setOnSeekBarChangeListener(l);
         sbInputShadows.setOnSeekBarChangeListener(l);
