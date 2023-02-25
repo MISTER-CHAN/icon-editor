@@ -1,13 +1,7 @@
 package com.misterchan.iconeditor;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.view.Gravity;
-import android.view.Window;
-import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -18,7 +12,6 @@ import androidx.core.view.OneShotPreDrawListener;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 
 class AnimationClipper {
 
