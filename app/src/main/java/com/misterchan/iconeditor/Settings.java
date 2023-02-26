@@ -69,7 +69,7 @@ class Settings {
                 argbComponentFormat = argbComponentRadix == 16 ? FORMAT_02X : FORMAT_D;
             }
             case KEY_ACT -> {
-                argbColorType = Boolean.parseBoolean(preferences.getString(KEY_ACT, "false"));
+                argbColorType = "l".equals(preferences.getString(KEY_ACT, "i"));
                 mainActivity.setArgbColorType();
             }
             case KEY_FB -> mainActivity.setFilterBitmap(preferences.getBoolean(KEY_FB, false));
@@ -81,8 +81,7 @@ class Settings {
             }
             case KEY_ITS -> independentTranslAndScale = preferences.getBoolean(KEY_ITS, false);
             case KEY_MT -> mainActivity.setRunnableRunner(preferences.getBoolean(KEY_MT, true));
-            case KEY_NLL ->
-                    newLayerLevel = Boolean.parseBoolean(preferences.getString(KEY_NLL, "false"));
+            case KEY_NLL -> newLayerLevel = "sel".equals(preferences.getString(KEY_NLL, "top"));
         }
     }
 }

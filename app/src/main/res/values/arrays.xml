@@ -23,6 +23,11 @@
         <item>@string/long_integer</item>
     </string-array>
 
+    <string-array name="type_values">
+        <item>i</item>
+        <item>l</item>
+    </string-array>
+
     <!-- File Types -->
     <string-array name="file_types">
         <item>.png</item>
@@ -42,7 +47,12 @@
     <!-- Level of New Layer Preference -->
     <string-array name="nll_entries">
         <item>@string/top_level</item>
-        <item>@string/selected_layers_level</item>
+        <item>@string/selected_layers</item>
+    </string-array>
+
+    <string-array name="nll_values">
+        <item>top</item>
+        <item>sel</item>
     </string-array>
 
     <!-- Locales -->

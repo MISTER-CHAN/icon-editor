@@ -40,12 +40,12 @@
     <string name="close">关闭</string>
     <string name="color_balance">色彩平衡</string>
     <string name="color_filter">颜色滤镜</string>
-    <string name="color_int_component_radix">颜色整数组件进位制</string>
     <string name="color_picker">拾色器</string>
     <string name="color_range">颜色范围</string>
     <string name="color_replace">颜色替换</string>
     <string name="color_space">色彩空间</string>
     <string name="color_type">颜色类型</string>
+    <string name="component_radix">组件进位制</string>
     <string name="config">配置</string>
     <string name="contiguous">连续</string>
     <string name="contrast">对比度</string>
@@ -212,7 +212,7 @@
     <string name="scale_to_white">压缩至白色</string>
     <string name="select">选择</string>
     <string name="select_all">全选</string>
-    <string name="selected_layers_level">选中图层阶层</string>
+    <string name="selected_layers">选中图层阶层</string>
     <string name="send_to_back">置底</string>
     <string name="set">设置</string>
     <string name="settings">设置</string>

@@ -40,12 +40,12 @@
     <string name="close">關閉</string>
     <string name="color_balance">色彩平衡</string>
     <string name="color_filter">顏色濾鏡</string>
-    <string name="color_int_component_radix">顏色整數元件進位制</string>
     <string name="color_picker">拾色器</string>
     <string name="color_range">顏色範圍</string>
     <string name="color_replace">顏色取代</string>
     <string name="color_space">色彩空間</string>
     <string name="color_type">顏色類型</string>
+    <string name="component_radix">元件進位制</string>
     <string name="config">配置</string>
     <string name="contiguous">連續</string>
     <string name="contrast">對比度</string>
@@ -212,7 +212,7 @@
     <string name="scale_to_black">壓縮至黑色</string>
     <string name="select">選取</string>
     <string name="select_all">全選</string>
-    <string name="selected_layers_level">選中圖層階層</string>
+    <string name="selected_layers">選中圖層階層</string>
     <string name="send_to_back">置底</string>
     <string name="set">設定</string>
     <string name="settings">設定</string>

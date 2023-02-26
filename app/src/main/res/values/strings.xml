@@ -45,12 +45,12 @@
     <string name="close">Close</string>
     <string name="color_balance">Color Balance</string>
     <string name="color_filter">Color Filter</string>
-    <string name="color_int_component_radix">Color Integer Component Radix</string>
     <string name="color_picker">Color Picker</string>
     <string name="color_range">Color Range</string>
     <string name="color_replace">Color Replace</string>
     <string name="color_space">Color Space</string>
     <string name="color_type">Color Type</string>
+    <string name="component_radix">Component Radix</string>
     <string name="config">Config</string>
     <string name="contiguous">Contiguous</string>
     <string name="contrast">Contrast</string>
@@ -107,7 +107,7 @@
     <string name="fill">Fill</string>
     <string name="filter_noun">Filter</string>
     <string name="filter_verb">Filter</string>
-    <string name="filter_displayed_image_after_zooming_out">Filter the Displayed Image after Zooming out</string>
+    <string name="filter_displayed_image_after_zooming_out">Filter the displayed image after zooming out</string>
     <string name="filter_image">Filter Image</string>
     <string name="filters">Filters</string>
     <string name="fit_on_screen">Fit on Screen</string>
@@ -139,7 +139,7 @@
     <string name="image">Image</string>
     <string name="image_size">Image Size</string>
     <string name="independent_layer">Independent Layer</string>
-    <string name="independent_transl_and_scale">Independent Visible Subset of Each Layer</string>
+    <string name="independent_transl_and_scale">Independent canvas position of each layer</string>
     <string name="information">Information</string>
     <string name="input">Input</string>
     <string name="integer">Integer</string>
@@ -235,7 +235,7 @@
     <string name="scale_to_black">Scale to Black</string>
     <string name="select">Select</string>
     <string name="select_all">Select All</string>
-    <string name="selected_layers_level">Selected Layer\'s Level</string>
+    <string name="selected_layers">Selected Layer\'s</string>
     <string name="send_to_back">Send to Back</string>
     <string name="set">Set</string>
     <string name="settings">Settings</string>
@@ -292,7 +292,7 @@
     <string name="tutorial_merge_as_hidden">Tutorial</string>
     <string name="two_seventy_degrees">270°</string>
     <string name="undo" translatable="false">↶</string>
-    <string name="unified_transl_and_scale">Unified Visible Subset of Each Layer</string>
+    <string name="unified_transl_and_scale">Unified canvas position of each layer</string>
     <string name="unify_delays">Unify Delays</string>
     <string name="untitled">Untitled</string>
     <string name="v" translatable="false">V</string>

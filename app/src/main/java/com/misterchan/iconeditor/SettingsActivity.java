@@ -2,6 +2,7 @@ package com.misterchan.iconeditor;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -14,6 +15,7 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.EditTextPreference;
+import androidx.preference.ListPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
@@ -50,18 +52,29 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     public static class SettingsFragment extends PreferenceFragmentCompat {
+        private ListPreference lpAcr;
+
         @Override
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
             setPreferencesFromResource(R.xml.root_preferences, rootKey);
             final Context context = getContext();
             String versionName = null;
             final EditTextPreference etpHms = findPreference(Settings.KEY_HMS);
+            lpAcr = findPreference(Settings.KEY_ACR);
+            final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+
+            lpAcr.setEnabled(!"l".equals(preferences.getString(Settings.KEY_ACT, "i")));
 
             try {
                 versionName = context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionName;
             } catch (PackageManager.NameNotFoundException e) {
             }
             findPreference(Settings.KEY_CFU).setSummary(versionName);
+
+            findPreference(Settings.KEY_ACT).setOnPreferenceChangeListener((preference, newValue) -> {
+                lpAcr.setEnabled(!"l".equals(newValue));
+                return true;
+            });
 
             etpHms.setOnBindEditTextListener(editText -> {
                 editText.setInputType(EditorInfo.TYPE_CLASS_NUMBER | EditorInfo.TYPE_NUMBER_FLAG_DECIMAL);
