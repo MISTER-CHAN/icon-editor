@@ -75,6 +75,7 @@
     <string name="delete_invisible">删除不可见</string>
     <string name="deselect">不选择</string>
     <string name="dither">仿色</string>
+    <string name="done">已完成</string>
     <string name="draw">绘画</string>
     <string name="draw_below">画底下图层</string>
     <string name="draw_color">画颜色</string>
@@ -248,6 +249,7 @@
     <string name="swatch">颜色</string>
     <string name="synchronously_draw_image_and_ui">同步绘画图像与用户界面</string>
     <string name="text">文本</string>
+    <string name="there_are_frames_invalid_which_are">有 %d 帧无效，分别为\n%s\n\n可能原因为\n- 尺寸异于首帧\n- 色彩空间不为 sRGB</string>
     <string name="this_would_affect_size_of_memory_used">此项将影响内存使用量</string>
     <string name="threshold">阈值</string>
     <string name="timeline">时间线</string>

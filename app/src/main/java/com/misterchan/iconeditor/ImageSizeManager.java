@@ -12,8 +12,12 @@ import com.google.android.material.textfield.TextInputEditText;
 
 class ImageSizeManager {
 
+    public enum Transform {
+        STRETCH, STRETCH_FILTER, CROP;
+    }
+
     public interface OnApplyListener {
-        void onApply(int width, int height, boolean stretch, boolean filter);
+        void onApply(int width, int height, Transform transform);
     }
 
     private final AlertDialog.Builder builder;
@@ -43,8 +47,10 @@ class ImageSizeManager {
             try {
                 int width = Integer.parseUnsignedInt(tietWidth.getText().toString());
                 int height = Integer.parseUnsignedInt(tietHeight.getText().toString());
-                boolean stretch = rbStretch.isChecked();
-                this.listener.onApply(width, height, stretch, cbFilter.isChecked());
+                final Transform transform = rbStretch.isChecked()
+                        ? cbFilter.isChecked() ? Transform.STRETCH_FILTER : Transform.STRETCH
+                        : Transform.CROP;
+                this.listener.onApply(width, height, transform);
             } catch (NumberFormatException e) {
             }
         });

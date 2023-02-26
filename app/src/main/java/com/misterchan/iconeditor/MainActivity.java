@@ -87,7 +87,6 @@ import java.io.InputStream;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Queue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -852,7 +851,7 @@ public class MainActivity extends AppCompatActivity {
             final Tab t = tabs.get(position);
             MainActivity.this.tab = t;
             Tab.showIcons(tabs, t);
-            final Tab firstFrame = t.getBackground().getFirstFrame();
+            final Tab background = t.getBackground(), firstFrame = background.getFirstFrame();
             final boolean areInDiffProj = firstFrame != oldFirstFrame;
             oldFirstFrame = firstFrame;
             bitmap = t.bitmap;
@@ -864,8 +863,8 @@ public class MainActivity extends AppCompatActivity {
                 translationY = t.translationY;
                 scale = t.scale;
             }
-            backgroundScaledW = toScaled(firstFrame.bitmap.getWidth());
-            backgroundScaledH = toScaled(firstFrame.bitmap.getHeight());
+            backgroundScaledW = toScaled(background.bitmap.getWidth());
+            backgroundScaledH = toScaled(background.bitmap.getHeight());
 
             if (transformer != null) {
                 recycleTransformer();
@@ -1049,10 +1048,8 @@ public class MainActivity extends AppCompatActivity {
                 }
             } else {
                 closeTab(i, false);
-                if (tab.isBackground) {
-                    if (tab.isFirstFrame && firstFrameKept != null) {
-                        firstFrameKept.isFirstFrame = true;
-                    }
+                if (tab.isFirstFrame && firstFrameKept != null) {
+                    firstFrameKept.isFirstFrame = true;
                 }
             }
         }
@@ -1064,7 +1061,7 @@ public class MainActivity extends AppCompatActivity {
 
     private final CellGridManager.OnApplyListener onApplyCellGridListener = this::drawGridOnView;
 
-    private final ImageSizeManager.OnApplyListener onApplyImageSizeListener = (width, height, stretch, filter) -> {
+    private final ImageSizeManager.OnApplyListener onApplyImageSizeListener = (width, height, transform) -> {
         if (tab.isBackground) {
             final Tab firstFrame = tab.getBackground().getFirstFrame();
             for (int i = firstFrame.getBackgroundPosition(); i < tabs.size(); ++i) {
@@ -1073,10 +1070,10 @@ public class MainActivity extends AppCompatActivity {
                     break;
                 }
                 i = frame.getBackgroundPosition();
-                resizeImage(frame, width, height, stretch, filter, 0, 0);
+                resizeImage(frame, width, height, transform, 0, 0);
             }
         } else {
-            resizeImage(tab, width, height, stretch, filter, 0, 0);
+            resizeImage(tab, width, height, transform, 0, 0);
         }
         drawBitmapOnView(true, true);
     };
@@ -2652,11 +2649,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void closeTab() {
-        closeTab(tabLayout.getSelectedTabPosition());
-    }
-
-    private void closeTab(int position) {
-        closeTab(position, true);
+        if (tabs.size() > 1) {
+            closeTab(tabLayout.getSelectedTabPosition(), true);
+        } else {
+            closeTab(0, false);
+            addDefaultTab();
+        }
     }
 
     private void closeTab(int position, boolean select) {
@@ -2670,25 +2668,38 @@ public class MainActivity extends AppCompatActivity {
         tab.bitmap.recycle();
         tab.history.clear();
         if (select) {
+            final Tab background = tab.getBackground();
             final Tab above = Tab.getAbove(tabs, position), below = Tab.getBelow(tabs, position);
             tabs.remove(position); // Remove tab
-            if (above != null && tab.isBackground) {
-                above.inheritPropertiesFrom(tab);
+            boolean isFirstOfMultipleFrames = false;
+            if (background.bitmap.isRecycled()) {
+                if (above != null) {
+                    above.inheritPropertiesFrom(background);
+                } else if (background.isFirstFrame && position < tabs.size()) {
+                    final Tab nextFrame = tabs.get(position).getBackground();
+                    if (!nextFrame.isFirstFrame) {
+                        nextFrame.isFirstFrame = true;
+                        isFirstOfMultipleFrames = true;
+                    }
+                }
             }
             Tab.distinguishProjects(tabs);
-            final int newPos = tabLayout.getSelectedTabPosition();
+            final int selectedPos = tabLayout.getSelectedTabPosition();
             if (above != null) {
                 computeLayerTree(above);
-                onTabSelectedListener.onTabSelected(tabLayout.getTabAt(newPos));
-            } else if (/* above == null && */ below == null) {
-                onTabSelectedListener.onTabSelected(tabLayout.getTabAt(newPos));
-            } else /* if (above == null && below != null) */ {
+                onTabSelectedListener.onTabSelected(tabLayout.getTabAt(selectedPos));
+            } else if (below != null) {
                 computeLayerTree(below);
                 tabLayout.selectTab(tabLayout.getTabAt(position));
+            } else if (/* have closed the entire frame and */ isFirstOfMultipleFrames) {
+                tabLayout.selectTab(tabLayout.getTabAt(position));
+            } else /* if have closed the entire project */ {
+                onTabSelectedListener.onTabSelected(tabLayout.getTabAt(selectedPos));
             }
         } else {
             tabs.remove(position); // Remove tab
         }
+
     }
 
     private void computeLayerTree() {
@@ -3873,16 +3884,23 @@ public class MainActivity extends AppCompatActivity {
                 }
                 drawFloatingLayers();
                 final int width = selection.width(), height = selection.height();
-                final Tab firstFrame = tab.getBackground().getFirstFrame();
-                for (int i = firstFrame.getBackgroundPosition(); i < tabs.size(); ++i) {
-                    final Tab frame = tabs.get(i).getBackground();
-                    if (frame.getFirstFrame() != firstFrame) {
-                        break;
+                if (tab.isBackground) {
+                    final Tab firstFrame = tab.getFirstFrame();
+                    for (int i = firstFrame.getBackgroundPosition(); i < tabs.size(); ++i) {
+                        final Tab frame = tabs.get(i).getBackground();
+                        if (frame.getFirstFrame() != firstFrame) {
+                            break;
+                        }
+                        i = frame.getBackgroundPosition();
+                        final Bitmap bm = Bitmap.createBitmap(frame.bitmap, selection.left, selection.top, width, height);
+                        resizeImage(frame, width, height, null, selection.left, selection.top);
+                        new Canvas(frame.bitmap).drawBitmap(bm, 0.0f, 0.0f, PAINT_BITMAP);
+                        bm.recycle();
                     }
-                    i = frame.getBackgroundPosition();
-                    final Bitmap bm = Bitmap.createBitmap(frame.bitmap, selection.left, selection.top, width, height);
-                    resizeImage(frame, width, height, false, false, selection.left, selection.top);
-                    canvas.drawBitmap(bm, 0.0f, 0.0f, PAINT_SRC);
+                } else {
+                    final Bitmap bm = Bitmap.createBitmap(bitmap, selection.left, selection.top, width, height);
+                    resizeImage(tab, width, height, null, selection.left, selection.top);
+                    canvas.drawBitmap(bm, 0.0f, 0.0f, PAINT_BITMAP);
                     bm.recycle();
                 }
                 drawBitmapOnView(true, true);
@@ -3973,12 +3991,7 @@ public class MainActivity extends AppCompatActivity {
                         closeTab(i, false);
                     }
                 }
-                if (tabs.size() > 1) {
-                    closeTab();
-                } else {
-                    closeTab(0, false);
-                    addDefaultTab();
-                }
+                closeTab();
             }
             case R.id.i_file_export -> export();
             case R.id.i_file_new -> {
@@ -4170,31 +4183,18 @@ public class MainActivity extends AppCompatActivity {
                         .show(frame.delay, "ms");
             }
             case R.id.i_frame_delete -> {
-                final int last = tabs.size() - 1;
                 final Tab frame = tab.getBackground();
-                final int pos = frame.getBackgroundPosition();
-                boolean isFirstOfMultipleFrames = false; // Do we need to select next frame
-                if (frame.isFirstFrame && pos < last) {
-                    final Tab nextFrame = tabs.get(pos + 1).getBackground();
-                    if (!nextFrame.isFirstFrame) {
-                        isFirstOfMultipleFrames = true;
-                        nextFrame.isFirstFrame = true;
-                    }
-                }
-                int i = pos;
+                int i = frame.getBackgroundPosition();
                 for (; i >= 0; --i) {
                     final Tab tab = tabs.get(i);
                     if (tab.getBackground() != frame) {
                         break;
                     }
-                    closeTab(i, false);
+                    if (tab != this.tab) {
+                        closeTab(i, false);
+                    }
                 }
-                if (tabs.size() > 0) {
-                    Tab.distinguishProjects(tabs);
-                    selectTab(isFirstOfMultipleFrames ? i + 1 : i);
-                } else {
-                    addDefaultTab();
-                }
+                closeTab();
             }
             case R.id.i_frame_duplicate -> {
                 final Tab background = tab.getBackground();
@@ -4324,33 +4324,29 @@ public class MainActivity extends AppCompatActivity {
                 miLayerFilterSet.setEnabled(checked);
                 drawBitmapOnView(true);
             }
-            case R.id.i_layer_delete -> {
-                if (tabs.size() > 1) {
-                    closeTab();
-                } else {
-                    closeTab(0, false);
-                    addDefaultTab();
-                }
-            }
+            case R.id.i_layer_delete -> closeTab();
             case R.id.i_layer_delete_invisible -> {
                 final Tab background = tab.getBackground();
+                Tab newBackground = background.visible ? background : null;
                 for (int i = tab.getBackgroundPosition(); i >= 0; --i) {
                     final Tab t = tabs.get(i);
-                    if (t.getBackground() != background) {
+                    if (t.isBackground && t != background) {
                         break;
                     }
-                    if (t != tab && !t.visible) {
-                        closeTab(i, false);
+                    if (!t.visible) {
+                        if (t != tab) {
+                            closeTab(i, false);
+                        }
+                    } else if (newBackground == null && !t.isBackground) {
+                        newBackground = t;
                     }
                 }
                 if (!tab.visible) {
-                    if (tabs.size() > 1) {
-                        closeTab();
-                    } else {
-                        closeTab(0, false);
-                        addDefaultTab();
-                    }
+                    closeTab();
                 } else {
+                    if (newBackground != background && newBackground != null) {
+                        newBackground.inheritPropertiesFrom(background);
+                    }
                     Tab.distinguishProjects(tabs);
                     computeLayerTree();
                     onTabSelectedListener.onTabSelected(tabLayout.getTabAt(tabLayout.getSelectedTabPosition()));
@@ -4795,20 +4791,34 @@ public class MainActivity extends AppCompatActivity {
         transformer = null;
     }
 
-    private void resizeImage(Tab tab, int width, int height, boolean stretch, boolean filter, int offsetX, int offsetY) {
+    private void resizeImage(Tab tab, int width, int height,
+                             ImageSizeManager.Transform transform, int offsetX, int offsetY) {
         final Bitmap bm = Bitmap.createBitmap(width, height,
                 tab.bitmap.getConfig(), tab.bitmap.hasAlpha(), tab.bitmap.getColorSpace());
         final Canvas cv = new Canvas(bm);
-        if (stretch) {
-            cv.drawBitmap(tab.bitmap,
-                    new Rect(0, 0, tab.bitmap.getWidth(), tab.bitmap.getHeight()),
-                    new RectF(0.0f, 0.0f, width, height),
-                    filter ? PAINT_SRC : PAINT_BITMAP);
-        } else {
-            cv.drawBitmap(tab.bitmap, 0.0f, 0.0f, PAINT_BITMAP);
+        if (transform != null) {
+            switch (transform) {
+                case STRETCH -> cv.drawBitmap(tab.bitmap,
+                        new Rect(0, 0, tab.bitmap.getWidth(), tab.bitmap.getHeight()),
+                        new RectF(0.0f, 0.0f, width, height),
+                        PAINT_BITMAP);
+                case STRETCH_FILTER -> cv.drawBitmap(tab.bitmap,
+                        new Rect(0, 0, tab.bitmap.getWidth(), tab.bitmap.getHeight()),
+                        new RectF(0.0f, 0.0f, width, height),
+                        PAINT_SRC);
+                case CROP -> cv.drawBitmap(tab.bitmap, 0.0f, 0.0f, PAINT_BITMAP);
+            }
         }
         if (tab.isBackground) {
-            for (int i = tabLayout.getSelectedTabPosition() - 1; i >= 0; --i) {
+            int i;
+            for (i = 0; i < tabs.size(); ++i) {
+                final Tab t = tabs.get(i).getBackground();
+                i = t.getBackgroundPosition();
+                if (t == tab) {
+                    break;
+                }
+            }
+            for (--i; i >= 0; --i) {
                 final Tab t = tabs.get(i);
                 if (t.isBackground) {
                     break;
@@ -4822,7 +4832,7 @@ public class MainActivity extends AppCompatActivity {
         tab.bitmap = bm;
         addToHistory(tab);
 
-        if (tab == this.tab) {
+        if (tab == MainActivity.this.tab) {
             bitmap = bm;
             canvas = cv;
             calculateBackgroundSizeOnView();
@@ -4938,6 +4948,7 @@ public class MainActivity extends AppCompatActivity {
             final ProgressBar pb = dialog.findViewById(R.id.progress_bar);
             pb.setMax(size - 1);
             new Thread(() -> {
+                final List<String> invalidFrames = new LinkedList<>();
                 for (int i = tab.getBackgroundPosition(); i < size; ++i) {
                     final Tab t = tabs.get(i).getBackground();
                     i = t.getBackgroundPosition();
@@ -4949,13 +4960,29 @@ public class MainActivity extends AppCompatActivity {
                         final Bitmap merged = Tab.mergeLayers(t.layerTree);
                         gifEncoder.encodeFrame(merged, t.delay);
                         merged.recycle();
+                    } else {
+                        invalidFrames.add(String.valueOf(i));
                     }
                     final int progress = i;
                     runOnUiThread(() -> pb.setProgress(progress));
                 }
                 gifEncoder.close();
-                runOnUiThread(dialog::dismiss);
                 MediaScannerConnection.scanFile(this, new String[]{file.toString()}, null, null);
+                runOnUiThread(() -> {
+                    dialog.dismiss();
+                    if (invalidFrames.isEmpty()) {
+                        Toast.makeText(this, R.string.done, Toast.LENGTH_SHORT).show();
+                    } else {
+                        new AlertDialog.Builder(this)
+                                .setTitle(R.string.done)
+                                .setMessage(String.format(
+                                        getString(R.string.there_are_frames_invalid_which_are),
+                                        invalidFrames.size(),
+                                        String.join(", ", invalidFrames)))
+                                .setPositiveButton(R.string.ok, null)
+                                .show();
+                    }
+                });
             }).start();
         }
 

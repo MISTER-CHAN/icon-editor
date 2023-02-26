@@ -82,6 +82,7 @@
     <string name="delete_invisible">Delete Invisible</string>
     <string name="deselect">Deselect</string>
     <string name="dither">Dither</string>
+    <string name="done">Done</string>
     <string name="draw">Draw</string>
     <string name="draw_below">Draw Layers below</string>
     <string name="draw_color">Draw Color</string>
@@ -276,6 +277,7 @@
     <string name="swatch">Swatch</string>
     <string name="synchronously_draw_image_and_ui">Synchronously draw image and U.I.</string>
     <string name="text">Text</string>
+    <string name="there_are_frames_invalid_which_are">There are %d frames invalid which are\n%s\n\nPossible reasons are\n- The sizes differ from the first frame\'s\n- The color spaces are not sRGB</string>
     <string name="this_would_affect_size_of_memory_used">This would affect the size of memory used</string>
     <string name="threshold">Threshold</string>
     <string name="timeline">Timeline</string>
