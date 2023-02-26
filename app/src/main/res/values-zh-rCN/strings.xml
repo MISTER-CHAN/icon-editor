@@ -28,6 +28,7 @@
     <string name="channel_lighting">通道照明</string>
     <string name="channel_mixer">通道混合器</string>
     <string name="check_for_updates">检査更新</string>
+    <string name="check_for_updates_in_system_browser">以系统浏览器检査更新</string>
     <string name="circle">圆</string>
     <string name="clear">清除</string>
     <string name="clear_destination">清除目标</string>
@@ -249,7 +250,7 @@
     <string name="swatch">颜色</string>
     <string name="synchronously_draw_image_and_ui">同步绘画图像与用户界面</string>
     <string name="text">文本</string>
-    <string name="there_are_frames_invalid_which_are">有 %d 帧无效，分别为\n%s\n\n可能原因为\n- 尺寸异于首帧\n- 色彩空间不为 sRGB</string>
+    <string name="there_are_frames_invalid_which_are">有 %d 帧无效，其分页绝对位置为\n%s\n\n可能原因为\n- 尺寸异于首帧\n- 配置为非 ARGB_8888</string>
     <string name="this_would_affect_size_of_memory_used">此项将影响内存使用量</string>
     <string name="threshold">阈值</string>
     <string name="timeline">时间线</string>

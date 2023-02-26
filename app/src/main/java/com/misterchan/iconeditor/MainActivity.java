@@ -2687,19 +2687,18 @@ public class MainActivity extends AppCompatActivity {
             final int selectedPos = tabLayout.getSelectedTabPosition();
             if (above != null) {
                 computeLayerTree(above);
-                onTabSelectedListener.onTabSelected(tabLayout.getTabAt(selectedPos));
+                    onTabSelectedListener.onTabSelected(tabLayout.getTabAt(selectedPos));
             } else if (below != null) {
                 computeLayerTree(below);
-                tabLayout.selectTab(tabLayout.getTabAt(position));
+                selectTab(position);
             } else if (/* have closed the entire frame and */ isFirstOfMultipleFrames) {
-                tabLayout.selectTab(tabLayout.getTabAt(position));
+                selectTab(position);
             } else /* if have closed the entire project */ {
                 onTabSelectedListener.onTabSelected(tabLayout.getTabAt(selectedPos));
             }
         } else {
             tabs.remove(position); // Remove tab
         }
-
     }
 
     private void computeLayerTree() {
@@ -4956,7 +4955,7 @@ public class MainActivity extends AppCompatActivity {
                         break;
                     }
                     if (t.bitmap.getWidth() == width && t.bitmap.getHeight() == height
-                            && t.bitmap.getColorSpace().getId() == ColorSpace.Named.SRGB.ordinal()) {
+                            && t.bitmap.getConfig() == Bitmap.Config.ARGB_8888) {
                         final Bitmap merged = Tab.mergeLayers(t.layerTree);
                         gifEncoder.encodeFrame(merged, t.delay);
                         merged.recycle();

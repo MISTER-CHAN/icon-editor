@@ -33,6 +33,7 @@
     <string name="channel_lighting">Channel Lighting</string>
     <string name="channel_mixer">Channel Mixer</string>
     <string name="check_for_updates">Check for Updates</string>
+    <string name="check_for_updates_in_system_browser">Check for updates in system browser</string>
     <string name="circle">Circle</string>
     <string name="clear">Clear</string>
     <string name="clear_destination">Clear Destination</string>
@@ -277,7 +278,7 @@
     <string name="swatch">Swatch</string>
     <string name="synchronously_draw_image_and_ui">Synchronously draw image and U.I.</string>
     <string name="text">Text</string>
-    <string name="there_are_frames_invalid_which_are">There are %d frames invalid which are\n%s\n\nPossible reasons are\n- The sizes differ from the first frame\'s\n- The color spaces are not sRGB</string>
+    <string name="there_are_frames_invalid_which_are">There are %d frames invalid whose tab absolute positions are\n%s\n\nPossible reasons are\n- The sizes differ from the first frame\'s\n- The configs are not ARGB_8888</string>
     <string name="this_would_affect_size_of_memory_used">This would affect the size of memory used</string>
     <string name="threshold">Threshold</string>
     <string name="timeline">Timeline</string>

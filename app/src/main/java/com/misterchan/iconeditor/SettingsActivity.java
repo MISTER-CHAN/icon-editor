@@ -11,6 +11,7 @@ import android.widget.EditText;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.EditTextPreference;
 import androidx.preference.Preference;
@@ -73,9 +74,14 @@ public class SettingsActivity extends AppCompatActivity {
             final String key = preference.getKey();
             if (key != null) {
                 switch (key) {
-                    case Settings.KEY_CFU:
-                        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/MISTER-CHAN/icon-editor/releases")));
-                        break;
+                    case Settings.KEY_CFU -> {
+                        new AlertDialog.Builder(getContext())
+                                .setMessage(R.string.check_for_updates_in_system_browser)
+                                .setPositiveButton(R.string.ok, (dialog, which) ->
+                                        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/MISTER-CHAN/icon-editor/releases"))))
+                                .setNegativeButton(R.string.cancel, null)
+                                .show();
+                    }
                 }
             }
             return super.onPreferenceTreeClick(preference);
