@@ -185,6 +185,9 @@ class Tab {
         for (int i = 0; i < tabs.size(); ++i) {
             final Tab tab = tabs.get(i).getBackground();
             i = tab.getBackgroundPosition();
+            if (firstFrame == null) {
+                tab.isFirstFrame = true;
+            }
             if (tab.isFirstFrame) {
                 firstFrame = tab;
             }
