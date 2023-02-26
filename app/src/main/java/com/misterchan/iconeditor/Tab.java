@@ -195,45 +195,6 @@ class Tab {
         }
     }
 
-    private static Tab findBackground(List<Tab> tabs, int pos) {
-        Tab t = null;
-        for (int i = pos; i < tabs.size(); ++i) {
-            t = tabs.get(i);
-            if (t.isBackground) {
-                break;
-            }
-        }
-        return t;
-    }
-
-    private static Tab findFirstFrame(List<Tab> tabs, int pos) {
-        Tab f = null;
-
-        // Find rightward
-        for (int i = pos; i < tabs.size(); ++i) {
-            final Tab t = tabs.get(i);
-            if (t.isBackground) {
-                if (t.isFirstFrame) {
-                    return t;
-                }
-                break;
-            }
-        }
-
-        // Find leftward
-        for (int i = pos - 1; i >= 0; --i) {
-            f = tabs.get(i);
-            if (!f.isBackground) {
-                continue;
-            }
-            if (f.isFirstFrame) {
-                break;
-            }
-        }
-
-        return f;
-    }
-
     public static Tab getAbove(List<Tab> tabs, int pos) {
         if (pos <= 0) {
             return null;

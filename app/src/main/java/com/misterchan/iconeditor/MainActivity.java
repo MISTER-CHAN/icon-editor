@@ -940,7 +940,9 @@ public class MainActivity extends AppCompatActivity {
                 public void onTabSelected(TabLayout.Tab t) {
                     dialog.dismiss();
                     final int p = t.getPosition();
-                    final Tab selected = tabs.remove(position);
+                    final Tab selected = tabs.get(position);
+                    final Tab nearestLayer = selected.isBackground ? Tab.getAbove(tabs, position) : Tab.getBelow(tabs, position);
+                    tabs.remove(position);
                     final View cv = tab.getCustomView();
                     tabLayout.removeOnTabSelectedListener(onTabSelectedListener);
                     tabLayout.removeTabAt(position);
@@ -952,6 +954,12 @@ public class MainActivity extends AppCompatActivity {
                     tabLayout.addTab(nt, p, false);
                     Tab.distinguishProjects(tabs);
                     computeLayerTree(selected);
+                    if (nearestLayer != null && nearestLayer.getBackground() != selected.getBackground()) {
+                        computeLayerTree(nearestLayer);
+                    }
+                    if (selected.isBackground && p < tabs.size() - 1) {
+                        computeLayerTree(tabs.get(p + 1));
+                    }
                     tabLayout.selectTab(nt);
                 }
 
@@ -2687,7 +2695,7 @@ public class MainActivity extends AppCompatActivity {
             final int selectedPos = tabLayout.getSelectedTabPosition();
             if (above != null) {
                 computeLayerTree(above);
-                    onTabSelectedListener.onTabSelected(tabLayout.getTabAt(selectedPos));
+                onTabSelectedListener.onTabSelected(tabLayout.getTabAt(selectedPos));
             } else if (below != null) {
                 computeLayerTree(below);
                 selectTab(position);
