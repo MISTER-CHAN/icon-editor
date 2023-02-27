@@ -306,7 +306,7 @@ public class MainActivity extends AppCompatActivity {
     private final Ruler ruler = new Ruler();
     private Settings settings;
     private String tree = "";
-    private SubMenu smBlendModes;
+    private SubMenu smLayerBlendModes;
     private Paint.Style style = Paint.Style.FILL_AND_STROKE;
     private Tab tab;
     private TabLayout tabLayout;
@@ -841,7 +841,7 @@ public class MainActivity extends AppCompatActivity {
     };
 
     private final TabLayout.OnTabSelectedListener onTabSelectedListener = new TabLayout.OnTabSelectedListener() {
-        private Tab oldFirstFrame;
+        private Tab oldBackground, oldFirstFrame;
 
         @Override
         public void onTabSelected(TabLayout.Tab tab) {
@@ -850,15 +850,19 @@ public class MainActivity extends AppCompatActivity {
             final int position = tab.getPosition();
             final Tab t = tabs.get(position);
             MainActivity.this.tab = t;
-            Tab.showIcons(tabs, t);
             final Tab background = t.getBackground(), firstFrame = background.getFirstFrame();
-            final boolean areInDiffProj = firstFrame != oldFirstFrame;
+            final boolean isFromAnotherFrame = background != oldBackground;
+            final boolean isFromAnotherProj = firstFrame != oldFirstFrame;
+            oldBackground = background;
             oldFirstFrame = firstFrame;
+            if (isFromAnotherFrame) {
+                Tab.updateVisibilityIcons(tabs, t);
+            }
             bitmap = t.bitmap;
             canvas = new Canvas(bitmap);
 
             final int width = bitmap.getWidth(), height = bitmap.getHeight();
-            if (settings.getIndependentTranslAndScale() || areInDiffProj) {
+            if (settings.getIndependentTranslAndScale() || isFromAnotherProj) {
                 translationX = t.translationX;
                 translationY = t.translationY;
                 scale = t.scale;
@@ -869,7 +873,7 @@ public class MainActivity extends AppCompatActivity {
             if (transformer != null) {
                 recycleTransformer();
             }
-            if (areInDiffProj) {
+            if (isFromAnotherProj) {
                 hasSelection = false;
                 optimizeSelection();
             }
@@ -940,26 +944,49 @@ public class MainActivity extends AppCompatActivity {
                 public void onTabSelected(TabLayout.Tab t) {
                     dialog.dismiss();
                     final int p = t.getPosition();
-                    final Tab selected = tabs.get(position);
-                    final Tab nearestLayer = selected.isBackground ? Tab.getAbove(tabs, position) : Tab.getBelow(tabs, position);
+                    final Tab selectedTab = tabs.get(position);
+                    final Tab oldAdjacentLayer = selectedTab.isBackground ? Tab.getAbove(tabs, position) : Tab.getBelow(tabs, position);
                     tabs.remove(position);
                     final View cv = tab.getCustomView();
                     tabLayout.removeOnTabSelectedListener(onTabSelectedListener);
                     tabLayout.removeTabAt(position);
                     tabLayout.addOnTabSelectedListener(onTabSelectedListener);
-                    tabs.add(p, selected);
+                    tabs.add(p, selectedTab);
                     final TabLayout.Tab nt = tabLayout.newTab()
                             .setCustomView(cv)
-                            .setTag(selected);
+                            .setTag(selectedTab);
                     tabLayout.addTab(nt, p, false);
+
+                    if (selectedTab.isBackground) {
+                        // If the previous tab is not a background, then make the selected tab not a background
+                        if (0 < p && p < tabs.size() - 1 && !tabs.get(p - 1).isBackground) {
+                            if (oldAdjacentLayer != null) {
+                                oldAdjacentLayer.inheritPropertiesFrom(selectedTab);
+                            } else {
+                                selectedTab.isBackground = false;
+                                selectedTab.isFirstFrame = false;
+                            }
+                        }
+                    } else {
+                        // If move to the end, then make the selected tab a background of the last tab
+                        if (p == tabs.size() - 1) {
+                            selectedTab.inheritPropertiesFrom(tabs.get(p - 1));
+                        }
+                    }
                     Tab.distinguishProjects(tabs);
-                    computeLayerTree(selected);
-                    if (nearestLayer != null && nearestLayer.getBackground() != selected.getBackground()) {
-                        computeLayerTree(nearestLayer);
+                    Tab.updateBackgroundIcons(tabs);
+                    Tab.updateVisibilityIcons(tabs, selectedTab);
+
+                    // Update the new frame
+                    Tab.computeLayerTree(tabs, MainActivity.this.tab);
+                    Tab.updateLevelIcons(tabs, MainActivity.this.tab);
+
+                    // Update the old frame
+                    if (oldAdjacentLayer != null && oldAdjacentLayer.getBackground() != selectedTab.getBackground()) {
+                        Tab.computeLayerTree(tabs, oldAdjacentLayer);
+                        Tab.updateLevelIcons(tabs, oldAdjacentLayer);
                     }
-                    if (selected.isBackground && p < tabs.size() - 1) {
-                        computeLayerTree(tabs.get(p + 1));
-                    }
+
                     tabLayout.selectTab(nt);
                 }
 
@@ -2571,7 +2598,10 @@ public class MainActivity extends AppCompatActivity {
         final TabLayout.Tab t = loadTab(tab, position, title);
         if (setSelected) {
             Tab.distinguishProjects(tabs);
-            computeLayerTree(tab);
+            Tab.updateBackgroundIcons(tabs);
+            tab.showVisibilityIcon();
+            Tab.computeLayerTree(tabs, tab);
+            Tab.updateLevelIcons(tabs, tab);
             tabLayout.selectTab(t);
         }
     }
@@ -2593,7 +2623,7 @@ public class MainActivity extends AppCompatActivity {
     private Position checkDraggingMarqueeBound(float x, float y) {
         marqueeBoundBeingDragged = null;
 
-        // Marquee Bounds
+// Marquee Bounds
         final float mbLeft = toViewX(selection.left), mbTop = toViewY(selection.top),
                 mbRight = toViewX(selection.right), mbBottom = toViewY(selection.bottom);
 
@@ -2624,7 +2654,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void checkLayerBlendModeMenuItem(BlendMode blendMode) {
         for (int i = 0; i < BLEND_MODES.length; ++i) {
-            final MenuItem mi = smBlendModes.getItem(i);
+            final MenuItem mi = smLayerBlendModes.getItem(i);
             mi.setChecked(BLEND_MODES[i] == blendMode);
         }
     }
@@ -2692,38 +2722,22 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
             Tab.distinguishProjects(tabs);
-            final int selectedPos = tabLayout.getSelectedTabPosition();
+            Tab.updateBackgroundIcons(tabs);
+            int selectedPos = tabLayout.getSelectedTabPosition();
             if (above != null) {
-                computeLayerTree(above);
-                onTabSelectedListener.onTabSelected(tabLayout.getTabAt(selectedPos));
+                Tab.computeLayerTree(tabs, above);
+                Tab.updateLevelIcons(tabs, above);
             } else if (below != null) {
-                computeLayerTree(below);
-                selectTab(position);
-            } else if (/* have closed the entire frame and */ isFirstOfMultipleFrames) {
-                selectTab(position);
-            } else /* if have closed the entire project */ {
-                onTabSelectedListener.onTabSelected(tabLayout.getTabAt(selectedPos));
-            }
+                Tab.computeLayerTree(tabs, below);
+                Tab.updateLevelIcons(tabs, below);
+                selectedPos = position;
+            } else /* must have closed the entire frame */ if (isFirstOfMultipleFrames) {
+                selectedPos = position;
+            } /* else must have closed the entire project */
+            selectTab(selectedPos);
         } else {
             tabs.remove(position); // Remove tab
         }
-    }
-
-    private void computeLayerTree() {
-        computeLayerTree(tab);
-    }
-
-    private void computeLayerTree(Tab tab) {
-        tab.getBackground().layerTree = Tab.computeLayerTree(tabs, tab);
-    }
-
-    private void computeLayerTreeAndShowIcons() {
-        computeLayerTreeAndShowIcons(tab);
-    }
-
-    private void computeLayerTreeAndShowIcons(Tab tab) {
-        computeLayerTree(tab);
-        Tab.showIcons(tabs, tab);
     }
 
     private void createFrame() {
@@ -3536,13 +3550,13 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Preferences
+// Preferences
         final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         settings = ((MainApplication) getApplicationContext()).getSettings();
         settings.setMainActivity(this);
         settings.update(preferences);
 
-        // Locale
+// Locale
         final String loc = preferences.getString(Settings.KEY_LOC, "def");
         if (!"def".equals(loc)) {
             final int i = loc.indexOf('_');
@@ -3828,7 +3842,7 @@ public class MainActivity extends AppCompatActivity {
         miLayerFilterSet = menu.findItem(R.id.i_layer_filter_set);
         miLayerHsv = menu.findItem(R.id.i_layer_hsv);
         miLayerLevelUp = menu.findItem(R.id.i_layer_level_up);
-        smBlendModes = menu.findItem(R.id.i_blend_modes).getSubMenu();
+        smLayerBlendModes = menu.findItem(R.id.i_blend_mode).getSubMenu();
         return true;
     }
 
@@ -4297,7 +4311,7 @@ public class MainActivity extends AppCompatActivity {
                     R.id.i_layer_blend_mode_difference, R.id.i_layer_blend_mode_exclusion, R.id.i_layer_blend_mode_multiply,
                     R.id.i_layer_blend_mode_hue, R.id.i_layer_blend_mode_saturation, R.id.i_layer_blend_mode_color, R.id.i_layer_blend_mode_luminosity -> {
                 for (int i = 0; i < BLEND_MODES.length; ++i) {
-                    final MenuItem mi = smBlendModes.getItem(i);
+                    final MenuItem mi = smLayerBlendModes.getItem(i);
                     if (mi == item) {
                         tab.paint.setBlendMode(BLEND_MODES[i]);
                         mi.setChecked(true);
@@ -4320,7 +4334,8 @@ public class MainActivity extends AppCompatActivity {
                 checkLayerBlendModeMenuItem(BlendMode.SRC_ATOP);
                 Tab.levelDown(tabs, tabLayout.getSelectedTabPosition());
                 miLayerLevelUp.setEnabled(true);
-                computeLayerTreeAndShowIcons();
+                Tab.computeLayerTree(tabs, tab);
+                Tab.updateLevelIcons(tabs, tab);
                 drawBitmapOnView(true);
             }
             case R.id.i_layer_curves -> {
@@ -4355,7 +4370,9 @@ public class MainActivity extends AppCompatActivity {
                         newBackground.inheritPropertiesFrom(background);
                     }
                     Tab.distinguishProjects(tabs);
-                    computeLayerTree();
+                    Tab.updateBackgroundIcons(tabs);
+                    Tab.computeLayerTree(tabs, tab);
+                    Tab.updateLevelIcons(tabs, tab);
                     onTabSelectedListener.onTabSelected(tabLayout.getTabAt(tabLayout.getSelectedTabPosition()));
                 }
             }
@@ -4431,13 +4448,15 @@ public class MainActivity extends AppCompatActivity {
             case R.id.i_layer_level_down -> {
                 tab.levelDown();
                 miLayerLevelUp.setEnabled(true);
-                computeLayerTreeAndShowIcons();
+                Tab.computeLayerTree(tabs, tab);
+                Tab.updateLevelIcons(tabs, tab);
                 drawBitmapOnView(true);
             }
             case R.id.i_layer_level_up -> {
                 tab.levelUp();
                 miLayerLevelUp.setEnabled(tab.getLevel() > 0);
-                computeLayerTreeAndShowIcons();
+                Tab.computeLayerTree(tabs, tab);
+                Tab.updateLevelIcons(tabs, tab);
                 drawBitmapOnView(true);
             }
             case R.id.i_layer_merge_as_hidden -> {
@@ -4451,16 +4470,18 @@ public class MainActivity extends AppCompatActivity {
                         onMakeHiddenImageListener);
             }
             case R.id.i_layer_merge_down -> {
-                final int pos = tabLayout.getSelectedTabPosition(), below = pos + 1;
-                if (below >= tabs.size()) {
+                final int pos = tabLayout.getSelectedTabPosition(), posBelow = pos + 1;
+                if (posBelow >= tabs.size()) {
                     break;
                 }
                 drawFloatingLayers();
-                final Tab lower = tabs.get(below);
-                Tab.mergeLayers(tabs.get(pos), lower);
+                final Tab tabBelow = tabs.get(posBelow);
+                Tab.mergeLayers(tab, tabBelow);
                 closeTab(pos, false);
                 Tab.distinguishProjects(tabs);
-                computeLayerTree(lower);
+                Tab.updateVisibilityIcons(tabs, tabBelow.getBackground());
+                Tab.computeLayerTree(tabs, tabBelow);
+                Tab.updateLevelIcons(tabs, tabBelow);
                 selectTab(pos);
                 addToHistory();
             }
@@ -4706,8 +4727,9 @@ public class MainActivity extends AppCompatActivity {
                         frames[i] = newFrame;
                     }
                     Tab.distinguishProjects(tabs);
+                    Tab.updateBackgroundIcons(tabs);
                     for (final Tab frame : frames) {
-                        frame.layerTree = Tab.computeLayerTree(tabs, frame);
+                        Tab.computeLayerTree(tabs, frame);
                     }
                     tabLayout.getTabAt(begin).select();
                 } else {

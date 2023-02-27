@@ -17,7 +17,7 @@
     <string name="background">背景</string>
     <string name="background_color">底色</string>
     <string name="below_background">背景底下</string>
-    <string name="blend_modes">混合模式</string>
+    <string name="blend_mode">混合模式</string>
     <string name="blur_radius">模糊半徑</string>
     <string name="bottom">底</string>
     <string name="brush">筆刷</string>

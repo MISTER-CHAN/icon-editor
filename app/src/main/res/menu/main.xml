@@ -286,8 +286,8 @@
                 android:title="@string/alpha_value" />
 
             <item
-                android:id="@+id/i_blend_modes"
-                android:title="@string/blend_modes">
+                android:id="@+id/i_blend_mode"
+                android:title="@string/blend_mode">
 
                 <menu>
 

@@ -112,12 +112,15 @@ class Tab {
         tvRoot.setText("");
     }
 
-    public static LayerTree computeLayerTree(List<Tab> tabs, Tab tab) {
+    /**
+     * Can only call after distinguishing projects.
+     */
+    public static void computeLayerTree(List<Tab> tabs, Tab oneOfLayers) {
         final Stack<LayerTree> stack = new Stack<>();
         LayerTree layerTree = new LayerTree();
         LayerTree.Node prev = null;
 
-        final Tab background = tab.getBackground();
+        final Tab background = oneOfLayers.getBackground();
         stack.push(layerTree);
         for (int i = background.getBackgroundPosition(); i >= 0; --i) {
             final Tab t = tabs.get(i);
@@ -163,7 +166,7 @@ class Tab {
             }
         }
 
-        return layerTree;
+        background.layerTree = layerTree;
     }
 
     public static void distinguishProjects(List<Tab> tabs) {
@@ -208,8 +211,7 @@ class Tab {
         if (newPos >= tabs.size()) {
             return null;
         }
-        final Tab newTab = tabs.get(newPos);
-        return tabs.get(pos).getBackground() == newTab.getBackground() ? newTab : null;
+        return tabs.get(pos).isBackground ? null : tabs.get(newPos);
     }
 
     public Tab getBackground() {
@@ -246,7 +248,9 @@ class Tab {
         gifDither = background.gifDither;
         gifEncodingType = background.gifEncodingType;
         isBackground = true;
+        background.isBackground = false;
         isFirstFrame = background.isFirstFrame;
+        background.isFirstFrame = false;
         layerTree = background.layerTree;
         quality = background.quality;
     }
@@ -288,16 +292,16 @@ class Tab {
         --level;
     }
 
-    public static void mergeLayers(Tab upper, Tab lower) {
-        final Bitmap uBm = Bitmap.createBitmap(upper.bitmap.getWidth(), upper.bitmap.getHeight(),
-                upper.bitmap.getConfig(), upper.bitmap.hasAlpha(), upper.bitmap.getColorSpace());
-        final Bitmap lBm = lower.bitmap;
+    public static void mergeLayers(Tab top, Tab bottom) {
+        final Bitmap uBm = Bitmap.createBitmap(top.bitmap.getWidth(), top.bitmap.getHeight(),
+                top.bitmap.getConfig(), top.bitmap.hasAlpha(), top.bitmap.getColorSpace());
+        final Bitmap lBm = bottom.bitmap;
         final Canvas uCv = new Canvas(uBm), lCv = new Canvas(lBm);
-        uCv.drawBitmap(upper.drawBelow ? lBm : upper.bitmap, 0.0f, 0.0f, PAINT_SRC);
-        if (upper.filter != null) {
-            addFilters(uBm, upper);
+        uCv.drawBitmap(top.drawBelow ? lBm : top.bitmap, 0.0f, 0.0f, PAINT_SRC);
+        if (top.filter != null) {
+            addFilters(uBm, top);
         }
-        lCv.drawBitmap(uBm, upper.left - lower.left, upper.top - lower.top, upper.paint);
+        lCv.drawBitmap(uBm, top.left - bottom.left, top.top - bottom.top, top.paint);
     }
 
     public static Bitmap mergeLayers(final LayerTree tree) {
@@ -308,7 +312,10 @@ class Tab {
 
     public static Bitmap mergeLayers(final LayerTree tree, final Rect rect,
                                      final Tab specialTab, final Bitmap bmOfSpecialTab, final Tab extraTab) {
-        return mergeLayers(tree, rect, null, specialTab, bmOfSpecialTab, extraTab);
+        final Bitmap base = Bitmap.createBitmap(rect.width(), rect.height(), Bitmap.Config.ARGB_8888);
+        final Bitmap merged = mergeLayers(tree, rect, base, specialTab, bmOfSpecialTab, extraTab);
+        base.recycle();
+        return merged;
     }
 
     /**
@@ -316,13 +323,13 @@ class Tab {
      * @param bmOfSpecialTab The bitmap to replace with
      * @param extraTab       The extra layer to draw over the special layer
      */
-    public static Bitmap mergeLayers(final LayerTree tree, final Rect rect, final Bitmap background,
+    public static Bitmap mergeLayers(final LayerTree tree, final Rect rect, final Bitmap base,
                                      final Tab specialTab, final Bitmap bmOfSpecialTab, final Tab extraTab) {
         final LayerTree.Node backgroundNode = tree.getBackground();
         final Bitmap bitmap = Bitmap.createBitmap(rect.width(), rect.height(), Bitmap.Config.ARGB_8888);
         final Canvas canvas = new Canvas(bitmap);
-        if (background != null) {
-            canvas.drawBitmap(background, 0.0f, 0.0f, PAINT_SRC);
+        if (base != null) {
+            canvas.drawBitmap(base, 0.0f, 0.0f, PAINT_SRC);
         }
 
         try {
@@ -333,7 +340,7 @@ class Tab {
                 }
                 final LayerTree children = node.getChildren();
                 if (children == null) {
-                    final Paint paint = node == backgroundNode && background == null ? PAINT_SRC : tab.paint;
+                    final Paint paint = node == backgroundNode && base == null ? PAINT_SRC : tab.paint;
                     final int bmW = tab.bitmap.getWidth(), bmH = tab.bitmap.getHeight();
                     // Rectangle src and dst are intersection between background layer subset and current layer
                     final Rect src = new Rect(0, 0, bmW, bmH);
@@ -401,7 +408,7 @@ class Tab {
                     }
                 } else {
                     final Bitmap branchBitmap = mergeLayers(children, rect,
-                            !tab.drawBelow || node == backgroundNode ? null : bitmap,
+                            tab.drawBelow && node != backgroundNode ? bitmap : null,
                             specialTab, bmOfSpecialTab, extraTab);
                     canvas.drawBitmap(branchBitmap, 0.0f, 0.0f, tab.paint);
                     branchBitmap.recycle();
@@ -455,7 +462,20 @@ class Tab {
         cbVisible.setChecked(visible);
     }
 
-    private static void showBackgroundIcons(List<Tab> tabs) {
+    public void showTo(View view) {
+        ((TextView) view.findViewById(R.id.tv_background)).setText(tvBackground.getText());
+        ((TextView) view.findViewById(R.id.tv_leaf)).setText(tvLeaf.getText());
+        ((TextView) view.findViewById(R.id.tv_lower_level)).setText(tvLowerLevel.getText());
+        ((TextView) view.findViewById(R.id.tv_parent)).setText(tvParent.getText());
+        ((TextView) view.findViewById(R.id.tv_root)).setText(tvRoot.getText());
+        ((TextView) view.findViewById(R.id.tv_title)).setText(tvTitle.getText());
+    }
+
+    public void showVisibilityIcon() {
+        cbVisible.setVisibility(View.VISIBLE);
+    }
+
+    public static void updateBackgroundIcons(List<Tab> tabs) {
         Tab lastTab = null;
         for (final Tab tab : tabs) {
             tab.tvBackground.setText("");
@@ -463,20 +483,18 @@ class Tab {
                 continue;
             }
             if (lastTab != null) {
-                lastTab.tvBackground.append(tab.isFirstFrame ? "┃" : "│");
+                lastTab.tvBackground.append(tab.isFirstFrame ? "┃" : lastTab.isFirstFrame ? " ▸│" : "│");
             }
             lastTab = tab;
         }
         lastTab.tvBackground.append("┃");
     }
 
-    public static void showIcons(List<Tab> tabs, Tab tab) {
-        showVisibilityIcons(tabs, tab.background);
-        showBackgroundIcons(tabs);
-        showLevelIcons(tabs, tab.backgroundPosition);
-    }
-
-    public static void showLevelIcons(List<Tab> tabs, int backgroundPos) {
+    /**
+     * Can only call after distinguishing projects.
+     */
+    public static void updateLevelIcons(List<Tab> tabs, Tab oneOfLayers) {
+        final int backgroundPos = oneOfLayers.getBackgroundPosition();
         Tab lastTab = null;
         for (int i = backgroundPos; i >= 0; --i) {
             final Tab t = tabs.get(i);
@@ -507,19 +525,14 @@ class Tab {
         }
     }
 
-    public void showTo(View view) {
-        ((TextView) view.findViewById(R.id.tv_background)).setText(tvBackground.getText());
-        ((TextView) view.findViewById(R.id.tv_leaf)).setText(tvLeaf.getText());
-        ((TextView) view.findViewById(R.id.tv_lower_level)).setText(tvLowerLevel.getText());
-        ((TextView) view.findViewById(R.id.tv_parent)).setText(tvParent.getText());
-        ((TextView) view.findViewById(R.id.tv_root)).setText(tvRoot.getText());
-        ((TextView) view.findViewById(R.id.tv_title)).setText(tvTitle.getText());
-    }
-
-    private static void showVisibilityIcons(List<Tab> tabs, Tab background) {
+    /**
+     * Can only call after distinguishing projects.
+     */
+    public static void updateVisibilityIcons(List<Tab> tabs, Tab selectedTab) {
+        final Tab backgroundTab = selectedTab.getBackground();
         for (int i = 0; i < tabs.size(); ++i) {
             final Tab tab = tabs.get(i);
-            tab.cbVisible.setVisibility(tab.background == background ? View.VISIBLE : View.GONE);
+            tab.cbVisible.setVisibility(tab.background == backgroundTab ? View.VISIBLE : View.GONE);
         }
     }
 }

@@ -25,8 +25,11 @@ class NewImageDialog {
     public NewImageDialog setOnFinishSettingListener(OnApplyListener listener) {
         builder.setPositiveButton(R.string.ok, (dialog, which) -> {
             try {
-                int width = Integer.parseUnsignedInt(tietWidth.getText().toString());
-                int height = Integer.parseUnsignedInt(tietHeight.getText().toString());
+                final int width = Integer.parseUnsignedInt(tietWidth.getText().toString());
+                final int height = Integer.parseUnsignedInt(tietHeight.getText().toString());
+                if (!(width > 0 && height > 0)) {
+                    return;
+                }
                 listener.onApply(width, height);
             } catch (NumberFormatException e) {
             }
