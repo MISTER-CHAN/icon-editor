@@ -956,23 +956,7 @@ public class MainActivity extends AppCompatActivity {
                             .setCustomView(cv)
                             .setTag(selectedTab);
                     tabLayout.addTab(nt, p, false);
-
-                    if (selectedTab.isBackground) {
-                        // If the previous tab is not a background, then make the selected tab not a background
-                        if (0 < p && p < tabs.size() - 1 && !tabs.get(p - 1).isBackground) {
-                            if (oldAdjacentLayer != null) {
-                                oldAdjacentLayer.inheritPropertiesFrom(selectedTab);
-                            } else {
-                                selectedTab.isBackground = false;
-                                selectedTab.isFirstFrame = false;
-                            }
-                        }
-                    } else {
-                        // If move to the end, then make the selected tab a background of the last tab
-                        if (p == tabs.size() - 1) {
-                            selectedTab.inheritPropertiesFrom(tabs.get(p - 1));
-                        }
-                    }
+                    Tab.onTabPositionChanged(tabs, selectedTab, position, p);
                     Tab.distinguishProjects(tabs);
                     Tab.updateBackgroundIcons(tabs);
                     Tab.updateVisibilityIcons(tabs, selectedTab);
@@ -4231,7 +4215,9 @@ public class MainActivity extends AppCompatActivity {
                             tab.getLevel(), tab.left, tab.top, tab.visible, tab.getTitle(), false);
                 }
                 Tab.distinguishProjects(tabs);
+                Tab.updateBackgroundIcons(tabs);
                 newFrame.layerTree = background.layerTree;
+                Tab.updateLevelIcons(tabs, newFrame);
                 tabLayout.getTabAt(newPos).select();
             }
             case R.id.i_frame_new -> createFrame();

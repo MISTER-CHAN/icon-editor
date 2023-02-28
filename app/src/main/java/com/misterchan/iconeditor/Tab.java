@@ -236,6 +236,18 @@ class Tab {
         return i == -1 ? s : s.substring(0, i);
     }
 
+    /**
+     * Can only call after distinguishing projects.
+     */
+    public static Tab getNextFrame(List<Tab> tabs, int backgroundPosition) {
+        final int nextTabPos = backgroundPosition + 1;
+        if (nextTabPos >= tabs.size()) {
+            return null;
+        }
+        final Tab nextBackground = tabs.get(nextTabPos).getBackground();
+        return nextBackground.isFirstFrame ? null : nextBackground;
+    }
+
     public CharSequence getTitle() {
         return tvTitle != null ? tvTitle.getText() : "";
     }
@@ -444,6 +456,102 @@ class Tab {
      */
     public void addOVCBCCListener(CompoundButton.OnCheckedChangeListener listener) {
         cbVisible.setOnCheckedChangeListener(listener);
+    }
+
+    /**
+     * Update new backgrounds and new first frames after moving a tab
+     */
+    // Legend
+    // [L]    [L|]        [F]    [F>]   [S]
+    // Layer  Background  Frame  First  Specified
+    public static void onTabPositionChanged(List<Tab> tabs, Tab specifiedTab, int oldPos, int newPos) {
+        // If the specified tab is a background // [S|]
+        if (specifiedTab.isBackground) {
+            final Tab oldLayerAbove, oldNextFrame;
+            {
+                final Tab pt, nf; // Old previous tab, old next frame
+                if (oldPos < newPos) {
+                    pt = oldPos > 0 ? tabs.get(oldPos - 1) : null;
+                    nf = tabs.get(oldPos).getBackground();
+                } else if (oldPos > newPos) {
+                    pt = tabs.get(oldPos);
+                    nf = oldPos < tabs.size() - 1 ? tabs.get(oldPos + 1) : null;
+                } else {
+                    return;
+                }
+                oldLayerAbove = pt != null && pt.isBackground ? null : pt;
+                oldNextFrame = nf != null && nf.isFirstFrame ? null : nf;
+            }
+            // If the previous tab is a background // [L|][S|]
+            final Tab previousTab = newPos > 0 ? tabs.get(newPos - 1) : null;
+            if (previousTab == null || previousTab.isBackground) {
+                final Tab nextTab = newPos < tabs.size() - 1 ? tabs.get(newPos + 1) : null;
+                // If there was a layer above the specified layer // [L][S|]
+                if (oldLayerAbove != null) {
+                    // Make the layer which was above the specified layer be a background // [L][S|] -> [L|]
+                    // If the next tab was one of the layers above the specified layer // [L|][L]..[L][S|] -> [L|][S|][L]..[L]
+                    if (nextTab != null && nextTab.getBackground() == specifiedTab) {
+                        // [L|][S|][L]..[L] -> [L|][S][L]..[L|]
+                        oldLayerAbove.inheritPropertiesFrom(specifiedTab);
+                    } else {
+                        // [L|][S|][L]..[L] -> [L|][S|][L]..[L|]
+                        oldLayerAbove.isBackground = true;
+                        oldLayerAbove.isFirstFrame = specifiedTab.isFirstFrame;
+                    }
+                }
+                // If the specified frame is the first // [S>]
+                if (specifiedTab.isFirstFrame) {
+                    // If there was a second frame // [S>][F] -> [F]
+                    if (oldNextFrame != null) {
+                        // Make the frame which was second be first // [F] -> [F>]
+                        oldNextFrame.isFirstFrame = true;
+                        // If the previous frame belongs to the same project as the specified tab // [S>][F] -> [F][S>]
+                        if (previousTab != null && previousTab.getFirstFrame() == specifiedTab) {
+                            // Make the specified frame be not the first // [F][S>] -> [F>][S]
+                            specifiedTab.isFirstFrame = false;
+                        }
+                    }
+                    if (nextTab != null) {
+                        final Tab nextFrame = nextTab.getBackground();
+                        // If the next frame was not the first frame // [F>]..[F] -> [F>]..[S>][F]
+                        if (!nextFrame.isFirstFrame) {
+                            // Make the specified frame be not the first // [F>]..[S>][F] -> [F>]..[S][F]
+                            specifiedTab.isFirstFrame = false;
+                        }
+                    }
+                } else /* if the specified frame is not first */ {
+                    if (nextTab != null) {
+                        final Tab nextFrame = nextTab.getBackground();
+                        // If the next frame was first and belongs to the same project as the specified tab
+                        // [F>][S] -> [S][F>]
+                        if (specifiedTab.getFirstFrame() == nextFrame) {
+                            // Make the next frame be the second // [S][F>] -> [S>][F]
+                            specifiedTab.isFirstFrame = true;
+                            nextFrame.isFirstFrame = false;
+                        }
+                    }
+                }
+            } else /* if the previous tab is not a background // [L][S|] */ {
+                // If not move to the end
+                if (newPos < tabs.size() - 1) {
+                    // Make the specified tab not a background // [L]..[L|] -> [L][S|]..[L|] -> [L][S]..[L|]
+                    // If there was a layer above the specified layer // [L][S|] -> [L]
+                    if (oldLayerAbove != null) {
+                        // [L] -> [L|]
+                        oldLayerAbove.inheritPropertiesFrom(specifiedTab);
+                    } else /* if [L|][S|] -> [L|] */ {
+                        specifiedTab.isBackground = false;
+                        specifiedTab.isFirstFrame = false;
+                    }
+                }
+            }
+        } else /* if the specified tab is not a background // [S] */ {
+            // If move to the end [L|][S]
+            if (newPos == tabs.size() - 1) {
+                // Make the specified tab a background of the last tab // [L|][S] -> [L][S|]
+                specifiedTab.inheritPropertiesFrom(tabs.get(newPos - 1));
+            }
+        }
     }
 
     public void removeOVCBCCListener() {
