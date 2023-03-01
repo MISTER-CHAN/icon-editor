@@ -3,8 +3,10 @@ package com.misterchan.iconeditor;
 import android.graphics.Bitmap;
 import android.graphics.BlendMode;
 import android.graphics.Canvas;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -68,18 +70,12 @@ class Tab {
     private TextView tvTitle;
 
     @Size(20)
-    public float[] colorMatrix = {
-            1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-            0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
-            0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-            0.0f, 0.0f, 0.0f, 1.0f, 0.0f
-    };
+    public float[] colorMatrix;
 
     @Size(3)
-    public float[] deltaHsv = {0.0f, 0.0f, 0.0f};
+    public float[] deltaHsv;
 
-    @Size(5)
-    public int[][] curves = {new int[0x100], new int[0x100], new int[0x100], new int[0x100], new int[0x100]};
+    public int[][] curves;
 
     public final Paint paint = new Paint() {
         {
@@ -87,14 +83,6 @@ class Tab {
             setFilterBitmap(false);
         }
     };
-
-    {
-        for (int i = 0; i <= 4; ++i) {
-            for (int j = 0x0; j < 0x100; ++j) {
-                curves[i][j] = j;
-            }
-        }
-    }
 
     private static void addFilters(Bitmap bitmap, Tab tab) {
         switch (tab.filter) {
@@ -248,8 +236,42 @@ class Tab {
         return nextBackground.isFirstFrame ? null : nextBackground;
     }
 
+    public static int getPosOfProjEnd(List<Tab> tabs, Tab firstFrame) {
+        int pos = firstFrame.getBackgroundPosition() + 1;
+        for (; pos < tabs.size(); ++pos) {
+            final Tab tab = tabs.get(pos).getBackground();
+            if (tab.getFirstFrame() == firstFrame) {
+                pos = tab.getBackgroundPosition();
+            } else {
+                break;
+            }
+        }
+        return pos;
+    }
+
     public CharSequence getTitle() {
         return tvTitle != null ? tvTitle.getText() : "";
+    }
+
+    public static void group(List<Tab> tabs, int position) {
+        int i = position;
+        for (; i < tabs.size(); ++i) {
+            final Tab t = tabs.get(i);
+            if (!t.visible) {
+                i -= 2;
+                break;
+            } else if (t.isBackground) {
+                --i;
+                break;
+            }
+        }
+        for (; i >= 0; --i) {
+            final Tab t = tabs.get(i);
+            if (!t.visible || t.isBackground) {
+                break;
+            }
+            ++t.level;
+        }
     }
 
     public void inheritPropertiesFrom(Tab background) {
@@ -265,6 +287,29 @@ class Tab {
         background.isFirstFrame = false;
         layerTree = background.layerTree;
         quality = background.quality;
+    }
+
+    public void initColorMatrix() {
+        colorMatrix = new float[]{
+                1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+                0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+                0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+                0.0f, 0.0f, 0.0f, 1.0f, 0.0f
+        };
+    }
+
+    public void initCurves() {
+        curves = new int[5][];
+        for (int i = 0; i <= 4; ++i) {
+            curves[i] = new int[0x100];
+            for (int j = 0x0; j < 0x100; ++j) {
+                curves[i][j] = j;
+            }
+        }
+    }
+
+    public void initDeltaHsv() {
+        deltaHsv = new float[]{0.0f, 0.0f, 0.0f};
     }
 
     public void initViews(View view) {
@@ -507,7 +552,7 @@ class Tab {
                         oldNextFrame.isFirstFrame = true;
                         // If the previous frame belongs to the same project as the specified tab // [S>][F] -> [F][S>]
                         if (previousTab != null && previousTab.getFirstFrame() == specifiedTab) {
-                            // Make the specified frame be not the first // [F][S>] -> [F>][S]
+                            // Make the specified frame be not first // [F][S>] -> [F>][S]
                             specifiedTab.isFirstFrame = false;
                         }
                     }
@@ -591,7 +636,7 @@ class Tab {
                 continue;
             }
             if (lastTab != null) {
-                lastTab.tvBackground.append(tab.isFirstFrame ? "┃" : lastTab.isFirstFrame ? " ▸│" : "│");
+                lastTab.tvBackground.append(tab.isFirstFrame ? "┃" : "│");
             }
             lastTab = tab;
         }

@@ -150,6 +150,10 @@
                                 android:title="@string/two_seventy_degrees" />
                         </menu>
                     </item>
+
+                    <item
+                        android:id="@+id/i_transform"
+                        android:title="@string/more" />
                 </menu>
             </item>
 
@@ -212,7 +216,7 @@
                 android:title="@string/channel_lighting" />
 
             <item
-                android:id="@+id/i_filter_matrix"
+                android:id="@+id/i_filter_color_matrix"
                 android:title="@string/channel_mixer" />
 
             <item
@@ -269,13 +273,17 @@
                 android:id="@+id/i_layer_merge_visible"
                 android:title="@string/merge_visible" />
 
-            <item android:title="@string/merge_as">
+            <item android:title="@string/merge">
 
                 <menu>
 
                     <item
+                        android:id="@+id/i_layer_merge_alpha"
+                        android:title="@string/merge_alpha" />
+
+                    <item
                         android:id="@+id/i_layer_merge_as_hidden"
-                        android:title="@string/hidden_image" />
+                        android:title="@string/merge_as_a_hidden_image" />
 
                 </menu>
             </item>
@@ -481,8 +489,16 @@
                         android:title="@string/fast_add_layer_mask" />
 
                     <item
+                        android:id="@+id/i_layer_add_filter_layer"
+                        android:title="@string/fast_add_filter_layer" />
+
+                    <item
                         android:id="@+id/i_layer_create_clipping_mask"
                         android:title="@string/fast_create_clipping_mask" />
+
+                    <item
+                        android:id="@+id/i_layer_create_group"
+                        android:title="@string/fast_create_group" />
                 </menu>
             </item>
 

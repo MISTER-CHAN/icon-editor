@@ -94,7 +94,7 @@ class BitmapUtil {
     }
 
     public static void bucketFill(final Bitmap bitmap, Rect rect, int x, int y, @ColorInt final int color,
-                            final boolean ignoreAlpha, final int tolerance) {
+                                  final boolean ignoreAlpha, final int tolerance) {
         if (rect == null) {
             rect = new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight());
         } else if (!(rect.left <= x && x < rect.right && rect.top <= y && y < rect.bottom)) {
@@ -136,13 +136,13 @@ class BitmapUtil {
     }
 
     public static void floodFill(final Bitmap bitmap, Rect rect, int x, int y, @ColorInt final int color,
-                           final boolean ignoreAlpha, final int tolerance) {
+                                 final boolean ignoreAlpha, final int tolerance) {
         floodFill(bitmap, bitmap, rect, x, y, color, ignoreAlpha, tolerance);
     }
 
     public static void floodFill(final Bitmap src, final Bitmap dst, Rect rect,
-                           int x, int y, @ColorInt final int color,
-                           final boolean ignoreAlpha, final int tolerance) {
+                                 int x, int y, @ColorInt final int color,
+                                 final boolean ignoreAlpha, final int tolerance) {
         if (rect == null) {
             rect = new Rect(0, 0, src.getWidth(), src.getHeight());
         } else if (!(rect.left <= x && x < rect.right && rect.top <= y && y < rect.bottom)) {
@@ -210,6 +210,17 @@ class BitmapUtil {
                 pixels[i] = color;
             }
         }
+    }
+
+    public static void mergeAlpha(final Bitmap src, final Bitmap dst) {
+        final int w = Math.min(src.getWidth(), dst.getWidth()), h = Math.min(src.getHeight(), dst.getHeight()), area = w * h;
+        final int[] srcPixels = new int[area], dstPixels = new int[area];
+        src.getPixels(srcPixels, 0, w, 0, 0, w, h);
+        dst.getPixels(dstPixels, 0, w, 0, 0, w, h);
+        for (int i = 0; i < area; ++i) {
+            dstPixels[i] = srcPixels[i] & Color.BLACK | Color.rgb(dstPixels[i]);
+        }
+        dst.setPixels(dstPixels, 0, w, 0, 0, w, h);
     }
 
     /**

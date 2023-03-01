@@ -92,8 +92,10 @@
     <string name="eyedropper">滴管</string>
     <string name="failed">失敗</string>
     <string name="fast">快速</string>
+    <string name="fast_add_filter_layer">快速新增濾鏡圖層</string>
     <string name="fast_add_layer_mask">快速新增圖層遮色片</string>
     <string name="fast_create_clipping_mask">快速建立剪裁遮色片</string>
+    <string name="fast_create_group">快速建立組</string>
     <string name="file">檔案</string>
     <string name="file_name">檔案名</string>
     <string name="fill">塡充</string>
@@ -154,6 +156,7 @@
     <string name="mask_filter">遮罩濾鏡</string>
     <string name="max">最大</string>
     <string name="merge">合倂</string>
+    <string name="merge_alpha">合併 Alpha</string>
     <string name="merge_as">合倂爲</string>
     <string name="merge_as_a_hidden_image">合倂爲隱藏圖</string>
     <string name="merge_as_new">合倂爲新圖層</string>

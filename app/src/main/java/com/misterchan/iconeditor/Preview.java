@@ -3,6 +3,7 @@ package com.misterchan.iconeditor;
 import android.graphics.Bitmap;
 import android.graphics.BlendMode;
 import android.graphics.Canvas;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
@@ -11,6 +12,14 @@ import androidx.annotation.ColorInt;
 import androidx.annotation.Size;
 
 class Preview {
+
+    private static final Paint PAINT_CLEAR = new Paint() {
+        {
+            setAntiAlias(false);
+            setBlendMode(BlendMode.CLEAR);
+            setFilterBitmap(false);
+        }
+    };
 
     private static final Paint PAINT_SRC = new Paint() {
         {
@@ -24,6 +33,7 @@ class Preview {
 
     private Bitmap bitmap;
     private Bitmap bm;
+    private Bitmap src;
     private Canvas canvas;
     private Canvas cv;
     private final Rect rect;
@@ -31,19 +41,14 @@ class Preview {
     @ColorInt
     private final int[] pixels;
 
-    private final Paint paint = new Paint() {
-        {
-            setBlendMode(BlendMode.SRC);
-        }
-    };
-
     public Preview(Bitmap bitmap, Rect rect) {
         final int w = rect.width(), h = rect.height();
+        src = bitmap;
         this.bitmap = Bitmap.createBitmap(bitmap);
         bm = Bitmap.createBitmap(w, h, bitmap.getConfig(), true, bitmap.getColorSpace());
         canvas = new Canvas(this.bitmap);
         cv = new Canvas(bm);
-        cv.drawBitmap(bitmap, rect, new RectF(0.0f, 0.0f, w, h), paint);
+        cv.drawBitmap(bitmap, rect, new RectF(0.0f, 0.0f, w, h), PAINT_SRC);
         pixels = new int[w * h];
         bm.getPixels(pixels, 0, w, 0, 0, w, h);
         this.rect = rect;
@@ -148,5 +153,12 @@ class Preview {
                           int x, int y, int width, int height) {
         bitmap.setPixels(pixels, offset, stride,
                 rect.left + x, rect.top + y, width, height);
+    }
+
+    public void transform(Matrix matrix) {
+        canvas.drawBitmap(src, 0.0f, 0.0f, PAINT_SRC);
+        canvas.drawRect(rect, PAINT_CLEAR);
+        matrix.postTranslate(rect.left, rect.top);
+        canvas.drawBitmap(bm, matrix, PAINT_SRC);
     }
 }

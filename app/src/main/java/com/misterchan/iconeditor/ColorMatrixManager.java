@@ -26,7 +26,7 @@ class ColorMatrixManager {
     private final OnMatrixElementsChangedListener onMatrixElementsChangeListener;
 
     @Size(20)
-    private float[] m;
+    private final float[] m;
 
     public ColorMatrixManager(Context context,
                                           final OnMatrixElementsChangedListener onMatrixElementsChangeListener,

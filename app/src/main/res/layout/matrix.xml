@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="horizontal"
+    android:paddingVertical="16dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="2dp"
+        android:lineSpacingMultiplier="0.75"
+        android:text="@string/matrix_3_open_large"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+    <GridLayout
+        android:id="@+id/gl"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:columnCount="3"
+        android:orientation="horizontal"
+        android:rowCount="3">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:layout_width="36dp"
+            android:inputType="numberSigned|numberDecimal"
+            android:textAlignment="textEnd" />
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:layout_width="36dp"
+            android:inputType="numberSigned|numberDecimal"
+            android:textAlignment="textEnd" />
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:layout_width="36dp"
+            android:inputType="numberSigned|numberDecimal"
+            android:textAlignment="textEnd" />
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:layout_width="36dp"
+            android:inputType="numberSigned|numberDecimal"
+            android:textAlignment="textEnd" />
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:layout_width="36dp"
+            android:inputType="numberSigned|numberDecimal"
+            android:textAlignment="textEnd" />
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:layout_width="36dp"
+            android:inputType="numberSigned|numberDecimal"
+            android:textAlignment="textEnd" />
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:layout_width="36dp"
+            android:inputType="numberSigned|numberDecimal"
+            android:textAlignment="textEnd" />
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:layout_width="36dp"
+            android:inputType="numberSigned|numberDecimal"
+            android:textAlignment="textEnd" />
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:layout_width="36dp"
+            android:inputType="numberSigned|numberDecimal"
+            android:textAlignment="textEnd" />
+    </GridLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="2dp"
+        android:lineSpacingMultiplier="0.75"
+        android:text="@string/matrix_3_close_large"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+</LinearLayout>

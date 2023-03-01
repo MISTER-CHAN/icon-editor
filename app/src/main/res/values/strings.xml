@@ -100,8 +100,10 @@
     <string name="eyedropper">Eyedropper</string>
     <string name="failed">Failed</string>
     <string name="fast">Fast</string>
+    <string name="fast_add_filter_layer">Fast Add a Filter Layer</string>
     <string name="fast_add_layer_mask">Fast Add a Layer Mask</string>
     <string name="fast_create_clipping_mask">Fast Create a Clipping Mask</string>
+    <string name="fast_create_group">Fast Create a Group</string>
     <string name="file">File</string>
     <string name="file_name">File name</string>
     <string name="fill">Fill</string>
@@ -171,6 +173,7 @@
     <string name="mask_filter">Mask Filter</string>
     <string name="max">Max</string>
     <string name="merge">Merge</string>
+    <string name="merge_alpha">Merge Alpha</string>
     <string name="merge_as">Merge as</string>
     <string name="merge_as_a_hidden_image">Merge as a Hidden Image</string>
     <string name="merge_as_new">Merge as New</string>
@@ -347,6 +350,8 @@
     <string name="matrix_4_close" translatable="false">⎤\n⎥\n⎥\n⎥\n⎦</string>
     <string name="matrix_5_open" translatable="false">⎡\n⎢\n⎢\n⎢\n⎢\n⎣</string>
     <string name="matrix_5_close" translatable="false">⎤\n⎥\n⎥\n⎥\n⎥\n⎦</string>
+    <string name="matrix_3_open_large" translatable="false">⎡\n⎢\n⎢\n⎢\n⎣</string>
+    <string name="matrix_3_close_large" translatable="false">⎤\n⎥\n⎥\n⎥\n⎦</string>
     <string name="matrix_4_open_large" translatable="false">⎡\n⎢\n⎢\n⎢\n⎢\n⎢\n⎣</string>
     <string name="matrix_4_close_large" translatable="false">⎤\n⎥\n⎥\n⎥\n⎥\n⎥\n⎦</string>
     <string name="rp_gp_bp_ap" translatable="false">𝑅\'\n𝐺\'\n𝐵\'\n𝐴\'</string>
