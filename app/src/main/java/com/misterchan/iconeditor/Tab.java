@@ -486,9 +486,9 @@ class Tab {
             final Tab previousTab = newPos > 0 ? tabs.get(newPos - 1) : null;
             if (previousTab == null || previousTab.isBackground) {
                 final Tab nextTab = newPos < tabs.size() - 1 ? tabs.get(newPos + 1) : null;
-                // If there was a layer above the specified layer // [L][S|]
+                // If there was a layer above the specified layer // [L][S|] -> [L]
                 if (oldLayerAbove != null) {
-                    // Make the layer which was above the specified layer be a background // [L][S|] -> [L|]
+                    // Make the layer which was above the specified layer be a background // [L] -> [L|]
                     // If the next tab was one of the layers above the specified layer // [L|][L]..[L][S|] -> [L|][S|][L]..[L]
                     if (nextTab != null && nextTab.getBackground() == specifiedTab) {
                         // [L|][S|][L]..[L] -> [L|][S][L]..[L|]
@@ -499,7 +499,7 @@ class Tab {
                         oldLayerAbove.isFirstFrame = specifiedTab.isFirstFrame;
                     }
                 }
-                // If the specified frame is the first // [S>]
+                // If the specified frame is first // [S>]
                 if (specifiedTab.isFirstFrame) {
                     // If there was a second frame // [S>][F] -> [F]
                     if (oldNextFrame != null) {
@@ -519,13 +519,13 @@ class Tab {
                             specifiedTab.isFirstFrame = false;
                         }
                     }
-                } else /* if the specified frame is not first */ {
+                } else /* if the specified frame is not first // [S] */ {
                     if (nextTab != null) {
                         final Tab nextFrame = nextTab.getBackground();
                         // If the next frame was first and belongs to the same project as the specified tab
                         // [F>][S] -> [S][F>]
                         if (specifiedTab.getFirstFrame() == nextFrame) {
-                            // Make the next frame be the second // [S][F>] -> [S>][F]
+                            // Make the next frame be second // [S][F>] -> [S>][F]
                             specifiedTab.isFirstFrame = true;
                             nextFrame.isFirstFrame = false;
                         }
@@ -548,7 +548,7 @@ class Tab {
         } else /* if the specified tab is not a background // [S] */ {
             // If move to the end [L|][S]
             if (newPos == tabs.size() - 1) {
-                // Make the specified tab a background of the last tab // [L|][S] -> [L][S|]
+                // Make the specified tab be a background of the last tab // [L|][S] -> [L][S|]
                 specifiedTab.inheritPropertiesFrom(tabs.get(newPos - 1));
             }
         }
