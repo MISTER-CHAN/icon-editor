@@ -546,7 +546,7 @@ class Tab {
                 }
             }
         } else /* if the specified tab is not a background // [S] */ {
-            // If move to the end [L|][S]
+            // If move to the end // [L|][S]
             if (newPos == tabs.size() - 1) {
                 // Make the specified tab be a background of the last tab // [L|][S] -> [L][S|]
                 specifiedTab.inheritPropertiesFrom(tabs.get(newPos - 1));
