@@ -4,11 +4,13 @@ import android.graphics.Bitmap;
 import android.graphics.BlendMode;
 import android.graphics.Canvas;
 import android.graphics.DrawFilter;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.PaintFlagsDrawFilter;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
+import android.graphics.RectF;
 
 class Transformer {
 
@@ -82,25 +84,25 @@ class Transformer {
     }
 
     public void rotate(float degrees, boolean filter) {
-        final int w = bitmap.getWidth(), h = bitmap.getHeight();
-        final float diagonal = (float) Math.sqrt(w * w + h * h), semiDiag = diagonal / 2.0f;
-        final Bitmap bm = Bitmap.createBitmap((int) Math.ceil(diagonal), (int) Math.ceil(diagonal), Bitmap.Config.ARGB_8888);
-        final Canvas cv = new Canvas(bm);
-        cv.rotate(degrees, semiDiag, semiDiag);
-        paint.setFilterBitmap(filter);
-        cv.drawBitmap(bitmap,
-                (float) Math.ceil(semiDiag - (w >> 1)), (float) Math.ceil(semiDiag - (h >> 1)),
-                paint);
-        bitmap.recycle();
-        bitmap = bm;
+        final Matrix matrix = new Matrix();
+        matrix.setRotate(degrees);
+        transform(matrix, filter);
     }
 
     public void stretch(int width, int height, boolean filter) {
-        final int absWidth = Math.abs(width), absHeight = Math.abs(height);
-        final Bitmap bm = Bitmap.createBitmap(absWidth, absHeight, Bitmap.Config.ARGB_8888);
+        final Matrix matrix = new Matrix();
+        matrix.setScale((float) width / (float) bitmap.getWidth(), (float) height / (float) bitmap.getHeight());
+        transform(matrix, filter);
+    }
+
+    public void transform(Matrix matrix, boolean filter) {
+        final int w = bitmap.getWidth(), h = bitmap.getHeight();
+        final RectF r = new RectF(0.0f, 0.0f, w, h);
+        matrix.mapRect(r);
+        matrix.postTranslate(-r.left, -r.top);
+        final Bitmap bm = Bitmap.createBitmap((int) r.width(), (int) r.height(), Bitmap.Config.ARGB_8888);
         final Canvas cv = new Canvas(bm);
-        cv.translate(width >= 0 ? 0.0f : absWidth, height >= 0 ? 0.0f : absHeight);
-        cv.scale((float) width / (float) bitmap.getWidth(), (float) height / (float) bitmap.getHeight());
+        cv.setMatrix(matrix);
         paint.setFilterBitmap(filter);
         cv.drawBitmap(bitmap, 0.0f, 0.0f, paint);
         bitmap.recycle();

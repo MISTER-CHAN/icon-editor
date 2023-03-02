@@ -32,6 +32,7 @@ import android.os.Looper;
 import android.os.MessageQueue;
 import android.text.Editable;
 import android.text.InputFilter;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -2013,6 +2014,101 @@ public class MainActivity extends AppCompatActivity {
     };
 
     /**
+     * Callback to call on touch image view with poly transformer
+     */
+    @SuppressLint("ClickableViewAccessibility")
+    private final View.OnTouchListener onTouchIVWithPTListener = new View.OnTouchListener() {
+        private float[] src, dst, bmSrc, bmDst;
+        private int pointCount = 0;
+        private Matrix matrix;
+
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            if (!hasSelection) {
+                return true;
+            }
+            switch (event.getActionMasked()) {
+                case MotionEvent.ACTION_DOWN -> {
+                    if (selection.isEmpty()) {
+                        break;
+                    }
+                    if (transformer == null) {
+                        createTransformer();
+                    }
+                    src = new float[8];
+                    dst = new float[8];
+                    bmSrc = new float[8];
+                    bmDst = new float[8];
+                    pointCount = 1;
+                    final float x = event.getX(), y = event.getY();
+                    src[0] = x;
+                    src[1] = y;
+                    bmSrc[0] = toBitmapX(x) - selection.left;
+                    bmSrc[1] = toBitmapY(y) - selection.top;
+                    matrix = new Matrix();
+                }
+                case MotionEvent.ACTION_POINTER_DOWN -> {
+                    if (transformer == null) {
+                        break;
+                    }
+                    final int pointerCount = event.getPointerCount();
+                    if (pointerCount > 4) {
+                        break;
+                    }
+                    pointCount = pointerCount;
+                    final int index = event.getActionIndex();
+                    final float x = event.getX(index), y = event.getY(index);
+                    src[index * 2] = x;
+                    src[index * 2 + 1] = y;
+                    bmSrc[index * 2] = toBitmapX(x) - selection.left;
+                    bmSrc[index * 2 + 1] = toBitmapY(y) - selection.top;
+                }
+                case MotionEvent.ACTION_MOVE -> {
+                    if (transformer == null) {
+                        break;
+                    }
+                    pointCount = Math.min(event.getPointerCount(), 4);
+                    for (int i = 0; i < pointCount; ++i) {
+                        final float x = event.getX(i), y = event.getY(i);
+                        dst[i * 2] = x;
+                        dst[i * 2 + 1] = y;
+                        bmDst[i * 2] = toBitmapX(x) - selection.left;
+                        bmDst[i * 2 + 1] = toBitmapY(y) - selection.top;
+                    }
+                    matrix.setPolyToPoly(src, 0, dst, 0, pointCount);
+                    ivSelection.setImageMatrix(matrix);
+                    drawSelectionOnView(false);
+                }
+                case MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    if (transformer == null) {
+                        break;
+                    }
+                    matrix = null;
+                    src = null;
+                    dst = null;
+                    final Matrix bmMatrix = new Matrix();
+                    bmMatrix.setPolyToPoly(bmSrc, 0, bmDst, 0, pointCount);
+                    bmSrc = null;
+                    bmDst = null;
+                    pointCount = 0;
+                    final int w = transformer.getWidth(), h = transformer.getHeight();
+                    transformer.transform(bmMatrix, cbTransformerFilter.isChecked());
+                    ivSelection.setImageMatrix(null);
+                    final int w_ = transformer.getWidth(), h_ = transformer.getHeight();
+                    selection.left += w - w_ >> 1;
+                    selection.top += h - h_ >> 1;
+                    selection.right = selection.left + w_;
+                    selection.bottom = selection.top + h_;
+                    drawBitmapOnView(selection);
+                    drawSelectionOnView();
+                    clearStatus();
+                }
+            }
+            return true;
+        }
+    };
+
+    /**
      * Callback to call on touch image view with rotation transformer
      */
     @SuppressLint({"ClickableViewAccessibility"})
@@ -3687,6 +3783,7 @@ public class MainActivity extends AppCompatActivity {
         ((CompoundButton) findViewById(R.id.rb_shape)).setOnCheckedChangeListener(onShapeRBCheckedChangeListener);
         ((CompoundButton) findViewById(R.id.rb_text)).setOnCheckedChangeListener(onTextRBCheckedChangeListener);
         rbTransformer.setOnCheckedChangeListener(onTransformerRBCheckedChangeListener);
+        ((CompoundButton) findViewById(R.id.rb_transformer_poly)).setOnCheckedChangeListener((OnCheckedListener) () -> onTransformerChange(onTouchIVWithPTListener));
         ((CompoundButton) findViewById(R.id.rb_transformer_rotation)).setOnCheckedChangeListener((OnCheckedListener) () -> onTransformerChange(onTouchIVWithRTListener));
         ((CompoundButton) findViewById(R.id.rb_transformer_scale)).setOnCheckedChangeListener((OnCheckedListener) () -> onTransformerChange(onTouchIVWithSTListener));
         ((CompoundButton) findViewById(R.id.rb_transformer_translation)).setOnCheckedChangeListener((OnCheckedListener) () -> onTransformerChange(onTouchIVWithTTListener));
@@ -4717,7 +4814,7 @@ public class MainActivity extends AppCompatActivity {
 
     @SuppressLint("ClickableViewAccessibility")
     private void onTransformerChange(View.OnTouchListener l) {
-        cbTransformerFilter.setVisibility(l == onTouchIVWithRTListener || l == onTouchIVWithSTListener ? View.VISIBLE : View.GONE);
+        cbTransformerFilter.setVisibility(l != onTouchIVWithTTListener ? View.VISIBLE : View.GONE);
         cbTransformerLar.setVisibility(l == onTouchIVWithSTListener ? View.VISIBLE : View.GONE);
         onTouchIVWithTransformerListener = l;
         cbZoom.setTag(l);
@@ -5000,7 +5097,7 @@ public class MainActivity extends AppCompatActivity {
         final File file = new File(tab.filePath);
         if (tab.compressFormat != null) {
             final Bitmap merged = Tab.mergeLayers(tab.layerTree);
-            try (FileOutputStream fos = new FileOutputStream(file)) {
+            try (final FileOutputStream fos = new FileOutputStream(file)) {
                 merged.compress(tab.compressFormat, quality, fos);
                 fos.flush();
             } catch (IOException e) {

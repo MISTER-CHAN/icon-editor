@@ -820,6 +820,12 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="@string/rotate" />
+
+                            <RadioButton
+                                android:id="@+id/rb_transformer_poly"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/poly" />
                         </RadioGroup>
 
                         <CheckBox
