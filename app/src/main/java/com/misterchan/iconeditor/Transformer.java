@@ -83,29 +83,39 @@ class Transformer {
         }
     }
 
-    public void rotate(float degrees, boolean filter) {
+    public void rotate(float degrees, boolean filter, boolean antiAlias) {
         final Matrix matrix = new Matrix();
         matrix.setRotate(degrees);
-        transform(matrix, filter);
+        transform(matrix, filter, antiAlias);
     }
 
-    public void stretch(int width, int height, boolean filter) {
+    public void stretch(int width, int height, boolean filter, boolean antiAlias) {
         final Matrix matrix = new Matrix();
         matrix.setScale((float) width / (float) bitmap.getWidth(), (float) height / (float) bitmap.getHeight());
-        transform(matrix, filter);
+        transform(matrix, filter, antiAlias);
     }
 
-    public void transform(Matrix matrix, boolean filter) {
+    public RectF transform(Matrix matrix, boolean filter, boolean antiAlias) {
         final int w = bitmap.getWidth(), h = bitmap.getHeight();
         final RectF r = new RectF(0.0f, 0.0f, w, h);
         matrix.mapRect(r);
+        if (r.isEmpty()) {
+            return null;
+        }
         matrix.postTranslate(-r.left, -r.top);
-        final Bitmap bm = Bitmap.createBitmap((int) r.width(), (int) r.height(), Bitmap.Config.ARGB_8888);
+        final Bitmap bm;
+        try {
+            bm = Bitmap.createBitmap((int) r.width(), (int) r.height(), Bitmap.Config.ARGB_8888);
+        } catch (OutOfMemoryError e) {
+            return null;
+        }
         final Canvas cv = new Canvas(bm);
         cv.setMatrix(matrix);
+        paint.setAntiAlias(antiAlias);
         paint.setFilterBitmap(filter);
         cv.drawBitmap(bitmap, 0.0f, 0.0f, paint);
         bitmap.recycle();
         bitmap = bm;
+        return r;
     }
 }

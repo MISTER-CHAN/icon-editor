@@ -2046,6 +2046,7 @@ public class MainActivity extends AppCompatActivity {
                     bmSrc[0] = toBitmapX(x) - selection.left;
                     bmSrc[1] = toBitmapY(y) - selection.top;
                     matrix = new Matrix();
+                    clearStatus();
                 }
                 case MotionEvent.ACTION_POINTER_DOWN -> {
                     if (transformer == null) {
@@ -2091,15 +2092,16 @@ public class MainActivity extends AppCompatActivity {
                     bmSrc = null;
                     bmDst = null;
                     pointCount = 0;
-                    final int w = transformer.getWidth(), h = transformer.getHeight();
-                    transformer.transform(bmMatrix, cbTransformerFilter.isChecked());
                     ivSelection.setImageMatrix(null);
-                    final int w_ = transformer.getWidth(), h_ = transformer.getHeight();
-                    selection.left += w - w_ >> 1;
-                    selection.top += h - h_ >> 1;
-                    selection.right = selection.left + w_;
-                    selection.bottom = selection.top + h_;
-                    drawBitmapOnView(selection);
+                    final RectF r = transformer.transform(bmMatrix, cbTransformerFilter.isChecked(), antiAlias);
+                    if (r != null) {
+                        final int w_ = transformer.getWidth(), h_ = transformer.getHeight();
+                        selection.left += r.left;
+                        selection.top += r.top;
+                        selection.right = selection.left + w_;
+                        selection.bottom = selection.top + h_;
+                        drawBitmapOnView(true);
+                    }
                     drawSelectionOnView();
                     clearStatus();
                 }
@@ -2149,14 +2151,14 @@ public class MainActivity extends AppCompatActivity {
                         break;
                     }
                     final int w = transformer.getWidth(), h = transformer.getHeight();
-                    transformer.rotate(ivSelection.getRotation(), cbTransformerFilter.isChecked());
+                    transformer.rotate(ivSelection.getRotation(), cbTransformerFilter.isChecked(), antiAlias);
                     ivSelection.setRotation(0.0f);
                     final int w_ = transformer.getWidth(), h_ = transformer.getHeight();
                     selection.left += w - w_ >> 1;
                     selection.top += h - h_ >> 1;
                     selection.right = selection.left + w_;
                     selection.bottom = selection.top + h_;
-                    drawBitmapOnView(selection);
+                    drawBitmapOnView(selection, true);
                     drawSelectionOnView();
                     clearStatus();
                 }
@@ -2222,9 +2224,15 @@ public class MainActivity extends AppCompatActivity {
                             if (marqueeBoundBeingDragged != null && hasDraggedBound) {
                                 marqueeBoundBeingDragged = null;
                                 hasDraggedBound = false;
-                                transformer.stretch(selection.width(), selection.height(),
-                                        cbTransformerFilter.isChecked());
-                                selection.sort();
+                                final int w = selection.width(), h = selection.height();
+                                if (w > 0 && h > 0) {
+                                    transformer.stretch(selection.width(), selection.height(),
+                                            cbTransformerFilter.isChecked(), antiAlias);
+                                    selection.sort();
+                                } else {
+                                    selection.right = selection.left + transformer.getWidth();
+                                    selection.bottom = selection.top + transformer.getHeight();
+                                }
                                 drawBitmapOnView(true);
                                 drawSelectionOnView(false);
                             }
@@ -2295,7 +2303,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                         case MotionEvent.ACTION_POINTER_UP -> {
                             transformer.stretch(selection.width(), selection.height(),
-                                    cbTransformerFilter.isChecked());
+                                    cbTransformerFilter.isChecked(), antiAlias);
                             selection.sort();
                             drawBitmapOnView(true);
                             drawSelectionOnView();
