@@ -464,11 +464,11 @@ class Tab {
                         }
                     }
                 } else {
-                    final Bitmap branchBitmap = mergeLayers(children, rect,
+                    final Bitmap mergedChildren = mergeLayers(children, rect,
                             tab.drawBelow && node != backgroundNode ? bitmap : null,
                             specialTab, bmOfSpecialTab, extraTab);
-                    canvas.drawBitmap(branchBitmap, 0.0f, 0.0f, tab.paint);
-                    branchBitmap.recycle();
+                    canvas.drawBitmap(mergedChildren, 0.0f, 0.0f, tab.paint);
+                    mergedChildren.recycle();
                 }
             }
         } catch (RuntimeException e) {

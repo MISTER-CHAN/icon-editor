@@ -3634,20 +3634,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onConfigurationChanged(@NonNull Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-
-        tab = tabs.get(tabLayout.getSelectedTabPosition());
-    }
-
-    @Override
     @SuppressLint("ClickableViewAccessibility")
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         // Preferences
         final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        settings = ((MainApplication) getApplicationContext()).getSettings();
+        settings = ((MainApplication) getApplication()).getSettings();
         settings.setMainActivity(this);
         settings.update(preferences);
 
@@ -4369,17 +4362,6 @@ public class MainActivity extends AppCompatActivity {
                         .setMessage(message)
                         .setPositiveButton(R.string.ok, null)
                         .show();
-            }
-            case R.id.i_layer_add_filter_layer -> {
-                final Tab t = new Tab();
-                t.bitmap = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(),
-                        bitmap.getConfig(), true, bitmap.getColorSpace());
-                t.isBackground = false;
-                t.drawBelow = true;
-                t.setLevel(tab.getLevel());
-                t.moveTo(tab.left, tab.top);
-                t.paint.setBlendMode(BlendMode.SRC);
-                addTab(t, tabLayout.getSelectedTabPosition(), getString(R.string.filter_noun));
             }
             case R.id.i_layer_add_layer_mask -> {
                 final Tab t = new Tab();

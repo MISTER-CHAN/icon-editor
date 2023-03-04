@@ -489,10 +489,6 @@
                         android:title="@string/fast_add_layer_mask" />
 
                     <item
-                        android:id="@+id/i_layer_add_filter_layer"
-                        android:title="@string/fast_add_filter_layer" />
-
-                    <item
                         android:id="@+id/i_layer_create_clipping_mask"
                         android:title="@string/fast_create_clipping_mask" />
 

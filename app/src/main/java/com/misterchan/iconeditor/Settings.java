@@ -1,6 +1,7 @@
 package com.misterchan.iconeditor;
 
 import android.content.SharedPreferences;
+import android.os.Looper;
 
 class Settings {
 
@@ -74,9 +75,14 @@ class Settings {
             }
             case KEY_FB -> mainActivity.setFilterBitmap(preferences.getBoolean(KEY_FB, false));
             case KEY_HMS -> {
-                try {
-                    History.setMaxSize(Integer.parseUnsignedInt(preferences.getString(KEY_HMS, "50")));
-                } catch (NumberFormatException e) {
+                if (Looper.myLooper() == Looper.getMainLooper()) {
+                    final int hms;
+                    try {
+                        hms = Integer.parseUnsignedInt(preferences.getString(KEY_HMS, "50"));
+                    } catch (NumberFormatException e) {
+                        break;
+                    }
+                    History.setMaxSize(hms);
                 }
             }
             case KEY_ITS -> independentTranslAndScale = preferences.getBoolean(KEY_ITS, false);

@@ -100,7 +100,6 @@
     <string name="eyedropper">Eyedropper</string>
     <string name="failed">Failed</string>
     <string name="fast">Fast</string>
-    <string name="fast_add_filter_layer">Fast Add a Filter Layer</string>
     <string name="fast_add_layer_mask">Fast Add a Layer Mask</string>
     <string name="fast_create_clipping_mask">Fast Create a Clipping Mask</string>
     <string name="fast_create_group">Fast Create a Group</string>
