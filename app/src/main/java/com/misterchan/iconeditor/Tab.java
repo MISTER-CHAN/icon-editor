@@ -3,10 +3,8 @@ package com.misterchan.iconeditor;
 import android.graphics.Bitmap;
 import android.graphics.BlendMode;
 import android.graphics.Canvas;
-import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import android.graphics.RectF;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -41,28 +39,28 @@ class Tab {
     };
 
     public boolean drawBelow = false;
-    public boolean gifDither = true; // Ignored if not background
+    public boolean gifDither = true;
     public boolean isBackground = true;
     public boolean isFirstFrame = true; // Ignored if not background
     public boolean visible = true;
     public Bitmap bitmap;
-    public Bitmap.CompressFormat compressFormat; // Ignored if not background
+    public Bitmap.CompressFormat compressFormat;
     public final CellGrid cellGrid = new CellGrid();
     private CheckBox cbVisible;
     public final Deque<Guide> guides = new LinkedList<>();
-    public GifEncoder.EncodingType gifEncodingType; // Ignored if not background
-    public FileType fileType; // Ignored if not background
+    public GifEncoder.EncodingType gifEncodingType;
+    public FileType fileType;
     public Filter filter;
     public float scale;
     public float translationX, translationY;
     public final History history = new History();
     private int backgroundPosition;
-    public int delay; // Ignored if not background
+    public int delay;
     private int level = 0;
     public int left = 0, top = 0;
-    public int quality = -1; // Ignored if not background
+    public int quality = -1;
     public LayerTree layerTree; // Ignored if not background
-    public String filePath; // Ignored if not background
+    public String filePath;
     private Tab background;
     private Tab firstFrame; // Ignored if not background
     private TextView tvBackground;

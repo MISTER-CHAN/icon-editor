@@ -31,8 +31,6 @@ import android.os.Environment;
 import android.os.Looper;
 import android.os.MessageQueue;
 import android.text.Editable;
-import android.text.InputFilter;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -51,7 +49,6 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -88,8 +85,6 @@ import java.io.InputStream;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -110,8 +105,6 @@ public class MainActivity extends AppCompatActivity {
     private static final BlendMode[] BLEND_MODES = BlendMode.values();
 
     private static final Looper MAIN_LOOPER = Looper.getMainLooper();
-
-    private static final Pattern PATTERN_TREE = Pattern.compile("^content://com\\.android\\.externalstorage\\.documents/tree/primary%3A(?<path>.*)$");
 
     private static final Paint PAINT_BITMAP = new Paint() {
         {
@@ -194,20 +187,6 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    private static final class FileNameHelper {
-        private static final Pattern PATTERN = Pattern.compile("[\"*/:<>?\\\\|]");
-
-        public static final InputFilter[] FILTERS = new InputFilter[]{
-                (source, start, end, dest, dstart, dend) -> {
-                    final Matcher matcher = PATTERN.matcher(source.toString());
-                    if (matcher.find()) {
-                        return "";
-                    }
-                    return null;
-                }
-        };
-    }
-
     private Bitmap bitmap;
     private Bitmap bitmapSrc;
     private Bitmap chessboard;
@@ -248,6 +227,7 @@ public class MainActivity extends AppCompatActivity {
     private CheckBox cbTransformerLar;
     private CheckBox cbZoom;
     private ColorAdapter colorAdapter;
+    private final DirectorySelector dirSelector = new DirectorySelector(this);
     private float backgroundScaledW, backgroundScaledH;
     private float blurRadius = 0.0f, blurRadiusEraser = 0.0f;
     private float scale;
@@ -306,7 +286,6 @@ public class MainActivity extends AppCompatActivity {
     private final Rect selection = new Rect();
     private final Ruler ruler = new Ruler();
     private Settings settings;
-    private String tree = "";
     private SubMenu smLayerBlendModes;
     private Paint.Style style = Paint.Style.FILL_AND_STROKE;
     private Tab tab;
@@ -410,80 +389,7 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    private final DialogInterface.OnClickListener onApplyFileNameListener = (dialog, which) -> {
-        final TextInputEditText tietFileName = ((AlertDialog) dialog).findViewById(R.id.tiet_file_name);
-        final Spinner sFileType = ((AlertDialog) dialog).findViewById(R.id.s_file_type);
-        final String fileType = sFileType.getSelectedItem().toString();
-        final String fileName = tietFileName.getText().toString() + fileType;
-        if (fileName.length() <= 0) {
-            return;
-        }
-        final Tab firstFrame = tab.getBackground().getFirstFrame();
-        firstFrame.filePath = Environment.getExternalStorageDirectory().getPath() + File.separator + tree + File.separator + fileName;
-        firstFrame.fileType = switch (fileType) {
-            case ".png" -> Tab.FileType.PNG;
-            case ".jpg" -> Tab.FileType.JPEG;
-            case ".gif" -> Tab.FileType.GIF;
-            case ".webp" -> Tab.FileType.WEBP;
-            default -> tab.fileType;
-        };
-        firstFrame.compressFormat = switch (fileType) {
-            case ".png" -> Bitmap.CompressFormat.PNG;
-            case ".jpg" -> Bitmap.CompressFormat.JPEG;
-            case ".webp" -> tab.compressFormat == Bitmap.CompressFormat.WEBP_LOSSY
-                    ? Bitmap.CompressFormat.WEBP_LOSSY : Bitmap.CompressFormat.WEBP_LOSSLESS;
-            default -> tab.compressFormat;
-        };
-        for (int i = firstFrame.getBackgroundPosition() + 1; i < tabs.size(); ++i) {
-            final Tab tab = tabs.get(i).getBackground();
-            if (tab.getFirstFrame() != firstFrame) {
-                break;
-            }
-            i = tab.getBackgroundPosition();
-            tab.filePath = firstFrame.filePath;
-            tab.fileType = firstFrame.fileType;
-            tab.compressFormat = firstFrame.compressFormat;
-        }
-        save();
-        tab.setTitle(fileName);
-    };
-
     private final ActivityResultCallback<List<Uri>> onImagesPickedCallback = result -> result.forEach(this::openFile);
-
-    private final ActivityResultCallback<Uri> onDocTreeOpenedCallback = result -> {
-        if (result == null) {
-            return;
-        }
-
-        final Matcher matcher = PATTERN_TREE.matcher(result.toString());
-        if (!matcher.find()) {
-            return;
-        }
-        tree = matcher.group("path").replace("%2F", "/");
-
-        final AlertDialog dialog = new AlertDialog.Builder(this)
-                .setNegativeButton(R.string.cancel, null)
-                .setPositiveButton(R.string.ok, onApplyFileNameListener)
-                .setTitle(R.string.file_name)
-                .setView(R.layout.file_name)
-                .show();
-
-        final Tab.FileType fileType = tab.getBackground().fileType;
-        final Spinner sFileType = dialog.findViewById(R.id.s_file_type);
-        final TextInputEditText tietFileName = dialog.findViewById(R.id.tiet_file_name);
-
-        sFileType.setSelection(fileType == null ? 0 : switch (fileType) {
-            case PNG -> 0;
-            case JPEG -> 1;
-            case GIF -> 2;
-            case WEBP -> 3;
-        });
-        tietFileName.setFilters(FileNameHelper.FILTERS);
-        tietFileName.setText(tab.getName());
-    };
-
-    private final ActivityResultLauncher<Uri> openDocTree =
-            registerForActivityResult(new ActivityResultContracts.OpenDocumentTree(), onDocTreeOpenedCallback);
 
     private final ActivityResultLauncher<PickVisualMediaRequest> pickMultipleMedia =
             registerForActivityResult(
@@ -2632,8 +2538,10 @@ public class MainActivity extends AppCompatActivity {
         t.paint.setBlendMode(BlendMode.SRC_OVER);
         t.isFirstFrame = isFirst;
         t.delay = delay;
-        t.filePath = path;
-        t.fileType = type;
+        if (isFirst) {
+            t.filePath = path;
+            t.fileType = type;
+        }
         addTab(t, position, title, setSelected);
         return t;
     }
@@ -3440,37 +3348,60 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void export() {
-        final Tab tab = this.tab.getBackground().getFirstFrame();
         if (tab.filePath == null) {
-            saveAs();
+            if (!checkOrRequestPermission()) {
+                return;
+            }
+            exportAs();
             return;
         }
-
-        switch (tab.fileType) {
-            case PNG -> save();
-            case GIF -> {
-                new QualityManager(this,
-                        tab.gifEncodingType == null ? GifEncoder.EncodingType.ENCODING_TYPE_NORMAL_LOW_MEMORY : tab.gifEncodingType,
-                        tab.gifDither,
-                        (encodingType, dither) -> {
-                            tab.gifEncodingType = encodingType;
-                            tab.gifDither = dither;
-                            save();
-                        })
-                        .show();
+        int quality = 100;
+        if (tab.fileType == Tab.FileType.GIF) {
+            if (tab.gifEncodingType == null) {
+                exportInQuality();
+                return;
             }
-            default -> {
-                new QualityManager(this,
-                        tab.quality < 0 ? 100 : tab.quality,
-                        tab.compressFormat,
-                        (quality, format) -> {
-                            tab.quality = quality;
-                            tab.compressFormat = format;
-                            save();
-                        })
-                        .show();
+        } else if (tab.fileType != Tab.FileType.PNG) {
+            quality = tab.quality;
+            if (quality < 0) {
+                exportInQuality();
+                return;
             }
         }
+
+        drawFloatingLayers();
+
+        final File file = new File(tab.filePath);
+        if (tab.compressFormat != null) {
+            try (final FileOutputStream fos = new FileOutputStream(file)) {
+                bitmap.compress(tab.compressFormat, quality, fos);
+                fos.flush();
+            } catch (IOException e) {
+                Toast.makeText(this, getString(R.string.failed) + '\n' + e.getMessage(), Toast.LENGTH_LONG).show();
+            } finally {
+                bitmap.recycle();
+            }
+        } else if (tab.fileType == Tab.FileType.GIF) {
+            final GifEncoder gifEncoder = new GifEncoder();
+            final int width = tab.bitmap.getWidth(), height = tab.bitmap.getHeight();
+            try {
+                gifEncoder.init(width, height, tab.filePath);
+            } catch (FileNotFoundException e) {
+                return;
+            }
+            gifEncoder.setDither(tab.gifDither);
+            gifEncoder.encodeFrame(bitmap, tab.delay);
+            gifEncoder.close();
+        }
+        MediaScannerConnection.scanFile(this, new String[]{file.toString()}, null, null);
+    }
+
+    private void exportAs() {
+        dirSelector.open(tab, this::exportInQuality);
+    }
+
+    private void exportInQuality() {
+        setQuality(this::export);
     }
 
     private void fitOnScreen() {
@@ -4649,7 +4580,7 @@ public class MainActivity extends AppCompatActivity {
                 final TextInputLayout til = dialog.findViewById(R.id.til_file_name);
                 final TextInputEditText tiet = (TextInputEditText) til.getEditText();
 
-                tiet.setFilters(FileNameHelper.FILTERS);
+                tiet.setFilters(DirectorySelector.FileNameHelper.FILTERS);
                 tiet.setText(tab.getName());
                 til.setHint(R.string.layer_name);
                 dialog.findViewById(R.id.s_file_type).setVisibility(View.GONE);
@@ -5071,13 +5002,13 @@ public class MainActivity extends AppCompatActivity {
         int quality = 100;
         if (tab.fileType == Tab.FileType.GIF) {
             if (tab.gifEncodingType == null) {
-                export();
+                saveInQuality();
                 return;
             }
         } else if (tab.fileType != Tab.FileType.PNG) {
             quality = tab.quality;
             if (quality < 0) {
-                export();
+                saveInQuality();
                 return;
             }
         }
@@ -5156,7 +5087,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void saveAs() {
-        openDocTree.launch(null);
+        dirSelector.open(tab.getBackground().getFirstFrame(), this::saveInQuality);
+    }
+
+    private void saveInQuality() {
+        setQuality(this::save);
     }
 
     private void scale(float x, float y) {
@@ -5210,6 +5145,36 @@ public class MainActivity extends AppCompatActivity {
         bitmapPaint.setFilterBitmap(filterBitmap);
         if (!hasNotLoaded) {
             drawBitmapOnView(true);
+        }
+    }
+
+    private void setQuality(Runnable callback) {
+        final Tab tab = this.tab.getBackground().getFirstFrame();
+
+        switch (tab.fileType) {
+            case PNG -> save();
+            case GIF -> {
+                new QualityManager(this,
+                        tab.gifEncodingType == null ? GifEncoder.EncodingType.ENCODING_TYPE_NORMAL_LOW_MEMORY : tab.gifEncodingType,
+                        tab.gifDither,
+                        (encodingType, dither) -> {
+                            tab.gifEncodingType = encodingType;
+                            tab.gifDither = dither;
+                            callback.run();
+                        })
+                        .show();
+            }
+            default -> {
+                new QualityManager(this,
+                        tab.quality < 0 ? 100 : tab.quality,
+                        tab.compressFormat,
+                        (quality, format) -> {
+                            tab.quality = quality;
+                            tab.compressFormat = format;
+                            callback.run();
+                        })
+                        .show();
+            }
         }
     }
 
