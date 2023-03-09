@@ -14,6 +14,7 @@ import androidx.annotation.IntRange;
 import androidx.annotation.Size;
 import androidx.annotation.StringRes;
 
+import com.misterchan.iconeditor.util.BitmapUtils;
 import com.waynejo.androidndkgif.GifEncoder;
 
 import java.util.Deque;
@@ -21,7 +22,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
 
-class Tab {
+public class Tab {
     public enum FileType {
         PNG, JPEG, GIF, WEBP
     }
@@ -84,10 +85,10 @@ class Tab {
 
     private static void addFilters(Bitmap bitmap, Tab tab) {
         switch (tab.filter) {
-            case COLOR_MATRIX -> BitmapUtil.addColorMatrixColorFilter(
+            case COLOR_MATRIX -> BitmapUtils.addColorMatrixColorFilter(
                     bitmap, 0, 0, bitmap, 0, 0, tab.colorMatrix);
-            case CURVES -> BitmapUtil.applyCurves(bitmap, tab.curves);
-            case HSV -> BitmapUtil.shiftHsv(bitmap, tab.deltaHsv);
+            case CURVES -> BitmapUtils.applyCurves(bitmap, tab.curves);
+            case HSV -> BitmapUtils.shiftHsv(bitmap, tab.deltaHsv);
         }
     }
 

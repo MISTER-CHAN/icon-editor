@@ -73,7 +73,32 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
-import com.misterchan.iconeditor.util.UriToPathUtil;
+import com.misterchan.iconeditor.colorpicker.ArgbColorIntPicker;
+import com.misterchan.iconeditor.colorpicker.ArgbColorPicker;
+import com.misterchan.iconeditor.dialog.AnimationClipper;
+import com.misterchan.iconeditor.dialog.CellGridManager;
+import com.misterchan.iconeditor.dialog.ColorBalanceDialog;
+import com.misterchan.iconeditor.dialog.ColorMatrixManager;
+import com.misterchan.iconeditor.dialog.ColorRangeDialog;
+import com.misterchan.iconeditor.dialog.CurvesDialog;
+import com.misterchan.iconeditor.dialog.DirectorySelector;
+import com.misterchan.iconeditor.dialog.EditNumberDialog;
+import com.misterchan.iconeditor.dialog.GuideEditor;
+import com.misterchan.iconeditor.dialog.HiddenImageMaker;
+import com.misterchan.iconeditor.dialog.HsvDialog;
+import com.misterchan.iconeditor.dialog.ImageSizeManager;
+import com.misterchan.iconeditor.dialog.LevelsDialog;
+import com.misterchan.iconeditor.dialog.LightingDialog;
+import com.misterchan.iconeditor.dialog.MatrixManager;
+import com.misterchan.iconeditor.dialog.NewImageDialog;
+import com.misterchan.iconeditor.dialog.QualityManager;
+import com.misterchan.iconeditor.dialog.SeekBarDialog;
+import com.misterchan.iconeditor.listener.AfterTextChangedListener;
+import com.misterchan.iconeditor.listener.OnCheckedListener;
+import com.misterchan.iconeditor.listener.OnSeekBarChangeListener;
+import com.misterchan.iconeditor.util.BitmapUtils;
+import com.misterchan.iconeditor.util.RunnableRunnable;
+import com.misterchan.iconeditor.util.UriUtils;
 import com.waynejo.androidndkgif.GifDecoder;
 import com.waynejo.androidndkgif.GifEncoder;
 
@@ -557,7 +582,7 @@ public class MainActivity extends AppCompatActivity {
     private final CurvesDialog.OnCurvesChangedListener onFilterCurvesChangedListener = (curves, stopped) -> runOrStart(() -> {
         final int w = imagePreview.getWidth(), h = imagePreview.getHeight();
         final int[] src = imagePreview.getPixels(), dst = new int[w * h];
-        BitmapUtil.applyCurves(src, dst, curves);
+        BitmapUtils.applyCurves(src, dst, curves);
         imagePreview.setPixels(dst, w, h);
         drawImagePreviewOnView(stopped);
     }, stopped);
@@ -576,7 +601,7 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 final int w = imagePreview.getWidth(), h = imagePreview.getHeight();
                 final int[] src = imagePreview.getPixels(), dst = new int[w * h];
-                BitmapUtil.shiftHsv(src, dst, deltaHsv);
+                BitmapUtils.shiftHsv(src, dst, deltaHsv);
                 imagePreview.setPixels(dst, w, h);
             }
             drawImagePreviewOnView(stopped);
@@ -655,7 +680,7 @@ public class MainActivity extends AppCompatActivity {
         runOrStart(() -> {
             final int w = imagePreview.getWidth(), h = imagePreview.getHeight();
             final int[] src = imagePreview.getPixels(), dst = new int[w * h];
-            BitmapUtil.setAlphaByHue(src, dst, progress);
+            BitmapUtils.setAlphaByHue(src, dst, progress);
             imagePreview.setPixels(dst, w, h);
             drawImagePreviewOnView(stopped);
         }, stopped);
@@ -712,7 +737,7 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 final int w = imagePreview.getWidth(), h = imagePreview.getHeight(), area = w * h;
                 final int[] pixels = imagePreview.getPixels(w, h, area);
-                BitmapUtil.generateNoise(pixels, area, paint.getColor(), progress / 100.0f, null);
+                BitmapUtils.generateNoise(pixels, area, paint.getColor(), progress / 100.0f, null);
                 imagePreview.setPixels(pixels, w, h);
             }
             drawImagePreviewOnView(stopped);
@@ -1178,10 +1203,10 @@ public class MainActivity extends AppCompatActivity {
                 final Rect rect = hasSelection ? selection : null;
                 runOrStart(() -> {
                     if (cbBucketFillContiguous.isChecked()) {
-                        BitmapUtil.floodFill(bitmap, rect, bx, by, paint.getColor(),
+                        BitmapUtils.floodFill(bitmap, rect, bx, by, paint.getColor(),
                                 cbBucketFillIgnoreAlpha.isChecked(), threshold);
                     } else {
-                        BitmapUtil.bucketFill(bitmap, rect, bx, by, paint.getColor(),
+                        BitmapUtils.bucketFill(bitmap, rect, bx, by, paint.getColor(),
                                 cbBucketFillIgnoreAlpha.isChecked(), threshold);
                     }
                     if (rect == null) {
@@ -1439,7 +1464,7 @@ public class MainActivity extends AppCompatActivity {
                             new Rect(left, top, right, bottom),
                             new Rect(0, 0, width, height),
                             PAINT_SRC);
-                    BitmapUtil.removeBackground(bm, foregroundColor, backgroundColor);
+                    BitmapUtils.removeBackground(bm, foregroundColor, backgroundColor);
                     cLine.drawBitmap(bm, 0.0f, 0.0f, PAINT_SRC_IN);
                     bm.recycle();
                     canvas.drawBitmap(bLine, left, top, PAINT_SRC_OVER);
@@ -1514,7 +1539,7 @@ public class MainActivity extends AppCompatActivity {
                                 new Rect(left, top, right, bottom),
                                 new Rect(0, 0, width, height),
                                 PAINT_SRC);
-                        BitmapUtil.removeBackground(bm, foregroundColor, backgroundColor);
+                        BitmapUtils.removeBackground(bm, foregroundColor, backgroundColor);
                         cLine.drawBitmap(bm, 0.0f, 0.0f, PAINT_SRC_IN);
                         bm.recycle();
                         canvas.drawBitmap(bLine, left, top, PAINT_SRC_OVER);
@@ -1573,7 +1598,7 @@ public class MainActivity extends AppCompatActivity {
                                 relative = new Rect(0, 0, width, height);
                         cv.drawBitmap(bitmapSrc, absolute, relative, PAINT_SRC_IN);
                         final Bitmap bThr = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_4444); // Threshold
-                        BitmapUtil.floodFill(bm, bThr, hasSelection ? selection : null,
+                        BitmapUtils.floodFill(bm, bThr, hasSelection ? selection : null,
                                 relativeX, relativeY, Color.BLACK, true, threshold);
                         bm.recycle();
                         cLine.drawBitmap(bThr, 0.0f, 0.0f, PAINT_DST_IN);
@@ -4197,7 +4222,7 @@ public class MainActivity extends AppCompatActivity {
                 final int w = imagePreview.getWidth(), h = imagePreview.getHeight();
                 final int[] src = imagePreview.getPixels(), dst = new int[w * h];
                 runOrStart(() -> {
-                    BitmapUtil.whiteBalance(src, dst, paint.getColor());
+                    BitmapUtils.whiteBalance(src, dst, paint.getColor());
                     imagePreview.setPixels(dst, w, h);
                     drawBitmapOnView(imagePreview.getEntire(), selection);
                 });
@@ -4251,7 +4276,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 Tab.distinguishProjects(tabs);
                 Tab.updateBackgroundIcons(tabs);
-                newFrame.layerTree = background.layerTree;
+                Tab.computeLayerTree(tabs, newFrame);
                 Tab.updateLevelIcons(tabs, newFrame);
                 tabLayout.getTabAt(newPos).select();
             }
@@ -4509,7 +4534,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 drawFloatingLayers();
                 final Tab tabBelow = tabs.get(posBelow);
-                BitmapUtil.mergeAlpha(tab.bitmap, tabBelow.bitmap);
+                BitmapUtils.mergeAlpha(tab.bitmap, tabBelow.bitmap);
                 selectTab(posBelow);
                 addToHistory();
             }
@@ -4781,10 +4806,10 @@ public class MainActivity extends AppCompatActivity {
                 default -> null;
             };
             if (compressFormat != null) {
-                path = UriToPathUtil.getRealFilePath(this, uri);
+                path = UriUtils.getRealPath(this, uri);
                 addTab(bm, tabs.size(), name, path, type, compressFormat);
             } else if (type == Tab.FileType.GIF) {
-                path = UriToPathUtil.getRealFilePath(this, uri);
+                path = UriUtils.getRealPath(this, uri);
                 final GifDecoder gifDecoder = new GifDecoder();
                 if (gifDecoder.load(path)) {
                     final int begin = tabs.size();

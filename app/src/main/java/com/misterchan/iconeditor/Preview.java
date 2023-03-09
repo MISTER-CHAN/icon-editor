@@ -11,6 +11,8 @@ import android.graphics.RectF;
 import androidx.annotation.ColorInt;
 import androidx.annotation.Size;
 
+import com.misterchan.iconeditor.util.BitmapUtils;
+
 class Preview {
 
     private static final Paint PAINT_CLEAR = new Paint() {
@@ -57,21 +59,21 @@ class Preview {
     public void addLightingColorFilter(float scale, float shift) {
         final int w = bm.getWidth(), h = bm.getHeight();
         final int[] src = getPixels(), dst = new int[w * h];
-        BitmapUtil.addLightingColorFilter(src, dst, scale, shift);
+        BitmapUtils.addLightingColorFilter(src, dst, scale, shift);
         setPixels(dst, w, h);
     }
 
     public void addLightingColorFilter(@Size(8) float[] lighting) {
         final int w = bm.getWidth(), h = bm.getHeight();
         final int[] src = getPixels(), dst = new int[w * h];
-        BitmapUtil.addLightingColorFilter(src, dst, lighting);
+        BitmapUtils.addLightingColorFilter(src, dst, lighting);
         setPixels(dst, w, h);
     }
 
     public void addColorMatrixColorFilter(@Size(20) float[] colorMatrix) {
         final int w = bm.getWidth(), h = bm.getHeight();
         final int[] src = getPixels(), dst = new int[w * h];
-        BitmapUtil.addColorMatrixColorFilter(src, dst, colorMatrix);
+        BitmapUtils.addColorMatrixColorFilter(src, dst, colorMatrix);
         setPixels(dst, w, h);
     }
 

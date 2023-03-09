@@ -3,7 +3,7 @@ package com.misterchan.iconeditor;
 import android.content.SharedPreferences;
 import android.os.Looper;
 
-class Settings {
+public class Settings {
 
     private static final String FORMAT_02X = "%02X";
     private static final String FORMAT_D = "%d";
