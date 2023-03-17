@@ -497,15 +497,10 @@ public class Tab {
     public static Bitmap mergeReferenceLayers(List<Tab> tabs, Tab oneOfLayers) {
         final List<Integer> refLayersIndexes = new ArrayList<>();
         final Tab background = oneOfLayers.getBackground();
-        for (int i = tabs.size() - 1; i >= 0; --i) {
-            final Tab tab = tabs.get(i), bg = tab.getBackground();
-            if (bg != background) {
-                if (refLayersIndexes.isEmpty()) {
-                    i = tab.getBackgroundPosition();
-                    continue;
-                } else {
-                    break;
-                }
+        for (int i = background.getBackgroundPosition(); i >= 0; --i) {
+            final Tab tab = tabs.get(i);
+            if (tab.isBackground && tab != background) {
+                break;
             }
             if (tab.reference) {
                 refLayersIndexes.add(i);
