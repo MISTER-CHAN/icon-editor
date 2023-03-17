@@ -50,8 +50,8 @@ public class UriUtils {
                         }
                     }
                     case "com.android.providers.downloads.documents" -> {
-                        final String id = DocumentsContract.getDocumentId(uri);
-                        final Uri contentUri = ContentUris.withAppendedId(URI_PUBLIC_DOWNLOADS, Long.parseLong(id));
+                        final String docId = DocumentsContract.getDocumentId(uri);
+                        final Uri contentUri = ContentUris.withAppendedId(URI_PUBLIC_DOWNLOADS, Long.parseLong(docId));
                         final String cv = getMediaDataColumnValue(contentResolver, contentUri, null, null);
                         if (cv != null) {
                             return cv;
