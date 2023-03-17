@@ -196,6 +196,7 @@
     <string name="quality">品质</string>
     <string name="rectangle">矩形</string>
     <string name="refer_to_clipboard">引用至剪贴簿</string>
+    <string name="reference">参照</string>
     <string name="rename">重命名</string>
     <string name="reset">重置</string>
     <string name="reset_this_curve">重置此曲线</string>

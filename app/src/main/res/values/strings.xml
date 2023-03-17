@@ -65,7 +65,7 @@
     <string name="convert_lab_to_rgb">Convert CIE L*a*b* to RGB</string>
     <string name="convert_xyy_to_rgb">Convert CIE xyY to RGB</string>
     <string name="convert_xyz_to_rgb">Convert CIE XYZ to RGB</string>
-    <string name="coordinate" translatable="false">(%d, %d)</string>
+    <string name="coordinates" translatable="false">(%d, %d)</string>
     <string name="copy_noun">Copy</string>
     <string name="copy_verb">Copy</string>
     <string name="crop">Crop</string>
@@ -218,6 +218,7 @@
     <string name="rectangle">Rectangle</string>
     <string name="redo" translatable="false">↷</string>
     <string name="refer_to_clipboard">Refer to Clipboard</string>
+    <string name="reference">Reference</string>
     <string name="rename">Rename</string>
     <string name="reset">Reset</string>
     <string name="reset_source">Reset Source</string>

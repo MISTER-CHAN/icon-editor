@@ -7,12 +7,6 @@ import androidx.annotation.Size;
 
 public class Color extends android.graphics.Color {
 
-    public static boolean isPermissible(@ColorInt int c0, @ColorInt int color, int tolerance) {
-        return Math.abs(red(color) - red(c0)) <= tolerance
-                && Math.abs(green(color) - green(c0)) <= tolerance
-                && Math.abs(blue(color) - blue(c0)) <= tolerance;
-    }
-
     @Size(3)
     public static void colorToHSV(@ColorInt int color, @Size(3) float[] hsv) {
         final float r = red(color) / 255.0f, g = green(color) / 255.0f, b = blue(color) / 255.0f;
@@ -80,6 +74,12 @@ public class Color extends android.graphics.Color {
     @IntRange(from = 0x00, to = 0xFF)
     public static int luminosity(@ColorInt int color) {
         return Math.max(Math.max(red(color), green(color)), blue(color));
+    }
+
+    public static boolean matches(@ColorInt int c0, @ColorInt int color, int tolerance) {
+        return Math.abs(red(color) - red(c0)) <= tolerance
+                && Math.abs(green(color) - green(c0)) <= tolerance
+                && Math.abs(blue(color) - blue(c0)) <= tolerance;
     }
 
     @ColorInt

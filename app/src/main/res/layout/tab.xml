@@ -20,6 +20,14 @@
         android:layout_height="wrap_content"
         android:visibility="gone" />
 
+    <TextView
+        android:id="@+id/tv_frame_index"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:maxLines="1"
+        android:textColor="?android:attr/textColorSecondary"
+        android:typeface="sans" />
+
     <!-- Set layout_width to wrap_content to resize the view automatically after the text is changed -->
     <!-- Set layout_weight to 1 to let the view not occupy the space of the following views -->
     <TextView

@@ -58,6 +58,7 @@ import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.ColorLong;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -213,7 +214,7 @@ public class MainActivity extends AppCompatActivity {
     };
 
     private Bitmap bitmap;
-    private Bitmap bitmapSrc;
+    private Bitmap refBm;
     private Bitmap chessboard;
     private Bitmap chessboardImage;
     private Bitmap clipboard;
@@ -296,6 +297,7 @@ public class MainActivity extends AppCompatActivity {
     private MenuItem miLayerFilterSet;
     private MenuItem miLayerHsv;
     private MenuItem miLayerLevelUp;
+    private MenuItem miLayerReference;
     private Point cloneStampSrc;
     private Point magErB, magErF; // Magic eraser background and foreground
     private final PointF magErBD = new PointF(0.0f, 0.0f), magErFD = new PointF(0.0f, 0.0f); // Distance
@@ -304,8 +306,10 @@ public class MainActivity extends AppCompatActivity {
     private RadioButton rbCloneStamp;
     private RadioButton rbEyedropper;
     private RadioButton rbEyedropperAllLayers;
+    private RadioButton rbMagicEraser;
     private RadioButton rbMagicEraserLeft, rbMagicEraserRight;
     private CompoundButton cbMagicEraserPosition;
+    private RadioButton rbMagicPaint;
     private RadioButton rbPencil;
     private RadioButton rbTransformer;
     private final Rect selection = new Rect();
@@ -822,10 +826,7 @@ public class MainActivity extends AppCompatActivity {
             if (rbCloneStamp.isChecked()) {
                 cloneStampSrc = null;
             }
-            if (bitmapSrc != null) {
-                bitmapSrc.recycle();
-                bitmapSrc = Bitmap.createBitmap(bitmap);
-            }
+            updateReference();
 
             miHasAlpha.setChecked(bitmap.hasAlpha());
             miLayerColorMatrix.setChecked(t.filter == Tab.Filter.COLOR_MATRIX);
@@ -834,6 +835,7 @@ public class MainActivity extends AppCompatActivity {
             miLayerFilterSet.setEnabled(t.filter != null);
             miLayerHsv.setChecked(t.filter == Tab.Filter.HSV);
             miLayerLevelUp.setEnabled(t.getLevel() > 0);
+            miLayerReference.setChecked(t.reference);
             checkLayerBlendModeMenuItem(t.paint.getBlendMode());
 
             drawBitmapOnView(true, true);
@@ -1030,10 +1032,10 @@ public class MainActivity extends AppCompatActivity {
                     break;
                 }
                 i = frame.getBackgroundPosition();
-                resizeImage(frame, width, height, transform, 0, 0);
+                resizeImage(frame, width, height, transform, null, 0, 0);
             }
         } else {
-            resizeImage(tab, width, height, transform, 0, 0);
+            resizeImage(tab, width, height, transform, null, 0, 0);
         }
         drawBitmapOnView(true, true);
     };
@@ -1171,7 +1173,7 @@ public class MainActivity extends AppCompatActivity {
                     final int bx = toBitmapX(x), by = toBitmapY(y);
                     path = new Path();
                     path.moveTo(bx, by);
-                    tvStatus.setText(String.format(getString(R.string.coordinate), bx, by));
+                    tvStatus.setText(String.format(getString(R.string.coordinates), bx, by));
                 }
                 case MotionEvent.ACTION_MOVE -> {
                     final float x = event.getX(), y = event.getY();
@@ -1179,7 +1181,7 @@ public class MainActivity extends AppCompatActivity {
                     path.lineTo(bx, by);
                     canvas.drawPath(path, paint);
                     drawBitmapOnView();
-                    tvStatus.setText(String.format(getString(R.string.coordinate), bx, by));
+                    tvStatus.setText(String.format(getString(R.string.coordinates), bx, by));
                 }
                 case MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                     path = null;
@@ -1200,13 +1202,14 @@ public class MainActivity extends AppCompatActivity {
                 if (!(0 <= bx && bx < bitmap.getWidth() && 0 <= by && by < bitmap.getHeight())) {
                     break;
                 }
+                final Bitmap src = refBm != null ? refBm : bitmap;
                 final Rect rect = hasSelection ? selection : null;
                 runOrStart(() -> {
                     if (cbBucketFillContiguous.isChecked()) {
-                        BitmapUtils.floodFill(bitmap, rect, bx, by, paint.getColor(),
+                        BitmapUtils.floodFill(src, bitmap, rect, bx, by, paint.getColor(),
                                 cbBucketFillIgnoreAlpha.isChecked(), threshold);
                     } else {
-                        BitmapUtils.bucketFill(bitmap, rect, bx, by, paint.getColor(),
+                        BitmapUtils.bucketFill(src, bitmap, rect, bx, by, paint.getColor(),
                                 cbBucketFillIgnoreAlpha.isChecked(), threshold);
                     }
                     if (rect == null) {
@@ -1267,7 +1270,7 @@ public class MainActivity extends AppCompatActivity {
                     bm.recycle();
                     drawBitmapOnView((int) left, (int) top, (int) (left + width), (int) (top + height));
                     drawCrossOnView(bx + dx, by + dy);
-                    tvStatus.setText(String.format(getString(R.string.coordinate), bx, by));
+                    tvStatus.setText(String.format(getString(R.string.coordinates), bx, by));
 
                     lastX = x;
                     lastY = y;
@@ -1278,7 +1281,7 @@ public class MainActivity extends AppCompatActivity {
                     if (cloneStampSrc == null) {
                         cloneStampSrc = new Point(bx, by);
                         drawCrossOnView(bx, by);
-                        tvStatus.setText(String.format(getString(R.string.coordinate), bx, by));
+                        tvStatus.setText(String.format(getString(R.string.coordinates), bx, by));
                     } else {
                         drawCrossOnView(cloneStampSrc.x, cloneStampSrc.y);
                         addToHistory();
@@ -1308,7 +1311,7 @@ public class MainActivity extends AppCompatActivity {
                     final int bx = toBitmapX(x), by = toBitmapY(y);
                     drawLineOnCanvas(lastBX, lastBY, bx, by, eraser);
                     drawBitmapOnView(lastBX, lastBY, bx, by, strokeHalfWidthEraser + blurRadiusEraser);
-                    tvStatus.setText(String.format(MainActivity.this.getString(R.string.coordinate), bx, by));
+                    tvStatus.setText(String.format(MainActivity.this.getString(R.string.coordinates), bx, by));
                     lastX = x;
                     lastY = y;
                     break;
@@ -1383,7 +1386,7 @@ public class MainActivity extends AppCompatActivity {
                         shapeStartX = bx;
                         shapeStartY = by;
                         color0 = bitmap.getColor(satX(bitmap, bx), satY(bitmap, by)).pack();
-                        tvStatus.setText(String.format(MainActivity.this.getString(R.string.coordinate), bx, by));
+                        tvStatus.setText(String.format(MainActivity.this.getString(R.string.coordinates), bx, by));
                         break;
                     }
                 }
@@ -1441,12 +1444,12 @@ public class MainActivity extends AppCompatActivity {
                     final int rad = (int) (strokeWidth / 2.0f + blurRadius);
                     final float radF = toScaled(rad);
                     final double theta = Math.atan2(y - lastY, x - lastX);
-                    final int colorLeft = bitmapSrc.getPixel(
-                            satX(bitmapSrc, toBitmapX(x + radF * (float) Math.sin(theta))),
-                            satY(bitmapSrc, toBitmapY(y - radF * (float) Math.cos(theta))));
-                    final int colorRight = bitmapSrc.getPixel(
-                            satX(bitmapSrc, toBitmapX(x - radF * (float) Math.sin(theta))),
-                            satY(bitmapSrc, toBitmapY(y + radF * (float) Math.cos(theta))));
+                    final int colorLeft = refBm.getPixel(
+                            satX(refBm, toBitmapX(x + radF * (float) Math.sin(theta))),
+                            satY(refBm, toBitmapY(y - radF * (float) Math.cos(theta))));
+                    final int colorRight = refBm.getPixel(
+                            satX(refBm, toBitmapX(x - radF * (float) Math.sin(theta))),
+                            satY(refBm, toBitmapY(y + radF * (float) Math.cos(theta))));
                     final int backgroundColor = cbMagicEraserPosition == rbMagicEraserLeft ? colorLeft : colorRight;
                     final int foregroundColor = backgroundColor == colorLeft ? colorRight : colorLeft;
 
@@ -1460,7 +1463,7 @@ public class MainActivity extends AppCompatActivity {
                             paint);
                     canvas.drawBitmap(bLine, left, top, PAINT_DST_OUT);
                     final Bitmap bm = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-                    new Canvas(bm).drawBitmap(bitmapSrc,
+                    new Canvas(bm).drawBitmap(refBm,
                             new Rect(left, top, right, bottom),
                             new Rect(0, 0, width, height),
                             PAINT_SRC);
@@ -1471,7 +1474,7 @@ public class MainActivity extends AppCompatActivity {
                     bLine.recycle();
 
                     drawBitmapOnView(left, top, right, bottom);
-                    tvStatus.setText(String.format(getString(R.string.coordinate), bx, by));
+                    tvStatus.setText(String.format(getString(R.string.coordinates), bx, by));
                     lastX = x;
                     lastY = y;
                 }
@@ -1518,10 +1521,10 @@ public class MainActivity extends AppCompatActivity {
                         }
 
                         final int rad = (int) (strokeWidth / 2.0f + blurRadius);
-                        final int backgroundColor = bitmapSrc.getPixel(
-                                satX(bitmapSrc, magErB.x), satY(bitmapSrc, magErB.y));
-                        final int foregroundColor = bitmapSrc.getPixel(
-                                satX(bitmapSrc, magErF.x), satY(bitmapSrc, magErF.y));
+                        final int backgroundColor = refBm.getPixel(
+                                satX(refBm, magErB.x), satY(refBm, magErB.y));
+                        final int foregroundColor = refBm.getPixel(
+                                satX(refBm, magErF.x), satY(refBm, magErF.y));
 
                         final int left = Math.min(magErB.x, magErF.x) - rad,
                                 top = Math.min(magErB.y, magErF.y) - rad,
@@ -1535,7 +1538,7 @@ public class MainActivity extends AppCompatActivity {
                                 paint);
                         canvas.drawBitmap(bLine, left, top, PAINT_DST_OUT);
                         final Bitmap bm = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-                        new Canvas(bm).drawBitmap(bitmapSrc,
+                        new Canvas(bm).drawBitmap(refBm,
                                 new Rect(left, top, right, bottom),
                                 new Rect(0, 0, width, height),
                                 PAINT_SRC);
@@ -1596,7 +1599,7 @@ public class MainActivity extends AppCompatActivity {
                         cv.drawBitmap(bLine, 0.0f, 0.0f, PAINT_SRC);
                         final Rect absolute = new Rect(left, top, right, bottom),
                                 relative = new Rect(0, 0, width, height);
-                        cv.drawBitmap(bitmapSrc, absolute, relative, PAINT_SRC_IN);
+                        cv.drawBitmap(refBm, absolute, relative, PAINT_SRC_IN);
                         final Bitmap bThr = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_4444); // Threshold
                         BitmapUtils.floodFill(bm, bThr, hasSelection ? selection : null,
                                 relativeX, relativeY, Color.BLACK, true, threshold);
@@ -1608,7 +1611,7 @@ public class MainActivity extends AppCompatActivity {
                     bLine.recycle();
 
                     drawBitmapOnView(left, top, right, bottom);
-                    tvStatus.setText(String.format(getString(R.string.coordinate), bx, by));
+                    tvStatus.setText(String.format(getString(R.string.coordinates), bx, by));
                     lastX = x;
                     lastY = y;
                     break;
@@ -1732,7 +1735,7 @@ public class MainActivity extends AppCompatActivity {
                 imagePreview.drawBitmap(bm);
                 bm.recycle();
                 drawBitmapOnView(imagePreview.getEntire(), selection);
-                tvStatus.setText(String.format(getString(R.string.coordinate), bx, by));
+                tvStatus.setText(String.format(getString(R.string.coordinates), bx, by));
                 break;
             }
             case MotionEvent.ACTION_UP:
@@ -1761,7 +1764,7 @@ public class MainActivity extends AppCompatActivity {
                     path.moveTo(bx, by);
                     previewPath = new Path();
                     previewPath.moveTo(x, y);
-                    tvStatus.setText(String.format(getString(R.string.coordinate), bx, by));
+                    tvStatus.setText(String.format(getString(R.string.coordinates), bx, by));
                 }
                 case MotionEvent.ACTION_MOVE -> {
                     final float x = event.getX(), y = event.getY();
@@ -1771,7 +1774,7 @@ public class MainActivity extends AppCompatActivity {
                     eraseBitmap(previewImage);
                     previewCanvas.drawPath(previewPath, selector);
                     ivPreview.invalidate();
-                    tvStatus.setText(String.format(getString(R.string.coordinate), bx, by));
+                    tvStatus.setText(String.format(getString(R.string.coordinates), bx, by));
                 }
                 case MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                     canvas.drawPath(path, paint);
@@ -1813,7 +1816,7 @@ public class MainActivity extends AppCompatActivity {
                     final int bx = toBitmapX(x), by = toBitmapY(y);
                     drawLineOnCanvas(lastBX, lastBY, bx, by, pencil);
                     drawBitmapOnView(lastBX, lastBY, bx, by, strokeWidth / 2.0f + blurRadius);
-                    tvStatus.setText(String.format(getString(R.string.coordinate), bx, by));
+                    tvStatus.setText(String.format(getString(R.string.coordinates), bx, by));
                     lastX = x;
                     lastY = y;
                     break;
@@ -1842,7 +1845,7 @@ public class MainActivity extends AppCompatActivity {
                     drawPointOnView(bx, by);
                     shapeStartX = bx;
                     shapeStartY = by;
-                    tvStatus.setText(String.format(getString(R.string.coordinate), bx, by));
+                    tvStatus.setText(String.format(getString(R.string.coordinates), bx, by));
                     break;
                 }
                 // Fall through
@@ -1874,7 +1877,7 @@ public class MainActivity extends AppCompatActivity {
                     drawPointOnView(bx, by);
                     shapeStartX = bx;
                     shapeStartY = by;
-                    tvStatus.setText(String.format(getString(R.string.coordinate), bx, by));
+                    tvStatus.setText(String.format(getString(R.string.coordinates), bx, by));
                     break;
                 }
             }
@@ -2317,7 +2320,7 @@ public class MainActivity extends AppCompatActivity {
                     switch (event.getAction()) {
                         case MotionEvent.ACTION_DOWN -> {
                             final float x = event.getX(), y = event.getY();
-                            tvStatus.setText(String.format(getString(R.string.coordinate),
+                            tvStatus.setText(String.format(getString(R.string.coordinates),
                                     toBitmapX(x), toBitmapY(y)));
                             if (lastMerged == null) {
                                 mergeLayersEntire();
@@ -2369,7 +2372,7 @@ public class MainActivity extends AppCompatActivity {
                             final int index = 1 - event.getActionIndex();
                             final float x = event.getX(index);
                             final float y = event.getY(index);
-                            tvStatus.setText(String.format(getString(R.string.coordinate),
+                            tvStatus.setText(String.format(getString(R.string.coordinates),
                                     toBitmapX(x), toBitmapY(y)));
                             dx = x;
                             dy = y;
@@ -2430,7 +2433,7 @@ public class MainActivity extends AppCompatActivity {
     private final CompoundButton.OnCheckedChangeListener onMagicEraserRBCheckedChangeListener = (buttonView, isChecked) -> {
         if (isChecked) {
             onToolChange(onTouchIVWithMagicEraserListener);
-            bitmapSrc = Bitmap.createBitmap(bitmap);
+            updateReference();
             paint.setAntiAlias(false);
             paint.setMaskFilter(null);
             paint.setStrokeCap(Paint.Cap.BUTT);
@@ -2447,7 +2450,7 @@ public class MainActivity extends AppCompatActivity {
     private final CompoundButton.OnCheckedChangeListener onMagicPaintRBCheckedChangeListener = (buttonView, isChecked) -> {
         if (isChecked) {
             onToolChange(onTouchIVWithMagicPaintListener);
-            bitmapSrc = Bitmap.createBitmap(bitmap);
+            updateReference();
             threshold = 0xFF;
             cbMagicPaintAntiAlias.setChecked(antiAlias);
             tietMagicPaintBlurRadius.setText(String.valueOf(blurRadius));
@@ -2680,6 +2683,10 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return marqueeBoundBeingDragged;
+    }
+
+    private boolean checkIfHaveSelectedToolNeedsRef() {
+        return rbMagicEraser.isChecked() || rbMagicPaint.isChecked();
     }
 
     private void checkLayerBlendModeMenuItem(BlendMode blendMode) {
@@ -3655,9 +3662,11 @@ public class MainActivity extends AppCompatActivity {
         rbCloneStamp = findViewById(R.id.rb_clone_stamp);
         rbEyedropper = findViewById(R.id.rb_eyedropper);
         rbEyedropperAllLayers = findViewById(R.id.rb_eyedropper_all_layers);
+        rbMagicEraser = findViewById(R.id.rb_magic_eraser);
         rbMagicEraserLeft = findViewById(R.id.rb_magic_eraser_left);
         rbMagicEraserRight = findViewById(R.id.rb_magic_eraser_right);
         cbMagicEraserPosition = rbMagicEraserLeft;
+        rbMagicPaint = findViewById(R.id.rb_magic_paint);
         rbPencil = findViewById(R.id.rb_pencil);
         final RadioButton rbRuler = findViewById(R.id.rb_ruler);
         rbTransformer = findViewById(R.id.rb_transformer);
@@ -3728,8 +3737,8 @@ public class MainActivity extends AppCompatActivity {
         rbEyedropper.setOnCheckedChangeListener((OnCheckedListener) () -> onToolChange(onTouchIVWithEyedropperListener, svOptionsEyedropper));
         ((CompoundButton) findViewById(R.id.rb_gradient)).setOnCheckedChangeListener(onGradientRBCheckedChangeListener);
         ((CompoundButton) findViewById(R.id.rb_line)).setOnCheckedChangeListener((OnCheckedListener) () -> shape = line);
-        ((CompoundButton) findViewById(R.id.rb_magic_eraser)).setOnCheckedChangeListener(onMagicEraserRBCheckedChangeListener);
-        ((CompoundButton) findViewById(R.id.rb_magic_paint)).setOnCheckedChangeListener(onMagicPaintRBCheckedChangeListener);
+        rbMagicEraser.setOnCheckedChangeListener(onMagicEraserRBCheckedChangeListener);
+        rbMagicPaint.setOnCheckedChangeListener(onMagicPaintRBCheckedChangeListener);
         ((CompoundButton) findViewById(R.id.rb_oval)).setOnCheckedChangeListener((OnCheckedListener) () -> shape = oval);
         ((CompoundButton) findViewById(R.id.rb_patcher)).setOnCheckedChangeListener(onPatcherRBCheckedChangeListener);
         ((CompoundButton) findViewById(R.id.rb_path)).setOnCheckedChangeListener(onPathRBCheckedChangeListener);
@@ -3886,6 +3895,7 @@ public class MainActivity extends AppCompatActivity {
         miLayerFilterSet = menu.findItem(R.id.i_layer_filter_set);
         miLayerHsv = menu.findItem(R.id.i_layer_hsv);
         miLayerLevelUp = menu.findItem(R.id.i_layer_level_up);
+        miLayerReference = menu.findItem(R.id.i_layer_reference);
         smLayerBlendModes = menu.findItem(R.id.i_blend_mode).getSubMenu();
         return true;
     }
@@ -3958,14 +3968,16 @@ public class MainActivity extends AppCompatActivity {
                         }
                         i = frame.getBackgroundPosition();
                         final Bitmap bm = Bitmap.createBitmap(frame.bitmap, selection.left, selection.top, width, height);
-                        resizeImage(frame, width, height, null, selection.left, selection.top);
-                        new Canvas(frame.bitmap).drawBitmap(bm, 0.0f, 0.0f, PAINT_BITMAP);
+                        resizeImage(frame, width, height,
+                                ImageSizeManager.Transform.CROP, bm,
+                                selection.left, selection.top);
                         bm.recycle();
                     }
                 } else {
                     final Bitmap bm = Bitmap.createBitmap(bitmap, selection.left, selection.top, width, height);
-                    resizeImage(tab, width, height, null, selection.left, selection.top);
-                    canvas.drawBitmap(bm, 0.0f, 0.0f, PAINT_BITMAP);
+                    resizeImage(tab, width, height,
+                            ImageSizeManager.Transform.CROP, bm,
+                            selection.left, selection.top);
                     bm.recycle();
                 }
                 drawBitmapOnView(true, true);
@@ -4039,20 +4051,20 @@ public class MainActivity extends AppCompatActivity {
             case R.id.i_file_close -> {
                 final int last = tabs.size() - 1;
                 final Tab firstFrame = tab.getBackground().getFirstFrame();
-                boolean isInProj = false;
+                boolean currProj = false;
                 for (int i = last; i >= 0; --i) {
                     final Tab t = tabs.get(i);
                     if (t.isBackground) {
-                        final boolean ip = t.getFirstFrame() == firstFrame; // Is in project
-                        if (isInProj) {
-                            if (!ip) {
+                        final boolean cp = t.getFirstFrame() == firstFrame; // Belongs to current project
+                        if (currProj) {
+                            if (!cp) {
                                 break;
                             }
-                        } else if (ip) {
-                            isInProj = true;
+                        } else if (cp) {
+                            currProj = true;
                         }
                     }
-                    if (isInProj && t != tab) {
+                    if (currProj && t != tab) {
                         closeTab(i, false);
                     }
                 }
@@ -4594,6 +4606,12 @@ public class MainActivity extends AppCompatActivity {
                             0, 0, 0, tabLayout.getSelectedTabPosition());
                 }
             }
+            case R.id.i_layer_reference -> {
+                final boolean checked = !item.isChecked();
+                tab.reference = checked;
+                item.setChecked(checked);
+                updateReference();
+            }
             case R.id.i_layer_rename -> {
                 final AlertDialog dialog = new AlertDialog.Builder(this)
                         .setNegativeButton(R.string.cancel, null)
@@ -4739,10 +4757,6 @@ public class MainActivity extends AppCompatActivity {
         cbZoom.setTag(onImageViewTouchListener);
         flImageView.setOnTouchListener(onImageViewTouchListener);
         hideToolOptions();
-        if (bitmapSrc != null) {
-            bitmapSrc.recycle();
-            bitmapSrc = null;
-        }
         isShapeStopped = true;
         eraseBitmapAndInvalidateView(previewImage, ivPreview);
         paint.setAntiAlias(antiAlias);
@@ -4816,8 +4830,7 @@ public class MainActivity extends AppCompatActivity {
                     final Tab[] frames = new Tab[gifDecoder.frameNum()];
                     for (int i = 0; i < gifDecoder.frameNum(); ++i) {
                         final Tab newFrame = addFrame(gifDecoder.frame(i), tabs.size(),
-                                i == 0, gifDecoder.delay(i),
-                                String.format("[%d] %s", i, name), path, type);
+                                i == 0, gifDecoder.delay(i), name, path, type);
                         frames[i] = newFrame;
                     }
                     Tab.distinguishProjects(tabs);
@@ -4852,9 +4865,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private static void recycleAllBitmaps(MainActivity ma) {
-        if (ma.bitmapSrc != null) {
-            ma.bitmapSrc.recycle();
-            ma.bitmapSrc = null;
+        if (ma.refBm != null) {
+            ma.refBm.recycle();
+            ma.refBm = null;
         }
         if (ma.chessboard != null) {
             ma.chessboard.recycle();
@@ -4915,33 +4928,29 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void resizeImage(Tab tab, int width, int height,
-                             ImageSizeManager.Transform transform, int offsetX, int offsetY) {
+                             ImageSizeManager.Transform transform, @Nullable Bitmap newImage,
+                             int offsetX, int offsetY) {
         final Bitmap bm = Bitmap.createBitmap(width, height,
                 tab.bitmap.getConfig(), tab.bitmap.hasAlpha(), tab.bitmap.getColorSpace());
         final Canvas cv = new Canvas(bm);
         if (transform != null) {
+            if (newImage == null) {
+                newImage = tab.bitmap;
+            }
             switch (transform) {
-                case STRETCH -> cv.drawBitmap(tab.bitmap,
+                case STRETCH -> cv.drawBitmap(newImage,
                         new Rect(0, 0, tab.bitmap.getWidth(), tab.bitmap.getHeight()),
                         new RectF(0.0f, 0.0f, width, height),
                         PAINT_BITMAP);
-                case STRETCH_FILTER -> cv.drawBitmap(tab.bitmap,
+                case STRETCH_FILTER -> cv.drawBitmap(newImage,
                         new Rect(0, 0, tab.bitmap.getWidth(), tab.bitmap.getHeight()),
                         new RectF(0.0f, 0.0f, width, height),
                         PAINT_SRC);
-                case CROP -> cv.drawBitmap(tab.bitmap, 0.0f, 0.0f, PAINT_BITMAP);
+                case CROP -> cv.drawBitmap(newImage, 0.0f, 0.0f, PAINT_BITMAP);
             }
         }
         if (tab.isBackground) {
-            int i;
-            for (i = 0; i < tabs.size(); ++i) {
-                final Tab t = tabs.get(i).getBackground();
-                i = t.getBackgroundPosition();
-                if (t == tab) {
-                    break;
-                }
-            }
-            for (--i; i >= 0; --i) {
+            for (int i = tab.getBackgroundPosition() - 1; i >= 0; --i) {
                 final Tab t = tabs.get(i);
                 if (t.isBackground) {
                     break;
@@ -4969,7 +4978,7 @@ public class MainActivity extends AppCompatActivity {
             drawGridOnView();
             drawSelectionOnView();
 
-            clearStatus(); // Prevent from showing old size
+            clearStatus(); // Prevent from displaying old size
         }
     }
 
@@ -5362,5 +5371,17 @@ public class MainActivity extends AppCompatActivity {
         }
 
         clearStatus();
+    }
+
+    private void updateReference() {
+        if (refBm != null) {
+            refBm.recycle();
+        }
+        if (tab.reference) {
+            refBm = checkIfHaveSelectedToolNeedsRef() ? Bitmap.createBitmap(bitmap) : null;
+        } else {
+            final Bitmap rb = Tab.mergeReferenceLayers(tabs, tab);
+            refBm = rb != null ? rb : checkIfHaveSelectedToolNeedsRef() ? Bitmap.createBitmap(bitmap) : null;
+        }
     }
 }

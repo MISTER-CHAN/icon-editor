@@ -17,10 +17,12 @@ import androidx.annotation.StringRes;
 import com.misterchan.iconeditor.util.BitmapUtils;
 import com.waynejo.androidndkgif.GifEncoder;
 
+import java.util.ArrayList;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
+import java.util.stream.Collectors;
 
 public class Tab {
     public enum FileType {
@@ -40,6 +42,7 @@ public class Tab {
     };
 
     public boolean drawBelow = false;
+    public boolean reference = false;
     public boolean gifDither = true;
     public boolean isBackground = true;
     public boolean isFirstFrame = true; // Ignored if not background
@@ -65,6 +68,7 @@ public class Tab {
     private Tab background;
     private Tab firstFrame; // Ignored if not background
     private TextView tvBackground;
+    private TextView tvFrameIndex;
     private TextView tvLowerLevel, tvRoot, tvParent, tvLeaf;
     private TextView tvTitle;
 
@@ -103,22 +107,30 @@ public class Tab {
      * Can only call after distinguishing projects.
      */
     public static void computeLayerTree(List<Tab> tabs, Tab oneOfLayers) {
-        final Stack<LayerTree> stack = new Stack<>();
-        LayerTree layerTree = new LayerTree();
-        LayerTree.Node prev = null;
-
         final Tab background = oneOfLayers.getBackground();
-        stack.push(layerTree);
+        final List<Integer> indexes = new ArrayList<>();
         for (int i = background.getBackgroundPosition(); i >= 0; --i) {
             final Tab t = tabs.get(i);
-            if (t.isBackground) {
-                if (t == background) {
-                    prev = layerTree.push(t);
-                    continue;
-                } else {
-                    break;
-                }
+            if (t.isBackground && t != background) {
+                break;
             }
+            indexes.add(i);
+        }
+        background.layerTree = computeLayerTree(tabs, indexes);
+    }
+
+    /**
+     * @param tabs    Tab list starts with foreground
+     * @param indexes Tab index list starts with background
+     */
+    private static LayerTree computeLayerTree(List<Tab> tabs, List<Integer> indexes) {
+        final Stack<LayerTree> stack = new Stack<>();
+        LayerTree layerTree = new LayerTree();
+        LayerTree.Node prev = layerTree.push(tabs.get(indexes.get(0)));
+
+        stack.push(layerTree);
+        for (int i = 1; i < indexes.size(); ++i) {
+            final Tab t = tabs.get(indexes.get(i));
 
             final Tab prevTab = prev.getTab();
             final int levelDiff = t.level - prevTab.level;
@@ -153,7 +165,7 @@ public class Tab {
             }
         }
 
-        background.layerTree = layerTree;
+        return layerTree;
     }
 
     public static void distinguishProjects(List<Tab> tabs) {
@@ -317,6 +329,7 @@ public class Tab {
         tvParent = view.findViewById(R.id.tv_parent);
         tvLeaf = view.findViewById(R.id.tv_leaf);
         tvBackground = view.findViewById(R.id.tv_background);
+        tvFrameIndex = view.findViewById(R.id.tv_frame_index);
         tvLowerLevel = view.findViewById(R.id.tv_lower_level);
         tvTitle = view.findViewById(R.id.tv_title);
     }
@@ -478,6 +491,40 @@ public class Tab {
         return bitmap;
     }
 
+    /**
+     * Can only call after distinguishing projects.
+     */
+    public static Bitmap mergeReferenceLayers(List<Tab> tabs, Tab oneOfLayers) {
+        final List<Integer> refLayersIndexes = new ArrayList<>();
+        final Tab background = oneOfLayers.getBackground();
+        for (int i = tabs.size() - 1; i >= 0; --i) {
+            final Tab tab = tabs.get(i), bg = tab.getBackground();
+            if (bg != background) {
+                if (refLayersIndexes.isEmpty()) {
+                    i = tab.getBackgroundPosition();
+                    continue;
+                } else {
+                    break;
+                }
+            }
+            if (tab.reference) {
+                refLayersIndexes.add(i);
+            }
+        }
+        switch (refLayersIndexes.size()) {
+            case 0 -> {
+                return null;
+            }
+            case 1 -> {
+                final Bitmap src = tabs.get(refLayersIndexes.get(0)).bitmap;
+                final Bitmap dst = Bitmap.createBitmap(src.getWidth(), src.getHeight(), Bitmap.Config.ARGB_8888);
+                new Canvas(dst).drawBitmap(src, 0.0f, 0.0f, PAINT_SRC);
+                return dst;
+            }
+        }
+        return mergeLayers(computeLayerTree(tabs, refLayersIndexes));
+    }
+
     public void moveBy(int dx, int dy) {
         left += dx;
         top += dy;
@@ -616,6 +663,7 @@ public class Tab {
 
     public void showTo(View view) {
         ((TextView) view.findViewById(R.id.tv_background)).setText(tvBackground.getText());
+        ((TextView) view.findViewById(R.id.tv_frame_index)).setText(tvFrameIndex.getText());
         ((TextView) view.findViewById(R.id.tv_leaf)).setText(tvLeaf.getText());
         ((TextView) view.findViewById(R.id.tv_lower_level)).setText(tvLowerLevel.getText());
         ((TextView) view.findViewById(R.id.tv_parent)).setText(tvParent.getText());
@@ -629,11 +677,14 @@ public class Tab {
 
     public static void updateBackgroundIcons(List<Tab> tabs) {
         Tab lastTab = null;
+        int frameIndex = 0;
         for (final Tab tab : tabs) {
             tab.tvBackground.setText("");
             if (!tab.isBackground) {
                 continue;
             }
+            frameIndex = tab.isFirstFrame ? 0 : frameIndex + 1;
+            tab.tvFrameIndex.setText(tab.isFirstFrame ? null : "[" + frameIndex + "] ");
             if (lastTab != null) {
                 lastTab.tvBackground.append(tab.isFirstFrame ? "┃" : "│");
             }
