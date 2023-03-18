@@ -22,16 +22,9 @@ import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
-import java.util.stream.Collectors;
 
 public class Tab {
-    public enum FileType {
-        PNG, JPEG, GIF, WEBP
-    }
-
-    public enum Filter {
-        COLOR_MATRIX, CURVES, HSV
-    }
+    private static final Bitmap RECYCLED_BITMAP = Bitmap.createBitmap(1, 1, Bitmap.Config.ALPHA_8);
 
     private static final Paint PAINT_SRC = new Paint() {
         {
@@ -40,6 +33,18 @@ public class Tab {
             setFilterBitmap(false);
         }
     };
+
+    static {
+        RECYCLED_BITMAP.recycle();
+    }
+
+    public enum FileType {
+        PNG, JPEG, GIF, WEBP
+    }
+
+    public enum Filter {
+        COLOR_MATRIX, CURVES, HSV
+    }
 
     public boolean drawBelow = false;
     public boolean reference = false;
@@ -285,19 +290,29 @@ public class Tab {
         }
     }
 
-    public void inheritPropertiesFrom(Tab background) {
+    public void inheritPropertiesFromBg(Tab background) {
+        inheritPropertiesFrom(background);
         delay = background.delay;
-        compressFormat = background.compressFormat;
-        filePath = background.filePath;
-        fileType = background.fileType;
-        gifDither = background.gifDither;
-        gifEncodingType = background.gifEncodingType;
+        layerTree = background.layerTree;
         isBackground = true;
         background.isBackground = false;
         isFirstFrame = background.isFirstFrame;
         background.isFirstFrame = false;
-        layerTree = background.layerTree;
-        quality = background.quality;
+    }
+
+    public void inheritPropertiesFromFF(Tab firstFrame) {
+        inheritPropertiesFrom(firstFrame);
+        isFirstFrame = true;
+        firstFrame.isFirstFrame = false;
+    }
+
+    private void inheritPropertiesFrom(Tab tab) {
+        compressFormat = tab.compressFormat;
+        filePath = tab.filePath;
+        fileType = tab.fileType;
+        gifDither = tab.gifDither;
+        gifEncodingType = tab.gifEncodingType;
+        quality = tab.quality;
     }
 
     public void initColorMatrix() {
@@ -381,23 +396,21 @@ public class Tab {
 
     public static Bitmap mergeLayers(final LayerTree tree, final Rect rect,
                                      final Tab specialTab, final Bitmap bmOfSpecialTab, final Tab extraTab) {
-        final Bitmap base = Bitmap.createBitmap(rect.width(), rect.height(), Bitmap.Config.ARGB_8888);
-        final Bitmap merged = mergeLayers(tree, rect, base, specialTab, bmOfSpecialTab, extraTab);
-        base.recycle();
-        return merged;
+        return mergeLayers(tree, rect, RECYCLED_BITMAP, specialTab, bmOfSpecialTab, extraTab);
     }
 
     /**
      * @param specialTab     The layer whose bitmap is going to be replaced
      * @param bmOfSpecialTab The bitmap to replace with
      * @param extraTab       The extra layer to draw over the special layer
+     * @throws RuntimeException if any bitmap to be drawn is recycled as this method is not thread-safe
      */
     public static Bitmap mergeLayers(final LayerTree tree, final Rect rect, final Bitmap base,
-                                     final Tab specialTab, final Bitmap bmOfSpecialTab, final Tab extraTab) {
+                                     final Tab specialTab, final Bitmap bmOfSpecialTab, final Tab extraTab) throws RuntimeException {
         final LayerTree.Node backgroundNode = tree.getBackground();
         final Bitmap bitmap = Bitmap.createBitmap(rect.width(), rect.height(), Bitmap.Config.ARGB_8888);
         final Canvas canvas = new Canvas(bitmap);
-        if (base != null) {
+        if (base != null && !base.isRecycled()) {
             canvas.drawBitmap(base, 0.0f, 0.0f, PAINT_SRC);
         }
 
@@ -494,15 +507,15 @@ public class Tab {
     /**
      * Can only call after distinguishing projects.
      */
-    public static Bitmap mergeReferenceLayers(List<Tab> tabs, Tab oneOfLayers) {
+    public static Bitmap mergeReferenceLayers(List<Tab> tabs, Tab exclusiveTab) {
         final List<Integer> refLayersIndexes = new ArrayList<>();
-        final Tab background = oneOfLayers.getBackground();
+        final Tab background = exclusiveTab.getBackground();
         for (int i = background.getBackgroundPosition(); i >= 0; --i) {
             final Tab tab = tabs.get(i);
             if (tab.isBackground && tab != background) {
                 break;
             }
-            if (tab.reference) {
+            if (tab.reference && tab != exclusiveTab) {
                 refLayersIndexes.add(i);
             }
         }
@@ -545,7 +558,7 @@ public class Tab {
     }
 
     /**
-     * Update new backgrounds and new first frames after moving a tab
+     * Update new backgrounds and new first frames after moving a tab.
      */
     // Legend
     // [L]    [L|]        [F]    [F>]   [S]
@@ -578,7 +591,7 @@ public class Tab {
                     // If the next tab was one of the layers above the specified layer // [L|][L]..[L][S|] -> [L|][S|][L]..[L]
                     if (nextTab != null && nextTab.getBackground() == specifiedTab) {
                         // [L|][S|][L]..[L] -> [L|][S][L]..[L|]
-                        oldLayerAbove.inheritPropertiesFrom(specifiedTab);
+                        oldLayerAbove.inheritPropertiesFromBg(specifiedTab);
                     } else {
                         // [L|][S|][L]..[L] -> [L|][S|][L]..[L|]
                         oldLayerAbove.isBackground = true;
@@ -594,7 +607,7 @@ public class Tab {
                         // If the previous frame belongs to the same project as the specified tab // [S>][F] -> [F][S>]
                         if (previousTab != null && previousTab.getFirstFrame() == specifiedTab) {
                             // Make the specified frame be not first // [F][S>] -> [F>][S]
-                            specifiedTab.isFirstFrame = false;
+                            previousTab.inheritPropertiesFromFF(specifiedTab);
                         }
                     }
                     if (nextTab != null) {
@@ -612,8 +625,7 @@ public class Tab {
                         // [F>][S] -> [S][F>]
                         if (specifiedTab.getFirstFrame() == nextFrame) {
                             // Make the next frame be second // [S][F>] -> [S>][F]
-                            specifiedTab.isFirstFrame = true;
-                            nextFrame.isFirstFrame = false;
+                            specifiedTab.inheritPropertiesFromFF(nextFrame);
                         }
                     }
                 }
@@ -624,7 +636,7 @@ public class Tab {
                     // If there was a layer above the specified layer // [L][S|] -> [L]
                     if (oldLayerAbove != null) {
                         // [L] -> [L|]
-                        oldLayerAbove.inheritPropertiesFrom(specifiedTab);
+                        oldLayerAbove.inheritPropertiesFromBg(specifiedTab);
                     } else /* if [L|][S|] -> [L|] */ {
                         specifiedTab.isBackground = false;
                         specifiedTab.isFirstFrame = false;
@@ -635,7 +647,7 @@ public class Tab {
             // If move to the end // [L|][S]
             if (newPos == tabs.size() - 1) {
                 // Make the specified tab be a background of the last tab // [L|][S] -> [L][S|]
-                specifiedTab.inheritPropertiesFrom(tabs.get(newPos - 1));
+                specifiedTab.inheritPropertiesFromBg(tabs.get(newPos - 1));
             }
         }
     }

@@ -9,13 +9,12 @@ import androidx.appcompat.app.AlertDialog;
 
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
-import com.misterchan.iconeditor.dialog.ColorPicker;
-import com.misterchan.iconeditor.listener.AfterTextChangedListener;
 import com.misterchan.iconeditor.Color;
-import com.misterchan.iconeditor.MainApplication;
-import com.misterchan.iconeditor.listener.OnSeekBarProgressChangedListener;
 import com.misterchan.iconeditor.R;
 import com.misterchan.iconeditor.Settings;
+import com.misterchan.iconeditor.dialog.ColorPicker;
+import com.misterchan.iconeditor.listener.AfterTextChangedListener;
+import com.misterchan.iconeditor.listener.OnSeekBarProgressChangedListener;
 
 public class CmykColorPicker extends ColorPicker {
 
@@ -25,9 +24,9 @@ public class CmykColorPicker extends ColorPicker {
     private TextInputEditText tietCyan, tietMagenta, tietYellow, tietKey;
 
     private CmykColorPicker(Context context, final OnColorPickListener onColorPickListener, @ColorLong final Long oldColor) {
-        final Settings settings = ((MainApplication) context.getApplicationContext()).getSettings();
-        format = settings.getArgbComponentFormat();
-        radix = settings.getArgbComponentRadix();
+        final Settings settings = Settings.getInstance();
+        format = settings.argbCompFormat();
+        radix = settings.argbCompRadix();
         dialogBuilder = new AlertDialog.Builder(context)
                 .setNegativeButton(R.string.cancel, null)
                 .setPositiveButton(R.string.ok, (dialog, which) -> onColorPickListener.onPick(oldColor, newColor))

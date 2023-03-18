@@ -113,21 +113,6 @@ import java.util.List;
 import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
-
-    private enum Position {
-        LEFT(R.string.left),
-        TOP(R.string.top),
-        RIGHT(R.string.right),
-        BOTTOM(R.string.bottom);
-
-        @StringRes
-        private final int name;
-
-        Position(@StringRes int name) {
-            this.name = name;
-        }
-    }
-
     private static final BlendMode[] BLEND_MODES = BlendMode.values();
 
     private static final Looper MAIN_LOOPER = Looper.getMainLooper();
@@ -212,6 +197,20 @@ public class MainActivity extends AppCompatActivity {
             setStrokeWidth(2.0f);
         }
     };
+
+    private enum Position {
+        LEFT(R.string.left),
+        TOP(R.string.top),
+        RIGHT(R.string.right),
+        BOTTOM(R.string.bottom);
+
+        @StringRes
+        private final int name;
+
+        Position(@StringRes int name) {
+            this.name = name;
+        }
+    }
 
     private Bitmap bitmap;
     private Bitmap refBm;
@@ -728,7 +727,7 @@ public class MainActivity extends AppCompatActivity {
         tab.paint.setAlpha(progress);
         drawBitmapOnView(stopped);
         tvStatus.setText(String.format(
-                String.format(getString(R.string.state_alpha), settings.getArgbComponentFormat()),
+                String.format(getString(R.string.state_alpha), settings.argbCompFormat()),
                 progress));
     };
 
@@ -807,7 +806,7 @@ public class MainActivity extends AppCompatActivity {
             canvas = new Canvas(bitmap);
 
             final int width = bitmap.getWidth(), height = bitmap.getHeight();
-            if (settings.getIndependentTranslAndScale() || isFromAnotherProj) {
+            if (settings.indTranslAndScale() || isFromAnotherProj) {
                 translationX = t.translationX;
                 translationY = t.translationY;
                 scale = t.scale;
@@ -1043,7 +1042,7 @@ public class MainActivity extends AppCompatActivity {
     private final RunnableRunnable runnableRunningRunner = (target, wait) -> target.run();
 
     private final RunnableRunnable runnableStartingRunner = (target, wait) -> {
-        if (Looper.myLooper() == MAIN_LOOPER) {
+        if (MAIN_LOOPER.isCurrentThread()) {
             if (!thread.isAlive() || wait) {
                 thread = new Thread(() -> {
                     synchronized (this) {
@@ -1337,7 +1336,7 @@ public class MainActivity extends AppCompatActivity {
                 paint.setColor(color);
                 vForegroundColor.setBackgroundColor(color);
                 tvStatus.setText(String.format(
-                        String.format(getString(R.string.state_eyedropper_imprecise), settings.getArgbComponentFormat()),
+                        String.format(getString(R.string.state_eyedropper_imprecise), settings.argbCompFormat()),
                         bx, by,
                         Color.alpha(color), Color.red(color), Color.green(color), Color.blue(color)));
             }
@@ -2685,7 +2684,7 @@ public class MainActivity extends AppCompatActivity {
         return marqueeBoundBeingDragged;
     }
 
-    private boolean checkIfHaveSelectedToolNeedsRef() {
+    private boolean checkIfRequireRef() {
         return rbMagicEraser.isChecked() || rbMagicPaint.isChecked();
     }
 
@@ -2749,11 +2748,11 @@ public class MainActivity extends AppCompatActivity {
             boolean isFirstOfMultipleFrames = false;
             if (background.bitmap.isRecycled()) {
                 if (above != null) {
-                    above.inheritPropertiesFrom(background);
+                    above.inheritPropertiesFromBg(background);
                 } else if (background.isFirstFrame && position < tabs.size()) {
                     final Tab nextFrame = tabs.get(position).getBackground();
                     if (!nextFrame.isFirstFrame) {
-                        nextFrame.isFirstFrame = true;
+                        nextFrame.inheritPropertiesFromFF(background);
                         isFirstOfMultipleFrames = true;
                     }
                 }
@@ -3410,8 +3409,6 @@ public class MainActivity extends AppCompatActivity {
                 fos.flush();
             } catch (IOException e) {
                 Toast.makeText(this, getString(R.string.failed) + '\n' + e.getMessage(), Toast.LENGTH_LONG).show();
-            } finally {
-                bitmap.recycle();
             }
         } else if (tab.fileType == Tab.FileType.GIF) {
             final GifEncoder gifEncoder = new GifEncoder();
@@ -3603,7 +3600,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Preferences
         final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        settings = ((MainApplication) getApplication()).getSettings();
+        settings = Settings.getInstance();
         settings.setMainActivity(this);
         settings.update(preferences);
 
@@ -4091,7 +4088,8 @@ public class MainActivity extends AppCompatActivity {
                 openFile(clipData.getItemAt(0).getUri());
             }
             case R.id.i_file_refer_to_clipboard -> {
-                if (tab.filePath == null) {
+                final String filePath = tab.getBackground().getFirstFrame().filePath;
+                if (filePath == null) {
                     Toast.makeText(this, getString(R.string.please_save_first), Toast.LENGTH_SHORT).show();
                     break;
                 }
@@ -4099,7 +4097,7 @@ public class MainActivity extends AppCompatActivity {
                         .setPrimaryClip(ClipData.newUri(getContentResolver(), "Image",
                                 FileProvider.getUriForFile(this,
                                         getApplicationContext().getPackageName() + ".provider",
-                                        new File(tab.filePath))));
+                                        new File(filePath))));
             }
             case R.id.i_file_save, R.id.i_save -> save();
             case R.id.i_file_save_as -> saveAs();
@@ -4313,6 +4311,7 @@ public class MainActivity extends AppCompatActivity {
                             drawGridOnView();
                         })
                         .show();
+                drawGridOnView();
             }
             case R.id.i_has_alpha -> {
                 final boolean checked = !item.isChecked();
@@ -4354,7 +4353,7 @@ public class MainActivity extends AppCompatActivity {
                         .setOnCancelListener(dialog -> clearStatus(), false)
                         .show();
                 tvStatus.setText(String.format(
-                        String.format(getString(R.string.state_alpha), settings.getArgbComponentFormat()),
+                        String.format(getString(R.string.state_alpha), settings.argbCompFormat()),
                         tab.paint.getAlpha()));
             }
             case R.id.i_layer_blend_mode_clear,
@@ -4444,7 +4443,7 @@ public class MainActivity extends AppCompatActivity {
                     closeTab();
                 } else {
                     if (newBackground != background && newBackground != null) {
-                        newBackground.inheritPropertiesFrom(background);
+                        newBackground.inheritPropertiesFromBg(background);
                     }
                     Tab.distinguishProjects(tabs);
                     Tab.updateBackgroundIcons(tabs);
@@ -4595,7 +4594,7 @@ public class MainActivity extends AppCompatActivity {
                 addLayer(bm, i + 1);
             }
             case R.id.i_layer_new -> {
-                if (settings.getNewLayerLevel()) {
+                if (settings.newLayerLevel()) {
                     createLayer(bitmap.getWidth(), bitmap.getHeight(),
                             bitmap.getConfig(), bitmap.getColorSpace(),
                             tab.getLevel(), tab.left, tab.top, tabLayout.getSelectedTabPosition());
@@ -4825,12 +4824,13 @@ public class MainActivity extends AppCompatActivity {
             } else if (type == Tab.FileType.GIF) {
                 path = UriUtils.getRealPath(this, uri);
                 final GifDecoder gifDecoder = new GifDecoder();
-                if (gifDecoder.load(path)) {
+                if (path != null && gifDecoder.load(path)) {
                     final int begin = tabs.size();
                     final Tab[] frames = new Tab[gifDecoder.frameNum()];
                     for (int i = 0; i < gifDecoder.frameNum(); ++i) {
                         final Tab newFrame = addFrame(gifDecoder.frame(i), tabs.size(),
-                                i == 0, gifDecoder.delay(i), name, path, type);
+                                i == 0, gifDecoder.delay(i), name,
+                                i == 0 ? path : null, i == 0 ? type : null);
                         frames[i] = newFrame;
                     }
                     Tab.distinguishProjects(tabs);
@@ -5161,7 +5161,7 @@ public class MainActivity extends AppCompatActivity {
 
     @SuppressLint("ClickableViewAccessibility")
     void setArgbColorType() {
-        onTouchIVWithEyedropperListener = settings.getArgbColorType()
+        onTouchIVWithEyedropperListener = settings.argbColorType()
                 ? onTouchIVWithPreciseEyedropperListener : onTouchIVWithImpreciseEyedropperListener;
         if (rbEyedropper != null && rbEyedropper.isChecked()) {
             cbZoom.setTag(onTouchIVWithEyedropperListener);
@@ -5377,11 +5377,7 @@ public class MainActivity extends AppCompatActivity {
         if (refBm != null) {
             refBm.recycle();
         }
-        if (tab.reference) {
-            refBm = checkIfHaveSelectedToolNeedsRef() ? Bitmap.createBitmap(bitmap) : null;
-        } else {
-            final Bitmap rb = Tab.mergeReferenceLayers(tabs, tab);
-            refBm = rb != null ? rb : checkIfHaveSelectedToolNeedsRef() ? Bitmap.createBitmap(bitmap) : null;
-        }
+        final Bitmap rb = Tab.mergeReferenceLayers(tabs, tab);
+        refBm = rb != null ? rb : checkIfRequireRef() ? Bitmap.createBitmap(bitmap) : null;
     }
 }

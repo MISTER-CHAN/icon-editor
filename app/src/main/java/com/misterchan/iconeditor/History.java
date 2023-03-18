@@ -3,7 +3,6 @@ package com.misterchan.iconeditor;
 import android.graphics.Bitmap;
 
 class History {
-
     private static class Node {
         private Bitmap bitmap;
         private Node later;
@@ -18,7 +17,6 @@ class History {
         }
     }
 
-    private static int maxSize = 50;
     private int size = 0;
     private Node current = null;
     private Node earliest, latest;
@@ -31,7 +29,7 @@ class History {
         }
         current = new Node(current, Bitmap.createBitmap(bitmap));
         add(current);
-        while (size > maxSize) {
+        while (size > Settings.getInstance().historyMaxSize()) {
             deleteEarliest();
         }
     }
@@ -99,10 +97,6 @@ class History {
     public Bitmap redo() {
         current = current.later;
         return Bitmap.createBitmap(current.bitmap);
-    }
-
-    public static void setMaxSize(int maxSize) {
-        History.maxSize = maxSize;
     }
 
     public Bitmap undo() {

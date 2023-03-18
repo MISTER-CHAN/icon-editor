@@ -9,7 +9,6 @@ import androidx.appcompat.app.AlertDialog;
 
 import com.google.android.material.textfield.TextInputEditText;
 import com.misterchan.iconeditor.Color;
-import com.misterchan.iconeditor.MainApplication;
 import com.misterchan.iconeditor.R;
 import com.misterchan.iconeditor.Settings;
 import com.misterchan.iconeditor.dialog.ColorPicker;
@@ -34,9 +33,9 @@ public abstract class ArgbColorPicker extends ColorPicker {
         vPreview = dialog.findViewById(R.id.v_color);
     }
 
-    protected ArgbColorPicker(Context context, int titleId, Settings settings,
-                                   final OnColorPickListener onColorPickListener,
-                                   @ColorLong final Long oldColor, @StringRes int neutralFunction) {
+    protected ArgbColorPicker(Context context, int titleId,
+                              final OnColorPickListener onColorPickListener,
+                              @ColorLong final Long oldColor, @StringRes int neutralFunction) {
         this.context = context;
         dialogBuilder = new AlertDialog.Builder(context)
                 .setNegativeButton(R.string.cancel, null)
@@ -55,24 +54,24 @@ public abstract class ArgbColorPicker extends ColorPicker {
             this.oldColor = Color.BLACK;
         }
 
-        make(settings);
+        make();
     }
 
-    protected void make(Settings settings) {
+    protected void make() {
     }
 
     public static ColorPicker make(Context context, int titleId,
-                            final OnColorPickListener onColorPickListener, @ColorLong final Long oldColor) {
+                                   final OnColorPickListener onColorPickListener, @ColorLong final Long oldColor) {
         return make(context, titleId, onColorPickListener, oldColor, 0);
     }
 
     public static ColorPicker make(Context context, int titleId,
-                            final OnColorPickListener onColorPickListener,
-                            @ColorLong final Long oldColor, @StringRes int neutralFunction) {
-        final Settings settings = ((MainApplication) context.getApplicationContext()).getSettings();
-        return settings.getArgbColorType() ?
-                new ArgbColorLongPicker(context, titleId, settings, onColorPickListener, oldColor, neutralFunction) :
-                new ArgbColorIntPicker(context, titleId, settings, onColorPickListener, oldColor, neutralFunction);
+                                   final OnColorPickListener onColorPickListener,
+                                   @ColorLong final Long oldColor, @StringRes int neutralFunction) {
+        final Settings settings = Settings.getInstance();
+        return settings.argbColorType() ?
+                new ArgbColorLongPicker(context, titleId, onColorPickListener, oldColor, neutralFunction) :
+                new ArgbColorIntPicker(context, titleId, onColorPickListener, oldColor, neutralFunction);
     }
 
     protected void showOtherColorPickers(AlertDialog dialog, OnColorPickListener l) {

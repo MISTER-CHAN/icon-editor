@@ -19,10 +19,10 @@ public class ArgbColorIntPicker extends ArgbColorPicker {
     private int radix = 16;
     private String format;
 
-    protected ArgbColorIntPicker(Context context, int titleId, Settings settings,
+    protected ArgbColorIntPicker(Context context, int titleId,
                                  final ColorPicker.OnColorPickListener onColorPickListener,
                                  @ColorLong final Long oldColor, @StringRes int neutralFunction) {
-        super(context, titleId, settings, onColorPickListener, oldColor, neutralFunction);
+        super(context, titleId, onColorPickListener, oldColor, neutralFunction);
     }
 
     private void loadColor(@ColorInt int color) {
@@ -32,9 +32,10 @@ public class ArgbColorIntPicker extends ArgbColorPicker {
     }
 
     @Override
-    protected void make(Settings settings) {
-        format = settings.getArgbComponentFormat();
-        radix = settings.getArgbComponentRadix();
+    protected void make() {
+        final Settings settings = Settings.getInstance();
+        format = settings.argbCompFormat();
+        radix = settings.argbCompRadix();
     }
 
     protected void onComponentChanged(String s, SeekBar seekBar) {

@@ -1,9 +1,9 @@
 package com.misterchan.iconeditor;
 
 import android.content.SharedPreferences;
-import android.os.Looper;
 
 public class Settings {
+    private static final Settings INSTANCE = new Settings();
 
     private static final String FORMAT_02X = "%02X";
     private static final String FORMAT_D = "%d";
@@ -19,34 +19,46 @@ public class Settings {
     static final String KEY_NLL = "nll"; // New Layer Level
 
     private boolean argbColorType = false;
-    private boolean independentTranslAndScale = false;
+    private int historyMaxSize = 50;
+    private boolean indTranslAndScale = false;
     private boolean newLayerLevel = false;
-    private int argbComponentRadix = 16;
+    private int argbCompRadix = 16;
     private MainActivity mainActivity;
-    private String argbComponentFormat = FORMAT_02X;
+    private String argbCompFormat = FORMAT_02X;
 
-    public boolean getArgbColorType() {
+    private Settings() {
+    }
+
+    public static Settings getInstance() {
+        return INSTANCE;
+    }
+
+    public boolean argbColorType() {
         return argbColorType;
     }
 
-    public String getArgbComponentFormat() {
-        return argbComponentFormat;
+    public String argbCompFormat() {
+        return argbCompFormat;
     }
 
-    public int getArgbComponentRadix() {
-        return argbComponentRadix;
+    public int argbCompRadix() {
+        return argbCompRadix;
     }
 
-    public boolean getIndependentTranslAndScale() {
-        return independentTranslAndScale;
+    public int historyMaxSize() {
+        return historyMaxSize;
+    }
+
+    public boolean indTranslAndScale() {
+        return indTranslAndScale;
+    }
+
+    public boolean newLayerLevel() {
+        return newLayerLevel;
     }
 
     public void setMainActivity(MainActivity mainActivity) {
         this.mainActivity = mainActivity;
-    }
-
-    public boolean getNewLayerLevel() {
-        return newLayerLevel;
     }
 
     public void update(SharedPreferences preferences) {
@@ -63,11 +75,11 @@ public class Settings {
         switch (key) {
             case KEY_ACR -> {
                 try {
-                    argbComponentRadix = Integer.parseUnsignedInt(preferences.getString(KEY_ACR, "16"));
+                    argbCompRadix = Integer.parseUnsignedInt(preferences.getString(KEY_ACR, "16"));
                 } catch (NumberFormatException e) {
-                    argbComponentRadix = 16;
+                    argbCompRadix = 16;
                 }
-                argbComponentFormat = argbComponentRadix == 16 ? FORMAT_02X : FORMAT_D;
+                argbCompFormat = argbCompRadix == 16 ? FORMAT_02X : FORMAT_D;
             }
             case KEY_ACT -> {
                 argbColorType = "l".equals(preferences.getString(KEY_ACT, "i"));
@@ -75,17 +87,13 @@ public class Settings {
             }
             case KEY_FB -> mainActivity.setFilterBitmap(preferences.getBoolean(KEY_FB, false));
             case KEY_HMS -> {
-                if (Looper.myLooper() == Looper.getMainLooper()) {
-                    final int hms;
-                    try {
-                        hms = Integer.parseUnsignedInt(preferences.getString(KEY_HMS, "50"));
-                    } catch (NumberFormatException e) {
-                        break;
-                    }
-                    History.setMaxSize(hms);
+                try {
+                    historyMaxSize = Integer.parseUnsignedInt(preferences.getString(KEY_HMS, "50"));
+                } catch (NumberFormatException e) {
+                    historyMaxSize = 50;
                 }
             }
-            case KEY_ITS -> independentTranslAndScale = preferences.getBoolean(KEY_ITS, false);
+            case KEY_ITS -> indTranslAndScale = preferences.getBoolean(KEY_ITS, false);
             case KEY_MT -> mainActivity.setRunnableRunner(preferences.getBoolean(KEY_MT, true));
             case KEY_NLL -> newLayerLevel = "sel".equals(preferences.getString(KEY_NLL, "top"));
         }

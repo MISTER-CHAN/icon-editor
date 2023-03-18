@@ -22,8 +22,6 @@ import androidx.preference.PreferenceManager;
 
 public class SettingsActivity extends AppCompatActivity {
 
-    private Settings settings;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,11 +36,9 @@ public class SettingsActivity extends AppCompatActivity {
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
-        settings = ((MainApplication) getApplicationContext()).getSettings();
         PreferenceManager
                 .getDefaultSharedPreferences(this)
-                .registerOnSharedPreferenceChangeListener((sharedPreferences, key) ->
-                        settings.update(sharedPreferences, key));
+                .registerOnSharedPreferenceChangeListener(Settings.getInstance()::update);
     }
 
     @Override

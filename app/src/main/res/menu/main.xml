@@ -44,12 +44,12 @@
                 android:title="@string/save_as" />
 
             <item
-                android:id="@+id/i_file_export"
-                android:title="@string/export" />
-
-            <item
                 android:id="@+id/i_file_refer_to_clipboard"
                 android:title="@string/refer_to_clipboard" />
+
+            <item
+                android:id="@+id/i_file_export"
+                android:title="@string/export" />
 
             <item
                 android:id="@+id/i_file_close"
