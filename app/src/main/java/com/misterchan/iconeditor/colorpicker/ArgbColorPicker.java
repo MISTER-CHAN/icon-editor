@@ -68,8 +68,7 @@ public abstract class ArgbColorPicker extends ColorPicker {
     public static ColorPicker make(Context context, int titleId,
                                    final OnColorPickListener onColorPickListener,
                                    @ColorLong final Long oldColor, @StringRes int neutralFunction) {
-        final Settings settings = Settings.getInstance();
-        return settings.argbColorType() ?
+        return Settings.INST.argbColorType() ?
                 new ArgbColorLongPicker(context, titleId, onColorPickListener, oldColor, neutralFunction) :
                 new ArgbColorIntPicker(context, titleId, onColorPickListener, oldColor, neutralFunction);
     }

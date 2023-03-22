@@ -3,7 +3,7 @@ package com.misterchan.iconeditor;
 import android.content.SharedPreferences;
 
 public class Settings {
-    private static final Settings INSTANCE = new Settings();
+    public static final Settings INST = new Settings();
 
     private static final String FORMAT_02X = "%02X";
     private static final String FORMAT_D = "%d";
@@ -27,10 +27,6 @@ public class Settings {
     private String argbCompFormat = FORMAT_02X;
 
     private Settings() {
-    }
-
-    public static Settings getInstance() {
-        return INSTANCE;
     }
 
     public boolean argbColorType() {

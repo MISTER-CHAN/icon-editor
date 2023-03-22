@@ -158,13 +158,23 @@
             </item>
 
             <item
-                android:id="@+id/i_noise"
-                android:title="@string/noise" />
+                android:id="@+id/i_generate_noise"
+                android:title="@string/generate_noise" />
 
             <item
-                android:id="@+id/i_has_alpha"
+                android:id="@+id/i_image_config"
+                android:title="@string/config"
+                android:visible="false" />
+
+            <item
+                android:id="@+id/i_image_has_alpha"
                 android:checkable="true"
                 android:title="@string/has_alpha" />
+
+            <item
+                android:id="@+id/i_image_color_space"
+                android:title="@string/color_space"
+                android:visible="false" />
 
             <item
                 android:id="@+id/i_information"

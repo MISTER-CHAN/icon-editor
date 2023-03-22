@@ -33,9 +33,8 @@ public class ArgbColorIntPicker extends ArgbColorPicker {
 
     @Override
     protected void make() {
-        final Settings settings = Settings.getInstance();
-        format = settings.argbCompFormat();
-        radix = settings.argbCompRadix();
+        format = Settings.INST.argbCompFormat();
+        radix = Settings.INST.argbCompRadix();
     }
 
     protected void onComponentChanged(String s, SeekBar seekBar) {

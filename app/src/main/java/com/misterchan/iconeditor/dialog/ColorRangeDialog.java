@@ -14,12 +14,12 @@ import com.misterchan.iconeditor.R;
 
 public class ColorRangeDialog {
 
-    public interface OnColorRangeChangedListener {
+    public interface OnChangedListener {
         void onChanged(int hueMin, int hueMax, int lumMin, int lumMax, boolean stopped);
     }
 
     private final AlertDialog.Builder builder;
-    private OnColorRangeChangedListener listener;
+    private OnChangedListener listener;
 
     private SeekBar sbHueMin, sbHueMax;
     private SeekBar sbLumMin, sbLumMax;
@@ -37,7 +37,7 @@ public class ColorRangeDialog {
         return this;
     }
 
-    public ColorRangeDialog setOnPositiveButtonClickListener(OnColorRangeChangedListener listener) {
+    public ColorRangeDialog setOnPositiveButtonClickListener(OnChangedListener listener) {
         builder.setPositiveButton(R.string.ok, (dialog, which) ->
                 listener.onChanged(sbHueMin.getProgress(), sbHueMax.getProgress(),
                         sbLumMin.getProgress(), sbLumMax.getProgress(),
@@ -45,7 +45,7 @@ public class ColorRangeDialog {
         return this;
     }
 
-    public ColorRangeDialog setOnColorRangeChangeListener(OnColorRangeChangedListener listener) {
+    public ColorRangeDialog setOnColorRangeChangeListener(OnChangedListener listener) {
         this.listener = listener;
         return this;
     }

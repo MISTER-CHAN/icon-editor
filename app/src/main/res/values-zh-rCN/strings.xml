@@ -111,7 +111,9 @@
     <string name="from">从</string>
     <string name="fuzziness">容差</string>
     <string name="general">一般</string>
+    <string name="generate_noise">生成噪音</string>
     <string name="gradient">渐变</string>
+    <string name="group">组</string>
     <string name="has_alpha">有 Alpha</string>
     <string name="height">高度</string>
     <string name="help">帮助</string>
@@ -167,9 +169,10 @@
     <string name="new_">新建</string>
     <string name="new_guide">新参考线</string>
     <string name="ninety_degrees">90°</string>
-    <string name="noise">噪音</string>
     <string name="normal">正常</string>
+    <string name="not_public_format">非公有格式</string>
     <string name="not_supported_file_type">不支持的文件类型</string>
+    <string name="null_">空</string>
     <string name="offset">偏移量</string>
     <string name="ok">确定</string>
     <string name="one_eighty_degrees">180°</string>
@@ -282,7 +285,6 @@
     <string name="zoom">缩放</string>
 
     <!-- Blend Modes -->
-    <string name="null_">无</string>
     <string name="destination">目标</string>
     <string name="source_over">来源置上</string>
     <string name="destination_over">目标置上</string>

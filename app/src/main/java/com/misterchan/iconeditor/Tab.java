@@ -269,25 +269,26 @@ public class Tab {
         return tvTitle != null ? tvTitle.getText() : "";
     }
 
-    public static void group(List<Tab> tabs, int position) {
-        int i = position;
-        for (; i < tabs.size(); ++i) {
+    public static int group(List<Tab> tabs, int position) {
+        int bottomPos = tabs.size();
+        for (int i = position; i < bottomPos; ++i) {
             final Tab t = tabs.get(i);
             if (!t.visible) {
-                i -= 2;
+                bottomPos = i - 1;
                 break;
             } else if (t.isBackground) {
-                --i;
+                bottomPos = i;
                 break;
             }
         }
-        for (; i >= 0; --i) {
+        for (int i = bottomPos; i >= 0; --i) {
             final Tab t = tabs.get(i);
-            if (!t.visible || t.isBackground) {
+            if (!t.visible || t.isBackground && i < bottomPos) {
                 break;
             }
             ++t.level;
         }
+        return bottomPos;
     }
 
     public void inheritPropertiesFromBg(Tab background) {
@@ -738,8 +739,8 @@ public class Tab {
     /**
      * Can only call after distinguishing projects.
      */
-    public static void updateVisibilityIcons(List<Tab> tabs, Tab selectedTab) {
-        final Tab backgroundTab = selectedTab.getBackground();
+    public static void updateVisibilityIcons(List<Tab> tabs, Tab oneOfLayers) {
+        final Tab backgroundTab = oneOfLayers.getBackground();
         for (int i = 0; i < tabs.size(); ++i) {
             final Tab tab = tabs.get(i);
             tab.cbVisible.setVisibility(tab.background == backgroundTab ? View.VISIBLE : View.GONE);

@@ -29,7 +29,7 @@ class History {
         }
         current = new Node(current, Bitmap.createBitmap(bitmap));
         add(current);
-        while (size > Settings.getInstance().historyMaxSize()) {
+        while (size > Settings.INST.historyMaxSize()) {
             deleteEarliest();
         }
     }

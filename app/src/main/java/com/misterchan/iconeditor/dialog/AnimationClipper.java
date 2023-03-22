@@ -18,7 +18,7 @@ import java.util.List;
 
 public class AnimationClipper {
 
-    public interface OnApplyListener {
+    public interface OnConfirmListener {
         void onApply(int from, int to);
     }
 
@@ -27,7 +27,7 @@ public class AnimationClipper {
     private final List<Bitmap> frames;
     private SeekBar sbFrom, sbTo;
 
-    public AnimationClipper(Context context, List<Tab> tabs, Tab firstFrame, OnApplyListener listener) {
+    public AnimationClipper(Context context, List<Tab> tabs, Tab firstFrame, OnConfirmListener listener) {
         frames = new ArrayList<>();
 
         builder = new AlertDialog.Builder(context)

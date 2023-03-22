@@ -38,6 +38,8 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.SubMenu;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
@@ -46,6 +48,8 @@ import android.widget.CompoundButton;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListAdapter;
+import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -114,6 +118,15 @@ import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
     private static final BlendMode[] BLEND_MODES = BlendMode.values();
+
+    private static final Bitmap.Config[] BITMAP_CONFIGS = {
+            null,
+            Bitmap.Config.ALPHA_8,
+            null,
+            Bitmap.Config.RGB_565,
+            Bitmap.Config.ARGB_4444,
+            Bitmap.Config.ARGB_8888,
+    };
 
     private static final Looper MAIN_LOOPER = Looper.getMainLooper();
 
@@ -313,7 +326,6 @@ public class MainActivity extends AppCompatActivity {
     private RadioButton rbTransformer;
     private final Rect selection = new Rect();
     private final Ruler ruler = new Ruler();
-    private Settings settings;
     private SubMenu smLayerBlendModes;
     private Paint.Style style = Paint.Style.FILL_AND_STROKE;
     private Tab tab;
@@ -540,7 +552,7 @@ public class MainActivity extends AppCompatActivity {
         drawBitmapOnView(true);
     };
 
-    private final ColorRangeDialog.OnColorRangeChangedListener onColorRangeChangedListener = (hueMin, hueMax, lumMin, lumMax, stopped) -> {
+    private final ColorRangeDialog.OnChangedListener onColorRangeChangedListener = (hueMin, hueMax, lumMin, lumMax, stopped) -> {
         runOrStart(() -> {
             if (hueMin == 0 && hueMax == 360 && lumMin == 0x0 && lumMax == 0xFF) {
                 imagePreview.clearFilter();
@@ -564,7 +576,7 @@ public class MainActivity extends AppCompatActivity {
         tvStatus.setText(String.format(getString(R.string.state_color_range), hueMin, hueMax, lumMin, lumMax));
     };
 
-    private final ColorRangeDialog.OnColorRangeChangedListener onApplyLayerDuplicatingByColorRangeListener = (hueMin, hueMax, valueMin, valueMax, stopped) -> {
+    private final ColorRangeDialog.OnChangedListener onConfirmLayerDuplicatingByColorRangeListener = (hueMin, hueMax, valueMin, valueMax, stopped) -> {
         final Bitmap p = imagePreview.getEntire();
         final Bitmap bm = Bitmap.createBitmap(p.getWidth(), p.getHeight(),
                 p.getConfig(), true, p.getColorSpace());
@@ -727,7 +739,7 @@ public class MainActivity extends AppCompatActivity {
         tab.paint.setAlpha(progress);
         drawBitmapOnView(stopped);
         tvStatus.setText(String.format(
-                String.format(getString(R.string.state_alpha), settings.argbCompFormat()),
+                String.format(getString(R.string.state_alpha), Settings.INST.argbCompFormat()),
                 progress));
     };
 
@@ -806,7 +818,7 @@ public class MainActivity extends AppCompatActivity {
             canvas = new Canvas(bitmap);
 
             final int width = bitmap.getWidth(), height = bitmap.getHeight();
-            if (settings.indTranslAndScale() || isFromAnotherProj) {
+            if (Settings.INST.indTranslAndScale() || isFromAnotherProj) {
                 translationX = t.translationX;
                 translationY = t.translationY;
                 scale = t.scale;
@@ -987,7 +999,7 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    private final AnimationClipper.OnApplyListener onApplyClipListener = (from, to) -> {
+    private final AnimationClipper.OnConfirmListener onConfirmClipListener = (from, to) -> {
         final Tab firstFrame = tab.getBackground().getFirstFrame();
         Tab firstFrameKept = null;
         for (int i = tabs.size() - 1, j = 0; i >= 0; --i) {
@@ -1336,7 +1348,7 @@ public class MainActivity extends AppCompatActivity {
                 paint.setColor(color);
                 vForegroundColor.setBackgroundColor(color);
                 tvStatus.setText(String.format(
-                        String.format(getString(R.string.state_eyedropper_imprecise), settings.argbCompFormat()),
+                        String.format(getString(R.string.state_eyedropper_imprecise), Settings.INST.argbCompFormat()),
                         bx, by,
                         Color.alpha(color), Color.red(color), Color.green(color), Color.blue(color)));
             }
@@ -1376,6 +1388,7 @@ public class MainActivity extends AppCompatActivity {
         public boolean onTouch(View v, MotionEvent event) {
             final float x = event.getX(), y = event.getY();
             final int bx = MainActivity.this.toBitmapX(x), by = MainActivity.this.toBitmapY(y);
+            final Bitmap src = refBm != null ? refBm : bitmap;
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN: {
                     paint.setStrokeWidth(MainActivity.this.toScaled((int) paint.getStrokeWidth()));
@@ -1384,7 +1397,7 @@ public class MainActivity extends AppCompatActivity {
                         drawPointOnView(bx, by);
                         shapeStartX = bx;
                         shapeStartY = by;
-                        color0 = bitmap.getColor(satX(bitmap, bx), satY(bitmap, by)).pack();
+                        color0 = src.getColor(satX(src, bx), satY(src, by)).pack();
                         tvStatus.setText(String.format(MainActivity.this.getString(R.string.coordinates), bx, by));
                         break;
                     }
@@ -1394,7 +1407,7 @@ public class MainActivity extends AppCompatActivity {
                             stopX = toViewX(bx + 0.5f), stopY = toViewY(by + 0.5f);
                     paint.setShader(new LinearGradient(startVX, startVY, stopX, stopY,
                             color0,
-                            bitmap.getColor(satX(bitmap, bx), satY(bitmap, by)).pack(),
+                            src.getColor(satX(src, bx), satY(src, by)).pack(),
                             Shader.TileMode.CLAMP));
                     eraseBitmap(previewImage);
                     previewCanvas.drawLine(startVX, startVY, stopX, stopY, paint);
@@ -1409,7 +1422,7 @@ public class MainActivity extends AppCompatActivity {
                     if (bx != shapeStartX || by != shapeStartY) {
                         paint.setShader(new LinearGradient(shapeStartX, shapeStartY, bx, by,
                                 color0,
-                                bitmap.getColor(satX(bitmap, bx), satY(bitmap, by)).pack(),
+                                src.getColor(satX(src, bx), satY(src, by)).pack(),
                                 Shader.TileMode.CLAMP));
                         drawLineOnCanvas(shapeStartX, shapeStartY, bx, by, paint);
                         isShapeStopped = true;
@@ -2577,6 +2590,10 @@ public class MainActivity extends AppCompatActivity {
         return addLayer(bitmap, position, 0, 0, 0);
     }
 
+    private Tab addLayer(Bitmap bitmap, int position, int level, CharSequence title, boolean setSelected) {
+        return addLayer(bitmap, position, level, 0, 0, true, title, setSelected);
+    }
+
     private Tab addLayer(Bitmap bitmap, int position, int level, int left, int top) {
         return addLayer(bitmap, position, level, left, top, true, getString(R.string.untitled));
     }
@@ -3600,9 +3617,8 @@ public class MainActivity extends AppCompatActivity {
 
         // Preferences
         final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        settings = Settings.getInstance();
-        settings.setMainActivity(this);
-        settings.update(preferences);
+        Settings.INST.setMainActivity(this);
+        Settings.INST.update(preferences);
 
         // Locale
         final String loc = preferences.getString(Settings.KEY_LOC, "def");
@@ -3885,7 +3901,7 @@ public class MainActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         final MenuInflater menuInflater = getMenuInflater();
         menuInflater.inflate(R.menu.main, menu);
-        miHasAlpha = menu.findItem(R.id.i_has_alpha);
+        miHasAlpha = menu.findItem(R.id.i_image_has_alpha);
         miLayerColorMatrix = menu.findItem(R.id.i_layer_color_matrix);
         miLayerCurves = menu.findItem(R.id.i_layer_curves);
         miLayerDrawBelow = menu.findItem(R.id.i_layer_draw_below);
@@ -4247,7 +4263,7 @@ public class MainActivity extends AppCompatActivity {
                 scale(1.0f, -1.0f, false);
             }
             case R.id.i_frame_clip -> {
-                new AnimationClipper(this, tabs, tab.getBackground().getFirstFrame(), onApplyClipListener)
+                new AnimationClipper(this, tabs, tab.getBackground().getFirstFrame(), onConfirmClipListener)
                         .show();
             }
             case R.id.i_frame_delay -> {
@@ -4272,11 +4288,11 @@ public class MainActivity extends AppCompatActivity {
                 closeTab();
             }
             case R.id.i_frame_duplicate -> {
-                final Tab background = tab.getBackground();
-                final int backgroundPos = background.getBackgroundPosition(), newPos = backgroundPos + 1;
-                final Tab newFrame = addFrame(Bitmap.createBitmap(background.bitmap), newPos, false, background.delay,
-                        background.getTitle(), background.filePath, background.fileType, false);
-                for (int i = backgroundPos - 1; i >= 0; --i) {
+                final Tab bg = tab.getBackground();
+                final int bgPos = bg.getBackgroundPosition(), newPos = bgPos + 1;
+                final Tab newFrame = addFrame(Bitmap.createBitmap(bg.bitmap), newPos, false, bg.delay,
+                        bg.getTitle(), bg.filePath, bg.fileType, false);
+                for (int i = bgPos - 1; i >= 0; --i) {
                     final Tab tab = tabs.get(i);
                     if (tab.isBackground) {
                         break;
@@ -4313,7 +4329,50 @@ public class MainActivity extends AppCompatActivity {
                         .show();
                 drawGridOnView();
             }
-            case R.id.i_has_alpha -> {
+            case R.id.i_image_config -> {
+                final Bitmap.Config config = bitmap.getConfig();
+                final AlertDialog alertDialog = new AlertDialog.Builder(this)
+                        .setTitle(R.string.config)
+                        .setSingleChoiceItems(R.array.bitmap_configs,
+                                config == null ? 0 : switch (config.ordinal()) {
+                                    default -> 0;
+                                    case 0 -> 1;
+                                    case 1 -> 3;
+                                    case 2 -> 4;
+                                    case 3 -> 5;
+                                    case 4 -> 6;
+                                    case 6 -> 7;
+                                },
+                                (dialog, which) -> {
+                                    switch (which) {
+                                        case 1, 3, 4, 5 -> {
+                                            bitmap.setConfig(BITMAP_CONFIGS[which]);
+                                            drawBitmapOnView(true);
+                                        }
+                                    }
+                                    dialog.dismiss();
+                                })
+                        .create();
+                alertDialog.getListView().setOnHierarchyChangeListener(new ViewGroup.OnHierarchyChangeListener() {
+                    @Override
+                    public void onChildViewAdded(View parent, View child) {
+                        final String text = ((TextView) child).getText().toString();
+                        if (getString(R.string.not_public_format).equals(text)
+                                || getString(R.string.gray_8).equals(text)
+                                || getString(R.string.rgba_f16).equals(text)
+                                || getString(R.string.rgba_1010102).equals(text)) {
+                            child.setEnabled(false);
+                        }
+                    }
+
+                    @Override
+                    public void onChildViewRemoved(View parent, View child) {
+                    }
+                });
+                alertDialog.show();
+
+            }
+            case R.id.i_image_has_alpha -> {
                 final boolean checked = !item.isChecked();
                 item.setChecked(checked);
                 bitmap.setHasAlpha(checked);
@@ -4353,7 +4412,7 @@ public class MainActivity extends AppCompatActivity {
                         .setOnCancelListener(dialog -> clearStatus(), false)
                         .show();
                 tvStatus.setText(String.format(
-                        String.format(getString(R.string.state_alpha), settings.argbCompFormat()),
+                        String.format(getString(R.string.state_alpha), Settings.INST.argbCompFormat()),
                         tab.paint.getAlpha()));
             }
             case R.id.i_layer_blend_mode_clear,
@@ -4405,8 +4464,18 @@ public class MainActivity extends AppCompatActivity {
                 if (!tab.visible) {
                     break;
                 }
-                Tab.group(tabs, tabLayout.getSelectedTabPosition());
+                final int pos = Tab.group(tabs, tabLayout.getSelectedTabPosition());
                 miLayerLevelUp.setEnabled(tab.getLevel() > 0);
+                final Bitmap bg = tab.getBackground().bitmap;
+                final Bitmap bm = Bitmap.createBitmap(bg.getWidth(), bg.getHeight(), bg.getConfig(), bg.hasAlpha(), bg.getColorSpace());
+                final Tab bottom = tabs.get(pos);
+                final Tab group = addLayer(bm, pos + 1, bottom.getLevel() - 1, getString(R.string.group), false);
+                if (bottom.isBackground) {
+                    group.inheritPropertiesFromBg(bottom);
+                }
+                Tab.distinguishProjects(tabs);
+                Tab.updateBackgroundIcons(tabs);
+                Tab.updateVisibilityIcons(tabs, tab);
                 Tab.computeLayerTree(tabs, tab);
                 Tab.updateLevelIcons(tabs, tab);
                 drawBitmapOnView(true);
@@ -4477,7 +4546,7 @@ public class MainActivity extends AppCompatActivity {
                 createImagePreview();
                 new ColorRangeDialog(this)
                         .setOnColorRangeChangeListener(onColorRangeChangedListener)
-                        .setOnPositiveButtonClickListener(onApplyLayerDuplicatingByColorRangeListener)
+                        .setOnPositiveButtonClickListener(onConfirmLayerDuplicatingByColorRangeListener)
                         .setOnCancelListener(onCancelImagePreviewListener)
                         .show();
             }
@@ -4594,14 +4663,13 @@ public class MainActivity extends AppCompatActivity {
                 addLayer(bm, i + 1);
             }
             case R.id.i_layer_new -> {
-                if (settings.newLayerLevel()) {
+                if (Settings.INST.newLayerLevel()) {
                     createLayer(bitmap.getWidth(), bitmap.getHeight(),
                             bitmap.getConfig(), bitmap.getColorSpace(),
                             tab.getLevel(), tab.left, tab.top, tabLayout.getSelectedTabPosition());
                 } else {
-                    final Bitmap background = tab.getBackground().bitmap;
-                    createLayer(background.getWidth(), background.getHeight(),
-                            background.getConfig(), background.getColorSpace(),
+                    final Bitmap bg = tab.getBackground().bitmap;
+                    createLayer(bg.getWidth(), bg.getHeight(), bg.getConfig(), bg.getColorSpace(),
                             0, 0, 0, tabLayout.getSelectedTabPosition());
                 }
             }
@@ -4627,10 +4695,10 @@ public class MainActivity extends AppCompatActivity {
                 til.setHint(R.string.layer_name);
                 dialog.findViewById(R.id.s_file_type).setVisibility(View.GONE);
             }
-            case R.id.i_noise -> {
+            case R.id.i_generate_noise -> {
                 drawFloatingLayers();
                 createImagePreview();
-                new SeekBarDialog(this).setTitle(R.string.noise).setMin(0).setMax(100).setProgress(0)
+                new SeekBarDialog(this).setTitle(R.string.generate_noise).setMin(0).setMax(100).setProgress(0)
                         .setOnChangeListener(onNoiseSeekBarChangeListener)
                         .setOnApplyListener(onClickImagePreviewPBListener)
                         .setOnCancelListener(onCancelImagePreviewListener)
@@ -4796,10 +4864,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void openImage(Bitmap bitmap, Uri uri) {
-        final int width = bitmap.getWidth(), height = bitmap.getHeight();
-        final Bitmap bm = Bitmap.createBitmap(width, height,
-                bitmap.getConfig(), bitmap.hasAlpha(), bitmap.getColorSpace());
-        new Canvas(bm).drawBitmap(bitmap, 0.0f, 0.0f, PAINT_SRC);
+        final Bitmap bm = bitmap.copy(bitmap.getConfig(), true);
         bitmap.recycle();
         final DocumentFile documentFile = DocumentFile.fromSingleUri(this, uri);
         final String name = documentFile.getName(), mimeType = documentFile.getType();
@@ -5161,7 +5226,7 @@ public class MainActivity extends AppCompatActivity {
 
     @SuppressLint("ClickableViewAccessibility")
     void setArgbColorType() {
-        onTouchIVWithEyedropperListener = settings.argbColorType()
+        onTouchIVWithEyedropperListener = Settings.INST.argbColorType()
                 ? onTouchIVWithPreciseEyedropperListener : onTouchIVWithImpreciseEyedropperListener;
         if (rbEyedropper != null && rbEyedropper.isChecked()) {
             cbZoom.setTag(onTouchIVWithEyedropperListener);

@@ -8,9 +8,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
-import android.widget.EditText;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -38,7 +36,7 @@ public class SettingsActivity extends AppCompatActivity {
         }
         PreferenceManager
                 .getDefaultSharedPreferences(this)
-                .registerOnSharedPreferenceChangeListener(Settings.getInstance()::update);
+                .registerOnSharedPreferenceChangeListener(Settings.INST::update);
     }
 
     @Override

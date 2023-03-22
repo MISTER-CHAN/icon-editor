@@ -121,7 +121,9 @@
     <string name="fuzziness">Fuzziness</string>
     <string name="g" translatable="false">G</string>
     <string name="general">General</string>
+    <string name="generate_noise">Generate Noise</string>
     <string name="gradient">Gradient</string>
+    <string name="group">Group</string>
     <string name="gt" translatable="false"><![CDATA[>]]></string>
     <string name="h" translatable="false">H</string>
     <string name="has_alpha">Has Alpha</string>
@@ -185,9 +187,10 @@
     <string name="new_">New</string>
     <string name="new_guide">New Guide</string>
     <string name="ninety_degrees">90°</string>
-    <string name="noise">Noise</string>
     <string name="normal">Normal</string>
+    <string name="not_public_format">Not a Public Format</string>
     <string name="not_supported_file_type">Not supported file type</string>
+    <string name="null_">Null</string>
     <string name="offset">Offset</string>
     <string name="ok">OK</string>
     <string name="one" translatable="false">1</string>
@@ -317,8 +320,16 @@
     <string name="zero" translatable="false">0</string>
     <string name="zoom">Zoom</string>
 
+    <!-- Bitmap Configs -->
+    <string name="alpha_8" translatable="false">Alpha 8</string>
+    <string name="gray_8" translatable="false">Gray 8</string>
+    <string name="rgb_565" translatable="false">RGB 565</string>
+    <string name="argb_4444" translatable="false">ARGB 4444</string>
+    <string name="argb_8888" translatable="false">ARGB 8888</string>
+    <string name="rgba_f16" translatable="false">RGBA F16</string>
+    <string name="rgba_1010102" translatable="false">RGBA 1010102</string>
+
     <!-- Blend Modes -->
-    <string name="null_">Null</string>
     <string name="destination">Destination</string>
     <string name="source_over">Source over</string>
     <string name="destination_over">Destination over</string>
