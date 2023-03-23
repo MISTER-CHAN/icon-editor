@@ -127,6 +127,7 @@
     <string name="hue_to_alpha">色相轉 Alpha</string>
     <string name="ignore_alpha">忽略 Alpha</string>
     <string name="image">圖像</string>
+    <string name="image_is_invalid">圖像無效。</string>
     <string name="image_size">圖像尺寸</string>
     <string name="independent_layer">獨立圖層</string>
     <string name="independent_transl_and_scale">獨立各圖層之可見子集</string>

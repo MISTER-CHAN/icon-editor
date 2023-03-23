@@ -3888,7 +3888,7 @@ public class MainActivity extends AppCompatActivity {
                 ll.setPivotY(radius);
                 ll.setRotation(90.0f);
             });
-            Toast.makeText(this, getString(R.string.please_switch_orientation_to_vertical_to_get_all_functions), Toast.LENGTH_LONG).show();
+            Toast.makeText(this, R.string.please_switch_orientation_to_vertical_to_get_all_functions, Toast.LENGTH_LONG).show();
         }
     }
 
@@ -4106,7 +4106,7 @@ public class MainActivity extends AppCompatActivity {
             case R.id.i_file_refer_to_clipboard -> {
                 final String filePath = tab.getBackground().getFirstFrame().filePath;
                 if (filePath == null) {
-                    Toast.makeText(this, getString(R.string.please_save_first), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, R.string.please_save_first, Toast.LENGTH_SHORT).show();
                     break;
                 }
                 ((ClipboardManager) getSystemService(CLIPBOARD_SERVICE))
@@ -4329,48 +4329,9 @@ public class MainActivity extends AppCompatActivity {
                         .show();
                 drawGridOnView();
             }
+            case R.id.i_image_color_space -> {
+            }
             case R.id.i_image_config -> {
-                final Bitmap.Config config = bitmap.getConfig();
-                final AlertDialog alertDialog = new AlertDialog.Builder(this)
-                        .setTitle(R.string.config)
-                        .setSingleChoiceItems(R.array.bitmap_configs,
-                                config == null ? 0 : switch (config.ordinal()) {
-                                    default -> 0;
-                                    case 0 -> 1;
-                                    case 1 -> 3;
-                                    case 2 -> 4;
-                                    case 3 -> 5;
-                                    case 4 -> 6;
-                                    case 6 -> 7;
-                                },
-                                (dialog, which) -> {
-                                    switch (which) {
-                                        case 1, 3, 4, 5 -> {
-                                            bitmap.setConfig(BITMAP_CONFIGS[which]);
-                                            drawBitmapOnView(true);
-                                        }
-                                    }
-                                    dialog.dismiss();
-                                })
-                        .create();
-                alertDialog.getListView().setOnHierarchyChangeListener(new ViewGroup.OnHierarchyChangeListener() {
-                    @Override
-                    public void onChildViewAdded(View parent, View child) {
-                        final String text = ((TextView) child).getText().toString();
-                        if (getString(R.string.not_public_format).equals(text)
-                                || getString(R.string.gray_8).equals(text)
-                                || getString(R.string.rgba_f16).equals(text)
-                                || getString(R.string.rgba_1010102).equals(text)) {
-                            child.setEnabled(false);
-                        }
-                    }
-
-                    @Override
-                    public void onChildViewRemoved(View parent, View child) {
-                    }
-                });
-                alertDialog.show();
-
             }
             case R.id.i_image_has_alpha -> {
                 final boolean checked = !item.isChecked();
@@ -4856,10 +4817,13 @@ public class MainActivity extends AppCompatActivity {
         }
         try (final InputStream inputStream = getContentResolver().openInputStream(uri)) {
             final Bitmap bm = BitmapFactory.decodeStream(inputStream);
+            if (bm == null) {
+                Toast.makeText(this, R.string.image_is_invalid, Toast.LENGTH_SHORT).show();
+                return;
+            }
             openImage(bm, uri);
             bm.recycle();
         } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 

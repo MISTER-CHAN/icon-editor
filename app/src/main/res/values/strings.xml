@@ -140,6 +140,7 @@
     <string name="hue_to_alpha">Hue to Alpha</string>
     <string name="ignore_alpha">Ignore Alpha</string>
     <string name="image">Image</string>
+    <string name="image_is_invalid">The image is invalid.</string>
     <string name="image_size">Image Size</string>
     <string name="independent_layer">Independent Layer</string>
     <string name="independent_transl_and_scale">Independent canvas position of each layer</string>
