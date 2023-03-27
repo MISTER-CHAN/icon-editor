@@ -387,6 +387,7 @@ public class Tab {
             addFilters(uBm, top);
         }
         lCv.drawBitmap(uBm, top.left - bottom.left, top.top - bottom.top, top.paint);
+        uBm.recycle();
     }
 
     public static Bitmap mergeLayers(final LayerTree tree) {

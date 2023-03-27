@@ -37,9 +37,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.SubMenu;
+import android.view.VelocityTracker;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.ViewParent;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
@@ -48,8 +47,6 @@ import android.widget.CompoundButton;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListAdapter;
-import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -1076,7 +1073,7 @@ public class MainActivity extends AppCompatActivity {
     private final Shape circle = new Shape() {
         @Override
         public void drawImageOnView(int x0, int y0, int x1, int y1) {
-            final int radius = (int) Math.ceil(Math.sqrt(Math.pow(x1 - x0, 2.0) + Math.pow(y1 - y0, 2.0)));
+            final int radius = (int) Math.ceil(Math.hypot(x1 - x0, y1 - y0));
             MainActivity.this.drawBitmapOnView(x0 - radius, y0 - radius, x1 + radius, y1 + radius,
                     strokeWidth / 2.0f + blurRadius);
         }
@@ -1084,13 +1081,13 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void drawShapeOnImage(int x0, int y0, int x1, int y1) {
             canvas.drawCircle(x0 + 0.5f, y0 + 0.5f,
-                    (int) Math.sqrt(Math.pow(x1 - x0, 2.0) + Math.pow(y1 - y0, 2.0)),
+                    (int) Math.hypot(x1 - x0, y1 - y0),
                     paint);
         }
 
         @Override
         public String drawShapeOnView(int x0, int y0, int x1, int y1) {
-            final int radius = (int) Math.sqrt(Math.pow(x1 - x0, 2.0) + Math.pow(y1 - y0, 2.0));
+            final int radius = (int) Math.hypot(x1 - x0, y1 - y0);
             previewCanvas.drawCircle(
                     toViewX(x0 + 0.5f), toViewY(y0 + 0.5f),
                     toScaled(radius),
@@ -1120,7 +1117,7 @@ public class MainActivity extends AppCompatActivity {
                     toViewX(x0 + 0.5f), toViewY(y0 + 0.5f),
                     toViewX(x1 + 0.5f), toViewY(y1 + 0.5f),
                     paint);
-            return String.format(getString(R.string.state_length), Math.sqrt(Math.pow(x1 - x0, 2.0) + Math.pow(y1 - y0, 2.0)) + 1);
+            return String.format(getString(R.string.state_length), Math.hypot(x1 - x0, y1 - y0) + 1);
         }
     };
 
@@ -1174,28 +1171,36 @@ public class MainActivity extends AppCompatActivity {
 
     @SuppressLint({"ClickableViewAccessibility"})
     private final View.OnTouchListener onTouchIVWithBrushListener = new View.OnTouchListener() {
-        private Path path;
+        private float lastBX, lastBY;
+        private VelocityTracker velocityTracker;
 
         @Override
         public boolean onTouch(View v, MotionEvent event) {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN -> {
+                    velocityTracker = VelocityTracker.obtain();
+                    velocityTracker.addMovement(event);
                     final float x = event.getX(), y = event.getY();
                     final int bx = toBitmapX(x), by = toBitmapY(y);
-                    path = new Path();
-                    path.moveTo(bx, by);
                     tvStatus.setText(String.format(getString(R.string.coordinates), bx, by));
+                    lastBX = bx;
+                    lastBY = by;
                 }
                 case MotionEvent.ACTION_MOVE -> {
+                    velocityTracker.addMovement(event);
+                    velocityTracker.computeCurrentVelocity(1);
                     final float x = event.getX(), y = event.getY();
                     final int bx = toBitmapX(x), by = toBitmapY(y);
-                    path.lineTo(bx, by);
-                    canvas.drawPath(path, paint);
+                    final float vx = velocityTracker.getXVelocity(), vy = velocityTracker.getYVelocity();
+
                     drawBitmapOnView();
                     tvStatus.setText(String.format(getString(R.string.coordinates), bx, by));
+                    lastBX = bx;
+                    lastBY = by;
                 }
                 case MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                    path = null;
+                    velocityTracker.recycle();
+                    paint.setStrokeWidth(strokeWidth);
                     addToHistory();
                     clearStatus();
                 }
@@ -1238,7 +1243,7 @@ public class MainActivity extends AppCompatActivity {
 
     @SuppressLint({"ClickableViewAccessibility", "SetTextI18n"})
     private final View.OnTouchListener onTouchIVWithCloneStampListener = new View.OnTouchListener() {
-        private float lastX, lastY;
+        private int lastBX, lastBY;
         private int dx, dy;
 
         @Override
@@ -1252,14 +1257,13 @@ public class MainActivity extends AppCompatActivity {
                     }
                     dx = cloneStampSrc.x - bx;
                     dy = cloneStampSrc.y - by;
-                    lastX = x;
-                    lastY = y;
+                    lastBX = bx;
+                    lastBY = by;
 
                 case MotionEvent.ACTION_MOVE: {
                     if (cloneStampSrc == null) {
                         break;
                     }
-                    final int lastBX = toBitmapX(lastX), lastBY = toBitmapY(lastY);
 
                     final int width = (int) (Math.abs(bx - lastBX) + strokeWidth + blurRadius * 2.0f),
                             height = (int) (Math.abs(by - lastBY) + strokeWidth + blurRadius * 2.0f);
@@ -1283,8 +1287,8 @@ public class MainActivity extends AppCompatActivity {
                     drawCrossOnView(bx + dx, by + dy);
                     tvStatus.setText(String.format(getString(R.string.coordinates), bx, by));
 
-                    lastX = x;
-                    lastY = y;
+                    lastBX = bx;
+                    lastBY = by;
                     break;
                 }
                 case MotionEvent.ACTION_CANCEL:
@@ -1306,25 +1310,25 @@ public class MainActivity extends AppCompatActivity {
 
     @SuppressLint({"ClickableViewAccessibility"})
     private final View.OnTouchListener onTouchIVWithEraserListener = new View.OnTouchListener() {
-        private float lastX, lastY;
+        private int lastBX, lastBY;
 
         @Override
         public boolean onTouch(View v, MotionEvent event) {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN: {
                     final float x = event.getX(), y = event.getY();
-                    lastX = x;
-                    lastY = y;
+                    final int bx = toBitmapX(x), by = toBitmapY(y);
+                    lastBX = bx;
+                    lastBY = by;
                 }
                 case MotionEvent.ACTION_MOVE: {
                     final float x = event.getX(), y = event.getY();
-                    final int lastBX = toBitmapX(lastX), lastBY = toBitmapY(lastY);
                     final int bx = toBitmapX(x), by = toBitmapY(y);
                     drawLineOnCanvas(lastBX, lastBY, bx, by, eraser);
                     drawBitmapOnView(lastBX, lastBY, bx, by, strokeHalfWidthEraser + blurRadiusEraser);
                     tvStatus.setText(String.format(MainActivity.this.getString(R.string.coordinates), bx, by));
-                    lastX = x;
-                    lastY = y;
+                    lastBX = bx;
+                    lastBY = by;
                     break;
                 }
                 case MotionEvent.ACTION_CANCEL:
@@ -1578,20 +1582,20 @@ public class MainActivity extends AppCompatActivity {
 
     @SuppressLint({"ClickableViewAccessibility"})
     private final View.OnTouchListener onTouchIVWithMagicPaintListener = new View.OnTouchListener() {
-        private float lastX, lastY;
+        private int lastBX, lastBY;
 
         @Override
         public boolean onTouch(View v, MotionEvent event) {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN: {
                     final float x = event.getX(), y = event.getY();
-                    lastX = x;
-                    lastY = y;
+                    final int bx = toBitmapX(x), by = toBitmapY(y);
+                    lastBX = bx;
+                    lastBY = by;
                 }
                 case MotionEvent.ACTION_MOVE: {
                     final float x = event.getX(), y = event.getY();
                     final int bx = toBitmapX(x), by = toBitmapY(y);
-                    final int lastBX = toBitmapX(lastX), lastBY = toBitmapY(lastY);
 
                     final int rad = (int) (strokeWidth / 2.0f + blurRadius);
                     final int left = Math.min(lastBX, bx) - rad,
@@ -1624,8 +1628,8 @@ public class MainActivity extends AppCompatActivity {
 
                     drawBitmapOnView(left, top, right, bottom);
                     tvStatus.setText(String.format(getString(R.string.coordinates), bx, by));
-                    lastX = x;
-                    lastY = y;
+                    lastBX = bx;
+                    lastBY = by;
                     break;
                 }
                 case MotionEvent.ACTION_UP:
@@ -1808,7 +1812,7 @@ public class MainActivity extends AppCompatActivity {
 
     @SuppressLint({"ClickableViewAccessibility"})
     private final View.OnTouchListener onTouchIVWithPencilListener = new View.OnTouchListener() {
-        private float lastX, lastY;
+        private int lastBX, lastBY;
         private Paint pencil;
 
         @Override
@@ -1816,21 +1820,21 @@ public class MainActivity extends AppCompatActivity {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN: {
                     final float x = event.getX(), y = event.getY();
+                    final int bx = toBitmapX(x), by = toBitmapY(y);
                     pencil = cbPencilWithEraser.isChecked()
-                            && bitmap.getColor(satX(bitmap, toBitmapX(x)), satY(bitmap, toBitmapY(y))).pack() != eraser.getColorLong()
+                            && bitmap.getColor(satX(bitmap, bx), satY(bitmap, by)).pack() != eraser.getColorLong()
                             ? eraser : paint;
-                    lastX = x;
-                    lastY = y;
+                    lastBX = bx;
+                    lastBY = by;
                 }
                 case MotionEvent.ACTION_MOVE: {
                     final float x = event.getX(), y = event.getY();
-                    final int lastBX = toBitmapX(lastX), lastBY = toBitmapY(lastY);
                     final int bx = toBitmapX(x), by = toBitmapY(y);
                     drawLineOnCanvas(lastBX, lastBY, bx, by, pencil);
                     drawBitmapOnView(lastBX, lastBY, bx, by, strokeWidth / 2.0f + blurRadius);
                     tvStatus.setText(String.format(getString(R.string.coordinates), bx, by));
-                    lastX = x;
-                    lastY = y;
+                    lastBX = bx;
+                    lastBY = by;
                     break;
                 }
                 case MotionEvent.ACTION_UP:
@@ -2360,7 +2364,7 @@ public class MainActivity extends AppCompatActivity {
                         case MotionEvent.ACTION_MOVE -> {
                             final float x0 = event.getX(0), y0 = event.getY(0),
                                     x1 = event.getX(1), y1 = event.getY(1);
-                            final double diagonal = Math.sqrt(Math.pow(x0 - x1, 2.0) + Math.pow(y0 - y1, 2.0));
+                            final double diagonal = Math.hypot(x0 - x1, y0 - y1);
                             final double diagonalRatio = diagonal / lastDiagonal;
                             scale = (float) (scale * diagonalRatio);
                             calculateBackgroundSizeOnView();
@@ -2377,7 +2381,7 @@ public class MainActivity extends AppCompatActivity {
                                     x1 = event.getX(1), y1 = event.getY(1);
                             lastPivotX = (x0 + x1) / 2.0f - translationX;
                             lastPivotY = (y0 + y1) / 2.0f - translationY;
-                            lastDiagonal = Math.sqrt(Math.pow(x0 - x1, 2.0) + Math.pow(y0 - y1, 2.0));
+                            lastDiagonal = Math.hypot(x0 - x1, y0 - y1);
                             clearStatus();
                         }
                         case MotionEvent.ACTION_POINTER_UP -> {
