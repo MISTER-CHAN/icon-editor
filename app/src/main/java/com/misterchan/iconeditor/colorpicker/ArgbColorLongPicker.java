@@ -12,12 +12,10 @@ import androidx.annotation.Size;
 import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
 
-import com.misterchan.iconeditor.dialog.ColorPicker;
 import com.misterchan.iconeditor.listener.AfterTextChangedListener;
 import com.misterchan.iconeditor.Color;
 import com.misterchan.iconeditor.listener.OnSeekBarProgressChangedListener;
 import com.misterchan.iconeditor.R;
-import com.misterchan.iconeditor.Settings;
 
 public class ArgbColorLongPicker extends ArgbColorPicker {
 

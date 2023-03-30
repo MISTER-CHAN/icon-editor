@@ -11,7 +11,6 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.misterchan.iconeditor.Color;
 import com.misterchan.iconeditor.R;
 import com.misterchan.iconeditor.Settings;
-import com.misterchan.iconeditor.dialog.ColorPicker;
 
 public abstract class ArgbColorPicker extends ColorPicker {
 

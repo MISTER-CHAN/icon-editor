@@ -114,7 +114,6 @@ import java.util.List;
 import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
-    private static final BlendMode[] BLEND_MODES = BlendMode.values();
 
     private static final Bitmap.Config[] BITMAP_CONFIGS = {
             null,
@@ -1072,7 +1071,7 @@ public class MainActivity extends AppCompatActivity {
 
     private final Shape circle = new Shape() {
         @Override
-        public void drawImageOnView(int x0, int y0, int x1, int y1) {
+        public void drawBitmapOnView(int x0, int y0, int x1, int y1) {
             final int radius = (int) Math.ceil(Math.hypot(x1 - x0, y1 - y0));
             MainActivity.this.drawBitmapOnView(x0 - radius, y0 - radius, x1 + radius, y1 + radius,
                     strokeWidth / 2.0f + blurRadius);
@@ -1098,7 +1097,7 @@ public class MainActivity extends AppCompatActivity {
 
     private final Shape line = new Shape() {
         @Override
-        public void drawImageOnView(int x0, int y0, int x1, int y1) {
+        public void drawBitmapOnView(int x0, int y0, int x1, int y1) {
             MainActivity.this.drawBitmapOnView(x0, y0, x1, y1, strokeWidth / 2.0f + blurRadius);
         }
 
@@ -1123,7 +1122,7 @@ public class MainActivity extends AppCompatActivity {
 
     private final Shape oval = new Shape() {
         @Override
-        public void drawImageOnView(int x0, int y0, int x1, int y1) {
+        public void drawBitmapOnView(int x0, int y0, int x1, int y1) {
             MainActivity.this.drawBitmapOnView(x0, y0, x1, y1, strokeWidth / 2.0f + blurRadius);
         }
 
@@ -1146,7 +1145,7 @@ public class MainActivity extends AppCompatActivity {
 
     private final Shape rect = new Shape() {
         @Override
-        public void drawImageOnView(int x0, int y0, int x1, int y1) {
+        public void drawBitmapOnView(int x0, int y0, int x1, int y1) {
             MainActivity.this.drawBitmapOnView(x0, y0, x1, y1, strokeWidth / 2.0f + blurRadius);
         }
 
@@ -1324,7 +1323,7 @@ public class MainActivity extends AppCompatActivity {
                 case MotionEvent.ACTION_MOVE: {
                     final float x = event.getX(), y = event.getY();
                     final int bx = toBitmapX(x), by = toBitmapY(y);
-                    drawLineOnCanvas(lastBX, lastBY, bx, by, eraser);
+                    drawLineOnImage(lastBX, lastBY, bx, by, eraser);
                     drawBitmapOnView(lastBX, lastBY, bx, by, strokeHalfWidthEraser + blurRadiusEraser);
                     tvStatus.setText(String.format(MainActivity.this.getString(R.string.coordinates), bx, by));
                     lastBX = bx;
@@ -1428,7 +1427,7 @@ public class MainActivity extends AppCompatActivity {
                                 color0,
                                 src.getColor(satX(src, bx), satY(src, by)).pack(),
                                 Shader.TileMode.CLAMP));
-                        drawLineOnCanvas(shapeStartX, shapeStartY, bx, by, paint);
+                        drawLineOnImage(shapeStartX, shapeStartY, bx, by, paint);
                         isShapeStopped = true;
                         drawBitmapOnView(shapeStartX, shapeStartY, bx, by, strokeWidth / 2.0f + blurRadius);
                         eraseBitmapAndInvalidateView(previewImage, ivPreview);
@@ -1830,7 +1829,7 @@ public class MainActivity extends AppCompatActivity {
                 case MotionEvent.ACTION_MOVE: {
                     final float x = event.getX(), y = event.getY();
                     final int bx = toBitmapX(x), by = toBitmapY(y);
-                    drawLineOnCanvas(lastBX, lastBY, bx, by, pencil);
+                    drawLineOnImage(lastBX, lastBY, bx, by, pencil);
                     drawBitmapOnView(lastBX, lastBY, bx, by, strokeWidth / 2.0f + blurRadius);
                     tvStatus.setText(String.format(getString(R.string.coordinates), bx, by));
                     lastBX = bx;
@@ -1911,7 +1910,7 @@ public class MainActivity extends AppCompatActivity {
                 if (bx != shapeStartX || by != shapeStartY) {
                     drawShapeOnCanvas(shapeStartX, shapeStartY, bx, by);
                     isShapeStopped = true;
-                    shape.drawImageOnView(shapeStartX, shapeStartY, bx, by);
+                    shape.drawBitmapOnView(shapeStartX, shapeStartY, bx, by);
                     eraseBitmapAndInvalidateView(previewImage, ivPreview);
                     addToHistory();
                     clearStatus();
@@ -2676,7 +2675,7 @@ public class MainActivity extends AppCompatActivity {
     private Position checkDraggingMarqueeBound(float x, float y) {
         marqueeBoundBeingDragged = null;
 
-// Marquee Bounds
+        // Marquee Bounds
         final float mbLeft = toViewX(selection.left), mbTop = toViewY(selection.top),
                 mbRight = toViewX(selection.right), mbBottom = toViewY(selection.bottom);
 
@@ -2710,9 +2709,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void checkLayerBlendModeMenuItem(BlendMode blendMode) {
-        for (int i = 0; i < BLEND_MODES.length; ++i) {
+        for (int i = 0; i < BlendModeValues.COUNT; ++i) {
             final MenuItem mi = smLayerBlendModes.getItem(i);
-            mi.setChecked(BLEND_MODES[i] == blendMode);
+            mi.setChecked(BlendModeValues.valAt(i) == blendMode);
         }
     }
 
@@ -2953,11 +2952,8 @@ public class MainActivity extends AppCompatActivity {
     private void drawBitmapOnView(final Bitmap bitmap,
                                   final int left, final int top, final int right, final int bottom,
                                   final boolean wait) {
-        runOrStart(() ->
-                        drawBitmapSubsetOnView(bitmap,
-                                tab.left + left, tab.top + top, tab.left + right, tab.top + bottom
-                        ),
-                wait);
+        runOrStart(() -> drawBitmapSubsetOnView(bitmap,
+                tab.left + left, tab.top + top, tab.left + right, tab.top + bottom), wait);
     }
 
     private void drawBitmapOnView(final int x0, final int y0, final int x1, final int y1,
@@ -2992,10 +2988,8 @@ public class MainActivity extends AppCompatActivity {
         drawBitmapLastOnView(wait);
     }
 
-    private final Runnable drawingImageLastOnViewRunner = this::drawBitmapLastOnView;
-
     private void drawBitmapLastOnView(final boolean wait) {
-        runOrStart(drawingImageLastOnViewRunner, wait);
+        runOrStart(this::drawBitmapLastOnView, wait);
     }
 
     private void drawBitmapLastOnView() {
@@ -3013,8 +3007,6 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private final Runnable erasingViewRunner = () -> eraseBitmap(viewImage);
-
     private void drawBitmapSubsetOnView(final Bitmap bitmap,
                                         int left, int top, int right, int bottom) {
         final Tab background = tab.getBackground();
@@ -3028,7 +3020,7 @@ public class MainActivity extends AppCompatActivity {
         }
         final Rect vs = getVisibleSubset(translationX, translationY, width, height);
         if (vs.isEmpty()) {
-            runOnUiThread(erasingViewRunner);
+            runOnUiThread(() -> eraseBitmap(viewImage));
             return;
         }
         if (!vs.intersect(left, top, right, bottom)) {
@@ -3058,7 +3050,7 @@ public class MainActivity extends AppCompatActivity {
         final Tab background = tab.getBackground();
         final Rect vs = getVisibleSubset(translationX, translationY, background.bitmap.getWidth(), background.bitmap.getHeight());
         if (vs.isEmpty()) {
-            runOnUiThread(erasingViewRunner);
+            runOnUiThread(() -> eraseBitmap(viewImage));
             return;
         }
 
@@ -3257,7 +3249,7 @@ public class MainActivity extends AppCompatActivity {
         ivRulerV.invalidate();
     }
 
-    private void drawLineOnCanvas(int startX, int startY, int stopX, int stopY, Paint paint) {
+    private void drawLineOnImage(int startX, int startY, int stopX, int stopY, Paint paint) {
         if (startX <= stopX) ++stopX;
         else ++startX;
         if (startY <= stopY) ++stopY;
@@ -3266,7 +3258,7 @@ public class MainActivity extends AppCompatActivity {
         canvas.drawLine(startX, startY, stopX, stopY, paint);
     }
 
-    private void drawPoint(Canvas canvas, float x, float y, String text) {
+    private void drawPointOnCanvas(Canvas canvas, float x, float y, String text) {
         canvas.drawLine(x - 100.0f, y, x + 100.0f, y, PAINT_POINT);
         canvas.drawLine(x, y - 100.0f, x, y + 100.0f, PAINT_POINT);
         canvas.drawText(text, x, y, PAINT_POINT);
@@ -3309,19 +3301,19 @@ public class MainActivity extends AppCompatActivity {
                         viewImBottom = Math.min(viewHeight, translationY + backgroundScaledH);
                 final float centerHorizontal = (left + right) / 2.0f,
                         centerVertical = (top + bottom) / 2.0f;
-                if (left > 0.0f) {
+                if (Math.max(left, viewImLeft) > 0.0f) {
                     selectionCanvas.drawLine(left, centerVertical, viewImLeft, centerVertical, marginPaint);
                     selectionCanvas.drawText(String.valueOf(tab.left + selection.left), (viewImLeft + left) / 2.0f, centerVertical, marginPaint);
                 }
-                if (top > 0.0f) {
+                if (Math.max(top, viewImTop) > 0.0f) {
                     selectionCanvas.drawLine(centerHorizontal, top, centerHorizontal, viewImTop, marginPaint);
                     selectionCanvas.drawText(String.valueOf(tab.top + selection.top), centerHorizontal, (viewImTop + top) / 2.0f, marginPaint);
                 }
-                if (right < viewWidth) {
+                if (Math.min(right, viewImRight) < viewWidth) {
                     selectionCanvas.drawLine(right, centerVertical, viewImRight, centerVertical, marginPaint);
                     selectionCanvas.drawText(String.valueOf(tab.left + bitmap.getWidth() - selection.right), (viewImRight + right) / 2.0f, centerVertical, marginPaint);
                 }
-                if (bottom < viewHeight) {
+                if (Math.min(bottom, viewImBottom) < viewHeight) {
                     selectionCanvas.drawLine(centerHorizontal, bottom, centerHorizontal, viewImBottom, marginPaint);
                     selectionCanvas.drawText(String.valueOf(tab.top + bitmap.getHeight() - selection.bottom), centerHorizontal, (viewImBottom + bottom) / 2.0f, marginPaint);
                 }
@@ -4393,10 +4385,10 @@ public class MainActivity extends AppCompatActivity {
                     R.id.i_layer_blend_mode_hard_light, R.id.i_layer_blend_mode_soft_light,
                     R.id.i_layer_blend_mode_difference, R.id.i_layer_blend_mode_exclusion, R.id.i_layer_blend_mode_multiply,
                     R.id.i_layer_blend_mode_hue, R.id.i_layer_blend_mode_saturation, R.id.i_layer_blend_mode_color, R.id.i_layer_blend_mode_luminosity -> {
-                for (int i = 0; i < BLEND_MODES.length; ++i) {
+                for (int i = 0; i < BlendModeValues.COUNT; ++i) {
                     final MenuItem mi = smLayerBlendModes.getItem(i);
                     if (mi == item) {
-                        tab.paint.setBlendMode(BLEND_MODES[i]);
+                        tab.paint.setBlendMode(BlendModeValues.valAt(i));
                         mi.setChecked(true);
                     } else if (mi.isChecked()) {
                         mi.setChecked(false);

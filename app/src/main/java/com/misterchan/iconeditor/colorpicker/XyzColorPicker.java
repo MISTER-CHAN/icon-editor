@@ -12,7 +12,6 @@ import androidx.appcompat.app.AlertDialog;
 
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
-import com.misterchan.iconeditor.dialog.ColorPicker;
 import com.misterchan.iconeditor.listener.AfterTextChangedListener;
 import com.misterchan.iconeditor.Color;
 import com.misterchan.iconeditor.listener.OnSeekBarProgressChangedListener;
