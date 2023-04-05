@@ -554,7 +554,7 @@ public class MainActivity extends AppCompatActivity {
             if (hueMin == 0 && hueMax == 360 && lumMin == 0x0 && lumMax == 0xFF) {
                 imagePreview.clearFilters();
             } else if (lumMin > lumMax) {
-                imagePreview.drawColor(Color.TRANSPARENT);
+                imagePreview.drawColor(Color.TRANSPARENT, BlendMode.SRC);
             } else {
                 final int width = imagePreview.getWidth(), height = imagePreview.getHeight(), area = width * height;
                 final int[] src = imagePreview.getPixels(), dst = new int[area];
@@ -668,7 +668,7 @@ public class MainActivity extends AppCompatActivity {
             if (properties.noisy() == 0.0f) {
                 imagePreview.clearFilters();
             } else if (properties.noisy() == 1.0f) {
-                imagePreview.drawColor(paint.getColor());
+                imagePreview.drawColor(paint.getColor(), BlendMode.SRC);
             } else {
                 switch (properties.whatToDraw()) {
                     case PIXEL -> {
@@ -773,7 +773,7 @@ public class MainActivity extends AppCompatActivity {
         threshold = progress;
         runOrStart(() -> {
             if (progress == 0xFF) {
-                imagePreview.drawColor(Color.BLACK);
+                imagePreview.drawColor(Color.BLACK, BlendMode.SRC_IN);
             } else if (progress == 0x00) {
                 imagePreview.clearFilters();
             } else {

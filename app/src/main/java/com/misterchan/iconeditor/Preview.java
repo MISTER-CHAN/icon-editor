@@ -85,9 +85,9 @@ class Preview {
         canvas.drawBitmap(b, rect.left, rect.top, PAINT);
     }
 
-    public void drawColor(@ColorInt int color) {
+    public void drawColor(@ColorInt int color, BlendMode blendMode) {
         final Paint paint = new Paint();
-        paint.setBlendMode(BlendMode.SRC);
+        paint.setBlendMode(blendMode);
         paint.setColor(color);
         canvas.drawRect(rect, paint);
     }
