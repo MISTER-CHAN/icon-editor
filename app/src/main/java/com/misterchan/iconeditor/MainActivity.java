@@ -663,7 +663,7 @@ public class MainActivity extends AppCompatActivity {
 
     private final NewImageDialog.OnApplyListener onApplyNewImagePropertiesListener = this::createImage;
 
-    private final NoiseGenerator.OnPropChangedListener onNoiseSeekBarChangeListener = (properties, stopped) -> {
+    private final NoiseGenerator.OnPropChangedListener onNoisePropChangedListener = (properties, stopped) -> {
         runOrStart(() -> {
             if (properties.noisy() == 0.0f) {
                 imagePreview.clearFilters();
@@ -4669,7 +4669,7 @@ public class MainActivity extends AppCompatActivity {
                 drawFloatingLayers();
                 createImagePreview();
                 new NoiseGenerator(this)
-                        .setOnPropChangedListener(onNoiseSeekBarChangeListener)
+                        .setOnPropChangedListener(onNoisePropChangedListener)
                         .setOnConfirmListener(onClickImagePreviewPBListener)
                         .setOnCancelListener(onCancelImagePreviewListener)
                         .show();

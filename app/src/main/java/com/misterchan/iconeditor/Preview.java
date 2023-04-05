@@ -87,7 +87,7 @@ class Preview {
 
     public void drawColor(@ColorInt int color) {
         final Paint paint = new Paint();
-        paint.setBlendMode(BlendMode.SRC_IN);
+        paint.setBlendMode(BlendMode.SRC);
         paint.setColor(color);
         canvas.drawRect(rect, paint);
     }
