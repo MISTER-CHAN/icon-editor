@@ -14,7 +14,7 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.misterchan.iconeditor.listener.AfterTextChangedListener;
 import com.misterchan.iconeditor.Color;
-import com.misterchan.iconeditor.listener.OnSeekBarProgressChangedListener;
+import com.misterchan.iconeditor.listener.OnSBProgressChangedListener;
 import com.misterchan.iconeditor.R;
 
 public class XyYColorPicker extends ColorPicker {
@@ -99,9 +99,9 @@ public class XyYColorPicker extends ColorPicker {
         tilX_.setHint(R.string.x_);
         tilY_.setHint(R.string.y_);
         tilY.setHint(R.string.y);
-        sbX_.setOnSeekBarChangeListener((OnSeekBarProgressChangedListener) (seekBar, progress) -> tietX_.setText(String.valueOf((float) progress / 250.0f)));
-        sbY_.setOnSeekBarChangeListener((OnSeekBarProgressChangedListener) (seekBar, progress) -> tietY_.setText(String.valueOf((float) progress / 250.0f)));
-        sbY.setOnSeekBarChangeListener((OnSeekBarProgressChangedListener) (seekBar, progress) -> tietY.setText(String.valueOf((float) progress / 100.0f)));
+        sbX_.setOnSeekBarChangeListener((OnSBProgressChangedListener) (seekBar, progress) -> tietX_.setText(String.valueOf((float) progress / 250.0f)));
+        sbY_.setOnSeekBarChangeListener((OnSBProgressChangedListener) (seekBar, progress) -> tietY_.setText(String.valueOf((float) progress / 250.0f)));
+        sbY.setOnSeekBarChangeListener((OnSBProgressChangedListener) (seekBar, progress) -> tietY.setText(String.valueOf((float) progress / 100.0f)));
         tietX_.addTextChangedListener((AfterTextChangedListener) s -> onXyChanged(0, s, sbX_));
         tietY_.addTextChangedListener((AfterTextChangedListener) s -> onXyChanged(1, s, sbY_));
         tietY.addTextChangedListener((AfterTextChangedListener) this::onYChanged);

@@ -14,7 +14,7 @@ import androidx.appcompat.app.AlertDialog;
 
 import com.misterchan.iconeditor.listener.AfterTextChangedListener;
 import com.misterchan.iconeditor.Color;
-import com.misterchan.iconeditor.listener.OnSeekBarProgressChangedListener;
+import com.misterchan.iconeditor.listener.OnSBProgressChangedListener;
 import com.misterchan.iconeditor.R;
 
 public class ArgbColorLongPicker extends ArgbColorPicker {
@@ -69,10 +69,10 @@ public class ArgbColorLongPicker extends ArgbColorPicker {
         tietGreen.setInputType(ColorPicker.EDITOR_TYPE_NUM_DEC_SIGNED);
         tietBlue.setInputType(ColorPicker.EDITOR_TYPE_NUM_DEC_SIGNED);
         ((TextView) dialog.findViewById(R.id.tv_color_space)).setText(colorSpace.toString());
-        sbAlpha.setOnSeekBarChangeListener((OnSeekBarProgressChangedListener) (seekBar, progress) -> tietAlpha.setText(String.valueOf(progress / 100.0f)));
-        sbRed.setOnSeekBarChangeListener((OnSeekBarProgressChangedListener) (seekBar, progress) -> tietRed.setText(String.valueOf(progress / 100.0f)));
-        sbGreen.setOnSeekBarChangeListener((OnSeekBarProgressChangedListener) (seekBar, progress) -> tietGreen.setText(String.valueOf(progress / 100.0f)));
-        sbBlue.setOnSeekBarChangeListener((OnSeekBarProgressChangedListener) (seekBar, progress) -> tietBlue.setText(String.valueOf(progress / 100.0f)));
+        sbAlpha.setOnSeekBarChangeListener((OnSBProgressChangedListener) (seekBar, progress) -> tietAlpha.setText(String.valueOf(progress / 100.0f)));
+        sbRed.setOnSeekBarChangeListener((OnSBProgressChangedListener) (seekBar, progress) -> tietRed.setText(String.valueOf(progress / 100.0f)));
+        sbGreen.setOnSeekBarChangeListener((OnSBProgressChangedListener) (seekBar, progress) -> tietGreen.setText(String.valueOf(progress / 100.0f)));
+        sbBlue.setOnSeekBarChangeListener((OnSBProgressChangedListener) (seekBar, progress) -> tietBlue.setText(String.valueOf(progress / 100.0f)));
         tietAlpha.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(0, s, sbAlpha));
         tietRed.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(1, s, sbRed));
         tietGreen.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(2, s, sbGreen));

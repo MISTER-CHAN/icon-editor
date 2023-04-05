@@ -77,11 +77,7 @@ class Preview {
         setPixels(dst, w, h);
     }
 
-    public void clearFilter() {
-        draw();
-    }
-
-    private void draw() {
+    public void clearFilters() {
         canvas.drawBitmap(bm, rect.left, rect.top, PAINT_SRC);
     }
 
@@ -98,6 +94,10 @@ class Preview {
 
     public int getArea() {
         return bm.getWidth() * bm.getHeight();
+    }
+
+    public Canvas getCanvas() {
+        return canvas;
     }
 
     public Bitmap getEntire() {
@@ -118,8 +118,8 @@ class Preview {
     }
 
     @ColorInt
-    public int[] getPixels(int width, int height, int area) {
-        final int[] pixels = new int[area];
+    public int[] getPixels(int width, int height) {
+        final int[] pixels = new int[width * height];
         bm.getPixels(pixels, 0, width, 0, 0, width, height);
         return pixels;
     }
@@ -127,6 +127,10 @@ class Preview {
     public void getPixels(@ColorInt int[] pixels, int offset, int stride,
                           int x, int y, int width, int height) {
         bm.getPixels(pixels, offset, stride, x, y, width, height);
+    }
+
+    public Rect getRect() {
+        return rect;
     }
 
     public int getWidth() {

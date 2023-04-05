@@ -10,7 +10,7 @@ import android.widget.SeekBar;
 import androidx.annotation.Size;
 import androidx.appcompat.app.AlertDialog;
 
-import com.misterchan.iconeditor.listener.OnSeekBarChangeListener;
+import com.misterchan.iconeditor.listener.OnSBChangeListener;
 import com.misterchan.iconeditor.R;
 
 public class ColorBalanceDialog {
@@ -24,7 +24,7 @@ public class ColorBalanceDialog {
             1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f
     };
 
-    private final OnSeekBarChangeListener onProgressChangeListener = (progress, stopped) -> {
+    private final OnSBChangeListener onProgressChangeListener = (progress, stopped) -> {
         final float r = sbRed.getProgress() / 10.0f, g = sbGreen.getProgress() / 10.0f, b = sbBlue.getProgress() / 10.0f;
         final float average = (r + g + b) / 3.0f;
         lighting[0] = 1.0f + r - average;

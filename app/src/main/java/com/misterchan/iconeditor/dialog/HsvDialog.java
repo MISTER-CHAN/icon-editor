@@ -10,7 +10,7 @@ import android.widget.SeekBar;
 import androidx.annotation.Size;
 import androidx.appcompat.app.AlertDialog;
 
-import com.misterchan.iconeditor.listener.OnSeekBarChangeListener;
+import com.misterchan.iconeditor.listener.OnSBChangeListener;
 import com.misterchan.iconeditor.R;
 
 public class HsvDialog {
@@ -66,19 +66,19 @@ public class HsvDialog {
         final SeekBar sbValue = dialog.findViewById(R.id.sb_value);
 
         sbHue.setProgress((int) deltaHsv[0]);
-        sbHue.setOnSeekBarChangeListener((OnSeekBarChangeListener) (progress, stopped) -> {
+        sbHue.setOnSeekBarChangeListener((OnSBChangeListener) (progress, stopped) -> {
             deltaHsv[0] = progress;
             listener.onChanged(deltaHsv, stopped);
         });
 
         sbSaturation.setProgress((int) (deltaHsv[1] * 100.0f));
-        sbSaturation.setOnSeekBarChangeListener((OnSeekBarChangeListener) (progress, stopped) -> {
+        sbSaturation.setOnSeekBarChangeListener((OnSBChangeListener) (progress, stopped) -> {
             deltaHsv[1] = progress / 100.0f;
             listener.onChanged(deltaHsv, stopped);
         });
 
         sbValue.setProgress((int) (deltaHsv[2] * 100.0f));
-        sbValue.setOnSeekBarChangeListener((OnSeekBarChangeListener) (progress, stopped) -> {
+        sbValue.setOnSeekBarChangeListener((OnSBChangeListener) (progress, stopped) -> {
             deltaHsv[2] = progress / 100.0f;
             listener.onChanged(deltaHsv, stopped);
         });

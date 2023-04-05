@@ -13,7 +13,7 @@ import com.misterchan.iconeditor.Color;
 import com.misterchan.iconeditor.R;
 import com.misterchan.iconeditor.Settings;
 import com.misterchan.iconeditor.listener.AfterTextChangedListener;
-import com.misterchan.iconeditor.listener.OnSeekBarProgressChangedListener;
+import com.misterchan.iconeditor.listener.OnSBProgressChangedListener;
 
 public class CmykColorPicker extends ColorPicker {
 
@@ -88,10 +88,10 @@ public class CmykColorPicker extends ColorPicker {
         tilCyan.setHint(R.string.c);
         tilMagenta.setHint(R.string.m);
         tilYellow.setHint(R.string.y);
-        sbCyan.setOnSeekBarChangeListener((OnSeekBarProgressChangedListener) (seekBar, progress) -> tietCyan.setText(String.format(format, progress)));
-        sbMagenta.setOnSeekBarChangeListener((OnSeekBarProgressChangedListener) (seekBar, progress) -> tietMagenta.setText(String.format(format, progress)));
-        sbYellow.setOnSeekBarChangeListener((OnSeekBarProgressChangedListener) (seekBar, progress) -> tietYellow.setText(String.format(format, progress)));
-        sbKey.setOnSeekBarChangeListener((OnSeekBarProgressChangedListener) (seekBar, progress) -> tietKey.setText(String.format(format, progress)));
+        sbCyan.setOnSeekBarChangeListener((OnSBProgressChangedListener) (seekBar, progress) -> tietCyan.setText(String.format(format, progress)));
+        sbMagenta.setOnSeekBarChangeListener((OnSBProgressChangedListener) (seekBar, progress) -> tietMagenta.setText(String.format(format, progress)));
+        sbYellow.setOnSeekBarChangeListener((OnSBProgressChangedListener) (seekBar, progress) -> tietYellow.setText(String.format(format, progress)));
+        sbKey.setOnSeekBarChangeListener((OnSBProgressChangedListener) (seekBar, progress) -> tietKey.setText(String.format(format, progress)));
         tietCyan.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(s, sbCyan));
         tietMagenta.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(s, sbMagenta));
         tietYellow.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(s, sbYellow));

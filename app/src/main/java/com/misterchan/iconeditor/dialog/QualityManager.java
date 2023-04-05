@@ -14,9 +14,9 @@ import androidx.appcompat.widget.SwitchCompat;
 
 import com.google.android.material.textfield.TextInputEditText;
 import com.misterchan.iconeditor.listener.AfterTextChangedListener;
-import com.misterchan.iconeditor.listener.OnCheckedListener;
+import com.misterchan.iconeditor.listener.OnCBCheckedListener;
 import com.misterchan.iconeditor.listener.OnItemSelectedListener;
-import com.misterchan.iconeditor.listener.OnSeekBarProgressChangedListener;
+import com.misterchan.iconeditor.listener.OnSBProgressChangedListener;
 import com.misterchan.iconeditor.R;
 import com.waynejo.androidndkgif.GifEncoder;
 
@@ -80,9 +80,9 @@ public class QualityManager {
         if (isFormatWebp) {
             dialog.findViewById(R.id.rg_formats).setVisibility(View.VISIBLE);
             rbLossless.setChecked(format == Bitmap.CompressFormat.WEBP_LOSSLESS);
-            rbLossless.setOnCheckedChangeListener((OnCheckedListener) () -> format = Bitmap.CompressFormat.WEBP_LOSSLESS);
+            rbLossless.setOnCheckedChangeListener((OnCBCheckedListener) () -> format = Bitmap.CompressFormat.WEBP_LOSSLESS);
             rbLossy.setChecked(format == Bitmap.CompressFormat.WEBP_LOSSY);
-            rbLossy.setOnCheckedChangeListener((OnCheckedListener) () -> format = Bitmap.CompressFormat.WEBP_LOSSY);
+            rbLossy.setOnCheckedChangeListener((OnCBCheckedListener) () -> format = Bitmap.CompressFormat.WEBP_LOSSY);
         }
         if (gifEncodingType != null) {
             glGif.setVisibility(View.VISIBLE);
@@ -107,7 +107,7 @@ public class QualityManager {
         } else {
             llQuality.setVisibility(View.VISIBLE);
             sbQuality.setProgress(quality);
-            sbQuality.setOnSeekBarChangeListener((OnSeekBarProgressChangedListener) (seekBar, progress) -> {
+            sbQuality.setOnSeekBarChangeListener((OnSBProgressChangedListener) (seekBar, progress) -> {
                 quality = progress;
                 tietQuality.setText(String.valueOf(progress));
             });

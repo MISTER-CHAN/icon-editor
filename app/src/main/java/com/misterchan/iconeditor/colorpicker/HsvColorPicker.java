@@ -13,7 +13,7 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.misterchan.iconeditor.listener.AfterTextChangedListener;
 import com.misterchan.iconeditor.Color;
-import com.misterchan.iconeditor.listener.OnSeekBarProgressChangedListener;
+import com.misterchan.iconeditor.listener.OnSBProgressChangedListener;
 import com.misterchan.iconeditor.R;
 
 public class HsvColorPicker extends ColorPicker {
@@ -95,9 +95,9 @@ public class HsvColorPicker extends ColorPicker {
         tilSaturation.setSuffixText("%");
         tilValue.setHint(R.string.v);
         tilValue.setSuffixText("%");
-        sbHue.setOnSeekBarChangeListener((OnSeekBarProgressChangedListener) (seekBar, progress) -> tietHue.setText(String.valueOf(progress)));
-        sbSaturation.setOnSeekBarChangeListener((OnSeekBarProgressChangedListener) (seekBar, progress) -> tietSaturation.setText(String.valueOf(progress)));
-        sbValue.setOnSeekBarChangeListener((OnSeekBarProgressChangedListener) (seekBar, progress) -> tietValue.setText(String.valueOf(progress)));
+        sbHue.setOnSeekBarChangeListener((OnSBProgressChangedListener) (seekBar, progress) -> tietHue.setText(String.valueOf(progress)));
+        sbSaturation.setOnSeekBarChangeListener((OnSBProgressChangedListener) (seekBar, progress) -> tietSaturation.setText(String.valueOf(progress)));
+        sbValue.setOnSeekBarChangeListener((OnSBProgressChangedListener) (seekBar, progress) -> tietValue.setText(String.valueOf(progress)));
         tietHue.addTextChangedListener((AfterTextChangedListener) this::onHueChanged);
         tietSaturation.addTextChangedListener((AfterTextChangedListener) s -> onSatOrValChanged(1, s, sbSaturation));
         tietValue.addTextChangedListener((AfterTextChangedListener) s -> onSatOrValChanged(2, s, sbValue));

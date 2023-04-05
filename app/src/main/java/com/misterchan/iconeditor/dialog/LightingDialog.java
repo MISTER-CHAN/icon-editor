@@ -10,7 +10,7 @@ import android.widget.SeekBar;
 import androidx.annotation.Size;
 import androidx.appcompat.app.AlertDialog;
 
-import com.misterchan.iconeditor.listener.OnSeekBarChangeListener;
+import com.misterchan.iconeditor.listener.OnSBChangeListener;
 import com.misterchan.iconeditor.R;
 
 public class LightingDialog {
@@ -62,13 +62,13 @@ public class LightingDialog {
         lp.gravity = Gravity.BOTTOM;
         window.setAttributes(lp);
 
-        ((SeekBar) dialog.findViewById(R.id.sb_red_scale)).setOnSeekBarChangeListener((OnSeekBarChangeListener) (progress, stopped) -> setElement(0, progress / 10.0f, stopped));
-        ((SeekBar) dialog.findViewById(R.id.sb_red_shift)).setOnSeekBarChangeListener((OnSeekBarChangeListener) (progress, stopped) -> setElement(1, progress, stopped));
-        ((SeekBar) dialog.findViewById(R.id.sb_green_scale)).setOnSeekBarChangeListener((OnSeekBarChangeListener) (progress, stopped) -> setElement(2, progress / 10.0f, stopped));
-        ((SeekBar) dialog.findViewById(R.id.sb_green_shift)).setOnSeekBarChangeListener((OnSeekBarChangeListener) (progress, stopped) -> setElement(3, progress, stopped));
-        ((SeekBar) dialog.findViewById(R.id.sb_blue_scale)).setOnSeekBarChangeListener((OnSeekBarChangeListener) (progress, stopped) -> setElement(4, progress / 10.0f, stopped));
-        ((SeekBar) dialog.findViewById(R.id.sb_blue_shift)).setOnSeekBarChangeListener((OnSeekBarChangeListener) (progress, stopped) -> setElement(5, progress, stopped));
-        ((SeekBar) dialog.findViewById(R.id.sb_alpha_scale)).setOnSeekBarChangeListener((OnSeekBarChangeListener) (progress, stopped) -> setElement(6, progress / 10.0f, stopped));
-        ((SeekBar) dialog.findViewById(R.id.sb_alpha_shift)).setOnSeekBarChangeListener((OnSeekBarChangeListener) (progress, stopped) -> setElement(7, progress, stopped));
+        ((SeekBar) dialog.findViewById(R.id.sb_red_scale)).setOnSeekBarChangeListener((OnSBChangeListener) (progress, stopped) -> setElement(0, progress / 10.0f, stopped));
+        ((SeekBar) dialog.findViewById(R.id.sb_red_shift)).setOnSeekBarChangeListener((OnSBChangeListener) (progress, stopped) -> setElement(1, progress, stopped));
+        ((SeekBar) dialog.findViewById(R.id.sb_green_scale)).setOnSeekBarChangeListener((OnSBChangeListener) (progress, stopped) -> setElement(2, progress / 10.0f, stopped));
+        ((SeekBar) dialog.findViewById(R.id.sb_green_shift)).setOnSeekBarChangeListener((OnSBChangeListener) (progress, stopped) -> setElement(3, progress, stopped));
+        ((SeekBar) dialog.findViewById(R.id.sb_blue_scale)).setOnSeekBarChangeListener((OnSBChangeListener) (progress, stopped) -> setElement(4, progress / 10.0f, stopped));
+        ((SeekBar) dialog.findViewById(R.id.sb_blue_shift)).setOnSeekBarChangeListener((OnSBChangeListener) (progress, stopped) -> setElement(5, progress, stopped));
+        ((SeekBar) dialog.findViewById(R.id.sb_alpha_scale)).setOnSeekBarChangeListener((OnSBChangeListener) (progress, stopped) -> setElement(6, progress / 10.0f, stopped));
+        ((SeekBar) dialog.findViewById(R.id.sb_alpha_shift)).setOnSeekBarChangeListener((OnSBChangeListener) (progress, stopped) -> setElement(7, progress, stopped));
     }
 }

@@ -24,7 +24,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.core.view.OneShotPreDrawListener;
 
 import com.misterchan.iconeditor.Color;
-import com.misterchan.iconeditor.listener.OnCheckedListener;
+import com.misterchan.iconeditor.listener.OnCBCheckedListener;
 import com.misterchan.iconeditor.R;
 
 import java.util.function.Function;
@@ -291,11 +291,11 @@ public class CurvesDialog {
         final RadioButton rbRgbOutputs = dialog.findViewById(R.id.rb_rgb_outputs);
 
         iv.setOnTouchListener(onImageViewTouchListener);
-        ((CompoundButton) dialog.findViewById(R.id.rb_red)).setOnCheckedChangeListener((OnCheckedListener) () -> selectComp(0));
-        ((CompoundButton) dialog.findViewById(R.id.rb_green)).setOnCheckedChangeListener((OnCheckedListener) () -> selectComp(1));
-        ((CompoundButton) dialog.findViewById(R.id.rb_blue)).setOnCheckedChangeListener((OnCheckedListener) () -> selectComp(2));
-        ((CompoundButton) dialog.findViewById(R.id.rb_alpha)).setOnCheckedChangeListener((OnCheckedListener) () -> selectComp(3));
-        rbRgbOutputs.setOnCheckedChangeListener((OnCheckedListener) () -> selectComp(4));
+        ((CompoundButton) dialog.findViewById(R.id.rb_red)).setOnCheckedChangeListener((OnCBCheckedListener) () -> selectComp(0));
+        ((CompoundButton) dialog.findViewById(R.id.rb_green)).setOnCheckedChangeListener((OnCBCheckedListener) () -> selectComp(1));
+        ((CompoundButton) dialog.findViewById(R.id.rb_blue)).setOnCheckedChangeListener((OnCBCheckedListener) () -> selectComp(2));
+        ((CompoundButton) dialog.findViewById(R.id.rb_alpha)).setOnCheckedChangeListener((OnCBCheckedListener) () -> selectComp(3));
+        rbRgbOutputs.setOnCheckedChangeListener((OnCBCheckedListener) () -> selectComp(4));
 
         OneShotPreDrawListener.add(fl, () -> {
             final int width = fl.getMeasuredWidth();

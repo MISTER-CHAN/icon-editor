@@ -93,11 +93,12 @@ import com.misterchan.iconeditor.dialog.LevelsDialog;
 import com.misterchan.iconeditor.dialog.LightingDialog;
 import com.misterchan.iconeditor.dialog.MatrixManager;
 import com.misterchan.iconeditor.dialog.NewImageDialog;
+import com.misterchan.iconeditor.dialog.NoiseGenerator;
 import com.misterchan.iconeditor.dialog.QualityManager;
 import com.misterchan.iconeditor.dialog.SeekBarDialog;
 import com.misterchan.iconeditor.listener.AfterTextChangedListener;
-import com.misterchan.iconeditor.listener.OnCheckedListener;
-import com.misterchan.iconeditor.listener.OnSeekBarChangeListener;
+import com.misterchan.iconeditor.listener.OnCBCheckedListener;
+import com.misterchan.iconeditor.listener.OnSBChangeListener;
 import com.misterchan.iconeditor.util.BitmapUtils;
 import com.misterchan.iconeditor.util.RunnableRunnable;
 import com.misterchan.iconeditor.util.UriUtils;
@@ -538,7 +539,7 @@ public class MainActivity extends AppCompatActivity {
                             R.string.swap)
                     .show();
 
-    private final ColorMatrixManager.OnMatrixElementsChangedListener onColorMatrixChangedListener = matrix -> runOrStart(() -> {
+    private final ColorMatrixManager.OnMatrixElementsChangedListener onFilterColorMatrixChangedListener = matrix -> runOrStart(() -> {
         imagePreview.addColorMatrixColorFilter(matrix);
         drawImagePreviewOnView(true);
     }, true);
@@ -551,7 +552,7 @@ public class MainActivity extends AppCompatActivity {
     private final ColorRangeDialog.OnChangedListener onColorRangeChangedListener = (hueMin, hueMax, lumMin, lumMax, stopped) -> {
         runOrStart(() -> {
             if (hueMin == 0 && hueMax == 360 && lumMin == 0x0 && lumMax == 0xFF) {
-                imagePreview.clearFilter();
+                imagePreview.clearFilters();
             } else if (lumMin > lumMax) {
                 imagePreview.drawColor(Color.TRANSPARENT);
             } else {
@@ -608,7 +609,7 @@ public class MainActivity extends AppCompatActivity {
     private final HsvDialog.OnHsvChangedListener onFilterHsvChangedListener = (deltaHsv, stopped) -> {
         runOrStart(() -> {
             if (deltaHsv[0] == 0.0f && deltaHsv[1] == 0.0f && deltaHsv[2] == 0.0f) {
-                imagePreview.clearFilter();
+                imagePreview.clearFilters();
             } else {
                 final int w = imagePreview.getWidth(), h = imagePreview.getHeight();
                 final int[] src = imagePreview.getPixels(), dst = new int[w * h];
@@ -625,15 +626,6 @@ public class MainActivity extends AppCompatActivity {
         drawBitmapOnView(stopped);
         tvStatus.setText(String.format(getString(R.string.state_hsv), deltaHsv[0], deltaHsv[1], deltaHsv[2]));
     };
-
-    private final MatrixManager.OnMatrixElementsChangedListener onMatrixChangedListener = matrix -> runOrStart(() -> {
-        imagePreview.transform(matrix);
-        drawBitmapOnView(imagePreview.getEntire(), true);
-    }, true);
-
-    private final MatrixManager.OnMatrixElementsChangedListener onLayerMatrixChangedListener = matrix -> runOrStart(() -> {
-        drawBitmapOnView(true);
-    }, true);
 
     private final DialogInterface.OnCancelListener onCancelImagePreviewListener = dialog -> {
         drawBitmapOnView(selection, true);
@@ -659,12 +651,50 @@ public class MainActivity extends AppCompatActivity {
         }, stopped);
     };
 
-    private final LightingDialog.OnLightingChangedListener onLightingChangedListener = (lighting, stopped) -> runOrStart(() -> {
+    private final LightingDialog.OnLightingChangedListener onFilterLightingChangedListener = (lighting, stopped) -> runOrStart(() -> {
         imagePreview.addLightingColorFilter(lighting);
         drawImagePreviewOnView(stopped);
     }, stopped);
 
+    private final MatrixManager.OnMatrixElementsChangedListener onMatrixChangedListener = matrix -> runOrStart(() -> {
+        imagePreview.transform(matrix);
+        drawBitmapOnView(imagePreview.getEntire(), true);
+    }, true);
+
     private final NewImageDialog.OnApplyListener onApplyNewImagePropertiesListener = this::createImage;
+
+    private final NoiseGenerator.OnPropChangedListener onNoiseSeekBarChangeListener = (properties, stopped) -> {
+        runOrStart(() -> {
+            if (properties.noisy() == 0.0f) {
+                imagePreview.clearFilters();
+            } else if (properties.noisy() == 1.0f) {
+                imagePreview.drawColor(paint.getColor());
+            } else {
+                switch (properties.whatToDraw()) {
+                    case PIXEL -> {
+                        final int w = imagePreview.getWidth(), h = imagePreview.getHeight();
+                        final int[] pixels = imagePreview.getPixels(w, h);
+                        BitmapUtils.generateNoise(pixels, paint.getColor(),
+                                properties.noisy(), properties.seed(), properties.noRepeats());
+                        imagePreview.setPixels(pixels, w, h);
+                    }
+                    case POINT -> {
+                        imagePreview.clearFilters();
+                        BitmapUtils.generateNoise(imagePreview.getCanvas(), imagePreview.getRect(), paint,
+                                properties.noisy(), properties.seed(), properties.noRepeats());
+                    }
+                    case REF -> {
+                        imagePreview.clearFilters();
+                        BitmapUtils.generateNoise(imagePreview.getCanvas(), imagePreview.getRect(),
+                                refBm != null ? refBm : imagePreview.getOriginal(), paint,
+                                properties.noisy(), properties.seed(), properties.noRepeats());
+                    }
+                }
+            }
+            drawImagePreviewOnView(stopped);
+        }, stopped);
+        clearStatus();
+    };
 
     private final EditNumberDialog.OnPositiveButtonClickListener onApplyUniformFrameDelayListener = number -> {
         final Tab firstFrame = tab.getBackground().getFirstFrame();
@@ -678,7 +708,7 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    private final OnSeekBarChangeListener onFilterContrastSeekBarChangeListener = (progress, stopped) -> {
+    private final OnSBChangeListener onFilterContrastSeekBarChangeListener = (progress, stopped) -> {
         final float scale = progress / 10.0f, shift = 0xFF / 2.0f * (1.0f - scale);
         runOrStart(() -> {
             imagePreview.addLightingColorFilter(scale, shift);
@@ -687,7 +717,7 @@ public class MainActivity extends AppCompatActivity {
         tvStatus.setText(String.format(getString(R.string.state_contrast), scale));
     };
 
-    private final OnSeekBarChangeListener onFilterHToASeekBarChangeListener = (progress, stopped) -> {
+    private final OnSBChangeListener onFilterHToASeekBarChangeListener = (progress, stopped) -> {
         runOrStart(() -> {
             final int w = imagePreview.getWidth(), h = imagePreview.getHeight();
             final int[] src = imagePreview.getPixels(), dst = new int[w * h];
@@ -698,7 +728,7 @@ public class MainActivity extends AppCompatActivity {
         tvStatus.setText(String.format(getString(R.string.state_hue), (float) progress));
     };
 
-    private final OnSeekBarChangeListener onFilterLightnessSeekBarChangeListener = (progress, stopped) -> {
+    private final OnSBChangeListener onFilterLightnessSeekBarChangeListener = (progress, stopped) -> {
         runOrStart(() -> {
             imagePreview.addLightingColorFilter(1.0f, progress);
             drawImagePreviewOnView(stopped);
@@ -706,7 +736,7 @@ public class MainActivity extends AppCompatActivity {
         tvStatus.setText(String.format(getString(R.string.state_lightness), progress));
     };
 
-    private final OnSeekBarChangeListener onFilterSaturationSeekBarChangeListener = (progress, stopped) -> {
+    private final OnSBChangeListener onFilterSaturationSeekBarChangeListener = (progress, stopped) -> {
         final float f = progress / 10.0f;
         final ColorMatrix colorMatrix = new ColorMatrix();
         colorMatrix.setSaturation(f);
@@ -717,7 +747,7 @@ public class MainActivity extends AppCompatActivity {
         tvStatus.setText(String.format(getString(R.string.state_saturation), f));
     };
 
-    private final OnSeekBarChangeListener onFilterThresholdSeekBarChangeListener = (progress, stopped) -> {
+    private final OnSBChangeListener onFilterThresholdSeekBarChangeListener = (progress, stopped) -> {
         final float f = -0x100 * progress;
         runOrStart(() -> {
             imagePreview.addColorMatrixColorFilter(new float[]{
@@ -731,7 +761,7 @@ public class MainActivity extends AppCompatActivity {
         tvStatus.setText(String.format(getString(R.string.state_threshold), progress));
     };
 
-    private final OnSeekBarChangeListener onLayerAlphaSeekBarChangeListener = (progress, stopped) -> {
+    private final OnSBChangeListener onLayerAlphaSeekBarChangeListener = (progress, stopped) -> {
         tab.paint.setAlpha(progress);
         drawBitmapOnView(stopped);
         tvStatus.setText(String.format(
@@ -739,30 +769,13 @@ public class MainActivity extends AppCompatActivity {
                 progress));
     };
 
-    private final OnSeekBarChangeListener onNoiseSeekBarChangeListener = (progress, stopped) -> {
-        runOrStart(() -> {
-            if (progress == 0) {
-                imagePreview.clearFilter();
-            } else if (progress == 100) {
-                imagePreview.drawColor(paint.getColor());
-            } else {
-                final int w = imagePreview.getWidth(), h = imagePreview.getHeight(), area = w * h;
-                final int[] pixels = imagePreview.getPixels(w, h, area);
-                BitmapUtils.generateNoise(pixels, area, paint.getColor(), progress / 100.0f, null);
-                imagePreview.setPixels(pixels, w, h);
-            }
-            drawImagePreviewOnView(stopped);
-        }, stopped);
-        clearStatus();
-    };
-
-    private final OnSeekBarChangeListener onChangeThresholdListener = (progress, stopped) -> {
+    private final OnSBChangeListener onChangeThresholdListener = (progress, stopped) -> {
         threshold = progress;
         runOrStart(() -> {
             if (progress == 0xFF) {
                 imagePreview.drawColor(Color.BLACK);
             } else if (progress == 0x00) {
-                imagePreview.clearFilter();
+                imagePreview.clearFilters();
             } else {
                 final int w = imagePreview.getWidth(), h = imagePreview.getHeight(), area = w * h;
                 final int[] src = imagePreview.getPixels(), dst = new int[area];
@@ -3740,28 +3753,28 @@ public class MainActivity extends AppCompatActivity {
         ivRulerV.setOnTouchListener(onTouchRulerVListener);
         ((CompoundButton) findViewById(R.id.rb_brush)).setOnCheckedChangeListener(onBrushRBCheckedChangeListener);
         ((CompoundButton) findViewById(R.id.rb_bucket_fill)).setOnCheckedChangeListener(onBucketFillRBCheckedChangeListener);
-        ((CompoundButton) findViewById(R.id.rb_circle)).setOnCheckedChangeListener((OnCheckedListener) () -> shape = circle);
+        ((CompoundButton) findViewById(R.id.rb_circle)).setOnCheckedChangeListener((OnCBCheckedListener) () -> shape = circle);
         rbCloneStamp.setOnCheckedChangeListener(onCloneStampRBCheckedChangeListener);
-        ((CompoundButton) findViewById(R.id.rb_eraser)).setOnCheckedChangeListener((OnCheckedListener) () -> onToolChange(onTouchIVWithEraserListener, svOptionsEraser));
-        rbEyedropper.setOnCheckedChangeListener((OnCheckedListener) () -> onToolChange(onTouchIVWithEyedropperListener, svOptionsEyedropper));
+        ((CompoundButton) findViewById(R.id.rb_eraser)).setOnCheckedChangeListener((OnCBCheckedListener) () -> onToolChange(onTouchIVWithEraserListener, svOptionsEraser));
+        rbEyedropper.setOnCheckedChangeListener((OnCBCheckedListener) () -> onToolChange(onTouchIVWithEyedropperListener, svOptionsEyedropper));
         ((CompoundButton) findViewById(R.id.rb_gradient)).setOnCheckedChangeListener(onGradientRBCheckedChangeListener);
-        ((CompoundButton) findViewById(R.id.rb_line)).setOnCheckedChangeListener((OnCheckedListener) () -> shape = line);
+        ((CompoundButton) findViewById(R.id.rb_line)).setOnCheckedChangeListener((OnCBCheckedListener) () -> shape = line);
         rbMagicEraser.setOnCheckedChangeListener(onMagicEraserRBCheckedChangeListener);
         rbMagicPaint.setOnCheckedChangeListener(onMagicPaintRBCheckedChangeListener);
-        ((CompoundButton) findViewById(R.id.rb_oval)).setOnCheckedChangeListener((OnCheckedListener) () -> shape = oval);
+        ((CompoundButton) findViewById(R.id.rb_oval)).setOnCheckedChangeListener((OnCBCheckedListener) () -> shape = oval);
         ((CompoundButton) findViewById(R.id.rb_patcher)).setOnCheckedChangeListener(onPatcherRBCheckedChangeListener);
         ((CompoundButton) findViewById(R.id.rb_path)).setOnCheckedChangeListener(onPathRBCheckedChangeListener);
         rbPencil.setOnCheckedChangeListener(onPencilRBCheckedChangeListener);
-        ((CompoundButton) findViewById(R.id.rb_rect)).setOnCheckedChangeListener((OnCheckedListener) () -> shape = rect);
+        ((CompoundButton) findViewById(R.id.rb_rect)).setOnCheckedChangeListener((OnCBCheckedListener) () -> shape = rect);
         rbRuler.setOnCheckedChangeListener(onRulerRBCheckedChangeListener);
-        ((CompoundButton) findViewById(R.id.rb_selector)).setOnCheckedChangeListener((OnCheckedListener) () -> onToolChange(onTouchIVWithMarqueeListener));
+        ((CompoundButton) findViewById(R.id.rb_selector)).setOnCheckedChangeListener((OnCBCheckedListener) () -> onToolChange(onTouchIVWithMarqueeListener));
         ((CompoundButton) findViewById(R.id.rb_shape)).setOnCheckedChangeListener(onShapeRBCheckedChangeListener);
         ((CompoundButton) findViewById(R.id.rb_text)).setOnCheckedChangeListener(onTextRBCheckedChangeListener);
         rbTransformer.setOnCheckedChangeListener(onTransformerRBCheckedChangeListener);
-        ((CompoundButton) findViewById(R.id.rb_transformer_poly)).setOnCheckedChangeListener((OnCheckedListener) () -> onTransformerChange(onTouchIVWithPTListener));
-        ((CompoundButton) findViewById(R.id.rb_transformer_rotation)).setOnCheckedChangeListener((OnCheckedListener) () -> onTransformerChange(onTouchIVWithRTListener));
-        ((CompoundButton) findViewById(R.id.rb_transformer_scale)).setOnCheckedChangeListener((OnCheckedListener) () -> onTransformerChange(onTouchIVWithSTListener));
-        ((CompoundButton) findViewById(R.id.rb_transformer_translation)).setOnCheckedChangeListener((OnCheckedListener) () -> onTransformerChange(onTouchIVWithTTListener));
+        ((CompoundButton) findViewById(R.id.rb_transformer_poly)).setOnCheckedChangeListener((OnCBCheckedListener) () -> onTransformerChange(onTouchIVWithPTListener));
+        ((CompoundButton) findViewById(R.id.rb_transformer_rotation)).setOnCheckedChangeListener((OnCBCheckedListener) () -> onTransformerChange(onTouchIVWithRTListener));
+        ((CompoundButton) findViewById(R.id.rb_transformer_scale)).setOnCheckedChangeListener((OnCBCheckedListener) () -> onTransformerChange(onTouchIVWithSTListener));
+        ((CompoundButton) findViewById(R.id.rb_transformer_translation)).setOnCheckedChangeListener((OnCBCheckedListener) () -> onTransformerChange(onTouchIVWithTTListener));
         rvSwatches.setItemAnimator(new DefaultItemAnimator());
         tabLayout.addOnTabSelectedListener(onTabSelectedListener);
         tietCloneStampBlurRadius.addTextChangedListener(onBlurRadiusTextChangedListener);
@@ -4117,7 +4130,7 @@ public class MainActivity extends AppCompatActivity {
                 drawFloatingLayers();
                 createImagePreview();
                 new LightingDialog(this)
-                        .setOnLightingChangeListener(onLightingChangedListener)
+                        .setOnLightingChangeListener(onFilterLightingChangedListener)
                         .setOnPositiveButtonClickListener(onClickImagePreviewPBListener)
                         .setOnCancelListener(onCancelImagePreviewListener)
                         .show();
@@ -4127,9 +4140,19 @@ public class MainActivity extends AppCompatActivity {
                 drawFloatingLayers();
                 createImagePreview();
                 new ColorBalanceDialog(this)
-                        .setOnColorBalanceChangeListener(onLightingChangedListener)
+                        .setOnColorBalanceChangeListener(onFilterLightingChangedListener)
                         .setOnPositiveButtonClickListener(onClickImagePreviewPBListener)
                         .setOnCancelListener(onCancelImagePreviewListener)
+                        .show();
+                clearStatus();
+            }
+            case R.id.i_filter_color_matrix -> {
+                drawFloatingLayers();
+                createImagePreview();
+                new ColorMatrixManager(this,
+                        onFilterColorMatrixChangedListener,
+                        onClickImagePreviewPBListener,
+                        onCancelImagePreviewListener)
                         .show();
                 clearStatus();
             }
@@ -4192,16 +4215,6 @@ public class MainActivity extends AppCompatActivity {
                         .setOnChangeListener(onFilterLightnessSeekBarChangeListener)
                         .setOnApplyListener(onClickImagePreviewPBListener)
                         .setOnCancelListener(onCancelImagePreviewListener)
-                        .show();
-                clearStatus();
-            }
-            case R.id.i_filter_color_matrix -> {
-                drawFloatingLayers();
-                createImagePreview();
-                new ColorMatrixManager(this,
-                        onColorMatrixChangedListener,
-                        onClickImagePreviewPBListener,
-                        onCancelImagePreviewListener)
                         .show();
                 clearStatus();
             }
@@ -4655,9 +4668,9 @@ public class MainActivity extends AppCompatActivity {
             case R.id.i_generate_noise -> {
                 drawFloatingLayers();
                 createImagePreview();
-                new SeekBarDialog(this).setTitle(R.string.generate_noise).setMin(0).setMax(100).setProgress(0)
-                        .setOnChangeListener(onNoiseSeekBarChangeListener)
-                        .setOnApplyListener(onClickImagePreviewPBListener)
+                new NoiseGenerator(this)
+                        .setOnPropChangedListener(onNoiseSeekBarChangeListener)
+                        .setOnConfirmListener(onClickImagePreviewPBListener)
                         .setOnCancelListener(onCancelImagePreviewListener)
                         .show();
                 clearStatus();

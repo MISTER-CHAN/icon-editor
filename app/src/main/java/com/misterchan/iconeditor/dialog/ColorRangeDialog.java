@@ -9,7 +9,7 @@ import android.widget.SeekBar;
 
 import androidx.appcompat.app.AlertDialog;
 
-import com.misterchan.iconeditor.listener.OnSeekBarChangeListener;
+import com.misterchan.iconeditor.listener.OnSBChangeListener;
 import com.misterchan.iconeditor.R;
 
 public class ColorRangeDialog {
@@ -63,7 +63,7 @@ public class ColorRangeDialog {
         sbHueMax = dialog.findViewById(R.id.sb_hue_max);
         sbLumMin = dialog.findViewById(R.id.sb_luminance_min);
         sbLumMax = dialog.findViewById(R.id.sb_luminance_max);
-        final OnSeekBarChangeListener l = (progress, stopped) ->
+        final OnSBChangeListener l = (progress, stopped) ->
                 listener.onChanged(sbHueMin.getProgress(), sbHueMax.getProgress(),
                         sbLumMin.getProgress(), sbLumMax.getProgress(),
                         stopped);
@@ -71,14 +71,14 @@ public class ColorRangeDialog {
         sbHueMin.setOnSeekBarChangeListener(l);
         sbHueMax.setOnSeekBarChangeListener(l);
 
-        sbLumMin.setOnSeekBarChangeListener((OnSeekBarChangeListener) (progress, stopped) -> {
+        sbLumMin.setOnSeekBarChangeListener((OnSBChangeListener) (progress, stopped) -> {
             if (progress > sbLumMax.getProgress()) {
                 sbLumMin.setProgress(sbLumMax.getProgress());
             }
             l.onChanged(progress, stopped);
         });
 
-        sbLumMax.setOnSeekBarChangeListener((OnSeekBarChangeListener) (progress, stopped) -> {
+        sbLumMax.setOnSeekBarChangeListener((OnSBChangeListener) (progress, stopped) -> {
             if (progress < sbLumMin.getProgress()) {
                 sbLumMax.setProgress(sbLumMin.getProgress());
             }

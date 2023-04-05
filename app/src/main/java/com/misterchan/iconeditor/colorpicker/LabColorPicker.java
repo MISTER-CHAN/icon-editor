@@ -13,7 +13,7 @@ import com.google.android.material.textfield.TextInputLayout;
 import com.misterchan.iconeditor.Color;
 import com.misterchan.iconeditor.R;
 import com.misterchan.iconeditor.listener.AfterTextChangedListener;
-import com.misterchan.iconeditor.listener.OnSeekBarProgressChangedListener;
+import com.misterchan.iconeditor.listener.OnSBProgressChangedListener;
 
 public class LabColorPicker extends ColorPicker {
 
@@ -79,9 +79,9 @@ public class LabColorPicker extends ColorPicker {
         tilL.setHint(R.string.l_);
         tilA.setHint(R.string.a_);
         tilB.setHint(R.string.b_);
-        sbL.setOnSeekBarChangeListener((OnSeekBarProgressChangedListener) (seekBar, progress) -> tietL.setText(String.valueOf(progress)));
-        sbA.setOnSeekBarChangeListener((OnSeekBarProgressChangedListener) (seekBar, progress) -> tietA.setText(String.valueOf(progress)));
-        sbB.setOnSeekBarChangeListener((OnSeekBarProgressChangedListener) (seekBar, progress) -> tietB.setText(String.valueOf(progress)));
+        sbL.setOnSeekBarChangeListener((OnSBProgressChangedListener) (seekBar, progress) -> tietL.setText(String.valueOf(progress)));
+        sbA.setOnSeekBarChangeListener((OnSBProgressChangedListener) (seekBar, progress) -> tietA.setText(String.valueOf(progress)));
+        sbB.setOnSeekBarChangeListener((OnSBProgressChangedListener) (seekBar, progress) -> tietB.setText(String.valueOf(progress)));
         tietL.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(s, sbL));
         tietA.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(s, sbA));
         tietB.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(s, sbB));

@@ -10,14 +10,14 @@ import android.widget.SeekBar;
 import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
 
-import com.misterchan.iconeditor.listener.OnSeekBarChangeListener;
+import com.misterchan.iconeditor.listener.OnSBChangeListener;
 import com.misterchan.iconeditor.R;
 
 public class SeekBarDialog {
 
     private final AlertDialog.Builder builder;
     private int max, min, progress;
-    private OnSeekBarChangeListener onChangeListener;
+    private OnSBChangeListener onChangeListener;
 
     public SeekBarDialog(Context context) {
         builder = new AlertDialog.Builder(context)
@@ -51,7 +51,7 @@ public class SeekBarDialog {
         return this;
     }
 
-    public SeekBarDialog setOnChangeListener(OnSeekBarChangeListener listener) {
+    public SeekBarDialog setOnChangeListener(OnSBChangeListener listener) {
         onChangeListener = listener;
         return this;
     }

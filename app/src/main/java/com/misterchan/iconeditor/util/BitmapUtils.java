@@ -1,10 +1,13 @@
 package com.misterchan.iconeditor.util;
 
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
 
 import androidx.annotation.ColorInt;
+import androidx.annotation.FloatRange;
 import androidx.annotation.Size;
 
 import com.misterchan.iconeditor.Color;
@@ -195,12 +198,65 @@ public class BitmapUtils {
         dst.setPixels(dstPixels, 0, w, rect.left, rect.top, w, h);
     }
 
-    public static void generateNoise(@ColorInt final int[] pixels, final int area, @ColorInt final int color,
-                                     final float noisy, final Long seed) {
+    public static void generateNoise(@ColorInt final int[] pixels, @ColorInt final int color,
+                                     @FloatRange(from = 0.0f, to = 1.0f) final float noisy, final Long seed,
+                                     final boolean noRepeats) {
         final Random random = seed == null ? new Random() : new Random(seed);
-        for (int i = 0; i < area; ++i) {
-            if (random.nextFloat() < noisy) {
-                pixels[i] = color;
+        if (noRepeats) {
+            for (int i = 0; i < pixels.length; ++i) {
+                if (random.nextFloat() < noisy) {
+                    pixels[i] = color;
+                }
+            }
+        } else {
+            final int amount = (int) (pixels.length * noisy);
+            for (int i = 0; i < amount; ++i) {
+                pixels[(int) (pixels.length * random.nextFloat())] = color;
+            }
+        }
+    }
+
+    public static void generateNoise(final Canvas canvas, final Rect rect, final Paint paint,
+                                     @FloatRange(from = 0.0f, to = 1.0f) final float noisy, final Long seed,
+                                     final boolean noRepeats) {
+        final Random random = seed == null ? new Random() : new Random(seed);
+        if (noRepeats) {
+            for (float y = rect.top + 0.5f; y < rect.bottom; ++y) {
+                for (float x = rect.left + 0.5f; x < rect.right; ++x) {
+                    if (random.nextFloat() < noisy) {
+                        canvas.drawPoint(x, y, paint);
+                    }
+                }
+            }
+        } else {
+            final int amount = (int) (rect.width() * rect.height() * noisy);
+            for (int i = 0; i < amount; ++i) {
+                canvas.drawPoint(rect.left + rect.width() * random.nextFloat(),
+                        rect.top + rect.height() * random.nextFloat(), paint);
+            }
+        }
+    }
+
+    public static void generateNoise(final Canvas canvas, final Rect rect, final Bitmap bitmap, final Paint paint,
+                                     @FloatRange(from = 0.0f, to = 1.0f) final float noisy, final Long seed,
+                                     final boolean noRepeats) {
+        final Random random = seed == null ? new Random() : new Random(seed);
+        final int w = bitmap.getWidth(), h = bitmap.getHeight();
+        if (noRepeats) {
+            for (float y = rect.top - h; y < rect.bottom; y += h) {
+                for (float x = rect.left - w; x < rect.right; x += w) {
+                    if (random.nextFloat() < noisy) {
+                        canvas.drawBitmap(bitmap, x, y, paint);
+                    }
+                }
+            }
+        } else {
+            final int amount = (int) ((rect.width() / w + 1) * (rect.height() / h + 1) * noisy);
+            for (int i = 0; i < amount; ++i) {
+                canvas.drawBitmap(bitmap,
+                        (rect.width() + w) * random.nextFloat() - w,
+                        (rect.height() + h) * random.nextFloat() - h,
+                        paint);
             }
         }
     }

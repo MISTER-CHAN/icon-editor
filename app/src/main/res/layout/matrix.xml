@@ -11,6 +11,33 @@
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="2dp"
         android:lineSpacingMultiplier="0.75"
+        android:text="@string/matrix_3_open" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="2dp"
+        android:maxLines="4"
+        android:text="@string/xp_yp_zp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="2dp"
+        android:lineSpacingMultiplier="0.75"
+        android:text="@string/matrix_3_close" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="2dp"
+        android:text="@string/eq" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="2dp"
+        android:lineSpacingMultiplier="0.75"
         android:text="@string/matrix_3_open_large"
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
@@ -75,4 +102,26 @@
         android:lineSpacingMultiplier="0.75"
         android:text="@string/matrix_3_close_large"
         android:textAppearance="?android:attr/textAppearanceLarge" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="2dp"
+        android:lineSpacingMultiplier="0.75"
+        android:text="@string/matrix_3_open" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="2dp"
+        android:maxLines="4"
+        android:text="@string/x_y_1"
+        android:typeface="serif" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="2dp"
+        android:lineSpacingMultiplier="0.75"
+        android:text="@string/matrix_3_close" />
 </LinearLayout>

@@ -10,7 +10,7 @@ import androidx.appcompat.app.AlertDialog;
 
 import com.misterchan.iconeditor.listener.AfterTextChangedListener;
 import com.misterchan.iconeditor.Color;
-import com.misterchan.iconeditor.listener.OnSeekBarProgressChangedListener;
+import com.misterchan.iconeditor.listener.OnSBProgressChangedListener;
 import com.misterchan.iconeditor.Settings;
 
 public class ArgbColorIntPicker extends ArgbColorPicker {
@@ -65,10 +65,10 @@ public class ArgbColorIntPicker extends ArgbColorPicker {
             tietBlue.setKeyListener(ColorPicker.KEY_LISTENER_HEX);
         }
 
-        sbAlpha.setOnSeekBarChangeListener((OnSeekBarProgressChangedListener) (seekBar, progress) -> tietAlpha.setText(String.format(format, progress)));
-        sbRed.setOnSeekBarChangeListener((OnSeekBarProgressChangedListener) (seekBar, progress) -> tietRed.setText(String.format(format, progress)));
-        sbGreen.setOnSeekBarChangeListener((OnSeekBarProgressChangedListener) (seekBar, progress) -> tietGreen.setText(String.format(format, progress)));
-        sbBlue.setOnSeekBarChangeListener((OnSeekBarProgressChangedListener) (seekBar, progress) -> tietBlue.setText(String.format(format, progress)));
+        sbAlpha.setOnSeekBarChangeListener((OnSBProgressChangedListener) (seekBar, progress) -> tietAlpha.setText(String.format(format, progress)));
+        sbRed.setOnSeekBarChangeListener((OnSBProgressChangedListener) (seekBar, progress) -> tietRed.setText(String.format(format, progress)));
+        sbGreen.setOnSeekBarChangeListener((OnSBProgressChangedListener) (seekBar, progress) -> tietGreen.setText(String.format(format, progress)));
+        sbBlue.setOnSeekBarChangeListener((OnSBProgressChangedListener) (seekBar, progress) -> tietBlue.setText(String.format(format, progress)));
         tietAlpha.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(s, sbAlpha));
         tietRed.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(s, sbRed));
         tietGreen.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(s, sbGreen));

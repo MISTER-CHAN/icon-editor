@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <SeekBar
+        android:id="@+id/sb_noisy"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginVertical="8dp" />
+
+    <RadioGroup
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <RadioButton
+            android:id="@+id/rb_pixel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="@string/pixel" />
+
+        <RadioButton
+            android:id="@+id/rb_point"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/point" />
+
+        <RadioButton
+            android:id="@+id/rb_ref"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/reference" />
+    </RadioGroup>
+
+    <CheckBox
+        android:id="@+id/cb_no_repeats"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/no_repeats" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/tiet_seed"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/transparent"
+            android:hint="@string/seed"
+            android:inputType="number"
+            android:textAlignment="textEnd" />
+    </com.google.android.material.textfield.TextInputLayout>
+</LinearLayout>

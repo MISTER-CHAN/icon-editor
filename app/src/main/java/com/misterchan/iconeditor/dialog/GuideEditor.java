@@ -13,8 +13,8 @@ import androidx.appcompat.app.AlertDialog;
 import com.google.android.material.textfield.TextInputEditText;
 import com.misterchan.iconeditor.listener.AfterTextChangedListener;
 import com.misterchan.iconeditor.Guide;
-import com.misterchan.iconeditor.listener.OnCheckedListener;
-import com.misterchan.iconeditor.listener.OnSeekBarProgressChangedListener;
+import com.misterchan.iconeditor.listener.OnCBCheckedListener;
+import com.misterchan.iconeditor.listener.OnSBProgressChangedListener;
 import com.misterchan.iconeditor.R;
 
 public class GuideEditor {
@@ -66,7 +66,7 @@ public class GuideEditor {
         rbVertical = dialog.findViewById(R.id.rb_vertical);
         final SeekBar sbPosition = dialog.findViewById(R.id.sb_position);
         tietPosition = dialog.findViewById(R.id.tiet_position);
-        final OnSeekBarProgressChangedListener onPositionSBProgressChange = (seekBar, progress) -> {
+        final OnSBProgressChangedListener onPositionSBProgressChange = (seekBar, progress) -> {
             guide.position = progress;
             onNewGuideChangeListener.onChange(guide);
             setPositionTextSilently(progress);
@@ -86,7 +86,7 @@ public class GuideEditor {
         sbPosition.setOnSeekBarChangeListener(onPositionSBProgressChange);
         tietPosition.addTextChangedListener(onPositionTextChangedListener);
 
-        rbHorizontal.setOnCheckedChangeListener((OnCheckedListener) () -> {
+        rbHorizontal.setOnCheckedChangeListener((OnCBCheckedListener) () -> {
             guide.orientation = Guide.ORIENTATION_HORIZONTAL;
             if (guide.position > height) {
                 guide.position = height;
@@ -96,7 +96,7 @@ public class GuideEditor {
             onNewGuideChangeListener.onChange(guide);
         });
 
-        rbVertical.setOnCheckedChangeListener((OnCheckedListener) () -> {
+        rbVertical.setOnCheckedChangeListener((OnCBCheckedListener) () -> {
             guide.orientation = Guide.ORIENTATION_VERTICAL;
             if (guide.position > width) {
                 guide.position = width;

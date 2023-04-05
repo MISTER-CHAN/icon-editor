@@ -15,7 +15,7 @@ import android.widget.SeekBar;
 import androidx.appcompat.app.AlertDialog;
 
 import com.misterchan.iconeditor.Color;
-import com.misterchan.iconeditor.listener.OnSeekBarChangeListener;
+import com.misterchan.iconeditor.listener.OnSBChangeListener;
 import com.misterchan.iconeditor.R;
 
 import java.util.function.Function;
@@ -124,7 +124,7 @@ public class LevelsDialog {
         sbOutputHighlights = dialog.findViewById(R.id.sb_output_highlights);
         sbOutputShadows = dialog.findViewById(R.id.sb_output_shadows);
 
-        final OnSeekBarChangeListener l = (progress, stopped) -> update(stopped);
+        final OnSBChangeListener l = (progress, stopped) -> update(stopped);
 
         sbInputHighlights.setOnSeekBarChangeListener(l);
         sbInputShadows.setOnSeekBarChangeListener(l);
