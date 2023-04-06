@@ -667,11 +667,13 @@ public class MainActivity extends AppCompatActivity {
         runOrStart(() -> {
             if (properties.noisy() == 0.0f) {
                 imagePreview.clearFilters();
-            } else if (properties.noisy() == 1.0f) {
-                imagePreview.drawColor(paint.getColor(), BlendMode.SRC);
             } else {
                 switch (properties.whatToDraw()) {
                     case PIXEL -> {
+                        if (properties.noisy() == 1.0f && properties.noRepeats()) {
+                            imagePreview.drawColor(paint.getColor(), BlendMode.SRC);
+                            break;
+                        }
                         final int w = imagePreview.getWidth(), h = imagePreview.getHeight();
                         final int[] pixels = imagePreview.getPixels(w, h);
                         BitmapUtils.generateNoise(pixels, paint.getColor(),
@@ -679,6 +681,10 @@ public class MainActivity extends AppCompatActivity {
                         imagePreview.setPixels(pixels, w, h);
                     }
                     case POINT -> {
+                        if (properties.noisy() == 1.0f && properties.noRepeats()) {
+                            imagePreview.drawColor(paint.getColor(), BlendMode.SRC);
+                            break;
+                        }
                         imagePreview.clearFilters();
                         BitmapUtils.generateNoise(imagePreview.getCanvas(), imagePreview.getRect(), paint,
                                 properties.noisy(), properties.seed(), properties.noRepeats());
