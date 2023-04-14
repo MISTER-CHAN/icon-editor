@@ -20,6 +20,7 @@
             android:exported="true"
             android:resizeableActivity="false"
             android:screenOrientation="fullUser"
+            android:windowSoftInputMode="stateUnchanged|adjustUnspecified"
             tools:ignore="LockedOrientationActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
