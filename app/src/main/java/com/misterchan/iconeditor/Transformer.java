@@ -89,6 +89,12 @@ class Transformer {
         transform(matrix, filter, antiAlias);
     }
 
+    public void scale(float sx, float sy, boolean filter, boolean antiAlias) {
+        final Matrix matrix = new Matrix();
+        matrix.setScale(sx, sy);
+        transform(matrix, filter, antiAlias);
+    }
+
     public void stretch(int width, int height, boolean filter, boolean antiAlias) {
         final Matrix matrix = new Matrix();
         matrix.setScale((float) width / (float) bitmap.getWidth(), (float) height / (float) bitmap.getHeight());

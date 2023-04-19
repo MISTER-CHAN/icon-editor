@@ -135,6 +135,13 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    private static final Paint PAINT_BITMAP_OVER = new Paint() {
+        {
+            setAntiAlias(false);
+            setFilterBitmap(false);
+        }
+    };
+
     private static final Paint PAINT_CELL_GRID = new Paint() {
         {
             setColor(Color.RED);
@@ -4269,14 +4276,8 @@ public class MainActivity extends AppCompatActivity {
                 });
                 clearStatus();
             }
-            case R.id.i_flip_horizontally -> {
-                drawFloatingLayers();
-                scale(-1.0f, 1.0f, false);
-            }
-            case R.id.i_flip_vertically -> {
-                drawFloatingLayers();
-                scale(1.0f, -1.0f, false);
-            }
+            case R.id.i_flip_horizontally -> scale(-1.0f, 1.0f);
+            case R.id.i_flip_vertically -> scale(1.0f, -1.0f);
             case R.id.i_frame_clip -> {
                 new AnimationClipper(this, tabs, tab.getBackground().getFirstFrame(), onConfirmClipListener)
                         .show();
@@ -4709,18 +4710,9 @@ public class MainActivity extends AppCompatActivity {
                     undoOrRedo(tab.history.redo());
                 }
             }
-            case R.id.i_rotate_90 -> {
-                drawFloatingLayers();
-                rotate(90.0f, false);
-            }
-            case R.id.i_rotate_180 -> {
-                drawFloatingLayers();
-                rotate(180.0f, false);
-            }
-            case R.id.i_rotate_270 -> {
-                drawFloatingLayers();
-                rotate(270.0f, false);
-            }
+            case R.id.i_rotate_90 -> rotate(90.0f);
+            case R.id.i_rotate_180 -> rotate(180.0f);
+            case R.id.i_rotate_270 -> rotate(270.0f);
             case R.id.i_select_all -> {
                 selectAll();
                 hasSelection = true;
@@ -5027,21 +5019,37 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void rotate(float degrees) {
-        rotate(degrees, true);
-    }
-
-    private void rotate(float degrees, boolean filter) {
-        if (!hasSelection) {
-            selectAll();
+        if (transformer == null) {
+            if (!hasSelection) {
+                selectAll();
+            }
+            final int left = selection.left, top = selection.top, width = selection.width(), height = selection.height();
+            final Bitmap bm = Bitmap.createBitmap(bitmap, left, top, width, height);
+            final Matrix matrix = new Matrix();
+            matrix.setRotate(degrees, width / 2.0f, height / 2.0f);
+            matrix.postTranslate(left, top);
+            canvas.drawRect(selection, PAINT_CLEAR);
+            canvas.drawBitmap(bm, matrix, PAINT_BITMAP_OVER);
+            bm.recycle();
+            addToHistory();
+        } else {
+            final int w = transformer.getWidth(), h = transformer.getHeight();
+            transformer.rotate(degrees, false, false);
+            final int w_ = transformer.getWidth(), h_ = transformer.getHeight();
+            selection.left += w - w_ >> 1;
+            selection.top += h - h_ >> 1;
+            selection.right = selection.left + w_;
+            selection.bottom = selection.top + h_;
+            drawSelectionOnView();
         }
-        final int left = selection.left, top = selection.top, width = selection.width(), height = selection.height();
         final Matrix matrix = new Matrix();
-        matrix.setRotate(degrees, width / 2.0f, height / 2.0f);
-        final Bitmap bm = Bitmap.createBitmap(bitmap, left, top, width, height, matrix, filter);
-        canvas.drawBitmap(bm, left, top, PAINT_SRC);
-        bm.recycle();
-        drawBitmapOnView(left, top, left + width, top + height);
-        addToHistory();
+        matrix.setRotate(degrees, selection.exactCenterX(), selection.exactCenterY());
+        final RectF rf = new RectF(selection);
+        matrix.mapRect(rf);
+        final Rect r = new Rect();
+        rf.roundOut(r);
+        r.union(selection);
+        drawBitmapOnView(r, true);
     }
 
     private void runOrStart(final Runnable target) {
@@ -5172,22 +5180,38 @@ public class MainActivity extends AppCompatActivity {
         setQuality(this::save);
     }
 
-    private void scale(float x, float y) {
-        scale(x, y, true);
-    }
-
-    private void scale(float x, float y, boolean filter) {
-        if (!hasSelection) {
-            selectAll();
+    private void scale(float sx, float sy) {
+        if (transformer == null) {
+            if (!hasSelection) {
+                selectAll();
+            }
+            final int left = selection.left, top = selection.top, width = selection.width(), height = selection.height();
+            final Bitmap bm = Bitmap.createBitmap(bitmap, left, top, width, height);
+            final Matrix matrix = new Matrix();
+            matrix.setScale(sx, sy, width / 2.0f, height / 2.0f);
+            matrix.postTranslate(left, top);
+            canvas.drawRect(selection, PAINT_CLEAR);
+            canvas.drawBitmap(bm, matrix, PAINT_BITMAP_OVER);
+            bm.recycle();
+            addToHistory();
+        } else {
+            final int w = transformer.getWidth(), h = transformer.getHeight();
+            transformer.scale(sx, sy, false, false);
+            final int w_ = transformer.getWidth(), h_ = transformer.getHeight();
+            selection.left += w - w_ >> 1;
+            selection.top += h - h_ >> 1;
+            selection.right = selection.left + w_;
+            selection.bottom = selection.top + h_;
+            drawSelectionOnView();
         }
-        final int left = selection.left, top = selection.top, width = selection.width(), height = selection.height();
         final Matrix matrix = new Matrix();
-        matrix.setScale(x, y, 0.0f, 0.0f);
-        final Bitmap bm = Bitmap.createBitmap(bitmap, left, top, width, height, matrix, filter);
-        canvas.drawBitmap(bm, left, top, PAINT_SRC);
-        bm.recycle();
-        drawBitmapOnView(left, top, left + width, top + height);
-        addToHistory();
+        matrix.setScale(sx, sy, selection.exactCenterX(), selection.exactCenterY());
+        final RectF rf = new RectF(selection);
+        matrix.mapRect(rf);
+        final Rect r = new Rect();
+        rf.roundOut(r);
+        r.union(selection);
+        drawBitmapOnView(r, true);
     }
 
     private void selectAll() {
