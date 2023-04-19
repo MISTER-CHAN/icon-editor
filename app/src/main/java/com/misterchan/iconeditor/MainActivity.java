@@ -5028,7 +5028,7 @@ public class MainActivity extends AppCompatActivity {
             final Matrix matrix = new Matrix();
             matrix.setRotate(degrees, width / 2.0f, height / 2.0f);
             matrix.postTranslate(left, top);
-            canvas.drawRect(selection, PAINT_CLEAR);
+            canvas.drawRect(selection, eraser);
             canvas.drawBitmap(bm, matrix, PAINT_BITMAP_OVER);
             bm.recycle();
             addToHistory();
@@ -5190,7 +5190,7 @@ public class MainActivity extends AppCompatActivity {
             final Matrix matrix = new Matrix();
             matrix.setScale(sx, sy, width / 2.0f, height / 2.0f);
             matrix.postTranslate(left, top);
-            canvas.drawRect(selection, PAINT_CLEAR);
+            canvas.drawRect(selection, eraser);
             canvas.drawBitmap(bm, matrix, PAINT_BITMAP_OVER);
             bm.recycle();
             addToHistory();
