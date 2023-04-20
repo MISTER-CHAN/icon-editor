@@ -6,7 +6,7 @@
     <string name="add">Add</string>
     <string name="add_symbol" translatable="false">+</string>
     <string name="all_layers">All Layers</string>
-    <string name="alpha_value">Alpha Value</string>
+    <string name="alpha" translatable="false">Alpha</string>
     <string name="anti_alias">Anti-alias</string>
     <string name="app_name">Icon Editor</string>
     <string name="argb_color_picker">ARGB Color Picker</string>

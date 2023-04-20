@@ -4,7 +4,6 @@
     <string name="actual_pixels">实际像素</string>
     <string name="add">添加</string>
     <string name="all_layers">全部图层</string>
-    <string name="alpha_value">Alpha 值</string>
     <string name="anti_alias">抗锯齿</string>
     <string name="app_name">Icon Editor</string>
     <string name="argb_color_picker">ARGB 拾色器</string>

@@ -4382,7 +4382,7 @@ public class MainActivity extends AppCompatActivity {
                 addTab(t, tabLayout.getSelectedTabPosition(), getString(R.string.mask));
             }
             case R.id.i_layer_alpha -> {
-                new SeekBarDialog(this).setTitle(R.string.alpha_value).setMin(0x00).setMax(0xFF)
+                new SeekBarDialog(this).setTitle(R.string.alpha).setMin(0x00).setMax(0xFF)
                         .setProgress(tab.paint.getAlpha())
                         .setOnChangeListener(onLayerAlphaSeekBarChangeListener)
                         .setOnApplyListener((dialog, which) -> clearStatus())

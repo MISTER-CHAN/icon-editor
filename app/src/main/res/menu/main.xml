@@ -301,7 +301,7 @@
 
             <item
                 android:id="@+id/i_layer_alpha"
-                android:title="@string/alpha_value" />
+                android:title="@string/alpha" />
 
             <item
                 android:id="@+id/i_blend_mode"
