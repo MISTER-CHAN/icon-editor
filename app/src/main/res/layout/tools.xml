@@ -66,8 +66,7 @@
         android:id="@+id/rb_brush"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/brush"
-        android:visibility="gone" />
+        android:text="@string/soft_brush" />
 
     <RadioButton
         android:id="@+id/rb_gradient"

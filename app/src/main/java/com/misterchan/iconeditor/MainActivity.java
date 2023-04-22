@@ -273,12 +273,13 @@ public class MainActivity extends AppCompatActivity {
     private float backgroundScaledW, backgroundScaledH;
     private float blurRadius = 0.0f, blurRadiusEraser = 0.0f;
     private float scale;
+    private float softness = 0.5f;
     private float strokeWidth = 1.0f, strokeHalfWidthEraser = 0.5f;
     private float textSize = 12.0f;
     private float translationX, translationY;
     private FrameLayout flImageView;
     private FrameLayout flToolOptions;
-    private FrameLayout svOptionsBrush;
+    private FrameLayout svOptionsSoftBrush;
     private FrameLayout svOptionsBucketFill;
     private FrameLayout svOptionsCloneStamp;
     private FrameLayout svOptionsEraser;
@@ -334,8 +335,8 @@ public class MainActivity extends AppCompatActivity {
     private Paint.Style style = Paint.Style.FILL_AND_STROKE;
     private Tab tab;
     private TabLayout tabLayout;
-    private TextInputEditText tietBrushBlurRadius;
-    private TextInputEditText tietBrushStrokeWidth;
+    private TextInputEditText tietSoftBrushBlurRadius;
+    private TextInputEditText tietSoftBrushStrokeWidth;
     private TextInputEditText tietCloneStampBlurRadius;
     private TextInputEditText tietCloneStampStrokeWidth;
     private TextInputEditText tietGradientBlurRadius;
@@ -451,7 +452,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
 
-    private final AfterTextChangedListener onBlurRadiusTextChangedListener = s -> {
+    private final AfterTextChangedListener onBlurRadiusETTextChangedListener = s -> {
         try {
             final float f = Float.parseFloat(s);
             blurRadius = f;
@@ -469,7 +470,7 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    private final AfterTextChangedListener onTextSizeChangedListener = s -> {
+    private final AfterTextChangedListener onTextSizeETTextChangedListener = s -> {
         try {
             final float f = Float.parseFloat(s);
             textSize = f;
@@ -1193,46 +1194,6 @@ public class MainActivity extends AppCompatActivity {
     };
 
     private Shape shape = rect;
-
-    @SuppressLint({"ClickableViewAccessibility"})
-    private final View.OnTouchListener onTouchIVWithBrushListener = new View.OnTouchListener() {
-        private float lastBX, lastBY;
-        private VelocityTracker velocityTracker;
-
-        @Override
-        public boolean onTouch(View v, MotionEvent event) {
-            switch (event.getAction()) {
-                case MotionEvent.ACTION_DOWN -> {
-                    velocityTracker = VelocityTracker.obtain();
-                    velocityTracker.addMovement(event);
-                    final float x = event.getX(), y = event.getY();
-                    final int bx = toBitmapX(x), by = toBitmapY(y);
-                    tvStatus.setText(String.format(getString(R.string.coordinates), bx, by));
-                    lastBX = bx;
-                    lastBY = by;
-                }
-                case MotionEvent.ACTION_MOVE -> {
-                    velocityTracker.addMovement(event);
-                    velocityTracker.computeCurrentVelocity(1);
-                    final float x = event.getX(), y = event.getY();
-                    final int bx = toBitmapX(x), by = toBitmapY(y);
-                    final float vx = velocityTracker.getXVelocity(), vy = velocityTracker.getYVelocity();
-
-                    drawBitmapOnView();
-                    tvStatus.setText(String.format(getString(R.string.coordinates), bx, by));
-                    lastBX = bx;
-                    lastBY = by;
-                }
-                case MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                    velocityTracker.recycle();
-                    paint.setStrokeWidth(strokeWidth);
-                    addToHistory();
-                    clearStatus();
-                }
-            }
-            return true;
-        }
-    };
 
     @SuppressLint("ClickableViewAccessibility")
     private final View.OnTouchListener onTouchIVWithBucketListener = (v, event) -> {
@@ -2142,6 +2103,91 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    @SuppressLint({"ClickableViewAccessibility"})
+    private final View.OnTouchListener onTouchIVWithSoftBrushListener = new View.OnTouchListener() {
+        private float lastX, lastY;
+        private float lastTLX = Float.NaN, lastTLY, lastRX, lastRY, lastBX, lastBY;
+        private VelocityTracker velocityTracker;
+
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN -> {
+                    velocityTracker = VelocityTracker.obtain();
+                    velocityTracker.addMovement(event);
+                    final float x = event.getX(), y = event.getY();
+                    clearStatus();
+                    lastX = x;
+                    lastY = y;
+                }
+                case MotionEvent.ACTION_MOVE -> {
+                    velocityTracker.addMovement(event);
+                    velocityTracker.computeCurrentVelocity(1);
+                    final float x = event.getX(), y = event.getY();
+                    final float vel = (float) Math.hypot(velocityTracker.getXVelocity(), velocityTracker.getYVelocity());
+                    final float maxRad = toScaled(strokeWidth / 2.0f + blurRadius);
+                    final float rad = Math.min(maxRad / vel / softness, maxRad);
+
+                    if (Float.isNaN(lastTLX) /* || ... || Float.isNaN(lastBY) */) {
+                        lastTLX = lastX - rad;
+                        lastTLY = lastY - rad;
+                        lastRX = lastX + rad;
+                        lastRY = lastY;
+                        lastBX = lastX;
+                        lastBY = lastY + rad;
+                    }
+                    final float tlx = x - rad, tly = y - rad,
+                            rx = x + rad, ry = y,
+                            bx = x, by = y + rad;
+
+                    final Path pathT = new Path();
+                    pathT.moveTo(toBitmapX(lastTLX), toBitmapY(lastTLY));
+                    pathT.lineTo(toBitmapX(lastRX), toBitmapY(lastRY));
+                    pathT.lineTo(toBitmapX(rx), toBitmapY(ry));
+                    pathT.lineTo(toBitmapX(tlx), toBitmapY(tly));
+                    pathT.close();
+                    final Path pathBR = new Path();
+                    pathBR.moveTo(toBitmapX(lastRX), toBitmapY(lastRY));
+                    pathBR.lineTo(toBitmapX(lastBX), toBitmapY(lastBY));
+                    pathBR.lineTo(toBitmapX(bx), toBitmapY(by));
+                    pathBR.lineTo(toBitmapX(rx), toBitmapY(ry));
+                    pathBR.close();
+                    final Path pathL = new Path();
+                    pathL.moveTo(toBitmapX(lastBX), toBitmapY(lastBY));
+                    pathL.lineTo(toBitmapX(lastTLX), toBitmapY(lastTLY));
+                    pathL.lineTo(toBitmapX(tlx), toBitmapY(tly));
+                    pathL.lineTo(toBitmapX(bx), toBitmapY(by));
+                    pathL.close();
+                    final Path path = new Path();
+                    path.op(pathT, Path.Op.UNION);
+                    path.op(pathBR, Path.Op.UNION);
+                    path.op(pathL, Path.Op.UNION);
+                    canvas.drawPath(path, paint);
+
+                    drawBitmapOnView(toBitmapX(Math.min(lastTLX, tlx)), toBitmapY(Math.min(lastTLY, tly)),
+                            toBitmapX(Math.max(lastRX, rx)), toBitmapY(Math.max(lastBY, by)),
+                            rad);
+                    lastX = x;
+                    lastY = y;
+                    lastTLX = tlx;
+                    lastTLY = tly;
+                    lastRX = rx;
+                    lastRY = ry;
+                    lastBX = bx;
+                    lastBY = by;
+                }
+                case MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    velocityTracker.recycle();
+                    lastTLX = /* lastTLY = ... = lastRY = */ Float.NaN;
+                    paint.setStrokeWidth(strokeWidth);
+                    addToHistory();
+                    clearStatus();
+                }
+            }
+            return true;
+        }
+    };
+
     /**
      * Callback to call on touch image view with scale transformer
      */
@@ -2426,18 +2472,6 @@ public class MainActivity extends AppCompatActivity {
     };
 
     @SuppressLint("ClickableViewAccessibility")
-    private final CompoundButton.OnCheckedChangeListener onBrushRBCheckedChangeListener = (buttonView, isChecked) -> {
-        if (isChecked) {
-            onToolChange(onTouchIVWithBrushListener);
-            paint.setAntiAlias(true);
-            tietBrushBlurRadius.setText(String.valueOf(blurRadius));
-            tietBrushStrokeWidth.setText(String.valueOf(strokeWidth));
-            paint.setStyle(Paint.Style.STROKE);
-            svOptionsBrush.setVisibility(View.VISIBLE);
-        }
-    };
-
-    @SuppressLint("ClickableViewAccessibility")
     private final CompoundButton.OnCheckedChangeListener onBucketFillRBCheckedChangeListener = (buttonView, isChecked) -> {
         if (isChecked) {
             onToolChange(onTouchIVWithBucketListener);
@@ -2549,6 +2583,18 @@ public class MainActivity extends AppCompatActivity {
             cbShapeFill.setChecked(isPaintStyleFill());
             tietShapeStrokeWidth.setText(String.valueOf(paint.getStrokeWidth()));
             llOptionsShape.setVisibility(View.VISIBLE);
+        }
+    };
+
+    @SuppressLint("ClickableViewAccessibility")
+    private final CompoundButton.OnCheckedChangeListener onSoftBrushRBCheckedChangeListener = (buttonView, isChecked) -> {
+        if (isChecked) {
+            onToolChange(onTouchIVWithSoftBrushListener);
+            paint.setAntiAlias(true);
+            tietSoftBrushBlurRadius.setText(String.valueOf(blurRadius));
+            tietSoftBrushStrokeWidth.setText(String.valueOf(strokeWidth));
+            paint.setStyle(Paint.Style.FILL);
+            svOptionsSoftBrush.setVisibility(View.VISIBLE);
         }
     };
 
@@ -3025,10 +3071,9 @@ public class MainActivity extends AppCompatActivity {
 
         runOnUiThread(() -> {
             eraseBitmap(viewImage);
-            if (vs.isEmpty()) {
-                return;
+            if (!vs.isEmpty()) {
+                drawBitmapOnCanvas(viewCanvas, lastMerged, translationX, translationY, vs);
             }
-            drawBitmapOnCanvas(viewCanvas, lastMerged, translationX, translationY, vs);
             imageView.invalidate();
         });
     }
@@ -3046,7 +3091,10 @@ public class MainActivity extends AppCompatActivity {
         }
         final Rect vs = getVisibleSubset(translationX, translationY, width, height);
         if (vs.isEmpty()) {
-            runOnUiThread(() -> eraseBitmap(viewImage));
+            runOnUiThread(() -> {
+                eraseBitmap(viewImage);
+                imageView.invalidate();
+            });
             return;
         }
         if (!vs.intersect(left, top, right, bottom)) {
@@ -3076,7 +3124,10 @@ public class MainActivity extends AppCompatActivity {
         final Tab background = tab.getBackground();
         final Rect vs = getVisibleSubset(translationX, translationY, background.bitmap.getWidth(), background.bitmap.getHeight());
         if (vs.isEmpty()) {
-            runOnUiThread(() -> eraseBitmap(viewImage));
+            runOnUiThread(() -> {
+                eraseBitmap(viewImage);
+                imageView.invalidate();
+            });
             return;
         }
 
@@ -3104,7 +3155,6 @@ public class MainActivity extends AppCompatActivity {
     private void drawChessboardOnView() {
         eraseBitmap(chessboardImage);
 
-        final boolean isBackground = tab.isBackground;
         final float left = Math.max(0.0f, translationX);
         final float top = Math.max(0.0f, translationY);
         final float right = Math.min(translationX + backgroundScaledW, viewWidth);
@@ -3706,7 +3756,6 @@ public class MainActivity extends AppCompatActivity {
         final RadioButton rbRuler = findViewById(R.id.rb_ruler);
         rbTransformer = findViewById(R.id.rb_transformer);
         final RadioGroup rgMagicEraserPosition = findViewById(R.id.rg_magic_eraser_position);
-        svOptionsBrush = findViewById(R.id.sv_options_brush);
         svOptionsBucketFill = findViewById(R.id.sv_options_bucket_fill);
         svOptionsCloneStamp = findViewById(R.id.sv_options_clone_stamp);
         svOptionsEraser = findViewById(R.id.sv_options_eraser);
@@ -3717,9 +3766,8 @@ public class MainActivity extends AppCompatActivity {
         svOptionsPatcher = findViewById(R.id.sv_options_patcher);
         svOptionsPath = findViewById(R.id.sv_options_path);
         svOptionsPencil = findViewById(R.id.sv_options_pencil);
+        svOptionsSoftBrush = findViewById(R.id.sv_options_soft_brush);
         tabLayout = findViewById(R.id.tl);
-        tietBrushBlurRadius = findViewById(R.id.tiet_brush_blur_radius);
-        tietBrushStrokeWidth = findViewById(R.id.tiet_brush_stroke_width);
         tietCloneStampBlurRadius = findViewById(R.id.tiet_clone_stamp_blur_radius);
         tietCloneStampStrokeWidth = findViewById(R.id.tiet_clone_stamp_stroke_width);
         final TextInputEditText tietEraserBlurRadius = findViewById(R.id.tiet_eraser_blur_radius);
@@ -3736,6 +3784,9 @@ public class MainActivity extends AppCompatActivity {
         tietPencilBlurRadius = findViewById(R.id.tiet_pencil_blur_radius);
         tietPencilStrokeWidth = findViewById(R.id.tiet_pencil_stroke_width);
         tietShapeStrokeWidth = findViewById(R.id.tiet_shape_stroke_width);
+        tietSoftBrushBlurRadius = findViewById(R.id.tiet_soft_brush_blur_radius);
+        final TextInputEditText tietSoftBrushSoftness = findViewById(R.id.tiet_soft_brush_softness);
+        tietSoftBrushStrokeWidth = findViewById(R.id.tiet_soft_brush_stroke_width);
         tietText = findViewById(R.id.tiet_text);
         final TextInputEditText tietTextSize = findViewById(R.id.tiet_text_size);
         tvStatus = findViewById(R.id.tv_status);
@@ -3764,7 +3815,7 @@ public class MainActivity extends AppCompatActivity {
         flImageView.setOnTouchListener(onTouchIVWithPencilListener);
         ivRulerH.setOnTouchListener(onTouchRulerHListener);
         ivRulerV.setOnTouchListener(onTouchRulerVListener);
-        ((CompoundButton) findViewById(R.id.rb_brush)).setOnCheckedChangeListener(onBrushRBCheckedChangeListener);
+        ((CompoundButton) findViewById(R.id.rb_brush)).setOnCheckedChangeListener(onSoftBrushRBCheckedChangeListener);
         ((CompoundButton) findViewById(R.id.rb_bucket_fill)).setOnCheckedChangeListener(onBucketFillRBCheckedChangeListener);
         ((CompoundButton) findViewById(R.id.rb_circle)).setOnCheckedChangeListener((OnCBCheckedListener) () -> shape = circle);
         rbCloneStamp.setOnCheckedChangeListener(onCloneStampRBCheckedChangeListener);
@@ -3790,24 +3841,23 @@ public class MainActivity extends AppCompatActivity {
         ((CompoundButton) findViewById(R.id.rb_transformer_translation)).setOnCheckedChangeListener((OnCBCheckedListener) () -> onTransformerChange(onTouchIVWithTTListener));
         rvSwatches.setItemAnimator(new DefaultItemAnimator());
         tabLayout.addOnTabSelectedListener(onTabSelectedListener);
-        tietCloneStampBlurRadius.addTextChangedListener(onBlurRadiusTextChangedListener);
+        tietCloneStampBlurRadius.addTextChangedListener(onBlurRadiusETTextChangedListener);
         tietCloneStampStrokeWidth.addTextChangedListener(onStrokeWidthETTextChangedListener);
         tietMagicEraserStrokeWidth.addTextChangedListener(onStrokeWidthETTextChangedListener);
-        tietMagicPaintBlurRadius.addTextChangedListener(onBlurRadiusTextChangedListener);
+        tietMagicPaintBlurRadius.addTextChangedListener(onBlurRadiusETTextChangedListener);
         tietMagicPaintStrokeWidth.addTextChangedListener(onStrokeWidthETTextChangedListener);
-        tietGradientBlurRadius.addTextChangedListener(onBlurRadiusTextChangedListener);
+        tietGradientBlurRadius.addTextChangedListener(onBlurRadiusETTextChangedListener);
         tietGradientStrokeWidth.addTextChangedListener(onStrokeWidthETTextChangedListener);
-        tietBrushBlurRadius.addTextChangedListener(onBlurRadiusTextChangedListener);
-        tietBrushStrokeWidth.addTextChangedListener(onStrokeWidthETTextChangedListener);
-        tietPatcherBlurRadius.addTextChangedListener(onBlurRadiusTextChangedListener);
+        tietPatcherBlurRadius.addTextChangedListener(onBlurRadiusETTextChangedListener);
         tietPatcherStrokeWidth.addTextChangedListener(onStrokeWidthETTextChangedListener);
-        tietPathBlurRadius.addTextChangedListener(onBlurRadiusTextChangedListener);
+        tietPathBlurRadius.addTextChangedListener(onBlurRadiusETTextChangedListener);
         tietPathStrokeWidth.addTextChangedListener(onStrokeWidthETTextChangedListener);
-        tietPencilBlurRadius.addTextChangedListener(onBlurRadiusTextChangedListener);
+        tietPencilBlurRadius.addTextChangedListener(onBlurRadiusETTextChangedListener);
         tietPencilStrokeWidth.addTextChangedListener(onStrokeWidthETTextChangedListener);
         tietShapeStrokeWidth.addTextChangedListener(onStrokeWidthETTextChangedListener);
+        tietSoftBrushBlurRadius.addTextChangedListener(onBlurRadiusETTextChangedListener);
         tietText.addTextChangedListener((AfterTextChangedListener) s -> drawTextOnView());
-        tietTextSize.addTextChangedListener(onTextSizeChangedListener);
+        tietTextSize.addTextChangedListener(onTextSizeETTextChangedListener);
         findViewById(R.id.tv_color_add).setOnClickListener(onClickAddSwatchViewListener);
         vBackgroundColor.setOnClickListener(onClickBackgroundColorListener);
         vForegroundColor.setOnClickListener(onClickForegroundColorListener);
@@ -3815,24 +3865,6 @@ public class MainActivity extends AppCompatActivity {
         cbTextFill.setOnCheckedChangeListener((buttonView, isChecked) -> {
             paint.setStyle(isChecked ? Paint.Style.FILL_AND_STROKE : Paint.Style.STROKE);
             drawTextOnView();
-        });
-
-        tietEraserBlurRadius.addTextChangedListener((AfterTextChangedListener) s -> {
-            try {
-                final float f = Float.parseFloat(s);
-                blurRadiusEraser = f;
-                setBlurRadius(eraser, f);
-            } catch (NumberFormatException e) {
-            }
-        });
-
-        tietEraserStrokeWidth.addTextChangedListener((AfterTextChangedListener) s -> {
-            try {
-                final float f = Float.parseFloat(s);
-                strokeHalfWidthEraser = f / 2.0f;
-                eraser.setStrokeWidth(f);
-            } catch (NumberFormatException e) {
-            }
         });
 
         ((CompoundButton) findViewById(R.id.cb_magic_eraser_style)).setOnCheckedChangeListener((buttonView, isChecked) -> {
@@ -3882,10 +3914,43 @@ public class MainActivity extends AppCompatActivity {
             rvSwatches.setLayoutManager(llm);
         }
 
+        tietEraserBlurRadius.addTextChangedListener((AfterTextChangedListener) s -> {
+            try {
+                final float f = Float.parseFloat(s);
+                blurRadiusEraser = f;
+                setBlurRadius(eraser, f);
+            } catch (NumberFormatException e) {
+            }
+        });
+
+        tietEraserStrokeWidth.addTextChangedListener((AfterTextChangedListener) s -> {
+            try {
+                final float f = Float.parseFloat(s);
+                strokeHalfWidthEraser = f / 2.0f;
+                eraser.setStrokeWidth(f);
+            } catch (NumberFormatException e) {
+            }
+        });
+
+        tietSoftBrushSoftness.addTextChangedListener((AfterTextChangedListener) s -> {
+            try {
+                softness = Float.parseFloat(s);
+            } catch (NumberFormatException e) {
+            }
+        });
+
+        tietSoftBrushStrokeWidth.addTextChangedListener((AfterTextChangedListener) s -> {
+            try {
+                strokeWidth = Float.parseFloat(s);
+            } catch (NumberFormatException e) {
+            }
+        });
+
         tietPencilBlurRadius.setText(String.valueOf(0.0f));
         tietPencilStrokeWidth.setText(String.valueOf(paint.getStrokeWidth()));
         tietEraserBlurRadius.setText(String.valueOf(0.0f));
         tietEraserStrokeWidth.setText(String.valueOf(eraser.getStrokeWidth()));
+        tietSoftBrushSoftness.setText(String.valueOf(softness));
         tietTextSize.setText(String.valueOf(paint.getTextSize()));
 
         chessboard = BitmapFactory.decodeResource(getResources(), R.mipmap.chessboard);

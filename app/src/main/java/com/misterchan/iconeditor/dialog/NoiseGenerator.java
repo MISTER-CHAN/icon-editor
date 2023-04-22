@@ -31,7 +31,7 @@ public class NoiseGenerator {
 
     public static class Properties {
         private boolean noRepeats = false;
-        private float noisy = 0.0f;
+        private float noisiness = 0.0f;
         private Long seed = null;
         private WhatToDraw whatToDraw = WhatToDraw.PIXEL;
 
@@ -40,7 +40,7 @@ public class NoiseGenerator {
         }
 
         public float noisy() {
-            return noisy;
+            return noisiness;
         }
 
         public Long seed() {
@@ -113,7 +113,7 @@ public class NoiseGenerator {
             update(true);
         });
         sbNoisy.setOnSeekBarChangeListener((OnSBChangeListener) (progress, stopped) -> {
-            properties.noisy = (float) progress / (float) SB_MAX;
+            properties.noisiness = (float) progress / (float) SB_MAX;
             update(stopped);
         });
         tietSeed.addTextChangedListener((AfterTextChangedListener) s -> {

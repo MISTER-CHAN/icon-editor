@@ -24,7 +24,6 @@
     <string name="blend_mode">Blend Mode</string>
     <string name="blur_radius">Blur</string>
     <string name="bottom">Bottom</string>
-    <string name="brush">Brush</string>
     <string name="bucket_fill">Bucket Fill</string>
     <string name="c" translatable="false">C</string>
     <string name="cancel">Cancel</string>
@@ -257,6 +256,8 @@
     <string name="shift">Shift</string>
     <string name="simple_fast">Simple Fast</string>
     <string name="size">Size</string>
+    <string name="soft_brush">Soft Brush</string>
+    <string name="softness">Softness</string>
     <string name="source">Source</string>
     <string name="spacing">Spacing</string>
     <string name="stable">Stable</string>

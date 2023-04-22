@@ -129,54 +129,6 @@
                     android:layout_height="wrap_content">
 
                     <ScrollView
-                        android:id="@+id/sv_options_brush"
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:layout_gravity="center_horizontal"
-                        android:fadingEdgeLength="16dp"
-                        android:requiresFadingEdge="vertical"
-                        android:scrollbars="none"
-                        android:visibility="invisible">
-
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:gravity="center_horizontal"
-                            android:orientation="vertical">
-
-                            <com.google.android.material.textfield.TextInputLayout
-                                android:layout_width="96dp"
-                                android:layout_height="wrap_content"
-                                android:layout_marginHorizontal="2dp">
-
-                                <com.google.android.material.textfield.TextInputEditText
-                                    android:id="@+id/tiet_brush_stroke_width"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:background="@color/transparent"
-                                    android:hint="@string/stroke_width"
-                                    android:inputType="numberDecimal"
-                                    android:textAlignment="textEnd" />
-                            </com.google.android.material.textfield.TextInputLayout>
-
-                            <com.google.android.material.textfield.TextInputLayout
-                                android:layout_width="96dp"
-                                android:layout_height="wrap_content"
-                                android:layout_marginHorizontal="2dp">
-
-                                <com.google.android.material.textfield.TextInputEditText
-                                    android:id="@+id/tiet_brush_blur_radius"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:background="@color/transparent"
-                                    android:hint="@string/blur_radius"
-                                    android:inputType="numberDecimal"
-                                    android:textAlignment="textEnd" />
-                            </com.google.android.material.textfield.TextInputLayout>
-                        </LinearLayout>
-                    </ScrollView>
-
-                    <ScrollView
                         android:id="@+id/sv_options_bucket_fill"
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
@@ -803,6 +755,69 @@
                             </RadioGroup>
                         </ScrollView>
                     </LinearLayout>
+
+                    <ScrollView
+                        android:id="@+id/sv_options_soft_brush"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="center_horizontal"
+                        android:fadingEdgeLength="16dp"
+                        android:requiresFadingEdge="vertical"
+                        android:scrollbars="none"
+                        android:visibility="invisible">
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_horizontal"
+                            android:orientation="vertical">
+
+                            <com.google.android.material.textfield.TextInputLayout
+                                android:layout_width="96dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginHorizontal="2dp">
+
+                                <com.google.android.material.textfield.TextInputEditText
+                                    android:id="@+id/tiet_soft_brush_stroke_width"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:background="@color/transparent"
+                                    android:hint="@string/stroke_width"
+                                    android:inputType="numberDecimal"
+                                    android:textAlignment="textEnd" />
+                            </com.google.android.material.textfield.TextInputLayout>
+
+                            <com.google.android.material.textfield.TextInputLayout
+                                android:layout_width="96dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginHorizontal="2dp">
+
+                                <com.google.android.material.textfield.TextInputEditText
+                                    android:id="@+id/tiet_soft_brush_blur_radius"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:background="@color/transparent"
+                                    android:hint="@string/blur_radius"
+                                    android:inputType="numberDecimal"
+                                    android:textAlignment="textEnd" />
+                            </com.google.android.material.textfield.TextInputLayout>
+
+                            <com.google.android.material.textfield.TextInputLayout
+                                android:layout_width="96dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginHorizontal="2dp">
+
+                                <com.google.android.material.textfield.TextInputEditText
+                                    android:id="@+id/tiet_soft_brush_softness"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:background="@color/transparent"
+                                    android:hint="@string/softness"
+                                    android:inputType="numberDecimal"
+                                    android:textAlignment="textEnd" />
+                            </com.google.android.material.textfield.TextInputLayout>
+                        </LinearLayout>
+                    </ScrollView>
 
                     <LinearLayout
                         android:id="@+id/ll_options_text"

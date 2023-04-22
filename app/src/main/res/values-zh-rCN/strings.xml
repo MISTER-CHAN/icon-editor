@@ -19,7 +19,6 @@
     <string name="blend_mode">混合模式</string>
     <string name="blur_radius">模糊半径</string>
     <string name="bottom">底</string>
-    <string name="brush">笔刷</string>
     <string name="bucket_fill">油漆桶</string>
     <string name="cancel">取消</string>
     <string name="cell_grid">网格</string>
@@ -231,6 +230,8 @@
     <string name="shift">偏移</string>
     <string name="simple_fast">简单快速</string>
     <string name="size">尺寸</string>
+    <string name="soft_brush">软笔</string>
+    <string name="softness">软度</string>
     <string name="source">来源</string>
     <string name="spacing">间距</string>
     <string name="stable">稳定</string>
