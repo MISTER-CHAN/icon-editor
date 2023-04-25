@@ -63,7 +63,7 @@
         android:text="@string/text" />
 
     <RadioButton
-        android:id="@+id/rb_brush"
+        android:id="@+id/rb_soft_brush"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/soft_brush" />

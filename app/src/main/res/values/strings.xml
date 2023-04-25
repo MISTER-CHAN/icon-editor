@@ -69,6 +69,7 @@
     <string name="copy_verb">Copy</string>
     <string name="crop">Crop</string>
     <string name="current_layer">Current Layer</string>
+    <string name="cursor">Cursor</string>
     <string name="curves">Curves</string>
     <string name="custom">Custom</string>
     <string name="custom_color_filter">Custom Color Filter</string>
@@ -276,7 +277,8 @@
     <string name="state_left_top">Left: %d, Top: %d</string>
     <string name="state_length">Length: %f</string>
     <string name="state_lightness">Brightness: %d</string>
-    <string name="state_l_t_r_b_size">L: %d, T: %d, R: %d, B: %d, Size: %d × %d"</string>
+    <string name="state_l_t_r_b">L: %d, T: %d, R: %d, B: %d</string>
+    <string name="state_l_t_r_b_size">L: %d, T: %d, R: %d, B: %d, Size: %d × %d</string>
     <string name="state_radius">Radius: %.1f</string>
     <string name="state_rotate" translatable="false">%d°</string>
     <string name="state_ruler">(%d, %d) – (%d, %d), Proj: (%d, %d), Length: %s</string>
@@ -319,6 +321,7 @@
     <string name="white_balance">White Balance</string>
     <string name="width">Width</string>
     <string name="with_eraser">With Eraser</string>
+    <string name="writing">Writing</string>
     <string name="x" translatable="false">X</string>
     <string name="x_" translatable="false">x</string>
     <string name="y" translatable="false">Y</string>

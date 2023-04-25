@@ -816,6 +816,14 @@
                                     android:inputType="numberDecimal"
                                     android:textAlignment="textEnd" />
                             </com.google.android.material.textfield.TextInputLayout>
+
+                            <ToggleButton
+                                android:id="@+id/tb_soft_brush"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginHorizontal="2dp"
+                                android:textOff="@string/cursor"
+                                android:textOn="@string/writing" />
                         </LinearLayout>
                     </ScrollView>
 

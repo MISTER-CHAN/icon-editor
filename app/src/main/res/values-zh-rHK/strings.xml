@@ -62,6 +62,7 @@
     <string name="copy_verb">複製</string>
     <string name="crop">裁剪</string>
     <string name="current_layer">當前圖層</string>
+    <string name="cursor">光標</string>
     <string name="curves">曲線</string>
     <string name="custom">自訂</string>
     <string name="custom_color_filter">自訂顏色濾鏡</string>
@@ -246,6 +247,7 @@
     <string name="state_invert">反相：%.1f</string>
     <string name="state_left_top">左：%d，上：%d</string>
     <string name="state_length">長：%f</string>
+    <string name="state_l_t_r_b">左：%d，上：%d，右：%d，下：%d</string>
     <string name="state_l_t_r_b_size">左：%d，上：%d，右：%d，下：%d，尺寸：%d × %d</string>
     <string name="state_radius">半徑：%.1f</string>
     <string name="state_ruler">(%d, %d) – (%d, %d)，投影：(%d, %d)，長：%s</string>
@@ -285,6 +287,7 @@
     <string name="white_balance">白平衡</string>
     <string name="width">寬度</string>
     <string name="with_eraser">帶擦膠</string>
+    <string name="writing">書寫</string>
     <string name="zoom">縮放</string>
 
     <!-- Blend Modes -->
