@@ -5,24 +5,30 @@ import android.content.DialogInterface;
 import android.view.Gravity;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.SeekBar;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 
-import com.misterchan.iconeditor.listener.OnSBChangeListener;
+import com.google.android.material.slider.LabelFormatter;
+import com.google.android.material.slider.RangeSlider;
+import com.google.android.material.slider.Slider;
+import com.misterchan.iconeditor.listener.OnRSChangeListener;
 import com.misterchan.iconeditor.R;
+import com.misterchan.iconeditor.listener.OnSliderChangeListener;
+
+import java.util.List;
 
 public class ColorRangeDialog {
 
     public interface OnChangedListener {
-        void onChanged(int hueMin, int hueMax, int lumMin, int lumMax, boolean stopped);
+        void onChanged(float hMin, float hMax, float sMin, float sMax, float vMin, float vMax, boolean stopped);
     }
 
     private final AlertDialog.Builder builder;
     private OnChangedListener listener;
 
-    private SeekBar sbHueMin, sbHueMax;
-    private SeekBar sbLumMin, sbLumMax;
+    private Slider sHueMin, sHueMax;
+    private RangeSlider rsSaturation, rsValue;
 
     public ColorRangeDialog(Context context) {
         builder = new AlertDialog.Builder(context)
@@ -38,10 +44,7 @@ public class ColorRangeDialog {
     }
 
     public ColorRangeDialog setOnPositiveButtonClickListener(OnChangedListener listener) {
-        builder.setPositiveButton(R.string.ok, (dialog, which) ->
-                listener.onChanged(sbHueMin.getProgress(), sbHueMax.getProgress(),
-                        sbLumMin.getProgress(), sbLumMax.getProgress(),
-                        true));
+        builder.setPositiveButton(R.string.ok, (dialog, which) -> update(listener, true));
         return this;
     }
 
@@ -59,30 +62,34 @@ public class ColorRangeDialog {
         lp.gravity = Gravity.BOTTOM;
         window.setAttributes(lp);
 
-        sbHueMin = dialog.findViewById(R.id.sb_hue_min);
-        sbHueMax = dialog.findViewById(R.id.sb_hue_max);
-        sbLumMin = dialog.findViewById(R.id.sb_luminance_min);
-        sbLumMax = dialog.findViewById(R.id.sb_luminance_max);
-        final OnSBChangeListener l = (progress, stopped) ->
-                listener.onChanged(sbHueMin.getProgress(), sbHueMax.getProgress(),
-                        sbLumMin.getProgress(), sbLumMax.getProgress(),
-                        stopped);
+        sHueMin = dialog.findViewById(R.id.s_hue_min);
+        sHueMax = dialog.findViewById(R.id.s_hue_max);
+        rsSaturation = dialog.findViewById(R.id.rs_saturation);
+        rsValue = dialog.findViewById(R.id.rs_value);
+        final LabelFormatter dlf = value -> value + "°"; // Degree label formatter
+        final LabelFormatter plf = value -> value + "%"; // Percentage label formatter
+        final OnSliderChangeListener sl = (value, stopped) -> update(listener, stopped);
+        final OnRSChangeListener rsl = (value0, value1, stopped) -> update(listener, stopped);
 
-        sbHueMin.setOnSeekBarChangeListener(l);
-        sbHueMax.setOnSeekBarChangeListener(l);
+        sHueMin.addOnChangeListener(sl);
+        sHueMin.addOnSliderTouchListener(sl);
+        sHueMin.setLabelFormatter(dlf);
+        sHueMax.addOnChangeListener(sl);
+        sHueMax.addOnSliderTouchListener(sl);
+        sHueMax.setLabelFormatter(dlf);
+        rsSaturation.addOnChangeListener(rsl);
+        rsSaturation.addOnSliderTouchListener(rsl);
+        rsSaturation.setLabelFormatter(plf);
+        rsValue.addOnChangeListener(rsl);
+        rsValue.addOnSliderTouchListener(rsl);
+        rsValue.setLabelFormatter(plf);
+    }
 
-        sbLumMin.setOnSeekBarChangeListener((OnSBChangeListener) (progress, stopped) -> {
-            if (progress > sbLumMax.getProgress()) {
-                sbLumMin.setProgress(sbLumMax.getProgress());
-            }
-            l.onChanged(progress, stopped);
-        });
-
-        sbLumMax.setOnSeekBarChangeListener((OnSBChangeListener) (progress, stopped) -> {
-            if (progress < sbLumMin.getProgress()) {
-                sbLumMax.setProgress(sbLumMin.getProgress());
-            }
-            l.onChanged(progress, stopped);
-        });
+    private void update(OnChangedListener listener, boolean stopped) {
+        final List<Float> s = rsSaturation.getValues(), v = rsValue.getValues();
+        listener.onChanged(sHueMin.getValue(), sHueMax.getValue(),
+                s.get(0) / 100.0f, s.get(1) / 100.0f,
+                v.get(0) / 100.0f, v.get(1) / 100.0f,
+                stopped);
     }
 }

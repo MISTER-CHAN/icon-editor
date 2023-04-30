@@ -22,7 +22,7 @@
         <ListPreference
             app:defaultValue="def"
             app:entries="@array/locales_entries"
-            app:entryValues="@array/locales_values"
+            app:entryValues="@array/locale_values"
             app:key="loc"
             app:singleLineTitle="false"
             app:title="@string/language"

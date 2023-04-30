@@ -199,6 +199,7 @@
     <string name="properties">属性</string>
     <string name="quality">品质</string>
     <string name="random">随机</string>
+    <string name="range">范围</string>
     <string name="rectangle">矩形</string>
     <string name="refer_to_clipboard">引用至剪贴簿</string>
     <string name="reference">参照</string>
@@ -238,7 +239,6 @@
     <string name="stable">稳定</string>
     <string name="stamp">图章</string>
     <string name="state_axes">轴长：%d, %d</string>
-    <string name="state_color_range">色相：%d° – %d°，明度：%d%% – %d%%</string>
     <string name="state_contrast">对比度：%.1f</string>
     <string name="state_from_to_size">由：(%d, %d)，至：(%d, %d)，尺寸：%d × %d</string>
     <string name="state_from_to_size_1">由：(%d, %d)，至：(%d, %d)，尺寸：1 × 1</string>

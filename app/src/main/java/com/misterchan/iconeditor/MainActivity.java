@@ -61,6 +61,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.ColorLong;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.Size;
 import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -276,7 +277,7 @@ public class MainActivity extends AppCompatActivity {
     private float blurRadius = 0.0f, blurRadiusEraser = 0.0f;
     private float scale;
     private float softness = 0.5f;
-    private float strokeWidth = 1.0f, strokeHalfWidthEraser = 0.5f;
+    private float strokeWidth = 1.0f, eraserStrokeHalfWidth = 0.5f;
     private float textSize = 12.0f;
     private float translationX, translationY;
     private FrameLayout flImageView;
@@ -561,31 +562,36 @@ public class MainActivity extends AppCompatActivity {
         drawBitmapOntoView(true);
     };
 
-    private final ColorRangeDialog.OnChangedListener onColorRangeChangedListener = (hueMin, hueMax, lumMin, lumMax, stopped) -> {
-        runOrStart(() -> {
-            if (hueMin == 0 && hueMax == 360 && lumMin == 0x0 && lumMax == 0xFF) {
-                imagePreview.clearFilters();
-            } else if (lumMin > lumMax) {
-                imagePreview.drawColor(Color.TRANSPARENT, BlendMode.SRC);
-            } else {
-                final int width = imagePreview.getWidth(), height = imagePreview.getHeight(), area = width * height;
-                final int[] src = imagePreview.getPixels(), dst = new int[area];
-                for (int i = 0; i < area; ++i) {
-                    final float h = Color.hue(src[i]);
-                    final int v = (int) (Color.luminance(src[i]) * 100.0f);
-                    dst[i] = (hueMin <= h && h <= hueMax
-                            || hueMin > hueMax && (hueMin <= h || h <= hueMax))
-                            && (lumMin <= v && v <= lumMax)
-                            ? src[i] : Color.TRANSPARENT;
+    private final ColorRangeDialog.OnChangedListener onColorRangeChangedListener = new ColorRangeDialog.OnChangedListener() {
+        @Size(3)
+        private float[] hsv = new float[3];
+
+        @Override
+        public void onChanged(float hMin, float hMax, float sMin, float sMax, float vMin, float vMax, boolean stopped) {
+            MainActivity.this.runOrStart(() -> {
+                if (hMin == 0 && hMax == 360 && sMin == 0x0 && sMax == 0xFF && vMin == 0x0 && vMax == 0xFF) {
+                    imagePreview.clearFilters();
+                } else {
+                    final int width = imagePreview.getWidth(), height = imagePreview.getHeight();
+                    final int[] src = imagePreview.getPixels(), dst = new int[width * height];
+                    for (int i = 0; i < src.length; ++i) {
+                        Color.colorToHSV(src[i], hsv);
+                        dst[i] = (hMin <= hsv[0] && hsv[0] <= hMax
+                                || hMin > hMax && (hMin <= hsv[0] || hsv[0] <= hMax))
+                                && (sMin <= hsv[1] && hsv[1] <= sMax)
+                                && (vMin <= hsv[2] && hsv[2] <= vMax)
+                                ? src[i] : Color.TRANSPARENT;
+                    }
+                    imagePreview.setPixels(dst, width, height);
                 }
-                imagePreview.setPixels(dst, width, height);
-            }
-            drawImagePreviewOntoView(stopped);
-        }, stopped);
-        tvStatus.setText(getString(R.string.state_color_range, hueMin, hueMax, lumMin, lumMax));
+                MainActivity.this.drawImagePreviewOntoView(stopped);
+            }, stopped);
+            tvStatus.setText(getString(R.string.state_color_range,
+                    hMin, hMax, sMin * 100.0f, sMax * 100.0f, vMin * 100.0f, vMax * 100.0f));
+        }
     };
 
-    private final ColorRangeDialog.OnChangedListener onConfirmLayerDuplicatingByColorRangeListener = (hueMin, hueMax, valueMin, valueMax, stopped) -> {
+    private final ColorRangeDialog.OnChangedListener onConfirmLayerDuplicatingByColorRangeListener = (hMin, hMax, sMin, sMax, vMin, vMax, stopped) -> {
         final Bitmap p = imagePreview.getEntire();
         final Bitmap bm = Bitmap.createBitmap(p.getWidth(), p.getHeight(),
                 p.getConfig(), true, p.getColorSpace());
@@ -656,7 +662,7 @@ public class MainActivity extends AppCompatActivity {
     };
 
     private final LevelsDialog.OnLevelsChangedListener onFilterLevelsChangedListener = (inputShadows, inputHighlights, outputShadows, outputHighlights, stopped) -> {
-        final float ratio = (float) (outputHighlights - outputShadows) / (float) (inputHighlights - inputShadows);
+        final float ratio = (outputHighlights - outputShadows) / (inputHighlights - inputShadows);
         runOrStart(() -> {
             imagePreview.addLightingColorFilter(ratio, -inputShadows * ratio + outputShadows);
             drawImagePreviewOntoView(stopped);
@@ -1321,7 +1327,7 @@ public class MainActivity extends AppCompatActivity {
                     final float x = event.getX(), y = event.getY();
                     final int bx = toBitmapX(x), by = toBitmapY(y);
                     drawLineIntoImage(lastBX, lastBY, bx, by, eraser);
-                    drawBitmapOntoView(lastBX, lastBY, bx, by, strokeHalfWidthEraser + blurRadiusEraser);
+                    drawBitmapOntoView(lastBX, lastBY, bx, by, eraserStrokeHalfWidth + blurRadiusEraser);
                     tvStatus.setText(getString(R.string.coordinates, bx, by));
                     lastBX = bx;
                     lastBY = by;
@@ -2144,6 +2150,7 @@ public class MainActivity extends AppCompatActivity {
     private final View.OnTouchListener onTouchIVWithSoftBrushOnListener = new View.OnTouchListener() {
         private float lastX, lastY;
         private float lastTLX = Float.NaN, lastTLY, lastRX, lastRY, lastBX, lastBY;
+        private float maxRad;
         private VelocityTracker velocityTracker;
 
         @Override
@@ -2153,8 +2160,15 @@ public class MainActivity extends AppCompatActivity {
                     velocityTracker = VelocityTracker.obtain();
                     velocityTracker.addMovement(event);
                     final float x = event.getX(), y = event.getY();
+                    final float rad = strokeWidth / 2.0f + blurRadius;
                     if (hasSelection) {
                         isWritingSoftStrokes = true;
+                        final float scale = Math.max(
+                                (float) viewWidth / (float) selection.width(),
+                                (float) viewHeight / (float) selection.height());
+                        maxRad = rad * scale;
+                    } else {
+                        maxRad = toScaled(rad);
                     }
                     clearStatus();
                     lastX = x;
@@ -2165,7 +2179,6 @@ public class MainActivity extends AppCompatActivity {
                     velocityTracker.computeCurrentVelocity(1);
                     final float x = event.getX(), y = event.getY();
                     final float vel = (float) Math.hypot(velocityTracker.getXVelocity(), velocityTracker.getYVelocity());
-                    final float maxRad = toScaled(strokeWidth / 2.0f + blurRadius);
                     final float rad = Math.min(maxRad / vel / softness, maxRad);
 
                     if (Float.isNaN(lastTLX) /* || ... || Float.isNaN(lastBY) */) {
@@ -3494,7 +3507,7 @@ public class MainActivity extends AppCompatActivity {
         final Rect src = new Rect(0, 0, viewWidth, viewHeight);
         final RectF dst = new RectF();
         final float width = selection.width(), height = selection.height();
-        final float scaleW = (float) width / viewWidth, scaleH = (float) height / viewHeight;
+        final float scaleW = width / viewWidth, scaleH = height / viewHeight;
         if (scaleW < scaleH) {
             dst.left = selection.left;
             dst.top = selection.top + selection.height() / 2.0f - viewHeight * scaleW / 2.0f;
@@ -4036,7 +4049,7 @@ public class MainActivity extends AppCompatActivity {
         tietEraserStrokeWidth.addTextChangedListener((AfterTextChangedListener) s -> {
             try {
                 final float f = Float.parseFloat(s);
-                strokeHalfWidthEraser = f / 2.0f;
+                eraserStrokeHalfWidth = f / 2.0f;
                 eraser.setStrokeWidth(f);
             } catch (NumberFormatException e) {
             }

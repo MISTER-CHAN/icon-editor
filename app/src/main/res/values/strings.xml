@@ -126,6 +126,8 @@
     <string name="group">Group</string>
     <string name="gt" translatable="false"><![CDATA[>]]></string>
     <string name="h" translatable="false">H</string>
+    <string name="h_max" translatable="false">H<sub>max</sub></string>
+    <string name="h_min" translatable="false">H<sub>min</sub></string>
     <string name="has_alpha">Has Alpha</string>
     <string name="height">Height</string>
     <string name="help">Help</string>
@@ -223,6 +225,7 @@
     <string name="quality">Quality</string>
     <string name="r" translatable="false">R</string>
     <string name="random">Random</string>
+    <string name="range">Range</string>
     <string name="rectangle">Rectangle</string>
     <string name="redo" translatable="false">↷</string>
     <string name="refer_to_clipboard">Refer to Clipboard</string>
@@ -265,7 +268,7 @@
     <string name="stamp">Stamp</string>
     <string name="state_alpha" translatable="false">Alpha: %s</string>
     <string name="state_axes">"Axes: %d, %d"</string>
-    <string name="state_color_range">Hue: %d° – %d°, Luminance: %d%% – %d%%</string>
+    <string name="state_color_range" translatable="false">H: %.0f° – %.0f°, S: %.0f%% – %.0f%%, V: %.0f%% – %.0f%%</string>
     <string name="state_contrast">Contrast: %.1f</string>
     <string name="state_eyedropper_imprecise" translatable="false">(%%d, %%d) A: %1$s, R: %1$s, G: %1$s, B: %1$s</string>
     <string name="state_eyedropper_precise" translatable="false">(%d, %d) A: %s, R: %s, G: %s, B: %s</string>

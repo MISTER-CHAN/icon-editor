@@ -75,10 +75,21 @@
         <item>@string/zh_hk</item>
     </string-array>
 
-    <string-array name="locales_values">
+    <string-array name="locale_values">
         <item>def</item>
         <item>en</item>
         <item>zh_CN</item>
         <item>zh_HK</item>
     </string-array>
+
+    <!-- Range -->
+    <array name="range_00_ff_values">
+        <item>0.0</item>
+        <item>255.0</item>
+    </array>
+
+    <array name="range_0_100_values">
+        <item>0.0</item>
+        <item>100.0</item>
+    </array>
 </resources>

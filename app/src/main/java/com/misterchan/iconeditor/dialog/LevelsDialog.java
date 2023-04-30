@@ -10,20 +10,20 @@ import android.view.Gravity;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageView;
-import android.widget.SeekBar;
 
 import androidx.appcompat.app.AlertDialog;
 
+import com.google.android.material.slider.Slider;
 import com.misterchan.iconeditor.Color;
-import com.misterchan.iconeditor.listener.OnSBChangeListener;
 import com.misterchan.iconeditor.R;
+import com.misterchan.iconeditor.listener.OnSliderChangeListener;
 
 import java.util.function.Function;
 
 public class LevelsDialog {
 
     public interface OnLevelsChangedListener {
-        void onChanged(int inputShadows, int inputHighlights, int outputShadows, int outputHighlights, boolean stopped);
+        void onChanged(float inputShadows, float inputHighlights, float outputShadows, float outputHighlights, boolean stopped);
     }
 
     private Bitmap bitmap;
@@ -34,8 +34,8 @@ public class LevelsDialog {
     private ImageView ivProgress;
     private OnLevelsChangedListener listener;
     private final Paint paint = new Paint();
-    private SeekBar sbInputHighlights, sbInputShadows;
-    private SeekBar sbOutputHighlights, sbOutputShadows;
+    private Slider sInputHighlights, sInputShadows;
+    private Slider sOutputHighlights, sOutputShadows;
 
     public LevelsDialog(Context context) {
         builder = new AlertDialog.Builder(context)
@@ -87,8 +87,8 @@ public class LevelsDialog {
 
     private void drawProgress() {
         progressBitmap.eraseColor(Color.TRANSPARENT);
-        progressCanvas.drawLine(sbInputShadows.getProgress(), 0.0f, sbInputShadows.getProgress(), 100.0f, paint);
-        progressCanvas.drawLine(sbInputHighlights.getProgress(), 0.0f, sbInputHighlights.getProgress(), 100.0f, paint);
+        progressCanvas.drawLine(sInputShadows.getValue(), 0.0f, sInputShadows.getValue(), 100.0f, paint);
+        progressCanvas.drawLine(sInputHighlights.getValue(), 0.0f, sInputHighlights.getValue(), 100.0f, paint);
         ivProgress.invalidate();
     }
 
@@ -119,17 +119,21 @@ public class LevelsDialog {
 
         iv = dialog.findViewById(R.id.iv);
         ivProgress = dialog.findViewById(R.id.iv_progress);
-        sbInputHighlights = dialog.findViewById(R.id.sb_input_highlights);
-        sbInputShadows = dialog.findViewById(R.id.sb_input_shadows);
-        sbOutputHighlights = dialog.findViewById(R.id.sb_output_highlights);
-        sbOutputShadows = dialog.findViewById(R.id.sb_output_shadows);
+        sInputHighlights = dialog.findViewById(R.id.s_input_highlights);
+        sInputShadows = dialog.findViewById(R.id.s_input_shadows);
+        sOutputHighlights = dialog.findViewById(R.id.s_output_highlights);
+        sOutputShadows = dialog.findViewById(R.id.s_output_shadows);
 
-        final OnSBChangeListener l = (progress, stopped) -> update(stopped);
+        final OnSliderChangeListener l = (value, stopped) -> update(stopped);
 
-        sbInputHighlights.setOnSeekBarChangeListener(l);
-        sbInputShadows.setOnSeekBarChangeListener(l);
-        sbOutputHighlights.setOnSeekBarChangeListener(l);
-        sbOutputShadows.setOnSeekBarChangeListener(l);
+        sInputHighlights.addOnSliderTouchListener(l);
+        sInputHighlights.addOnChangeListener(l);
+        sInputShadows.addOnSliderTouchListener(l);
+        sInputShadows.addOnChangeListener(l);
+        sOutputHighlights.addOnSliderTouchListener(l);
+        sOutputHighlights.addOnChangeListener(l);
+        sOutputShadows.addOnSliderTouchListener(l);
+        sOutputShadows.addOnChangeListener(l);
 
         bitmap = Bitmap.createBitmap(0x100, 100, Bitmap.Config.ARGB_4444);
         iv.setImageBitmap(bitmap);
@@ -145,8 +149,8 @@ public class LevelsDialog {
 
     private void update(boolean stopped) {
         drawProgress();
-        listener.onChanged(sbInputShadows.getProgress(), sbInputHighlights.getProgress(),
-                sbOutputShadows.getProgress(), sbOutputHighlights.getProgress(),
+        listener.onChanged(sInputShadows.getValue(), sInputHighlights.getValue(),
+                sOutputShadows.getValue(), sOutputHighlights.getValue(),
                 stopped);
     }
 }
