@@ -4,12 +4,12 @@ import android.widget.SeekBar;
 
 public interface OnSBChangeListener extends SeekBar.OnSeekBarChangeListener {
 
-    void onChanged(int progress, boolean stopped);
+    void onChange(SeekBar seekBar, int progress, boolean stopped);
 
     @Override
     default void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
         if (fromUser) {
-            onChanged(progress, false);
+            onChange(seekBar, progress, false);
         }
     }
 
@@ -19,6 +19,6 @@ public interface OnSBChangeListener extends SeekBar.OnSeekBarChangeListener {
 
     @Override
     default void onStopTrackingTouch(SeekBar seekBar) {
-        onChanged(seekBar.getProgress(), true);
+        onChange(seekBar, seekBar.getProgress(), true);
     }
 }

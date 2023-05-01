@@ -68,8 +68,8 @@ public class ColorRangeDialog {
         rsValue = dialog.findViewById(R.id.rs_value);
         final LabelFormatter dlf = value -> value + "°"; // Degree label formatter
         final LabelFormatter plf = value -> value + "%"; // Percentage label formatter
-        final OnSliderChangeListener sl = (value, stopped) -> update(listener, stopped);
-        final OnRSChangeListener rsl = (value0, value1, stopped) -> update(listener, stopped);
+        final OnSliderChangeListener sl = (slider, value, stopped) -> update(listener, stopped);
+        final OnRSChangeListener rsl = (slider, value0, value1, stopped) -> update(listener, stopped);
 
         sHueMin.addOnChangeListener(sl);
         sHueMin.addOnSliderTouchListener(sl);

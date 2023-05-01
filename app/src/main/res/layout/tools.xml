@@ -1,100 +1,123 @@
 <?xml version="1.0" encoding="utf-8"?>
-<merge xmlns:android="http://schemas.android.com/apk/res/android">
+<com.google.android.material.button.MaterialButtonToggleGroup xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/btg_tools"
+    style="@style/ToolOptionsBTG"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    app:selectionRequired="true"
+    app:singleSelection="true">
 
-    <RadioButton
-        android:id="@+id/rb_selector"
+    <Button
+        android:id="@+id/b_selector"
+        style="@style/OutlinedButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/select" />
 
-    <RadioButton
-        android:id="@+id/rb_transformer"
+    <Button
+        android:id="@+id/b_transformer"
+        style="@style/OutlinedButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/transform" />
 
-    <RadioButton
-        android:id="@+id/rb_eyedropper"
+    <Button
+        android:id="@+id/b_eyedropper"
+        style="@style/OutlinedButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/eyedropper" />
 
-    <RadioButton
-        android:id="@+id/rb_ruler"
+    <Button
+        android:id="@+id/b_ruler"
+        style="@style/OutlinedButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/ruler"
         android:visibility="gone" />
 
-    <RadioButton
-        android:id="@+id/rb_pencil"
+    <Button
+        android:id="@+id/b_pencil"
+        style="@style/OutlinedButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/pencil" />
 
-    <RadioButton
-        android:id="@+id/rb_eraser"
+    <Button
+        android:id="@+id/b_eraser"
+        style="@style/OutlinedButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/eraser" />
 
-    <RadioButton
-        android:id="@+id/rb_shape"
+    <Button
+        android:id="@+id/b_shape"
+        style="@style/OutlinedButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/shape" />
 
-    <RadioButton
-        android:id="@+id/rb_path"
+    <Button
+        android:id="@+id/b_path"
+        style="@style/OutlinedButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/path" />
 
-    <RadioButton
-        android:id="@+id/rb_bucket_fill"
+    <Button
+        android:id="@+id/b_bucket_fill"
+        style="@style/OutlinedButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/bucket_fill" />
 
-    <RadioButton
-        android:id="@+id/rb_text"
+    <Button
+        android:id="@+id/b_text"
+        style="@style/OutlinedButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/text" />
 
-    <RadioButton
-        android:id="@+id/rb_soft_brush"
+    <Button
+        android:id="@+id/b_soft_brush"
+        style="@style/OutlinedButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/soft_brush" />
 
-    <RadioButton
-        android:id="@+id/rb_gradient"
+    <Button
+        android:id="@+id/b_gradient"
+        style="@style/OutlinedButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/gradient" />
 
-    <RadioButton
-        android:id="@+id/rb_clone_stamp"
+    <Button
+        android:id="@+id/b_clone_stamp"
+        style="@style/OutlinedButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/stamp" />
 
-    <RadioButton
-        android:id="@+id/rb_patcher"
+    <Button
+        android:id="@+id/b_patcher"
+        style="@style/OutlinedButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/patch" />
 
-    <RadioButton
-        android:id="@+id/rb_magic_paint"
+    <Button
+        android:id="@+id/b_magic_paint"
+        style="@style/OutlinedButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/magic_paint" />
 
-    <RadioButton
-        android:id="@+id/rb_magic_eraser"
+    <Button
+        android:id="@+id/b_magic_eraser"
+        style="@style/OutlinedButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/magic_eraser" />
-</merge>
+</com.google.android.material.button.MaterialButtonToggleGroup>

@@ -43,6 +43,7 @@
         android:text="@string/no_repeats" />
 
     <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.Material3.TextInputLayout.FilledBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
@@ -50,7 +51,7 @@
             android:id="@+id/tiet_seed"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/transparent"
+            android:backgroundTint="@color/transparent"
             android:hint="@string/seed"
             android:inputType="numberSigned"
             android:textAlignment="textEnd" />

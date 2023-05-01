@@ -124,7 +124,7 @@ public class LevelsDialog {
         sOutputHighlights = dialog.findViewById(R.id.s_output_highlights);
         sOutputShadows = dialog.findViewById(R.id.s_output_shadows);
 
-        final OnSliderChangeListener l = (value, stopped) -> update(stopped);
+        final OnSliderChangeListener l = (slider, value, stopped) -> update(stopped);
 
         sInputHighlights.addOnSliderTouchListener(l);
         sInputHighlights.addOnChangeListener(l);

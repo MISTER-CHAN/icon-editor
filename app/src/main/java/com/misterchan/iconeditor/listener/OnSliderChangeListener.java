@@ -5,7 +5,7 @@ import androidx.annotation.NonNull;
 import com.google.android.material.slider.Slider;
 
 public interface OnSliderChangeListener extends Slider.OnChangeListener, Slider.OnSliderTouchListener {
-    void onChange(float value, boolean stopped);
+    void onChange(@NonNull Slider slider, float value, boolean stopped);
 
     @Override
     default void onStartTrackingTouch(@NonNull Slider slider) {
@@ -13,13 +13,13 @@ public interface OnSliderChangeListener extends Slider.OnChangeListener, Slider.
 
     @Override
     default void onStopTrackingTouch(@NonNull Slider slider) {
-        onChange(slider.getValue(), true);
+        onChange(slider, slider.getValue(), true);
     }
 
     @Override
     default void onValueChange(@NonNull Slider slider, float value, boolean fromUser) {
         if (fromUser) {
-            onChange(value, false);
+            onChange(slider, value, false);
         }
     }
 }

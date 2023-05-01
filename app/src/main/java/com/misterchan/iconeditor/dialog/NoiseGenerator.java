@@ -100,19 +100,19 @@ public class NoiseGenerator {
             properties.noRepeats = isChecked;
             update(true);
         });
-        rbPixel.setOnCheckedChangeListener((OnCBCheckedListener) () -> {
+        rbPixel.setOnCheckedChangeListener((OnCBCheckedListener) buttonView -> {
             properties.whatToDraw = WhatToDraw.PIXEL;
             update(true);
         });
-        rbPoint.setOnCheckedChangeListener((OnCBCheckedListener) () -> {
+        rbPoint.setOnCheckedChangeListener((OnCBCheckedListener) buttonView -> {
             properties.whatToDraw = WhatToDraw.POINT;
             update(true);
         });
-        rbRef.setOnCheckedChangeListener((OnCBCheckedListener) () -> {
+        rbRef.setOnCheckedChangeListener((OnCBCheckedListener) buttonView -> {
             properties.whatToDraw = WhatToDraw.REF;
             update(true);
         });
-        sbNoisy.setOnSeekBarChangeListener((OnSBChangeListener) (progress, stopped) -> {
+        sbNoisy.setOnSeekBarChangeListener((OnSBChangeListener) (seekBar, progress, stopped) -> {
             properties.noisiness = (float) progress / (float) SB_MAX;
             update(stopped);
         });

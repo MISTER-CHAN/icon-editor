@@ -24,7 +24,7 @@ public class ColorBalanceDialog {
             1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f
     };
 
-    private final OnSBChangeListener onProgressChangeListener = (progress, stopped) -> {
+    private final OnSBChangeListener onProgressChangeListener = (seekBar, progress, stopped) -> {
         final float r = sbRed.getProgress() / 10.0f, g = sbGreen.getProgress() / 10.0f, b = sbBlue.getProgress() / 10.0f;
         final float average = (r + g + b) / 3.0f;
         lighting[0] = 1.0f + r - average;

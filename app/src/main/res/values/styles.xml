@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="OutlinedButton" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="android:minWidth">0dp</item>
+        <item name="android:minHeight">0dp</item>
+        <item name="android:paddingLeft">16dp</item>
+        <item name="android:paddingRight">16dp</item>
+    </style>
+
+    <style name="TextInputLayout" parent="Widget.Material3.TextInputLayout.FilledBox">
+        <item name="android:layout_marginHorizontal">2dp</item>
+    </style>
+
+    <style name="ToolOptionsBTG" parent="ToolOptionsLL">
+        <item name="android:layout_marginHorizontal">2dp</item>
+    </style>
+
+    <style name="ToolOptionsLL">
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:orientation">horizontal</item>
+    </style>
+
+    <style name="ToolOptionsSV">
+        <item name="android:layout_gravity">center_vertical</item>
+        <item name="android:fadingEdgeLength">16dp</item>
+        <item name="android:requiresFadingEdge">horizontal</item>
+        <item name="android:scrollbars">none</item>
+        <item name="android:visibility">invisible</item>
+    </style>
+
+    <style name="View">
+        <item name="android:layout_marginHorizontal">2dp</item>
+    </style>
+</resources>

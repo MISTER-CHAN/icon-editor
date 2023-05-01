@@ -90,7 +90,7 @@
     <string name="draw_on_not_ui_thread">Draw on Not U.I. Thread</string>
     <string name="duplicate">Duplicate</string>
     <string name="duplicate_by_color_range">Duplicate by Color Range</string>
-    <string name="edit" translatable="false">✎</string>
+    <string name="edit">Edit</string>
     <string name="enabled">Enabled</string>
     <string name="encoding_type">Encoding Type</string>
     <string name="eraser">Eraser</string>
@@ -227,7 +227,7 @@
     <string name="random">Random</string>
     <string name="range">Range</string>
     <string name="rectangle">Rectangle</string>
-    <string name="redo" translatable="false">↷</string>
+    <string name="redo">Redo</string>
     <string name="refer_to_clipboard">Refer to Clipboard</string>
     <string name="reference">Reference</string>
     <string name="rename">Rename</string>
@@ -310,7 +310,7 @@
     <string name="translate">Translate</string>
     <string name="tutorial_merge_as_hidden">Tutorial</string>
     <string name="two_seventy_degrees" translatable="false">270°</string>
-    <string name="undo" translatable="false">↶</string>
+    <string name="undo">Undo</string>
     <string name="unified_transl_and_scale">Unified canvas position of each layer</string>
     <string name="unify_delays">Unify Delays</string>
     <string name="untitled">Untitled</string>

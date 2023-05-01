@@ -66,19 +66,19 @@ public class HsvDialog {
         final SeekBar sbValue = dialog.findViewById(R.id.sb_value);
 
         sbHue.setProgress((int) deltaHsv[0]);
-        sbHue.setOnSeekBarChangeListener((OnSBChangeListener) (progress, stopped) -> {
+        sbHue.setOnSeekBarChangeListener((OnSBChangeListener) (seekBar, progress, stopped) -> {
             deltaHsv[0] = progress;
             listener.onChanged(deltaHsv, stopped);
         });
 
         sbSaturation.setProgress((int) (deltaHsv[1] * 100.0f));
-        sbSaturation.setOnSeekBarChangeListener((OnSBChangeListener) (progress, stopped) -> {
+        sbSaturation.setOnSeekBarChangeListener((OnSBChangeListener) (seekBar, progress, stopped) -> {
             deltaHsv[1] = progress / 100.0f;
             listener.onChanged(deltaHsv, stopped);
         });
 
         sbValue.setProgress((int) (deltaHsv[2] * 100.0f));
-        sbValue.setOnSeekBarChangeListener((OnSBChangeListener) (progress, stopped) -> {
+        sbValue.setOnSeekBarChangeListener((OnSBChangeListener) (seekBar, progress, stopped) -> {
             deltaHsv[2] = progress / 100.0f;
             listener.onChanged(deltaHsv, stopped);
         });

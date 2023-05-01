@@ -82,6 +82,7 @@
     <string name="draw_on_not_ui_thread">繪畫於非用戶介面線程</string>
     <string name="duplicate">複製</string>
     <string name="duplicate_by_color_range">複製顏色範圍</string>
+    <string name="edit">編輯</string>
     <string name="enabled">啟用</string>
     <string name="encoding_type">編碼類型</string>
     <string name="eraser">擦膠</string>
@@ -201,6 +202,7 @@
     <string name="random">隨機</string>
     <string name="range">範圍</string>
     <string name="rectangle">矩形</string>
+    <string name="redo">重做</string>
     <string name="refer_to_clipboard">參考至剪貼簿</string>
     <string name="reference">參照</string>
     <string name="rename">重命名</string>
@@ -275,6 +277,7 @@
     <string name="transform">變換</string>
     <string name="translate">平移</string>
     <string name="tutorial_merge_as_hidden">Tutorial</string>
+    <string name="undo">撤回</string>
     <string name="unified_transl_and_scale">統一各圖層之可見子集</string>
     <string name="unify_delays">統一延遲</string>
     <string name="untitled">無標題</string>

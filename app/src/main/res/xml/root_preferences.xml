@@ -23,6 +23,7 @@
             app:defaultValue="def"
             app:entries="@array/locales_entries"
             app:entryValues="@array/locale_values"
+            app:icon="@drawable/ic_language"
             app:key="loc"
             app:singleLineTitle="false"
             app:title="@string/language"
@@ -71,6 +72,7 @@
 
         <EditTextPreference
             app:defaultValue="50"
+            app:icon="@drawable/ic_history"
             app:key="hms"
             app:singleLineTitle="false"
             app:summary="@string/this_would_affect_size_of_memory_used"

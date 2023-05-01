@@ -4,11 +4,13 @@
 
     <item
         android:id="@+id/i_undo"
+        android:icon="@drawable/ic_undo"
         android:title="@string/undo"
         app:showAsAction="always" />
 
     <item
         android:id="@+id/i_redo"
+        android:icon="@drawable/ic_redo"
         android:title="@string/redo"
         app:showAsAction="always" />
 
@@ -58,6 +60,7 @@
     </item>
 
     <item
+        android:icon="@drawable/ic_edit"
         android:title="@string/edit"
         app:showAsAction="always">
 

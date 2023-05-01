@@ -291,11 +291,11 @@ public class CurvesDialog {
         final RadioButton rbRgbOutputs = dialog.findViewById(R.id.rb_rgb_outputs);
 
         iv.setOnTouchListener(onImageViewTouchListener);
-        ((CompoundButton) dialog.findViewById(R.id.rb_red)).setOnCheckedChangeListener((OnCBCheckedListener) () -> selectComp(0));
-        ((CompoundButton) dialog.findViewById(R.id.rb_green)).setOnCheckedChangeListener((OnCBCheckedListener) () -> selectComp(1));
-        ((CompoundButton) dialog.findViewById(R.id.rb_blue)).setOnCheckedChangeListener((OnCBCheckedListener) () -> selectComp(2));
-        ((CompoundButton) dialog.findViewById(R.id.rb_alpha)).setOnCheckedChangeListener((OnCBCheckedListener) () -> selectComp(3));
-        rbRgbOutputs.setOnCheckedChangeListener((OnCBCheckedListener) () -> selectComp(4));
+        ((CompoundButton) dialog.findViewById(R.id.rb_red)).setOnCheckedChangeListener((OnCBCheckedListener) buttonView -> selectComp(0));
+        ((CompoundButton) dialog.findViewById(R.id.rb_green)).setOnCheckedChangeListener((OnCBCheckedListener) buttonView -> selectComp(1));
+        ((CompoundButton) dialog.findViewById(R.id.rb_blue)).setOnCheckedChangeListener((OnCBCheckedListener) buttonView -> selectComp(2));
+        ((CompoundButton) dialog.findViewById(R.id.rb_alpha)).setOnCheckedChangeListener((OnCBCheckedListener) buttonView -> selectComp(3));
+        rbRgbOutputs.setOnCheckedChangeListener((OnCBCheckedListener) buttonView -> selectComp(4));
 
         OneShotPreDrawListener.add(fl, () -> {
             final int width = fl.getMeasuredWidth();

@@ -86,7 +86,7 @@ public class GuideEditor {
         sbPosition.setOnSeekBarChangeListener(onPositionSBProgressChange);
         tietPosition.addTextChangedListener(onPositionTextChangedListener);
 
-        rbHorizontal.setOnCheckedChangeListener((OnCBCheckedListener) () -> {
+        rbHorizontal.setOnCheckedChangeListener((OnCBCheckedListener) buttonView -> {
             guide.orientation = Guide.ORIENTATION_HORIZONTAL;
             if (guide.position > height) {
                 guide.position = height;
@@ -96,7 +96,7 @@ public class GuideEditor {
             onNewGuideChangeListener.onChange(guide);
         });
 
-        rbVertical.setOnCheckedChangeListener((OnCBCheckedListener) () -> {
+        rbVertical.setOnCheckedChangeListener((OnCBCheckedListener) buttonView -> {
             guide.orientation = Guide.ORIENTATION_VERTICAL;
             if (guide.position > width) {
                 guide.position = width;

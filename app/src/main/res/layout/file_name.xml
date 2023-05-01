@@ -8,6 +8,7 @@
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/til_file_name"
+        style="@style/Widget.Material3.TextInputLayout.FilledBox"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1">
@@ -16,7 +17,7 @@
             android:id="@+id/tiet_file_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/transparent"
+            android:backgroundTint="@color/transparent"
             android:hint="@string/file_name"
             android:inputType="text" />
     </com.google.android.material.textfield.TextInputLayout>

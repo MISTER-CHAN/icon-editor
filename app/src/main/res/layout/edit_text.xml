@@ -7,6 +7,7 @@
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/til"
+        style="@style/Widget.Material3.TextInputLayout.FilledBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
@@ -14,7 +15,7 @@
             android:id="@+id/tiet"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/transparent"
+            android:backgroundTint="@color/transparent"
             android:inputType="number"
             android:textAlignment="textEnd" />
     </com.google.android.material.textfield.TextInputLayout>

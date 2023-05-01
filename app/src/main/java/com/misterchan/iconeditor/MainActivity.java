@@ -33,7 +33,6 @@ import android.os.MessageQueue;
 import android.text.Editable;
 import android.view.Gravity;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.SubMenu;
@@ -42,6 +41,7 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.FrameLayout;
@@ -65,6 +65,7 @@ import androidx.annotation.Size;
 import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.FileProvider;
 import androidx.core.view.OneShotPreDrawListener;
 import androidx.documentfile.provider.DocumentFile;
@@ -74,6 +75,8 @@ import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.appbar.MaterialToolbar;
+import com.google.android.material.button.MaterialButtonToggleGroup;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
@@ -99,7 +102,7 @@ import com.misterchan.iconeditor.dialog.NoiseGenerator;
 import com.misterchan.iconeditor.dialog.QualityManager;
 import com.misterchan.iconeditor.dialog.SeekBarDialog;
 import com.misterchan.iconeditor.listener.AfterTextChangedListener;
-import com.misterchan.iconeditor.listener.OnCBCheckedListener;
+import com.misterchan.iconeditor.listener.OnButtonCheckedListener;
 import com.misterchan.iconeditor.listener.OnSBChangeListener;
 import com.misterchan.iconeditor.util.BitmapUtils;
 import com.misterchan.iconeditor.util.RunnableRunnable;
@@ -248,6 +251,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean isEditingText = false;
     private boolean isShapeStopped = true;
     private boolean isWritingSoftStrokes = false;
+    private Button bZoom;
     private Canvas canvas;
     private Canvas chessboardCanvas;
     private Canvas gridCanvas;
@@ -270,7 +274,6 @@ public class MainActivity extends AppCompatActivity {
     private CheckBox cbTextFill;
     private CheckBox cbTransformerFilter;
     private CheckBox cbTransformerLar;
-    private CheckBox cbZoom;
     private ColorAdapter colorAdapter;
     private final DirectorySelector dirSelector = new DirectorySelector(this);
     private float backgroundScaledW, backgroundScaledH;
@@ -293,6 +296,7 @@ public class MainActivity extends AppCompatActivity {
     private FrameLayout svOptionsPatcher;
     private FrameLayout svOptionsPath;
     private FrameLayout svOptionsPencil;
+    private FrameLayout svOptionsShape;
     private FrameLayout svOptionsTransformer;
     private ImageView imageView;
     private ImageView ivChessboard;
@@ -306,10 +310,13 @@ public class MainActivity extends AppCompatActivity {
     private int textX, textY;
     private int threshold;
     private int viewWidth, viewHeight;
-    private LinearLayout llOptionsShape;
     private LinearLayout llOptionsText;
     private LinkedList<Long> palette;
     private List<Tab> tabs;
+    private MaterialButtonToggleGroup btgEyedropperSrc;
+    private MaterialButtonToggleGroup btgTools;
+    private MaterialButtonToggleGroup btgZoom;
+    private MaterialToolbar topAppBar;
     private MenuItem miHasAlpha;
     private MenuItem miLayerColorMatrix;
     private MenuItem miLayerCurves;
@@ -323,16 +330,8 @@ public class MainActivity extends AppCompatActivity {
     private final PointF magErBD = new PointF(0.0f, 0.0f), magErFD = new PointF(0.0f, 0.0f); // Distance
     private Position marqueeBoundBeingDragged = null;
     private Preview imagePreview;
-    private RadioButton rbCloneStamp;
-    private RadioButton rbEyedropper;
-    private RadioButton rbEyedropperAllLayers;
-    private RadioButton rbMagicEraser;
     private RadioButton rbMagicEraserLeft, rbMagicEraserRight;
     private CompoundButton cbMagicEraserPosition;
-    private RadioButton rbMagicPaint;
-    private RadioButton rbPencil;
-    private RadioButton rbSoftBrush;
-    private RadioButton rbTransformer;
     private final Rect selection = new Rect();
     private final Ruler ruler = new Ruler();
     private SubMenu smLayerBlendModes;
@@ -732,7 +731,7 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    private final OnSBChangeListener onFilterContrastSeekBarChangeListener = (progress, stopped) -> {
+    private final OnSBChangeListener onFilterContrastSeekBarChangeListener = (seekBar, progress, stopped) -> {
         final float scale = progress / 10.0f, shift = 0xFF / 2.0f * (1.0f - scale);
         runOrStart(() -> {
             imagePreview.addLightingColorFilter(scale, shift);
@@ -741,7 +740,7 @@ public class MainActivity extends AppCompatActivity {
         tvStatus.setText(getString(R.string.state_contrast, scale));
     };
 
-    private final OnSBChangeListener onFilterHToASeekBarChangeListener = (progress, stopped) -> {
+    private final OnSBChangeListener onFilterHToASeekBarChangeListener = (seekBar, progress, stopped) -> {
         runOrStart(() -> {
             final int w = imagePreview.getWidth(), h = imagePreview.getHeight();
             final int[] src = imagePreview.getPixels(), dst = new int[w * h];
@@ -752,7 +751,7 @@ public class MainActivity extends AppCompatActivity {
         tvStatus.setText(getString(R.string.state_hue, (float) progress));
     };
 
-    private final OnSBChangeListener onFilterLightnessSeekBarChangeListener = (progress, stopped) -> {
+    private final OnSBChangeListener onFilterLightnessSeekBarChangeListener = (seekBar, progress, stopped) -> {
         runOrStart(() -> {
             imagePreview.addLightingColorFilter(1.0f, progress);
             drawImagePreviewOntoView(stopped);
@@ -760,7 +759,7 @@ public class MainActivity extends AppCompatActivity {
         tvStatus.setText(getString(R.string.state_lightness, progress));
     };
 
-    private final OnSBChangeListener onFilterSaturationSeekBarChangeListener = (progress, stopped) -> {
+    private final OnSBChangeListener onFilterSaturationSeekBarChangeListener = (seekBar, progress, stopped) -> {
         final float f = progress / 10.0f;
         final ColorMatrix colorMatrix = new ColorMatrix();
         colorMatrix.setSaturation(f);
@@ -771,7 +770,7 @@ public class MainActivity extends AppCompatActivity {
         tvStatus.setText(getString(R.string.state_saturation, f));
     };
 
-    private final OnSBChangeListener onFilterThresholdSeekBarChangeListener = (progress, stopped) -> {
+    private final OnSBChangeListener onFilterThresholdSeekBarChangeListener = (seekBar, progress, stopped) -> {
         final float f = -0x100 * progress;
         runOrStart(() -> {
             imagePreview.addColorMatrixColorFilter(new float[]{
@@ -785,7 +784,7 @@ public class MainActivity extends AppCompatActivity {
         tvStatus.setText(getString(R.string.state_threshold, progress));
     };
 
-    private final OnSBChangeListener onLayerAlphaSeekBarChangeListener = (progress, stopped) -> {
+    private final OnSBChangeListener onLayerAlphaSeekBarChangeListener = (seekBar, progress, stopped) -> {
         tab.paint.setAlpha(progress);
         drawBitmapOntoView(stopped);
         tvStatus.setText(String.format(
@@ -793,7 +792,7 @@ public class MainActivity extends AppCompatActivity {
                 progress));
     };
 
-    private final OnSBChangeListener onChangeThresholdListener = (progress, stopped) -> {
+    private final OnSBChangeListener onChangeThresholdListener = (seekBar, progress, stopped) -> {
         threshold = progress;
         runOrStart(() -> {
             if (progress == 0xFF) {
@@ -826,7 +825,7 @@ public class MainActivity extends AppCompatActivity {
                 .setOnApplyListener(onApplyThresholdListener)
                 .setOnCancelListener(onCancelImagePreviewListener, false)
                 .show();
-        onChangeThresholdListener.onChanged(threshold, true);
+        onChangeThresholdListener.onChange(null, threshold, true);
     };
 
     private final TabLayout.OnTabSelectedListener onTabSelectedListener = new TabLayout.OnTabSelectedListener() {
@@ -867,15 +866,18 @@ public class MainActivity extends AppCompatActivity {
                 optimizeSelection();
             }
 
-            if (rbSoftBrush.isChecked()) {
-                tbSoftBrush.setEnabled(hasSelection);
-                if (!hasSelection) {
-                    tbSoftBrush.setChecked(true);
+            switch (btgTools.getCheckedButtonId()) {
+                case R.id.b_clone_stamp -> {
+                    cloneStampSrc = null;
+                }
+                case R.id.b_soft_brush -> {
+                    tbSoftBrush.setEnabled(hasSelection);
+                    if (!hasSelection) {
+                        tbSoftBrush.setChecked(true);
+                    }
                 }
             }
-            if (rbCloneStamp.isChecked()) {
-                cloneStampSrc = null;
-            }
+
             updateReference();
 
             miHasAlpha.setChecked(bitmap.hasAlpha());
@@ -1349,7 +1351,7 @@ public class MainActivity extends AppCompatActivity {
             case MotionEvent.ACTION_DOWN, MotionEvent.ACTION_MOVE -> {
                 final float x = event.getX(), y = event.getY();
                 final int bx = satX(bitmap, toBitmapX(x)), by = satY(bitmap, toBitmapY(y));
-                final int color = rbEyedropperAllLayers.isChecked()
+                final int color = btgEyedropperSrc.getCheckedButtonId() == R.id.b_eyedropper_all_layers
                         ? viewBitmap.getPixel((int) x, (int) y) : bitmap.getPixel(bx, by);
                 paint.setColor(color);
                 vForegroundColor.setBackgroundColor(color);
@@ -1369,7 +1371,7 @@ public class MainActivity extends AppCompatActivity {
             case MotionEvent.ACTION_DOWN, MotionEvent.ACTION_MOVE -> {
                 final float x = event.getX(), y = event.getY();
                 final int bx = satX(bitmap, toBitmapX(x)), by = satY(bitmap, toBitmapY(y));
-                final android.graphics.Color color = rbEyedropperAllLayers.isChecked()
+                final android.graphics.Color color = btgEyedropperSrc.getCheckedButtonId() == R.id.b_eyedropper_all_layers
                         ? viewBitmap.getColor((int) x, (int) y) : bitmap.getColor(bx, by);
                 paint.setColor(color.pack());
                 vForegroundColor.setBackgroundColor(color.toArgb());
@@ -2546,178 +2548,157 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    @SuppressLint("ClickableViewAccessibility")
-    private final CompoundButton.OnCheckedChangeListener onBucketFillRBCheckedChangeListener = (buttonView, isChecked) -> {
-        if (isChecked) {
-            onToolChanged(onTouchIVWithBucketListener);
-            threshold = 0x0;
-            svOptionsBucketFill.setVisibility(View.VISIBLE);
+    @SuppressLint("NonConstantResourceId")
+    private final MaterialButtonToggleGroup.OnButtonCheckedListener onToolButtonCheckedListener = (group, checkedId, isChecked) -> {
+        switch (checkedId) {
+            case R.id.b_bucket_fill -> {
+                if (isChecked) {
+                    onToolChanged(onTouchIVWithBucketListener);
+                    threshold = 0x0;
+                    svOptionsBucketFill.setVisibility(View.VISIBLE);
+                }
+            }
+            case R.id.b_clone_stamp -> {
+                if (isChecked) {
+                    onToolChanged(onTouchIVWithCloneStampListener);
+                    cbCloneStampAntiAlias.setChecked(antiAlias);
+                    tietCloneStampBlurRadius.setText(String.valueOf(blurRadius));
+                    tietCloneStampStrokeWidth.setText(String.valueOf(strokeWidth));
+                    svOptionsCloneStamp.setVisibility(View.VISIBLE);
+                } else {
+                    cloneStampSrc = null;
+                    eraseBitmapAndInvalidateView(previewBitmap, ivPreview);
+                }
+            }
+            case R.id.b_eraser -> {
+                onToolChanged(onTouchIVWithEraserListener, svOptionsEraser);
+            }
+            case R.id.b_eyedropper -> {
+                onToolChanged(onTouchIVWithEyedropperListener, svOptionsEyedropper);
+            }
+            case R.id.b_gradient -> {
+                if (isChecked) {
+                    onToolChanged(onTouchIVWithGradientListener);
+                    cbGradientAntiAlias.setChecked(antiAlias);
+                    tietGradientBlurRadius.setText(String.valueOf(blurRadius));
+                    tietGradientStrokeWidth.setText(String.valueOf(strokeWidth));
+                    svOptionsGradient.setVisibility(View.VISIBLE);
+                }
+            }
+            case R.id.b_magic_eraser -> {
+                if (isChecked) {
+                    onToolChanged(onTouchIVWithMagicEraserListener);
+                    updateReference();
+                    paint.setAntiAlias(false);
+                    paint.setMaskFilter(null);
+                    paint.setStrokeCap(Paint.Cap.BUTT);
+                    tietMagicEraserStrokeWidth.setText(String.valueOf(strokeWidth));
+                    svOptionsMagicEraser.setVisibility(View.VISIBLE);
+                } else {
+                    paint.setStrokeCap(Paint.Cap.ROUND);
+                    magErB = null;
+                    magErF = null;
+                }
+            }
+            case R.id.b_magic_paint -> {
+                if (isChecked) {
+                    onToolChanged(onTouchIVWithMagicPaintListener);
+                    updateReference();
+                    threshold = 0xFF;
+                    cbMagicPaintAntiAlias.setChecked(antiAlias);
+                    tietMagicPaintBlurRadius.setText(String.valueOf(blurRadius));
+                    tietMagicPaintStrokeWidth.setText(String.valueOf(strokeWidth));
+                    svOptionsMagicPaint.setVisibility(View.VISIBLE);
+                }
+            }
+            case R.id.b_patcher -> {
+                if (isChecked) {
+                    onToolChanged(onTouchIVWithPatcherListener);
+                    cbPatcherAntiAlias.setChecked(antiAlias);
+                    tietPatcherBlurRadius.setText(String.valueOf(blurRadius));
+                    tietPatcherStrokeWidth.setText(String.valueOf(strokeWidth));
+                    svOptionsPatcher.setVisibility(View.VISIBLE);
+                }
+            }
+            case R.id.b_path -> {
+                if (isChecked) {
+                    onToolChanged(onTouchIVWithPathListener);
+                    cbPathAntiAlias.setChecked(antiAlias);
+                    cbPathFill.setChecked(isPaintStyleFill());
+                    tietPathBlurRadius.setText(String.valueOf(blurRadius));
+                    tietPathStrokeWidth.setText(String.valueOf(strokeWidth));
+                    svOptionsPath.setVisibility(View.VISIBLE);
+                }
+            }
+            case R.id.b_pencil -> {
+                if (isChecked) {
+                    onToolChanged(onTouchIVWithPencilListener);
+                    cbPencilAntiAlias.setChecked(antiAlias);
+                    tietPencilBlurRadius.setText(String.valueOf(blurRadius));
+                    tietPencilStrokeWidth.setText(String.valueOf(strokeWidth));
+                    svOptionsPencil.setVisibility(View.VISIBLE);
+                }
+            }
+            case R.id.b_ruler -> {
+                if (isChecked) {
+                    onToolChanged(onTouchIVWithRulerListener);
+                } else {
+                    ruler.enabled = false;
+                }
+            }
+            case R.id.b_shape -> {
+                onToolChanged(onTouchIVWithMarqueeListener);
+            }
+            case R.id.b_soft_brush -> {
+                if (isChecked) {
+                    onToolChanged(onTouchIVWithShapeListener);
+                    cbShapeFill.setChecked(isPaintStyleFill());
+                    tietShapeStrokeWidth.setText(String.valueOf(paint.getStrokeWidth()));
+                    svOptionsShape.setVisibility(View.VISIBLE);
+                }
+            }
+            case R.id.b_text -> {
+                if (isChecked) {
+                    onToolChanged(onTouchIVWithTextListener);
+                    cbTextFill.setChecked(isPaintStyleFill());
+                } else {
+                    drawTextIntoImage(false);
+                }
+            }
+            case R.id.b_transformer -> {
+                if (isChecked) {
+                    onToolChanged(onTouchIVWithTransformerListener);
+                    svOptionsTransformer.setVisibility(View.VISIBLE);
+                    selector.setColor(Color.BLUE);
+                    drawSelectionOntoView();
+                } else {
+                    drawTransformerIntoImage();
+                    marqueeBoundBeingDragged = null;
+                    selector.setColor(Color.DKGRAY);
+                    drawSelectionOntoView();
+                }
+            }
         }
     };
 
     @SuppressLint("ClickableViewAccessibility")
-    private final CompoundButton.OnCheckedChangeListener onCloneStampRBCheckedChangeListener = (buttonView, isChecked) -> {
+    private final  MaterialButtonToggleGroup.OnButtonCheckedListener onZoomToolButtonCheckedListener = (group, checkedId, isChecked) -> {
         if (isChecked) {
-            onToolChanged(onTouchIVWithCloneStampListener);
-            cbCloneStampAntiAlias.setChecked(antiAlias);
-            tietCloneStampBlurRadius.setText(String.valueOf(blurRadius));
-            tietCloneStampStrokeWidth.setText(String.valueOf(strokeWidth));
-            svOptionsCloneStamp.setVisibility(View.VISIBLE);
+            flImageView.setOnTouchListener(onTouchIVWithZoomToolListener);
         } else {
-            cloneStampSrc = null;
-            eraseBitmapAndInvalidateView(previewBitmap, ivPreview);
-        }
-    };
-
-    @SuppressLint("ClickableViewAccessibility")
-    private final CompoundButton.OnCheckedChangeListener onGradientRBCheckedChangeListener = (buttonView, isChecked) -> {
-        if (isChecked) {
-            onToolChanged(onTouchIVWithGradientListener);
-            cbGradientAntiAlias.setChecked(antiAlias);
-            tietGradientBlurRadius.setText(String.valueOf(blurRadius));
-            tietGradientStrokeWidth.setText(String.valueOf(strokeWidth));
-            svOptionsGradient.setVisibility(View.VISIBLE);
-        }
-    };
-
-    private final CompoundButton.OnCheckedChangeListener onMagicEraserRBCheckedChangeListener = (buttonView, isChecked) -> {
-        if (isChecked) {
-            onToolChanged(onTouchIVWithMagicEraserListener);
-            updateReference();
-            paint.setAntiAlias(false);
-            paint.setMaskFilter(null);
-            paint.setStrokeCap(Paint.Cap.BUTT);
-            tietMagicEraserStrokeWidth.setText(String.valueOf(strokeWidth));
-            svOptionsMagicEraser.setVisibility(View.VISIBLE);
-        } else {
-            paint.setStrokeCap(Paint.Cap.ROUND);
-            magErB = null;
-            magErF = null;
-        }
-    };
-
-    @SuppressLint("ClickableViewAccessibility")
-    private final CompoundButton.OnCheckedChangeListener onMagicPaintRBCheckedChangeListener = (buttonView, isChecked) -> {
-        if (isChecked) {
-            onToolChanged(onTouchIVWithMagicPaintListener);
-            updateReference();
-            threshold = 0xFF;
-            cbMagicPaintAntiAlias.setChecked(antiAlias);
-            tietMagicPaintBlurRadius.setText(String.valueOf(blurRadius));
-            tietMagicPaintStrokeWidth.setText(String.valueOf(strokeWidth));
-            svOptionsMagicPaint.setVisibility(View.VISIBLE);
-        }
-    };
-
-    @SuppressLint("ClickableViewAccessibility")
-    private final CompoundButton.OnCheckedChangeListener onPatcherRBCheckedChangeListener = (buttonView, isChecked) -> {
-        if (isChecked) {
-            onToolChanged(onTouchIVWithPatcherListener);
-            cbPatcherAntiAlias.setChecked(antiAlias);
-            tietPatcherBlurRadius.setText(String.valueOf(blurRadius));
-            tietPatcherStrokeWidth.setText(String.valueOf(strokeWidth));
-            svOptionsPatcher.setVisibility(View.VISIBLE);
-        }
-    };
-
-    @SuppressLint("ClickableViewAccessibility")
-    private final CompoundButton.OnCheckedChangeListener onPathRBCheckedChangeListener = (buttonView, isChecked) -> {
-        if (isChecked) {
-            onToolChanged(onTouchIVWithPathListener);
-            cbPathAntiAlias.setChecked(antiAlias);
-            cbPathFill.setChecked(isPaintStyleFill());
-            tietPathBlurRadius.setText(String.valueOf(blurRadius));
-            tietPathStrokeWidth.setText(String.valueOf(strokeWidth));
-            svOptionsPath.setVisibility(View.VISIBLE);
-        }
-    };
-
-    @SuppressLint("ClickableViewAccessibility")
-    private final CompoundButton.OnCheckedChangeListener onPencilRBCheckedChangeListener = (buttonView, isChecked) -> {
-        if (isChecked) {
-            onToolChanged(onTouchIVWithPencilListener);
-            cbPencilAntiAlias.setChecked(antiAlias);
-            tietPencilBlurRadius.setText(String.valueOf(blurRadius));
-            tietPencilStrokeWidth.setText(String.valueOf(strokeWidth));
-            svOptionsPencil.setVisibility(View.VISIBLE);
-        }
-    };
-
-    private final CompoundButton.OnCheckedChangeListener onRulerRBCheckedChangeListener = (buttonView, isChecked) -> {
-        if (isChecked) {
-            onToolChanged(onTouchIVWithRulerListener);
-        } else {
-            ruler.enabled = false;
-        }
-    };
-
-    @SuppressLint("ClickableViewAccessibility")
-    private final CompoundButton.OnCheckedChangeListener onShapeRBCheckedChangeListener = (buttonView, isChecked) -> {
-        if (isChecked) {
-            onToolChanged(onTouchIVWithShapeListener);
-            cbShapeFill.setChecked(isPaintStyleFill());
-            tietShapeStrokeWidth.setText(String.valueOf(paint.getStrokeWidth()));
-            llOptionsShape.setVisibility(View.VISIBLE);
-        }
-    };
-
-    @SuppressLint("ClickableViewAccessibility")
-    private final CompoundButton.OnCheckedChangeListener onSoftBrushRBCheckedChangeListener = (buttonView, isChecked) -> {
-        if (isChecked) {
-            onToolChanged(onTouchIVWithSoftBrushListener);
-            paint.setAntiAlias(true);
-            tietSoftBrushBlurRadius.setText(String.valueOf(blurRadius));
-            tietSoftBrushStrokeWidth.setText(String.valueOf(strokeWidth));
-            paint.setStyle(Paint.Style.FILL);
-            tbSoftBrush.setEnabled(hasSelection);
-            tbSoftBrush.setChecked(true);
-            svOptionsSoftBrush.setVisibility(View.VISIBLE);
+            flImageView.setOnTouchListener((View.OnTouchListener) bZoom.getTag());
         }
     };
 
     @SuppressLint("ClickableViewAccessibility")
     private final CompoundButton.OnCheckedChangeListener onSoftBrushTBCheckedChangeListener = (buttonView, isChecked) -> {
         onTouchIVWithSoftBrushListener = isChecked ? onTouchIVWithSoftBrushOnListener : onTouchIVWithSoftBrushOffListener;
-        cbZoom.setTag(onTouchIVWithSoftBrushListener);
-        if (!cbZoom.isChecked()) {
+        bZoom.setTag(onTouchIVWithSoftBrushListener);
+        if (btgZoom.getCheckedButtonId() != R.id.b_zoom) {
             flImageView.setOnTouchListener(onTouchIVWithSoftBrushListener);
         }
         if (!isChecked && isWritingSoftStrokes) {
             drawSoftStrokesIntoSelection();
-        }
-    };
-
-    @SuppressLint("ClickableViewAccessibility")
-    private final CompoundButton.OnCheckedChangeListener onTransformerRBCheckedChangeListener = (buttonView, isChecked) -> {
-        if (isChecked) {
-            onToolChanged(onTouchIVWithTransformerListener);
-            svOptionsTransformer.setVisibility(View.VISIBLE);
-            selector.setColor(Color.BLUE);
-            drawSelectionOntoView();
-        } else {
-            drawTransformerIntoImage();
-            marqueeBoundBeingDragged = null;
-            selector.setColor(Color.DKGRAY);
-            drawSelectionOntoView();
-        }
-    };
-
-    @SuppressLint("ClickableViewAccessibility")
-    private final CompoundButton.OnCheckedChangeListener onTextRBCheckedChangeListener = (buttonView, isChecked) -> {
-        if (isChecked) {
-            onToolChanged(onTouchIVWithTextListener);
-            cbTextFill.setChecked(isPaintStyleFill());
-        } else {
-            drawTextIntoImage(false);
-        }
-    };
-
-    @SuppressLint("ClickableViewAccessibility")
-    private final CompoundButton.OnCheckedChangeListener onZoomToolCheckBoxCheckedChangeListener = (buttonView, isChecked) -> {
-        if (isChecked) {
-            flImageView.setOnTouchListener(onTouchIVWithZoomToolListener);
-        } else {
-            flImageView.setOnTouchListener((View.OnTouchListener) cbZoom.getTag());
         }
     };
 
@@ -2866,7 +2847,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private boolean checkIfRequireRef() {
-        return rbMagicEraser.isChecked() || rbMagicPaint.isChecked();
+        return switch (btgTools.getCheckedButtonId()) {
+            case R.id.b_magic_eraser, R.id.b_magic_paint -> true;
+            default -> false;
+        };
     }
 
     private void checkLayerBlendModeMenuItem(BlendMode blendMode) {
@@ -3774,7 +3758,7 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 addDefaultTab();
             }
-            rbPencil.setChecked(true);
+            btgTools.check(R.id.b_pencil);
         } else {
             for (int i = 0; i < tabs.size(); ++i) {
                 final Tab tab = tabs.get(i);
@@ -3803,7 +3787,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    @SuppressLint("ClickableViewAccessibility")
+    @SuppressLint({"ClickableViewAccessibility"})
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
@@ -3828,13 +3812,15 @@ public class MainActivity extends AppCompatActivity {
 
         final boolean isLandscape = getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
 
-        if (isLandscape) {
-            getSupportActionBar().hide();
-        }
-
         // Content view
         setContentView(R.layout.activity_main);
 
+        final Button bEyedropper = findViewById(R.id.b_eyedropper);
+        final Button bRuler = findViewById(R.id.b_ruler);
+        bZoom = findViewById(R.id.b_zoom);
+        btgEyedropperSrc = findViewById(R.id.btg_eyedropper_src);
+        btgTools = findViewById(R.id.btg_tools);
+        btgZoom = findViewById(R.id.btg_zoom);
         cbBucketFillContiguous = findViewById(R.id.cb_bucket_fill_contiguous);
         cbBucketFillIgnoreAlpha = findViewById(R.id.cb_bucket_fill_ignore_alpha);
         cbCloneStampAntiAlias = findViewById(R.id.cb_clone_stamp_anti_alias);
@@ -3849,7 +3835,6 @@ public class MainActivity extends AppCompatActivity {
         cbTextFill = findViewById(R.id.cb_text_fill);
         cbTransformerFilter = findViewById(R.id.cb_transformer_filter);
         cbTransformerLar = findViewById(R.id.cb_transformer_lar);
-        cbZoom = findViewById(R.id.cb_zoom);
         flToolOptions = findViewById(R.id.fl_tool_options);
         flImageView = findViewById(R.id.fl_iv);
         imageView = findViewById(R.id.iv);
@@ -3860,22 +3845,11 @@ public class MainActivity extends AppCompatActivity {
         ivRulerH = findViewById(R.id.iv_ruler_horizontal);
         ivRulerV = findViewById(R.id.iv_ruler_vertical);
         ivSelection = findViewById(R.id.iv_selection);
-        llOptionsShape = findViewById(R.id.ll_options_shape);
         llOptionsText = findViewById(R.id.ll_options_text);
-        svOptionsTransformer = findViewById(R.id.sv_options_transformer);
         final RecyclerView rvSwatches = findViewById(R.id.rv_swatches);
-        rbCloneStamp = findViewById(R.id.rb_clone_stamp);
-        rbEyedropper = findViewById(R.id.rb_eyedropper);
-        rbEyedropperAllLayers = findViewById(R.id.rb_eyedropper_all_layers);
-        rbMagicEraser = findViewById(R.id.rb_magic_eraser);
         rbMagicEraserLeft = findViewById(R.id.rb_magic_eraser_left);
         rbMagicEraserRight = findViewById(R.id.rb_magic_eraser_right);
         cbMagicEraserPosition = rbMagicEraserLeft;
-        rbMagicPaint = findViewById(R.id.rb_magic_paint);
-        rbPencil = findViewById(R.id.rb_pencil);
-        final RadioButton rbRuler = findViewById(R.id.rb_ruler);
-        rbSoftBrush = findViewById(R.id.rb_soft_brush);
-        rbTransformer = findViewById(R.id.rb_transformer);
         final RadioGroup rgMagicEraserPosition = findViewById(R.id.rg_magic_eraser_position);
         svOptionsBucketFill = findViewById(R.id.sv_options_bucket_fill);
         svOptionsCloneStamp = findViewById(R.id.sv_options_clone_stamp);
@@ -3887,7 +3861,9 @@ public class MainActivity extends AppCompatActivity {
         svOptionsPatcher = findViewById(R.id.sv_options_patcher);
         svOptionsPath = findViewById(R.id.sv_options_path);
         svOptionsPencil = findViewById(R.id.sv_options_pencil);
+        svOptionsShape = findViewById(R.id.sv_options_shape);
         svOptionsSoftBrush = findViewById(R.id.sv_options_soft_brush);
+        svOptionsTransformer = findViewById(R.id.sv_options_transformer);
         tabLayout = findViewById(R.id.tl);
         tbSoftBrush = findViewById(R.id.tb_soft_brush);
         tietCloneStampBlurRadius = findViewById(R.id.tiet_clone_stamp_blur_radius);
@@ -3916,9 +3892,17 @@ public class MainActivity extends AppCompatActivity {
         vForegroundColor = findViewById(R.id.v_foreground_color);
         final ViewModel viewModel = new ViewModelProvider(this).get(ViewModel.class);
 
+        if (!isLandscape) {
+            topAppBar = findViewById(R.id.top_app_bar);
+        }
+
+        bZoom.setTag(onTouchIVWithPencilListener);
+        btgTools.addOnButtonCheckedListener(onToolButtonCheckedListener);
+        btgZoom.addOnButtonCheckedListener(onZoomToolButtonCheckedListener);
         findViewById(R.id.b_bucket_fill_tolerance).setOnClickListener(onClickToleranceButtonListener);
         findViewById(R.id.b_clone_stamp_src).setOnClickListener(onClickCloneStampSrcButtonListener);
         findViewById(R.id.b_magic_paint_tolerance).setOnClickListener(onClickToleranceButtonListener);
+        findViewById(R.id.b_swatches_add).setOnClickListener(onClickAddSwatchViewListener);
         findViewById(R.id.b_text_draw).setOnClickListener(v -> drawTextIntoImage());
         cbCloneStampAntiAlias.setOnCheckedChangeListener(onAntiAliasCBCheckedChangeListener);
         ((CompoundButton) findViewById(R.id.cb_eraser_anti_alias)).setOnCheckedChangeListener((buttonView, isChecked) -> eraser.setAntiAlias(isChecked));
@@ -3932,35 +3916,9 @@ public class MainActivity extends AppCompatActivity {
         cbPencilAntiAlias.setOnCheckedChangeListener(onAntiAliasCBCheckedChangeListener);
         cbShapeFill.setOnCheckedChangeListener(onFillCBCheckedChangeListener);
         cbTransformerFilter.setChecked(true);
-        cbZoom.setOnCheckedChangeListener(onZoomToolCheckBoxCheckedChangeListener);
-        cbZoom.setTag(onTouchIVWithPencilListener);
         flImageView.setOnTouchListener(onTouchIVWithPencilListener);
         ivRulerH.setOnTouchListener(onTouchRulerHListener);
         ivRulerV.setOnTouchListener(onTouchRulerVListener);
-        ((CompoundButton) findViewById(R.id.rb_soft_brush)).setOnCheckedChangeListener(onSoftBrushRBCheckedChangeListener);
-        ((CompoundButton) findViewById(R.id.rb_bucket_fill)).setOnCheckedChangeListener(onBucketFillRBCheckedChangeListener);
-        ((CompoundButton) findViewById(R.id.rb_circle)).setOnCheckedChangeListener((OnCBCheckedListener) () -> shape = circle);
-        rbCloneStamp.setOnCheckedChangeListener(onCloneStampRBCheckedChangeListener);
-        ((CompoundButton) findViewById(R.id.rb_eraser)).setOnCheckedChangeListener((OnCBCheckedListener) () -> onToolChanged(onTouchIVWithEraserListener, svOptionsEraser));
-        rbEyedropper.setOnCheckedChangeListener((OnCBCheckedListener) () -> onToolChanged(onTouchIVWithEyedropperListener, svOptionsEyedropper));
-        ((CompoundButton) findViewById(R.id.rb_gradient)).setOnCheckedChangeListener(onGradientRBCheckedChangeListener);
-        ((CompoundButton) findViewById(R.id.rb_line)).setOnCheckedChangeListener((OnCBCheckedListener) () -> shape = line);
-        rbMagicEraser.setOnCheckedChangeListener(onMagicEraserRBCheckedChangeListener);
-        rbMagicPaint.setOnCheckedChangeListener(onMagicPaintRBCheckedChangeListener);
-        ((CompoundButton) findViewById(R.id.rb_oval)).setOnCheckedChangeListener((OnCBCheckedListener) () -> shape = oval);
-        ((CompoundButton) findViewById(R.id.rb_patcher)).setOnCheckedChangeListener(onPatcherRBCheckedChangeListener);
-        ((CompoundButton) findViewById(R.id.rb_path)).setOnCheckedChangeListener(onPathRBCheckedChangeListener);
-        rbPencil.setOnCheckedChangeListener(onPencilRBCheckedChangeListener);
-        ((CompoundButton) findViewById(R.id.rb_rect)).setOnCheckedChangeListener((OnCBCheckedListener) () -> shape = rect);
-        rbRuler.setOnCheckedChangeListener(onRulerRBCheckedChangeListener);
-        ((CompoundButton) findViewById(R.id.rb_selector)).setOnCheckedChangeListener((OnCBCheckedListener) () -> onToolChanged(onTouchIVWithMarqueeListener));
-        ((CompoundButton) findViewById(R.id.rb_shape)).setOnCheckedChangeListener(onShapeRBCheckedChangeListener);
-        ((CompoundButton) findViewById(R.id.rb_text)).setOnCheckedChangeListener(onTextRBCheckedChangeListener);
-        rbTransformer.setOnCheckedChangeListener(onTransformerRBCheckedChangeListener);
-        ((CompoundButton) findViewById(R.id.rb_transformer_poly)).setOnCheckedChangeListener((OnCBCheckedListener) () -> onTransformerChange(onTouchIVWithPTListener));
-        ((CompoundButton) findViewById(R.id.rb_transformer_rotation)).setOnCheckedChangeListener((OnCBCheckedListener) () -> onTransformerChange(onTouchIVWithRTListener));
-        ((CompoundButton) findViewById(R.id.rb_transformer_scale)).setOnCheckedChangeListener((OnCBCheckedListener) () -> onTransformerChange(onTouchIVWithSTListener));
-        ((CompoundButton) findViewById(R.id.rb_transformer_translation)).setOnCheckedChangeListener((OnCBCheckedListener) () -> onTransformerChange(onTouchIVWithTTListener));
         rvSwatches.setItemAnimator(new DefaultItemAnimator());
         tabLayout.addOnTabSelectedListener(onTabSelectedListener);
         tbSoftBrush.setOnCheckedChangeListener(onSoftBrushTBCheckedChangeListener);
@@ -3981,9 +3939,56 @@ public class MainActivity extends AppCompatActivity {
         tietSoftBrushBlurRadius.addTextChangedListener(onBlurRadiusETTextChangedListener);
         tietText.addTextChangedListener((AfterTextChangedListener) s -> drawTextOntoView());
         tietTextSize.addTextChangedListener(onTextSizeETTextChangedListener);
-        findViewById(R.id.tv_color_add).setOnClickListener(onClickAddSwatchViewListener);
         vBackgroundColor.setOnClickListener(onClickBackgroundColorListener);
         vForegroundColor.setOnClickListener(onClickForegroundColorListener);
+
+        if (!isLandscape) {
+            topAppBar.setOnMenuItemClickListener(onOptionsItemSelectedListener);
+            final Menu menu = topAppBar.getMenu();
+            miHasAlpha = menu.findItem(R.id.i_image_has_alpha);
+            miLayerColorMatrix = menu.findItem(R.id.i_layer_color_matrix);
+            miLayerCurves = menu.findItem(R.id.i_layer_curves);
+            miLayerDrawBelow = menu.findItem(R.id.i_layer_draw_below);
+            miLayerFilterSet = menu.findItem(R.id.i_layer_filter_set);
+            miLayerHsv = menu.findItem(R.id.i_layer_hsv);
+            miLayerLevelUp = menu.findItem(R.id.i_layer_level_up);
+            miLayerReference = menu.findItem(R.id.i_layer_reference);
+            smLayerBlendModes = menu.findItem(R.id.i_blend_mode).getSubMenu();
+        }
+
+        bEyedropper.setOnLongClickListener(v -> {
+            v.setVisibility(View.GONE);
+            bRuler.setVisibility(View.VISIBLE);
+            btgTools.check(R.id.b_ruler);
+            return true;
+        });
+
+        bRuler.setOnLongClickListener(v -> {
+            v.setVisibility(View.GONE);
+            bEyedropper.setVisibility(View.VISIBLE);
+            btgTools.check(R.id.b_eyedropper);
+            return true;
+        });
+
+        ((MaterialButtonToggleGroup) findViewById(R.id.btg_shape)).addOnButtonCheckedListener((OnButtonCheckedListener) (group, checkedId) -> {
+            shape = switch (checkedId) {
+                case R.id.b_line -> line;
+                case R.id.b_rect -> rect;
+                case R.id.b_oval -> oval;
+                case R.id.b_circle -> circle;
+                default -> null;
+            };
+        });
+
+        ((MaterialButtonToggleGroup) findViewById(R.id.btg_transformer)).addOnButtonCheckedListener((OnButtonCheckedListener) (group, checkedId) -> {
+            onTransformerChange(switch (checkedId) {
+                case R.id.b_transformer_translation -> onTouchIVWithTTListener;
+                case R.id.b_transformer_scale -> onTouchIVWithSTListener;
+                case R.id.b_transformer_rotation -> onTouchIVWithRTListener;
+                case R.id.b_transformer_poly -> onTouchIVWithPTListener;
+                default -> null;
+            });
+        });
 
         cbTextFill.setOnCheckedChangeListener((buttonView, isChecked) -> {
             paint.setStyle(isChecked ? Paint.Style.FILL_AND_STROKE : Paint.Style.STROKE);
@@ -3996,8 +4001,8 @@ public class MainActivity extends AppCompatActivity {
             onTouchIVWithMagicEraserListener = isChecked
                     ? onTouchIVWithPreciseMagicEraserListener
                     : onTouchIVWithImpreciseMagicEraserListener;
-            cbZoom.setTag(onTouchIVWithMagicEraserListener);
-            if (!cbZoom.isChecked()) {
+            bZoom.setTag(onTouchIVWithMagicEraserListener);
+            if (btgZoom.getCheckedButtonId() != R.id.b_zoom) {
                 flImageView.setOnTouchListener(onTouchIVWithMagicEraserListener);
             }
             if (!isChecked) {
@@ -4005,13 +4010,6 @@ public class MainActivity extends AppCompatActivity {
                 magErF = null;
                 eraseBitmapAndInvalidateView(previewBitmap, ivPreview);
             }
-        });
-
-        rbEyedropper.setOnLongClickListener(v -> {
-            v.setVisibility(View.GONE);
-            rbRuler.setVisibility(View.VISIBLE);
-            rbRuler.setChecked(true);
-            return true;
         });
 
         {
@@ -4023,13 +4021,6 @@ public class MainActivity extends AppCompatActivity {
             rbMagicEraserLeft.setOnCheckedChangeListener(l);
             rbMagicEraserRight.setOnCheckedChangeListener(l);
         }
-
-        rbRuler.setOnLongClickListener(v -> {
-            v.setVisibility(View.GONE);
-            rbEyedropper.setVisibility(View.VISIBLE);
-            rbEyedropper.setChecked(true);
-            return true;
-        });
 
         {
             final LinearLayoutManager llm = new LinearLayoutManager(this);
@@ -4109,29 +4100,17 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        final MenuInflater menuInflater = getMenuInflater();
-        menuInflater.inflate(R.menu.main, menu);
-        miHasAlpha = menu.findItem(R.id.i_image_has_alpha);
-        miLayerColorMatrix = menu.findItem(R.id.i_layer_color_matrix);
-        miLayerCurves = menu.findItem(R.id.i_layer_curves);
-        miLayerDrawBelow = menu.findItem(R.id.i_layer_draw_below);
-        miLayerFilterSet = menu.findItem(R.id.i_layer_filter_set);
-        miLayerHsv = menu.findItem(R.id.i_layer_hsv);
-        miLayerLevelUp = menu.findItem(R.id.i_layer_level_up);
-        miLayerReference = menu.findItem(R.id.i_layer_reference);
-        smLayerBlendModes = menu.findItem(R.id.i_blend_mode).getSubMenu();
         return true;
     }
 
     @Override
     protected void onDestroy() {
-        recycleAllBitmaps(this);
+        recycleAllBitmaps();
         super.onDestroy();
     }
 
-    @Override
-    @SuppressLint("NonConstantResourceId")
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+    @SuppressLint({"NonConstantResourceId"})
+    private final Toolbar.OnMenuItemClickListener onOptionsItemSelectedListener = item -> {
         switch (item.getItemId()) {
             case R.id.i_cell_grid ->
                     new CellGridManager(this, tab.cellGrid, onApplyCellGridListener).show();
@@ -4142,7 +4121,7 @@ public class MainActivity extends AppCompatActivity {
                             ? Bitmap.createBitmap(bitmap, selection.left, selection.top, selection.width(), selection.height())
                             : Bitmap.createBitmap(bitmap);
                     transformer = new Transformer(bm, selection);
-                    rbTransformer.setChecked(true);
+                    btgTools.check(R.id.b_transformer);
                     drawSelectionOntoView();
                 } else {
                     canvas.drawBitmap(transformer.getBitmap(),
@@ -4250,7 +4229,7 @@ public class MainActivity extends AppCompatActivity {
             case R.id.i_deselect -> {
                 drawFloatingLayersIntoImage();
                 hasSelection = false;
-                if (rbSoftBrush.isChecked()) {
+                if (btgTools.getCheckedButtonId() == R.id.b_soft_brush) {
                     tbSoftBrush.setEnabled(false);
                     tbSoftBrush.setChecked(true);
                 }
@@ -4400,7 +4379,7 @@ public class MainActivity extends AppCompatActivity {
                         .setOnApplyListener(onClickImagePreviewPBListener)
                         .setOnCancelListener(onCancelImagePreviewListener)
                         .show();
-                onFilterHToASeekBarChangeListener.onChanged(0, true);
+                onFilterHToASeekBarChangeListener.onChange(null, 0, true);
             }
             case R.id.i_filter_levels -> {
                 drawFloatingLayersIntoImage();
@@ -4441,7 +4420,7 @@ public class MainActivity extends AppCompatActivity {
                         .setOnApplyListener(onClickImagePreviewPBListener)
                         .setOnCancelListener(onCancelImagePreviewListener)
                         .show();
-                onFilterThresholdSeekBarChangeListener.onChanged(128, true);
+                onFilterThresholdSeekBarChangeListener.onChange(null, 128, true);
                 clearStatus();
             }
             case R.id.i_filter_white_balance -> {
@@ -4893,7 +4872,7 @@ public class MainActivity extends AppCompatActivity {
                 selection.right = selection.left + clipboard.getWidth();
                 selection.bottom = selection.top + clipboard.getHeight();
                 transformer = new Transformer(Bitmap.createBitmap(clipboard), selection);
-                rbTransformer.setChecked(true);
+                btgTools.check(R.id.b_transformer);
                 drawBitmapOntoView(selection);
                 drawSelectionOntoView();
             }
@@ -4908,7 +4887,7 @@ public class MainActivity extends AppCompatActivity {
             case R.id.i_select_all -> {
                 selectAll();
                 hasSelection = true;
-                if (rbSoftBrush.isChecked()) {
+                if (btgTools.getCheckedButtonId() == R.id.b_soft_brush) {
                     tbSoftBrush.setEnabled(true);
                 }
                 drawSelectionOntoView();
@@ -4968,9 +4947,12 @@ public class MainActivity extends AppCompatActivity {
                 calculateBackgroundSizeOnView();
                 drawAfterTranslatingOrScaling(false);
             }
+            default -> {
+                return false;
+            }
         }
-        return super.onOptionsItemSelected(item);
-    }
+        return true;
+    };
 
     @Override
     protected void onResume() {
@@ -4986,8 +4968,8 @@ public class MainActivity extends AppCompatActivity {
         if (hasNotLoaded) {
             return;
         }
-        cbZoom.setChecked(false);
-        cbZoom.setTag(onImageViewTouchListener);
+        btgZoom.uncheck(R.id.b_zoom);
+        bZoom.setTag(onImageViewTouchListener);
         flImageView.setOnTouchListener(onImageViewTouchListener);
         hideToolOptions();
         isShapeStopped = true;
@@ -5010,8 +4992,8 @@ public class MainActivity extends AppCompatActivity {
         cbTransformerFilter.setVisibility(l != onTouchIVWithTTListener ? View.VISIBLE : View.GONE);
         cbTransformerLar.setVisibility(l == onTouchIVWithSTListener ? View.VISIBLE : View.GONE);
         onTouchIVWithTransformerListener = l;
-        cbZoom.setTag(l);
-        if (!cbZoom.isChecked()) {
+        bZoom.setTag(l);
+        if (btgZoom.getCheckedButtonId() != R.id.b_zoom) {
             flImageView.setOnTouchListener(l);
         }
     }
@@ -5095,62 +5077,62 @@ public class MainActivity extends AppCompatActivity {
                     Math.min(imageWidth, selection.right), Math.min(imageHeight, selection.bottom));
         } else {
             hasSelection = false;
-            if (rbSoftBrush.isChecked()) {
+            if (btgTools.getCheckedButtonId() == R.id.b_soft_brush) {
                 tbSoftBrush.setEnabled(false);
                 tbSoftBrush.setChecked(true);
             }
         }
     }
 
-    private static void recycleAllBitmaps(MainActivity ma) {
-        if (ma.refBm != null) {
-            ma.refBm.recycle();
-            ma.refBm = null;
+    private void recycleAllBitmaps() {
+        if (refBm != null) {
+            refBm.recycle();
+            refBm = null;
         }
-        if (ma.chessboard != null) {
-            ma.chessboard.recycle();
-            ma.chessboard = null;
+        if (chessboard != null) {
+            chessboard.recycle();
+            chessboard = null;
         }
-        if (ma.chessboardImage != null) {
-            ma.chessboardImage.recycle();
-            ma.chessboardImage = null;
-            ma.chessboardCanvas = null;
+        if (chessboardImage != null) {
+            chessboardImage.recycle();
+            chessboardImage = null;
+            chessboardCanvas = null;
         }
-        if (ma.clipboard != null) {
-            ma.clipboard.recycle();
-            ma.clipboard = null;
+        if (clipboard != null) {
+            clipboard.recycle();
+            clipboard = null;
         }
-        if (ma.gridBitmap != null) {
-            ma.gridBitmap.recycle();
-            ma.gridBitmap = null;
-            ma.gridCanvas = null;
+        if (gridBitmap != null) {
+            gridBitmap.recycle();
+            gridBitmap = null;
+            gridCanvas = null;
         }
-        if (ma.lastMerged != null) {
-            ma.lastMerged.recycle();
-            ma.lastMerged = null;
+        if (lastMerged != null) {
+            lastMerged.recycle();
+            lastMerged = null;
         }
-        if (ma.previewBitmap != null) {
-            ma.previewBitmap.recycle();
-            ma.previewBitmap = null;
-            ma.previewCanvas = null;
+        if (previewBitmap != null) {
+            previewBitmap.recycle();
+            previewBitmap = null;
+            previewCanvas = null;
         }
-        if (ma.rulerHBitmap != null) {
-            ma.rulerHBitmap.recycle();
-            ma.rulerHBitmap = null;
+        if (rulerHBitmap != null) {
+            rulerHBitmap.recycle();
+            rulerHBitmap = null;
         }
-        if (ma.rulerVBitmap != null) {
-            ma.rulerVBitmap.recycle();
-            ma.rulerVBitmap = null;
+        if (rulerVBitmap != null) {
+            rulerVBitmap.recycle();
+            rulerVBitmap = null;
         }
-        if (ma.selectionBitmap != null) {
-            ma.selectionBitmap.recycle();
-            ma.selectionBitmap = null;
-            ma.selectionCanvas = null;
+        if (selectionBitmap != null) {
+            selectionBitmap.recycle();
+            selectionBitmap = null;
+            selectionCanvas = null;
         }
-        if (ma.viewBitmap != null) {
-            ma.viewBitmap.recycle();
-            ma.viewBitmap = null;
-            ma.viewCanvas = null;
+        if (viewBitmap != null) {
+            viewBitmap.recycle();
+            viewBitmap = null;
+            viewCanvas = null;
         }
     }
 
@@ -5212,17 +5194,17 @@ public class MainActivity extends AppCompatActivity {
             }
             hasSelection = false;
 
-            if (rbSoftBrush.isChecked()) {
+            if (btgTools.getCheckedButtonId() == R.id.b_soft_brush) {
                 tbSoftBrush.setEnabled(false);
                 tbSoftBrush.setChecked(true);
             }
-
-            drawChessboardOntoView();
-            drawGridOntoView();
-            drawSelectionOntoView();
-
-            clearStatus(); // Prevent from displaying old size
         }
+
+        drawChessboardOntoView();
+        drawGridOntoView();
+        drawSelectionOntoView();
+
+        clearStatus(); // Prevent from displaying old size
     }
 
     private void rotate(float degrees) {
@@ -5437,9 +5419,9 @@ public class MainActivity extends AppCompatActivity {
     void setArgbColorType() {
         onTouchIVWithEyedropperListener = Settings.INST.argbColorType()
                 ? onTouchIVWithPreciseEyedropperListener : onTouchIVWithImpreciseEyedropperListener;
-        if (rbEyedropper != null && rbEyedropper.isChecked()) {
-            cbZoom.setTag(onTouchIVWithEyedropperListener);
-            if (!cbZoom.isChecked()) {
+        if (btgTools != null && btgTools.getCheckedButtonId() == R.id.b_eyedropper) {
+            bZoom.setTag(onTouchIVWithEyedropperListener);
+            if (btgZoom.getCheckedButtonId() != R.id.b_zoom) {
                 flImageView.setOnTouchListener(onTouchIVWithEyedropperListener);
             }
         }

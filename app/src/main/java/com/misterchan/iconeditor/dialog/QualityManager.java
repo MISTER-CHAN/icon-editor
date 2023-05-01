@@ -80,9 +80,9 @@ public class QualityManager {
         if (isFormatWebp) {
             dialog.findViewById(R.id.rg_formats).setVisibility(View.VISIBLE);
             rbLossless.setChecked(format == Bitmap.CompressFormat.WEBP_LOSSLESS);
-            rbLossless.setOnCheckedChangeListener((OnCBCheckedListener) () -> format = Bitmap.CompressFormat.WEBP_LOSSLESS);
+            rbLossless.setOnCheckedChangeListener((OnCBCheckedListener) buttonView -> format = Bitmap.CompressFormat.WEBP_LOSSLESS);
             rbLossy.setChecked(format == Bitmap.CompressFormat.WEBP_LOSSY);
-            rbLossy.setOnCheckedChangeListener((OnCBCheckedListener) () -> format = Bitmap.CompressFormat.WEBP_LOSSY);
+            rbLossy.setOnCheckedChangeListener((OnCBCheckedListener) buttonView -> format = Bitmap.CompressFormat.WEBP_LOSSY);
         }
         if (gifEncodingType != null) {
             glGif.setVisibility(View.VISIBLE);

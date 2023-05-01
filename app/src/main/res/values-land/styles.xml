@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="TextInputLayout" parent="Widget.Material3.TextInputLayout.FilledBox">
+        <item name="android:layout_marginVertical">2dp</item>
+    </style>
+
+    <style name="ToolOptionsBTG" parent="ToolOptionsLL">
+        <item name="android:layout_marginVertical">2dp</item>
+    </style>
+
+    <style name="ToolOptionsLL">
+        <item name="android:gravity">center_horizontal</item>
+        <item name="android:orientation">vertical</item>
+    </style>
+
+    <style name="ToolOptionsSV">
+        <item name="android:layout_gravity">center_horizontal</item>
+        <item name="android:fadingEdgeLength">16dp</item>
+        <item name="android:requiresFadingEdge">vertical</item>
+        <item name="android:scrollbars">none</item>
+        <item name="android:visibility">invisible</item>
+    </style>
+
+    <style name="View">
+        <item name="android:layout_marginVertical">2dp</item>
+    </style>
+</resources>
