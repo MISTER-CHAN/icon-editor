@@ -1,6 +1,7 @@
 <resources>
     <!-- Base application theme. -->
     <style name="Theme.IconEditor" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="toolbarStyle">@style/Widget.MaterialComponents.Toolbar</item>
 <!--        <item name="colorPrimary">@color/purple_40</item>-->
 <!--        <item name="colorSecondary">@color/purple_grey_40</item>-->
 <!--        <item name="colorTertiary">@color/pink_40</item>-->

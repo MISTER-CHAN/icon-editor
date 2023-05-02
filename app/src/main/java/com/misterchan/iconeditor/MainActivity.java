@@ -67,6 +67,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.FileProvider;
+import androidx.core.view.MenuCompat;
 import androidx.core.view.OneShotPreDrawListener;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.lifecycle.ViewModelProvider;
@@ -2571,10 +2572,14 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
             case R.id.b_eraser -> {
-                onToolChanged(onTouchIVWithEraserListener, svOptionsEraser);
+                if (isChecked) {
+                    onToolChanged(onTouchIVWithEraserListener, svOptionsEraser);
+                }
             }
             case R.id.b_eyedropper -> {
-                onToolChanged(onTouchIVWithEyedropperListener, svOptionsEyedropper);
+                if (isChecked) {
+                    onToolChanged(onTouchIVWithEyedropperListener, svOptionsEyedropper);
+                }
             }
             case R.id.b_gradient -> {
                 if (isChecked) {
@@ -2646,15 +2651,29 @@ public class MainActivity extends AppCompatActivity {
                     ruler.enabled = false;
                 }
             }
-            case R.id.b_shape -> {
-                onToolChanged(onTouchIVWithMarqueeListener);
+            case R.id.b_selector -> {
+                if (isChecked) {
+                    onToolChanged(onTouchIVWithMarqueeListener);
+                }
             }
-            case R.id.b_soft_brush -> {
+            case R.id.b_shape -> {
                 if (isChecked) {
                     onToolChanged(onTouchIVWithShapeListener);
                     cbShapeFill.setChecked(isPaintStyleFill());
                     tietShapeStrokeWidth.setText(String.valueOf(paint.getStrokeWidth()));
                     svOptionsShape.setVisibility(View.VISIBLE);
+                }
+            }
+            case R.id.b_soft_brush -> {
+                if (isChecked) {
+                    onToolChanged(onTouchIVWithSoftBrushListener);
+                    paint.setAntiAlias(true);
+                    tietSoftBrushBlurRadius.setText(String.valueOf(blurRadius));
+                    tietSoftBrushStrokeWidth.setText(String.valueOf(strokeWidth));
+                    paint.setStyle(Paint.Style.FILL);
+                    tbSoftBrush.setEnabled(hasSelection);
+                    tbSoftBrush.setChecked(true);
+                    svOptionsSoftBrush.setVisibility(View.VISIBLE);
                 }
             }
             case R.id.b_text -> {
@@ -2682,7 +2701,7 @@ public class MainActivity extends AppCompatActivity {
     };
 
     @SuppressLint("ClickableViewAccessibility")
-    private final  MaterialButtonToggleGroup.OnButtonCheckedListener onZoomToolButtonCheckedListener = (group, checkedId, isChecked) -> {
+    private final MaterialButtonToggleGroup.OnButtonCheckedListener onZoomToolButtonCheckedListener = (group, checkedId, isChecked) -> {
         if (isChecked) {
             flImageView.setOnTouchListener(onTouchIVWithZoomToolListener);
         } else {
@@ -3945,6 +3964,7 @@ public class MainActivity extends AppCompatActivity {
         if (!isLandscape) {
             topAppBar.setOnMenuItemClickListener(onOptionsItemSelectedListener);
             final Menu menu = topAppBar.getMenu();
+            MenuCompat.setGroupDividerEnabled(menu, true);
             miHasAlpha = menu.findItem(R.id.i_image_has_alpha);
             miLayerColorMatrix = menu.findItem(R.id.i_layer_color_matrix);
             miLayerCurves = menu.findItem(R.id.i_layer_curves);
@@ -4421,30 +4441,6 @@ public class MainActivity extends AppCompatActivity {
                         .setOnCancelListener(onCancelImagePreviewListener)
                         .show();
                 onFilterThresholdSeekBarChangeListener.onChange(null, 128, true);
-                clearStatus();
-            }
-            case R.id.i_filter_white_balance -> {
-                drawFloatingLayersIntoImage();
-                createImagePreview();
-                final AlertDialog dialog = new AlertDialog.Builder(this).setTitle(R.string.white_balance)
-                        .setPositiveButton(R.string.ok, onClickImagePreviewPBListener)
-                        .setNegativeButton(R.string.cancel, onClickImagePreviewNBListener)
-                        .setOnCancelListener(onCancelImagePreviewListener)
-                        .show();
-
-                final Window window = dialog.getWindow();
-                final WindowManager.LayoutParams lp = window.getAttributes();
-                lp.flags &= ~WindowManager.LayoutParams.FLAG_DIM_BEHIND;
-                lp.gravity = Gravity.BOTTOM;
-                window.setAttributes(lp);
-
-                final int w = imagePreview.getWidth(), h = imagePreview.getHeight();
-                final int[] src = imagePreview.getPixels(), dst = new int[w * h];
-                runOrStart(() -> {
-                    BitmapUtils.whiteBalance(src, dst, paint.getColor());
-                    imagePreview.setPixels(dst, w, h);
-                    drawBitmapOntoView(imagePreview.getEntire(), selection);
-                });
                 clearStatus();
             }
             case R.id.i_flip_horizontally -> scale(-1.0f, 1.0f);
