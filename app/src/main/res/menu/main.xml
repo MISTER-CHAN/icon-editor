@@ -118,7 +118,7 @@
                         android:icon="@drawable/ic_crop"
                         android:title="@string/crop" />
                     <item
-                        android:icon="@drawable/ic_void"
+                        android:icon="@drawable/ic_transform"
                         android:title="@string/transform">
                         <menu>
                             <item
