@@ -4,6 +4,7 @@ import android.content.Context;
 
 import androidx.appcompat.app.AlertDialog;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputEditText;
 import com.misterchan.iconeditor.R;
 
@@ -17,7 +18,7 @@ public class NewImageDialog {
     private TextInputEditText tietWidth, tietHeight;
 
     public NewImageDialog(Context context) {
-        builder = new AlertDialog.Builder(context)
+        builder = new MaterialAlertDialogBuilder(context)
                 .setNegativeButton(R.string.cancel, null)
                 .setTitle(R.string.new_)
                 .setView(R.layout.new_image);

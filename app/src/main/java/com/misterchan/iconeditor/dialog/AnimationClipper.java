@@ -7,11 +7,15 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.view.OneShotPreDrawListener;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.slider.Slider;
 import com.misterchan.iconeditor.R;
 import com.misterchan.iconeditor.Tab;
+import com.misterchan.iconeditor.listener.OnSliderChangeListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,16 +29,16 @@ public class AnimationClipper {
     private final AlertDialog.Builder builder;
     private ImageView iv;
     private final List<Bitmap> frames;
-    private SeekBar sbFrom, sbTo;
+    private Slider sFrom, sTo;
 
     public AnimationClipper(Context context, List<Tab> tabs, Tab firstFrame, OnConfirmListener listener) {
         frames = new ArrayList<>();
 
-        builder = new AlertDialog.Builder(context)
+        builder = new MaterialAlertDialogBuilder(context)
                 .setTitle(R.string.clip)
                 .setView(R.layout.animation_clipper)
                 .setPositiveButton(R.string.ok, (dialog, which) ->
-                        listener.onApply(frames.size() - sbTo.getProgress(), frames.size() - sbFrom.getProgress()))
+                        listener.onApply(frames.size() - (int) sTo.getValue(), frames.size() - (int) sFrom.getValue()))
                 .setNegativeButton(R.string.cancel, null)
                 .setOnDismissListener(dialog -> frames.forEach(Bitmap::recycle));
 
@@ -61,30 +65,33 @@ public class AnimationClipper {
 
         final FrameLayout flIv = dialog.findViewById(R.id.fl_iv);
         iv = dialog.findViewById(R.id.iv);
-        sbFrom = dialog.findViewById(R.id.sb_from);
-        sbTo = dialog.findViewById(R.id.sb_to);
+        sFrom = dialog.findViewById(R.id.s_from);
+        sTo = dialog.findViewById(R.id.s_to);
 
-        final SeekBar.OnSeekBarChangeListener l = new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                iv.setImageBitmap(frames.get(progress));
-            }
+        sFrom.setValueTo(lastPos);
+        sTo.setValueTo(lastPos);
+        sTo.setValue(lastPos);
 
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-                iv.setImageBitmap(frames.get(seekBar.getProgress()));
-            }
+        {
+            final Slider.OnChangeListener ocl = (OnSliderChangeListener) (slider, value, stopped) ->
+                    iv.setImageBitmap(frames.get((int) value));
 
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-            }
-        };
+            final Slider.OnSliderTouchListener ostl = new Slider.OnSliderTouchListener() {
+                @Override
+                public void onStartTrackingTouch(@NonNull Slider slider) {
+                    iv.setImageBitmap(frames.get((int) slider.getValue()));
+                }
 
-        sbFrom.setMax(lastPos);
-        sbFrom.setOnSeekBarChangeListener(l);
-        sbTo.setMax(lastPos);
-        sbTo.setProgress(lastPos);
-        sbTo.setOnSeekBarChangeListener(l);
+                @Override
+                public void onStopTrackingTouch(@NonNull Slider slider) {
+                }
+            };
+
+            sFrom.addOnChangeListener(ocl);
+            sFrom.addOnSliderTouchListener(ostl);
+            sTo.addOnChangeListener(ocl);
+            sTo.addOnSliderTouchListener(ostl);
+        }
 
         OneShotPreDrawListener.add(flIv, () -> {
             final int w = flIv.getMeasuredWidth();

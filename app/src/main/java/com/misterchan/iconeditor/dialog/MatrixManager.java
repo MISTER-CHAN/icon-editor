@@ -11,6 +11,7 @@ import android.widget.GridLayout;
 import androidx.annotation.Size;
 import androidx.appcompat.app.AlertDialog;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputEditText;
 import com.misterchan.iconeditor.listener.AfterTextChangedListener;
 import com.misterchan.iconeditor.R;
@@ -60,10 +61,9 @@ public class MatrixManager {
         matrix = defaultMatrix;
         matrix.getValues(values);
 
-        dialogBuilder = new AlertDialog.Builder(context)
+        dialogBuilder = new MaterialAlertDialogBuilder(context)
                 .setOnCancelListener(onCancelListener)
                 .setPositiveButton(R.string.ok, onPosButtonClickListener)
-                .setTitle(R.string.transform)
                 .setView(R.layout.matrix);
 
         if (onCancelListener != null) {
@@ -81,6 +81,7 @@ public class MatrixManager {
         final WindowManager.LayoutParams lp = window.getAttributes();
         lp.flags &= ~WindowManager.LayoutParams.FLAG_DIM_BEHIND;
         lp.gravity = Gravity.BOTTOM;
+        lp.verticalMargin = -0.25f;
         window.setAttributes(lp);
 
         final GridLayout gl = dialog.findViewById(R.id.gl);

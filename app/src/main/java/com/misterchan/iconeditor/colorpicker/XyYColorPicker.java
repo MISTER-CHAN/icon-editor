@@ -2,7 +2,6 @@ package com.misterchan.iconeditor.colorpicker;
 
 import android.content.Context;
 import android.graphics.ColorSpace;
-import android.widget.SeekBar;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.ColorLong;
@@ -10,19 +9,21 @@ import androidx.annotation.IntRange;
 import androidx.annotation.Size;
 import androidx.appcompat.app.AlertDialog;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.slider.Slider;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
-import com.misterchan.iconeditor.listener.AfterTextChangedListener;
 import com.misterchan.iconeditor.Color;
-import com.misterchan.iconeditor.listener.OnSBProgressChangedListener;
 import com.misterchan.iconeditor.R;
+import com.misterchan.iconeditor.listener.AfterTextChangedListener;
+import com.misterchan.iconeditor.listener.OnSliderValueChangeListener;
 
 public class XyYColorPicker extends ColorPicker {
 
     private static final ColorSpace XYZ = ColorSpace.get(ColorSpace.Named.CIE_XYZ);
 
     private final ColorSpace.Connector connectorFromXyz, connectorToXyz;
-    private SeekBar sbX_, sbY_, sbY;
+    private Slider sX_, sY_, sY;
     private TextInputEditText tietX_, tietY_, tietY;
 
     @Size(3)
@@ -32,7 +33,7 @@ public class XyYColorPicker extends ColorPicker {
         final ColorSpace oldColorSpace = Color.colorSpace(oldColor);
         connectorFromXyz = ColorSpace.connect(XYZ, oldColorSpace);
         connectorToXyz = ColorSpace.connect(oldColorSpace, XYZ);
-        dialogBuilder = new AlertDialog.Builder(context)
+        dialogBuilder = new MaterialAlertDialogBuilder(context)
                 .setNegativeButton(R.string.cancel, null)
                 .setPositiveButton(R.string.ok, (dialog, which) -> onColorPickListener.onPick(oldColor, newColor))
                 .setTitle(R.string.convert_xyy_to_rgb)
@@ -51,10 +52,10 @@ public class XyYColorPicker extends ColorPicker {
         vPreview.setBackgroundColor(toArgb(x, xyY[2], z));
     }
 
-    private void onXyChanged(@IntRange(from = 0, to = 1) int index, String s, SeekBar seekBar) {
+    private void onXyChanged(@IntRange(from = 0, to = 1) int index, String s, Slider slider) {
         try {
             float f = Float.parseFloat(s);
-            seekBar.setProgress((int) (f * 250.0f));
+            slider.setValue(f);
             xyY[index] = f;
         } catch (NumberFormatException e) {
         }
@@ -64,7 +65,7 @@ public class XyYColorPicker extends ColorPicker {
     private void onYChanged(String s) {
         try {
             float f = Float.parseFloat(s);
-            sbY.setProgress((int) (f * 100.0f));
+            sY.setValue(f);
             xyY[2] = f;
         } catch (NumberFormatException e) {
         }
@@ -75,9 +76,9 @@ public class XyYColorPicker extends ColorPicker {
     public void show() {
         final AlertDialog dialog = dialogBuilder.show();
 
-        sbX_ = dialog.findViewById(R.id.sb_comp_0);
-        sbY_ = dialog.findViewById(R.id.sb_comp_1);
-        sbY = dialog.findViewById(R.id.sb_comp_2);
+        sX_ = dialog.findViewById(R.id.s_comp_0);
+        sY_ = dialog.findViewById(R.id.s_comp_1);
+        sY = dialog.findViewById(R.id.s_comp_2);
         final TextInputLayout tilX_ = dialog.findViewById(R.id.til_comp_0);
         final TextInputLayout tilY_ = dialog.findViewById(R.id.til_comp_1);
         final TextInputLayout tilY = dialog.findViewById(R.id.til_comp_2);
@@ -89,21 +90,21 @@ public class XyYColorPicker extends ColorPicker {
         hideOtherColorPickers(dialog);
         hideAlphaComp(dialog.findViewById(R.id.gl));
 
-        sbX_.setMax(200);
-        sbY_.setMax(225);
-        sbY.setMin(-200);
-        sbY.setMax(200);
+        sX_.setValueTo(0.8f);
+        sY_.setValueTo(0.9f);
+        sY.setValueFrom(-2.0f);
+        sY.setValueTo(2.0f);
         tietX_.setInputType(EDITOR_TYPE_NUM_DEC);
         tietY_.setInputType(EDITOR_TYPE_NUM_DEC);
         tietY.setInputType(EDITOR_TYPE_NUM_DEC_SIGNED);
         tilX_.setHint(R.string.x_);
         tilY_.setHint(R.string.y_);
         tilY.setHint(R.string.y);
-        sbX_.setOnSeekBarChangeListener((OnSBProgressChangedListener) (seekBar, progress) -> tietX_.setText(String.valueOf((float) progress / 250.0f)));
-        sbY_.setOnSeekBarChangeListener((OnSBProgressChangedListener) (seekBar, progress) -> tietY_.setText(String.valueOf((float) progress / 250.0f)));
-        sbY.setOnSeekBarChangeListener((OnSBProgressChangedListener) (seekBar, progress) -> tietY.setText(String.valueOf((float) progress / 100.0f)));
-        tietX_.addTextChangedListener((AfterTextChangedListener) s -> onXyChanged(0, s, sbX_));
-        tietY_.addTextChangedListener((AfterTextChangedListener) s -> onXyChanged(1, s, sbY_));
+        sX_.addOnChangeListener((OnSliderValueChangeListener) (slider, value) -> tietX_.setText(String.valueOf(value)));
+        sY_.addOnChangeListener((OnSliderValueChangeListener) (slider, value) -> tietY_.setText(String.valueOf(value)));
+        sY.addOnChangeListener((OnSliderValueChangeListener) (slider, value) -> tietY.setText(String.valueOf(value)));
+        tietX_.addTextChangedListener((AfterTextChangedListener) s -> onXyChanged(0, s, sX_));
+        tietY_.addTextChangedListener((AfterTextChangedListener) s -> onXyChanged(1, s, sY_));
         tietY.addTextChangedListener((AfterTextChangedListener) this::onYChanged);
 
         final float[] xyz = connectorToXyz.transform(

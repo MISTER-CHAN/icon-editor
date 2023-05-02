@@ -5,13 +5,14 @@ import android.content.DialogInterface;
 import android.view.Gravity;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.SeekBar;
 
 import androidx.annotation.Size;
 import androidx.appcompat.app.AlertDialog;
 
-import com.misterchan.iconeditor.listener.OnSBChangeListener;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.slider.Slider;
 import com.misterchan.iconeditor.R;
+import com.misterchan.iconeditor.listener.OnSliderChangeListener;
 
 public class HsvDialog {
 
@@ -26,7 +27,7 @@ public class HsvDialog {
     private float[] deltaHsv = new float[3];
 
     public HsvDialog(Context context) {
-        builder = new AlertDialog.Builder(context)
+        builder = new MaterialAlertDialogBuilder(context)
                 .setTitle(R.string.hsv)
                 .setView(R.layout.hsv);
     }
@@ -61,26 +62,25 @@ public class HsvDialog {
         lp.gravity = Gravity.BOTTOM;
         window.setAttributes(lp);
 
-        final SeekBar sbHue = dialog.findViewById(R.id.sb_hue);
-        final SeekBar sbSaturation = dialog.findViewById(R.id.sb_saturation);
-        final SeekBar sbValue = dialog.findViewById(R.id.sb_value);
+        final Slider sHue = dialog.findViewById(R.id.s_hue);
+        final Slider sSaturation = dialog.findViewById(R.id.s_saturation);
+        final Slider sValue = dialog.findViewById(R.id.s_value);
 
-        sbHue.setProgress((int) deltaHsv[0]);
-        sbHue.setOnSeekBarChangeListener((OnSBChangeListener) (seekBar, progress, stopped) -> {
-            deltaHsv[0] = progress;
-            listener.onChanged(deltaHsv, stopped);
-        });
+        final OnSliderChangeListener l = this::update;
 
-        sbSaturation.setProgress((int) (deltaHsv[1] * 100.0f));
-        sbSaturation.setOnSeekBarChangeListener((OnSBChangeListener) (seekBar, progress, stopped) -> {
-            deltaHsv[1] = progress / 100.0f;
-            listener.onChanged(deltaHsv, stopped);
-        });
+        sHue.setValue(deltaHsv[0]);
+        sSaturation.setValue(deltaHsv[1]);
+        sValue.setValue(deltaHsv[2]);
+        sHue.addOnChangeListener(l);
+        sHue.addOnSliderTouchListener(l);
+        sSaturation.addOnChangeListener(l);
+        sSaturation.addOnSliderTouchListener(l);
+        sValue.addOnChangeListener(l);
+        sValue.addOnSliderTouchListener(l);
+    }
 
-        sbValue.setProgress((int) (deltaHsv[2] * 100.0f));
-        sbValue.setOnSeekBarChangeListener((OnSBChangeListener) (seekBar, progress, stopped) -> {
-            deltaHsv[2] = progress / 100.0f;
-            listener.onChanged(deltaHsv, stopped);
-        });
+    private void update(Slider slider, float value, boolean stopped) {
+        deltaHsv[slider.getTag().toString().charAt(0) - '0'] = value;
+        listener.onChanged(deltaHsv, stopped);
     }
 }

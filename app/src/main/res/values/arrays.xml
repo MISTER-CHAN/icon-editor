@@ -90,6 +90,6 @@
 
     <array name="range_0_100_values">
         <item>0.0</item>
-        <item>100.0</item>
+        <item>20.0</item>
     </array>
 </resources>

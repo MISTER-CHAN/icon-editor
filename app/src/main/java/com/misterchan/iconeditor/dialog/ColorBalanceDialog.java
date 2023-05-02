@@ -5,27 +5,28 @@ import android.content.DialogInterface;
 import android.view.Gravity;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.SeekBar;
 
 import androidx.annotation.Size;
 import androidx.appcompat.app.AlertDialog;
 
-import com.misterchan.iconeditor.listener.OnSBChangeListener;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.slider.Slider;
 import com.misterchan.iconeditor.R;
+import com.misterchan.iconeditor.listener.OnSliderChangeListener;
 
 public class ColorBalanceDialog {
 
     private final AlertDialog.Builder builder;
     private LightingDialog.OnLightingChangedListener listener;
-    private SeekBar sbRed, sbGreen, sbBlue;
+    private Slider sRed, sGreen, sBlue;
 
     @Size(8)
     private final float[] lighting = new float[]{
             1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f
     };
 
-    private final OnSBChangeListener onProgressChangeListener = (seekBar, progress, stopped) -> {
-        final float r = sbRed.getProgress() / 10.0f, g = sbGreen.getProgress() / 10.0f, b = sbBlue.getProgress() / 10.0f;
+    private final OnSliderChangeListener onValueChangeListener = (slider, value, stopped) -> {
+        final float r = sRed.getValue(), g = sGreen.getValue(), b = sBlue.getValue();
         final float average = (r + g + b) / 3.0f;
         lighting[0] = 1.0f + r - average;
         lighting[2] = 1.0f + g - average;
@@ -34,7 +35,7 @@ public class ColorBalanceDialog {
     };
 
     public ColorBalanceDialog(Context context) {
-        builder = new AlertDialog.Builder(context)
+        builder = new MaterialAlertDialogBuilder(context)
                 .setTitle(R.string.color_balance)
                 .setView(R.layout.color_balance);
     }
@@ -64,12 +65,15 @@ public class ColorBalanceDialog {
         lp.gravity = Gravity.BOTTOM;
         window.setAttributes(lp);
 
-        sbRed = dialog.findViewById(R.id.sb_red);
-        sbGreen = dialog.findViewById(R.id.sb_green);
-        sbBlue = dialog.findViewById(R.id.sb_blue);
+        sRed = dialog.findViewById(R.id.s_red);
+        sGreen = dialog.findViewById(R.id.s_green);
+        sBlue = dialog.findViewById(R.id.s_blue);
 
-        sbRed.setOnSeekBarChangeListener(onProgressChangeListener);
-        sbGreen.setOnSeekBarChangeListener(onProgressChangeListener);
-        sbBlue.setOnSeekBarChangeListener(onProgressChangeListener);
+        sRed.addOnChangeListener(onValueChangeListener);
+        sRed.addOnSliderTouchListener(onValueChangeListener);
+        sGreen.addOnChangeListener(onValueChangeListener);
+        sGreen.addOnSliderTouchListener(onValueChangeListener);
+        sBlue.addOnChangeListener(onValueChangeListener);
+        sBlue.addOnSliderTouchListener(onValueChangeListener);
     }
 }

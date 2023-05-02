@@ -5,6 +5,7 @@ import android.content.Context;
 import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.misterchan.iconeditor.R;
@@ -19,7 +20,7 @@ public class EditNumberDialog {
     private TextInputEditText tiet;
 
     public EditNumberDialog(Context context) {
-        builder = new AlertDialog.Builder(context).setView(R.layout.edit_text)
+        builder = new MaterialAlertDialogBuilder(context).setView(R.layout.edit_text)
                 .setNegativeButton(R.string.cancel, null);
     }
 

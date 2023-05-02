@@ -1,40 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp">
 
-    <SeekBar
-        android:id="@+id/sb_noisy"
+    <com.google.android.material.slider.Slider
+        android:id="@+id/s_noisiness"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginVertical="8dp" />
+        android:layout_marginVertical="8dp"
+        android:stepSize="1"
+        app:tickVisible="false" />
 
-    <RadioGroup
-        android:layout_width="match_parent"
+    <com.google.android.material.button.MaterialButtonToggleGroup
+        android:id="@+id/btg_what_to_draw"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:layout_marginHorizontal="2dp"
+        app:checkedButton="@id/b_pixel"
+        app:selectionRequired="true"
+        app:singleSelection="true">
 
-        <RadioButton
-            android:id="@+id/rb_pixel"
+        <Button
+            android:id="@+id/b_pixel"
+            style="@style/OutlinedButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:checked="true"
             android:text="@string/pixel" />
 
-        <RadioButton
-            android:id="@+id/rb_point"
+        <Button
+            android:id="@+id/b_point"
+            style="@style/OutlinedButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/point" />
 
-        <RadioButton
-            android:id="@+id/rb_ref"
+        <Button
+            android:id="@+id/b_ref"
+            style="@style/OutlinedButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/reference" />
-    </RadioGroup>
+    </com.google.android.material.button.MaterialButtonToggleGroup>
 
     <CheckBox
         android:id="@+id/cb_no_repeats"
@@ -43,7 +52,7 @@
         android:text="@string/no_repeats" />
 
     <com.google.android.material.textfield.TextInputLayout
-        style="@style/Widget.Material3.TextInputLayout.FilledBox"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox.Dense"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
@@ -51,7 +60,6 @@
             android:id="@+id/tiet_seed"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:backgroundTint="@color/transparent"
             android:hint="@string/seed"
             android:inputType="numberSigned"
             android:textAlignment="textEnd" />

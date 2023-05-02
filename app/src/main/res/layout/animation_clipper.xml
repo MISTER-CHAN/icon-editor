@@ -36,21 +36,25 @@
             android:layout_margin="8dp"
             android:text="@string/from" />
 
-        <SeekBar
-            android:id="@+id/sb_from"
+        <com.google.android.material.slider.Slider
+            android:id="@+id/s_from"
+            android:layout_width="0dp"
             android:layout_gravity="center_vertical|fill_horizontal"
-            android:max="1"
-            android:progress="0" />
+            android:stepSize="1"
+            android:value="0"
+            android:valueTo="1" />
 
         <TextView
             android:layout_gravity="center_vertical|start"
             android:layout_margin="8dp"
             android:text="@string/to" />
 
-        <SeekBar
-            android:id="@+id/sb_to"
+        <com.google.android.material.slider.Slider
+            android:id="@+id/s_to"
+            android:layout_width="0dp"
             android:layout_gravity="center_vertical|fill_horizontal"
-            android:max="1"
-            android:progress="1" />
+            android:stepSize="1"
+            android:value="1"
+            android:valueTo="1" />
     </GridLayout>
 </LinearLayout>

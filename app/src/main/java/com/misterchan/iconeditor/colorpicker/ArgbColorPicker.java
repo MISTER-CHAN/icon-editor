@@ -7,6 +7,8 @@ import androidx.annotation.ColorLong;
 import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.slider.Slider;
 import com.google.android.material.textfield.TextInputEditText;
 import com.misterchan.iconeditor.Color;
 import com.misterchan.iconeditor.R;
@@ -15,16 +17,16 @@ import com.misterchan.iconeditor.Settings;
 public abstract class ArgbColorPicker extends ColorPicker {
 
     protected final Context context;
-    protected SeekBar sbAlpha;
-    protected SeekBar sbRed, sbGreen, sbBlue;
+    protected Slider sAlpha;
+    protected Slider sRed, sGreen, sBlue;
     protected TextInputEditText tietAlpha;
     protected TextInputEditText tietRed, tietGreen, tietBlue;
 
     protected void initViews(AlertDialog dialog) {
-        sbAlpha = dialog.findViewById(R.id.sb_alpha);
-        sbRed = dialog.findViewById(R.id.sb_comp_0);
-        sbGreen = dialog.findViewById(R.id.sb_comp_1);
-        sbBlue = dialog.findViewById(R.id.sb_comp_2);
+        sAlpha = dialog.findViewById(R.id.s_alpha);
+        sRed = dialog.findViewById(R.id.s_comp_0);
+        sGreen = dialog.findViewById(R.id.s_comp_1);
+        sBlue = dialog.findViewById(R.id.s_comp_2);
         tietAlpha = dialog.findViewById(R.id.tiet_alpha);
         tietRed = dialog.findViewById(R.id.tiet_comp_0);
         tietGreen = dialog.findViewById(R.id.tiet_comp_1);
@@ -36,7 +38,7 @@ public abstract class ArgbColorPicker extends ColorPicker {
                               final OnColorPickListener onColorPickListener,
                               @ColorLong final Long oldColor, @StringRes int neutralFunction) {
         this.context = context;
-        dialogBuilder = new AlertDialog.Builder(context)
+        dialogBuilder = new MaterialAlertDialogBuilder(context)
                 .setNegativeButton(R.string.cancel, null)
                 .setPositiveButton(R.string.ok,
                         (dialog, which) -> onColorPickListener.onPick(oldColor, newColor))

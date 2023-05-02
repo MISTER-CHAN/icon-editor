@@ -1,21 +1,23 @@
 package com.misterchan.iconeditor.dialog;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.view.Gravity;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.CheckBox;
-import android.widget.RadioButton;
-import android.widget.SeekBar;
 
 import androidx.appcompat.app.AlertDialog;
 
+import com.google.android.material.button.MaterialButtonToggleGroup;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.slider.Slider;
 import com.google.android.material.textfield.TextInputEditText;
 import com.misterchan.iconeditor.R;
 import com.misterchan.iconeditor.listener.AfterTextChangedListener;
-import com.misterchan.iconeditor.listener.OnCBCheckedListener;
-import com.misterchan.iconeditor.listener.OnSBChangeListener;
+import com.misterchan.iconeditor.listener.OnButtonCheckedListener;
+import com.misterchan.iconeditor.listener.OnSliderChangeListener;
 
 public class NoiseGenerator {
 
@@ -57,7 +59,7 @@ public class NoiseGenerator {
     private final Properties properties = new Properties();
 
     public NoiseGenerator(Context context) {
-        builder = new AlertDialog.Builder(context)
+        builder = new MaterialAlertDialogBuilder(context)
                 .setTitle(R.string.generate_noise)
                 .setView(R.layout.noise_generator);
     }
@@ -78,6 +80,7 @@ public class NoiseGenerator {
         return this;
     }
 
+    @SuppressLint("NonConstantResourceId")
     public void show() {
         final AlertDialog dialog = builder.show();
 
@@ -88,34 +91,34 @@ public class NoiseGenerator {
         window.setAttributes(lp);
 
         final CheckBox cbNoRepeats = dialog.findViewById(R.id.cb_no_repeats);
-        final RadioButton rbPixel = dialog.findViewById(R.id.rb_pixel);
-        final RadioButton rbPoint = dialog.findViewById(R.id.rb_point);
-        final RadioButton rbRef = dialog.findViewById(R.id.rb_ref);
-        final SeekBar sbNoisy = dialog.findViewById(R.id.sb_noisy);
+        final MaterialButtonToggleGroup btgWhatToDraw = dialog.findViewById(R.id.btg_what_to_draw);
+        final Slider sNoisiness = dialog.findViewById(R.id.s_noisiness);
         final TextInputEditText tietSeed = dialog.findViewById(R.id.tiet_seed);
 
-        sbNoisy.setMax(SB_MAX);
+        sNoisiness.setLabelFormatter(value -> value + "%");
+        sNoisiness.setValueTo(SB_MAX);
 
+        btgWhatToDraw.addOnButtonCheckedListener((OnButtonCheckedListener) (group, checkedId) -> {
+            properties.whatToDraw = switch (checkedId) {
+                case R.id.b_pixel -> WhatToDraw.PIXEL;
+                case R.id.b_point -> WhatToDraw.POINT;
+                case R.id.b_ref -> WhatToDraw.REF;
+                default -> null;
+            };
+            update(true);
+        });
         cbNoRepeats.setOnCheckedChangeListener((buttonView, isChecked) -> {
             properties.noRepeats = isChecked;
             update(true);
         });
-        rbPixel.setOnCheckedChangeListener((OnCBCheckedListener) buttonView -> {
-            properties.whatToDraw = WhatToDraw.PIXEL;
-            update(true);
-        });
-        rbPoint.setOnCheckedChangeListener((OnCBCheckedListener) buttonView -> {
-            properties.whatToDraw = WhatToDraw.POINT;
-            update(true);
-        });
-        rbRef.setOnCheckedChangeListener((OnCBCheckedListener) buttonView -> {
-            properties.whatToDraw = WhatToDraw.REF;
-            update(true);
-        });
-        sbNoisy.setOnSeekBarChangeListener((OnSBChangeListener) (seekBar, progress, stopped) -> {
-            properties.noisiness = (float) progress / (float) SB_MAX;
-            update(stopped);
-        });
+        {
+            final OnSliderChangeListener l = (slider, value, stopped) -> {
+                properties.noisiness = value / (float) SB_MAX;
+                update(stopped);
+            };
+            sNoisiness.addOnChangeListener(l);
+            sNoisiness.addOnSliderTouchListener(l);
+        }
         tietSeed.addTextChangedListener((AfterTextChangedListener) s -> {
             try {
                 properties.seed = Long.parseLong(s);

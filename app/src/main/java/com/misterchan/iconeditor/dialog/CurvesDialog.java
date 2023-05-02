@@ -23,6 +23,9 @@ import androidx.annotation.Size;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.view.OneShotPreDrawListener;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.tabs.TabItem;
+import com.google.android.material.tabs.TabLayout;
 import com.misterchan.iconeditor.Color;
 import com.misterchan.iconeditor.listener.OnCBCheckedListener;
 import com.misterchan.iconeditor.R;
@@ -88,7 +91,7 @@ public class CurvesDialog {
     }
 
     public CurvesDialog(Context context) {
-        builder = new AlertDialog.Builder(context)
+        builder = new MaterialAlertDialogBuilder(context)
                 .setTitle(R.string.curves)
                 .setView(R.layout.curves);
 
@@ -288,14 +291,32 @@ public class CurvesDialog {
         iv = dialog.findViewById(R.id.iv);
         ivGrid = dialog.findViewById(R.id.iv_grid);
         ivHistogram = dialog.findViewById(R.id.iv_histogram);
-        final RadioButton rbRgbOutputs = dialog.findViewById(R.id.rb_rgb_outputs);
+        final TabLayout tlComps = dialog.findViewById(R.id.tl_comps);
 
         iv.setOnTouchListener(onImageViewTouchListener);
-        ((CompoundButton) dialog.findViewById(R.id.rb_red)).setOnCheckedChangeListener((OnCBCheckedListener) buttonView -> selectComp(0));
-        ((CompoundButton) dialog.findViewById(R.id.rb_green)).setOnCheckedChangeListener((OnCBCheckedListener) buttonView -> selectComp(1));
-        ((CompoundButton) dialog.findViewById(R.id.rb_blue)).setOnCheckedChangeListener((OnCBCheckedListener) buttonView -> selectComp(2));
-        ((CompoundButton) dialog.findViewById(R.id.rb_alpha)).setOnCheckedChangeListener((OnCBCheckedListener) buttonView -> selectComp(3));
-        rbRgbOutputs.setOnCheckedChangeListener((OnCBCheckedListener) buttonView -> selectComp(4));
+
+        tlComps.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @SuppressLint("NonConstantResourceId")
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                selectComp(switch (tab.getPosition()) {
+                    case 0 -> 4;
+                    case 1 -> 0;
+                    case 2 -> 1;
+                    case 3 -> 2;
+                    case 4 -> 3;
+                    default -> 4;
+                });
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+            }
+        });
 
         OneShotPreDrawListener.add(fl, () -> {
             final int width = fl.getMeasuredWidth();
@@ -328,7 +349,8 @@ public class CurvesDialog {
             }
         }
 
-        rbRgbOutputs.setChecked(true);
+        tlComps.selectTab(null);
+        tlComps.getTabAt(0).select();
 
         return this;
     }

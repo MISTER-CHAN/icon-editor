@@ -10,6 +10,7 @@ import android.widget.GridLayout;
 import androidx.annotation.Size;
 import androidx.appcompat.app.AlertDialog;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputEditText;
 import com.misterchan.iconeditor.listener.AfterTextChangedListener;
 import com.misterchan.iconeditor.R;
@@ -31,8 +32,8 @@ public class ColorMatrixManager {
     private final float[] m;
 
     public ColorMatrixManager(Context context,
-                                          final OnMatrixElementsChangedListener onMatrixElementsChangeListener,
-                                          @Size(value = 20) float[] defaultMatrix) {
+                              final OnMatrixElementsChangedListener onMatrixElementsChangeListener,
+                              @Size(value = 20) float[] defaultMatrix) {
         this(context,
                 onMatrixElementsChangeListener,
                 null, null,
@@ -40,9 +41,9 @@ public class ColorMatrixManager {
     }
 
     public ColorMatrixManager(Context context,
-                                          final OnMatrixElementsChangedListener onMatrixElementsChangeListener,
-                                          final DialogInterface.OnClickListener onPosButtonClickListener,
-                                          final DialogInterface.OnCancelListener onCancelListener) {
+                              final OnMatrixElementsChangedListener onMatrixElementsChangeListener,
+                              final DialogInterface.OnClickListener onPosButtonClickListener,
+                              final DialogInterface.OnCancelListener onCancelListener) {
         this(context,
                 onMatrixElementsChangeListener,
                 onPosButtonClickListener,
@@ -56,16 +57,15 @@ public class ColorMatrixManager {
     }
 
     public ColorMatrixManager(Context context,
-                                          final OnMatrixElementsChangedListener onMatrixElementsChangeListener,
-                                          final DialogInterface.OnClickListener onPosButtonClickListener,
-                                          final DialogInterface.OnCancelListener onCancelListener,
-                                          @Size(value = 20) float[] defaultMatrix) {
+                              final OnMatrixElementsChangedListener onMatrixElementsChangeListener,
+                              final DialogInterface.OnClickListener onPosButtonClickListener,
+                              final DialogInterface.OnCancelListener onCancelListener,
+                              @Size(value = 20) float[] defaultMatrix) {
         m = defaultMatrix;
 
-        dialogBuilder = new AlertDialog.Builder(context)
+        dialogBuilder = new MaterialAlertDialogBuilder(context)
                 .setOnCancelListener(onCancelListener)
                 .setPositiveButton(R.string.ok, onPosButtonClickListener)
-                .setTitle(R.string.channel_mixer)
                 .setView(R.layout.color_matrix);
 
         if (onCancelListener != null) {
@@ -83,6 +83,7 @@ public class ColorMatrixManager {
         final WindowManager.LayoutParams lp = window.getAttributes();
         lp.flags &= ~WindowManager.LayoutParams.FLAG_DIM_BEHIND;
         lp.gravity = Gravity.BOTTOM;
+        lp.verticalMargin = -0.25f;
         window.setAttributes(lp);
 
         final GridLayout gl = dialog.findViewById(R.id.gl);

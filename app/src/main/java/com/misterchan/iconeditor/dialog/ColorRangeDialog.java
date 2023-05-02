@@ -9,6 +9,7 @@ import android.view.WindowManager;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.slider.LabelFormatter;
 import com.google.android.material.slider.RangeSlider;
 import com.google.android.material.slider.Slider;
@@ -31,7 +32,7 @@ public class ColorRangeDialog {
     private RangeSlider rsSaturation, rsValue;
 
     public ColorRangeDialog(Context context) {
-        builder = new AlertDialog.Builder(context)
+        builder = new MaterialAlertDialogBuilder(context)
                 .setPositiveButton(R.string.ok, null)
                 .setTitle(R.string.color_range)
                 .setView(R.layout.color_range);

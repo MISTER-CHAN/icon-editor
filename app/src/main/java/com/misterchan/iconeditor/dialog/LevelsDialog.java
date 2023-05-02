@@ -13,6 +13,7 @@ import android.widget.ImageView;
 
 import androidx.appcompat.app.AlertDialog;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.slider.Slider;
 import com.misterchan.iconeditor.Color;
 import com.misterchan.iconeditor.R;
@@ -38,7 +39,7 @@ public class LevelsDialog {
     private Slider sOutputHighlights, sOutputShadows;
 
     public LevelsDialog(Context context) {
-        builder = new AlertDialog.Builder(context)
+        builder = new MaterialAlertDialogBuilder(context)
                 .setTitle(R.string.levels)
                 .setView(R.layout.levels);
 

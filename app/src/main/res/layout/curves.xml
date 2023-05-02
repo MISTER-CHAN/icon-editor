@@ -1,45 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp">
 
-    <RadioGroup
-        android:layout_width="wrap_content"
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tl_comps"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:backgroundTint="@color/transparent"
+        app:tabMode="scrollable">
 
-        <RadioButton
-            android:id="@+id/rb_rgb_outputs"
+        <com.google.android.material.tabs.TabItem
+            android:id="@+id/ti_rgb_outputs"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/rgb_outputs" />
 
-        <RadioButton
-            android:id="@+id/rb_red"
+        <com.google.android.material.tabs.TabItem
+            android:id="@+id/ti_r"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/r" />
 
-        <RadioButton
-            android:id="@+id/rb_green"
+        <com.google.android.material.tabs.TabItem
+            android:id="@+id/ti_g"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/g" />
 
-        <RadioButton
-            android:id="@+id/rb_blue"
+        <com.google.android.material.tabs.TabItem
+            android:id="@+id/ti_b"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/b" />
 
-        <RadioButton
-            android:id="@+id/rb_alpha"
+        <com.google.android.material.tabs.TabItem
+            android:id="@+id/ti_a"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/a" />
-    </RadioGroup>
+    </com.google.android.material.tabs.TabLayout>
 
     <FrameLayout
         android:id="@+id/fl"

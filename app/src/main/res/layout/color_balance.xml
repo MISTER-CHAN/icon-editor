@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -17,12 +18,14 @@
             android:layout_margin="8dp"
             android:text="@string/c" />
 
-        <SeekBar
-            android:id="@+id/sb_red"
+        <com.google.android.material.slider.Slider
+            android:id="@+id/s_red"
+            android:layout_width="0dp"
             android:layout_gravity="center_vertical|fill_horizontal"
-            android:max="20"
-            android:min="0"
-            android:progress="10" />
+            android:value="1"
+            android:valueFrom="0"
+            android:valueTo="2"
+            app:labelBehavior="gone" />
 
         <TextView
             android:layout_gravity="center_vertical"
@@ -34,12 +37,14 @@
             android:layout_margin="8dp"
             android:text="@string/m" />
 
-        <SeekBar
-            android:id="@+id/sb_green"
+        <com.google.android.material.slider.Slider
+            android:id="@+id/s_green"
+            android:layout_width="0dp"
             android:layout_gravity="center_vertical|fill_horizontal"
-            android:max="20"
-            android:min="0"
-            android:progress="10" />
+            android:value="1"
+            android:valueFrom="0"
+            android:valueTo="2"
+            app:labelBehavior="gone" />
 
         <TextView
             android:layout_gravity="center_vertical"
@@ -51,12 +56,14 @@
             android:layout_margin="8dp"
             android:text="@string/y" />
 
-        <SeekBar
-            android:id="@+id/sb_blue"
+        <com.google.android.material.slider.Slider
+            android:id="@+id/s_blue"
+            android:layout_width="0dp"
             android:layout_gravity="center_vertical|fill_horizontal"
-            android:max="20"
-            android:min="0"
-            android:progress="10" />
+            android:value="1"
+            android:valueFrom="0"
+            android:valueTo="2"
+            app:labelBehavior="gone" />
 
         <TextView
             android:layout_gravity="center_vertical"

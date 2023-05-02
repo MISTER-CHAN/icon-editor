@@ -6,18 +6,19 @@ import android.view.View;
 import android.widget.GridLayout;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
-import android.widget.SeekBar;
 import android.widget.Spinner;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.SwitchCompat;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.slider.Slider;
 import com.google.android.material.textfield.TextInputEditText;
+import com.misterchan.iconeditor.R;
 import com.misterchan.iconeditor.listener.AfterTextChangedListener;
 import com.misterchan.iconeditor.listener.OnCBCheckedListener;
 import com.misterchan.iconeditor.listener.OnItemSelectedListener;
-import com.misterchan.iconeditor.listener.OnSBProgressChangedListener;
-import com.misterchan.iconeditor.R;
+import com.misterchan.iconeditor.listener.OnSliderValueChangeListener;
 import com.waynejo.androidndkgif.GifEncoder;
 
 public class QualityManager {
@@ -40,7 +41,7 @@ public class QualityManager {
     private int quality;
 
     private QualityManager(Context context) {
-        builder = new AlertDialog.Builder(context)
+        builder = new MaterialAlertDialogBuilder(context)
                 .setTitle(R.string.quality)
                 .setView(R.layout.quality)
                 .setNegativeButton(R.string.cancel, null);
@@ -72,7 +73,7 @@ public class QualityManager {
         final LinearLayout llQuality = dialog.findViewById(R.id.ll_quality);
         final RadioButton rbLossless = dialog.findViewById(R.id.rb_lossless);
         final RadioButton rbLossy = dialog.findViewById(R.id.rb_lossy);
-        final SeekBar sbQuality = dialog.findViewById(R.id.sb_quality);
+        final Slider sQuality = dialog.findViewById(R.id.s_quality);
         final Spinner sGifEncodingType = dialog.findViewById(R.id.s_gif_encoding_type);
         final SwitchCompat sGifDither = dialog.findViewById(R.id.s_gif_dither);
         final TextInputEditText tietQuality = dialog.findViewById(R.id.tiet_quality);
@@ -106,17 +107,17 @@ public class QualityManager {
             });
         } else {
             llQuality.setVisibility(View.VISIBLE);
-            sbQuality.setProgress(quality);
-            sbQuality.setOnSeekBarChangeListener((OnSBProgressChangedListener) (seekBar, progress) -> {
-                quality = progress;
-                tietQuality.setText(String.valueOf(progress));
+            sQuality.setValue(quality);
+            sQuality.addOnChangeListener((OnSliderValueChangeListener) (slider, value) -> {
+                quality = (int) value;
+                tietQuality.setText(String.valueOf(value));
             });
             tietQuality.setText(String.valueOf(quality));
             tietQuality.addTextChangedListener((AfterTextChangedListener) s -> {
                 try {
                     final int i = Integer.parseUnsignedInt(s);
                     quality = i;
-                    sbQuality.setProgress(i);
+                    sQuality.setValue(i);
                 } catch (NumberFormatException e) {
                 }
             });

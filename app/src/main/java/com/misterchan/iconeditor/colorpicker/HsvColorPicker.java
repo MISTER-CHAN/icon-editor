@@ -2,30 +2,31 @@ package com.misterchan.iconeditor.colorpicker;
 
 import android.content.Context;
 import android.widget.GridLayout;
-import android.widget.SeekBar;
 
 import androidx.annotation.ColorLong;
 import androidx.annotation.IntRange;
 import androidx.annotation.Size;
 import androidx.appcompat.app.AlertDialog;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.slider.Slider;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
-import com.misterchan.iconeditor.listener.AfterTextChangedListener;
 import com.misterchan.iconeditor.Color;
-import com.misterchan.iconeditor.listener.OnSBProgressChangedListener;
 import com.misterchan.iconeditor.R;
+import com.misterchan.iconeditor.listener.AfterTextChangedListener;
+import com.misterchan.iconeditor.listener.OnSliderValueChangeListener;
 
 public class HsvColorPicker extends ColorPicker {
 
-    private SeekBar sbHue, sbSaturation, sbValue;
+    private Slider sHue, sSaturation, sValue;
     private TextInputEditText tietHue, tietSaturation, tietValue;
 
     @Size(3)
     private final float[] hsv = new float[3];
 
     private HsvColorPicker(Context context, final OnColorPickListener onColorPickListener, @ColorLong final Long oldColor) {
-        dialogBuilder = new AlertDialog.Builder(context)
+        dialogBuilder = new MaterialAlertDialogBuilder(context)
                 .setNegativeButton(R.string.cancel, null)
                 .setPositiveButton(R.string.ok, (dialog, which) -> onColorPickListener.onPick(oldColor, newColor))
                 .setTitle(R.string.convert_hsv_to_rgb)
@@ -47,17 +48,17 @@ public class HsvColorPicker extends ColorPicker {
     private void onHueChanged(String s) {
         try {
             float f = Float.parseFloat(s);
-            sbHue.setProgress((int) f);
+            sHue.setValue(f);
             hsv[0] = f % 360.0f;
         } catch (NumberFormatException e) {
         }
         onComponentChanged();
     }
 
-    private void onSatOrValChanged(@IntRange(from = 1, to = 2) int index, String s, SeekBar seekBar) {
+    private void onSatOrValChanged(@IntRange(from = 1, to = 2) int index, String s, Slider slider) {
         try {
             float f = Float.parseFloat(s);
-            seekBar.setProgress((int) f);
+            slider.setValue(f);
             hsv[index] = f / 100.0f;
         } catch (NumberFormatException e) {
         }
@@ -69,9 +70,9 @@ public class HsvColorPicker extends ColorPicker {
         final AlertDialog dialog = dialogBuilder.show();
 
         final GridLayout gl = dialog.findViewById(R.id.gl);
-        sbHue = dialog.findViewById(R.id.sb_comp_0);
-        sbSaturation = dialog.findViewById(R.id.sb_comp_1);
-        sbValue = dialog.findViewById(R.id.sb_comp_2);
+        sHue = dialog.findViewById(R.id.s_comp_0);
+        sSaturation = dialog.findViewById(R.id.s_comp_1);
+        sValue = dialog.findViewById(R.id.s_comp_2);
         final TextInputLayout tilHue = dialog.findViewById(R.id.til_comp_0);
         final TextInputLayout tilSaturation = dialog.findViewById(R.id.til_comp_1);
         final TextInputLayout tilValue = dialog.findViewById(R.id.til_comp_2);
@@ -83,9 +84,9 @@ public class HsvColorPicker extends ColorPicker {
         hideOtherColorPickers(dialog);
         hideAlphaComp(gl);
 
-        sbHue.setMax(360);
-        sbSaturation.setMax(100);
-        sbValue.setMax(100);
+        sHue.setValueTo(360.0f);
+        sSaturation.setValueTo(100.0f);
+        sValue.setValueTo(100.0f);
         tietHue.setInputType(EDITOR_TYPE_NUM_DEC);
         tietSaturation.setInputType(EDITOR_TYPE_NUM_DEC);
         tietValue.setInputType(EDITOR_TYPE_NUM_DEC);
@@ -95,12 +96,12 @@ public class HsvColorPicker extends ColorPicker {
         tilSaturation.setSuffixText("%");
         tilValue.setHint(R.string.v);
         tilValue.setSuffixText("%");
-        sbHue.setOnSeekBarChangeListener((OnSBProgressChangedListener) (seekBar, progress) -> tietHue.setText(String.valueOf(progress)));
-        sbSaturation.setOnSeekBarChangeListener((OnSBProgressChangedListener) (seekBar, progress) -> tietSaturation.setText(String.valueOf(progress)));
-        sbValue.setOnSeekBarChangeListener((OnSBProgressChangedListener) (seekBar, progress) -> tietValue.setText(String.valueOf(progress)));
+        sHue.addOnChangeListener((OnSliderValueChangeListener) (slider, value) -> tietHue.setText(String.valueOf(value)));
+        sSaturation.addOnChangeListener((OnSliderValueChangeListener) (slider, value) -> tietSaturation.setText(String.valueOf(value)));
+        sValue.addOnChangeListener((OnSliderValueChangeListener) (slider, value) -> tietValue.setText(String.valueOf(value)));
         tietHue.addTextChangedListener((AfterTextChangedListener) this::onHueChanged);
-        tietSaturation.addTextChangedListener((AfterTextChangedListener) s -> onSatOrValChanged(1, s, sbSaturation));
-        tietValue.addTextChangedListener((AfterTextChangedListener) s -> onSatOrValChanged(2, s, sbValue));
+        tietSaturation.addTextChangedListener((AfterTextChangedListener) s -> onSatOrValChanged(1, s, sSaturation));
+        tietValue.addTextChangedListener((AfterTextChangedListener) s -> onSatOrValChanged(2, s, sValue));
 
         Color.colorToHSV(Color.toArgb(oldColor), hsv);
         tietHue.setText(String.valueOf(hsv[0]));

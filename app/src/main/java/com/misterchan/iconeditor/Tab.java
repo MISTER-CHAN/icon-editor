@@ -702,6 +702,17 @@ public class Tab {
         lastTab.tvBackground.append("┃");
     }
 
+    public static void updateFrameIndexIcons(List<Tab> tabs) {
+        int frameIndex = 0;
+        for (final Tab tab : tabs) {
+            if (!tab.isBackground) {
+                continue;
+            }
+            frameIndex = tab.isFirstFrame ? 0 : frameIndex + 1;
+            tab.tvFrameIndex.setText(tab.isFirstFrame ? null : "[" + frameIndex + "] ");
+        }
+    }
+
     /**
      * Can only call after distinguishing projects.
      */

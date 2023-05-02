@@ -8,6 +8,7 @@ import android.widget.RadioButton;
 
 import androidx.appcompat.app.AlertDialog;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputEditText;
 import com.misterchan.iconeditor.listener.AfterTextChangedListener;
 import com.misterchan.iconeditor.R;
@@ -40,7 +41,7 @@ public class ImageSizeManager {
         ratio = (double) defaultWidth / (double) defaultHeight;
         this.listener = listener;
 
-        builder = new AlertDialog.Builder(context)
+        builder = new MaterialAlertDialogBuilder(context)
                 .setNegativeButton(R.string.cancel, null)
                 .setTitle(R.string.image_size)
                 .setView(R.layout.image_size);

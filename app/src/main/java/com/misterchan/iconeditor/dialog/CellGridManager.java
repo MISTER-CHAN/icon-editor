@@ -5,6 +5,7 @@ import android.widget.CheckBox;
 
 import androidx.appcompat.app.AlertDialog;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputEditText;
 import com.misterchan.iconeditor.CellGrid;
 import com.misterchan.iconeditor.R;
@@ -27,7 +28,7 @@ public class CellGridManager {
         this.cellGrid = cellGrid;
         this.onUpdateListener = onUpdateListener;
 
-        builder = new AlertDialog.Builder(context)
+        builder = new MaterialAlertDialogBuilder(context)
                 .setNegativeButton(R.string.cancel, null)
                 .setPositiveButton(R.string.ok, (dialog, which) -> update())
                 .setTitle(R.string.cell_grid)

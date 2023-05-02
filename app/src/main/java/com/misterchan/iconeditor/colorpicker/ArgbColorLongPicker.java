@@ -3,7 +3,6 @@ package com.misterchan.iconeditor.colorpicker;
 import android.content.Context;
 import android.graphics.ColorSpace;
 import android.view.View;
-import android.widget.SeekBar;
 import android.widget.TextView;
 
 import androidx.annotation.ColorLong;
@@ -12,10 +11,11 @@ import androidx.annotation.Size;
 import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
 
-import com.misterchan.iconeditor.listener.AfterTextChangedListener;
+import com.google.android.material.slider.Slider;
 import com.misterchan.iconeditor.Color;
-import com.misterchan.iconeditor.listener.OnSBProgressChangedListener;
 import com.misterchan.iconeditor.R;
+import com.misterchan.iconeditor.listener.AfterTextChangedListener;
+import com.misterchan.iconeditor.listener.OnSliderValueChangeListener;
 
 public class ArgbColorLongPicker extends ArgbColorPicker {
 
@@ -37,10 +37,10 @@ public class ArgbColorLongPicker extends ArgbColorPicker {
         tietBlue.setText(String.valueOf(argb[3] = Color.blue(color)));
     }
 
-    protected void onComponentChanged(@IntRange(from = 0, to = 3) int index, String s, SeekBar seekBar) {
+    protected void onComponentChanged(@IntRange(from = 0, to = 3) int index, String s, Slider slider) {
         try {
             final float f = Float.parseFloat(s);
-            seekBar.setProgress((int) (f * 100.0f));
+            slider.setValue(f);
             argb[index] = f;
         } catch (NumberFormatException e) {
         }
@@ -56,27 +56,27 @@ public class ArgbColorLongPicker extends ArgbColorPicker {
         initViews(dialog);
 
         dialog.findViewById(R.id.ll_color_space).setVisibility(View.VISIBLE);
-        sbAlpha.setMin((int) (colorSpace.getMinValue(3) * 100.0f));
-        sbAlpha.setMax((int) (colorSpace.getMaxValue(3) * 100.0f));
-        sbRed.setMin((int) (colorSpace.getMinValue(0) * 100.0f));
-        sbRed.setMax((int) (colorSpace.getMaxValue(0) * 100.0f));
-        sbGreen.setMin((int) (colorSpace.getMinValue(1) * 100.0f));
-        sbGreen.setMax((int) (colorSpace.getMaxValue(1) * 100.0f));
-        sbBlue.setMin((int) (colorSpace.getMinValue(2) * 100.0f));
-        sbBlue.setMax((int) (colorSpace.getMaxValue(2) * 100.0f));
+        sAlpha.setValueFrom(colorSpace.getMinValue(3));
+        sAlpha.setValueTo(colorSpace.getMaxValue(3));
+        sRed.setValueFrom(colorSpace.getMinValue(0));
+        sRed.setValueTo(colorSpace.getMaxValue(0));
+        sGreen.setValueFrom(colorSpace.getMinValue(1));
+        sGreen.setValueTo(colorSpace.getMaxValue(1));
+        sBlue.setValueFrom(colorSpace.getMinValue(2));
+        sBlue.setValueTo(colorSpace.getMaxValue(2));
         tietAlpha.setInputType(ColorPicker.EDITOR_TYPE_NUM_DEC);
         tietRed.setInputType(ColorPicker.EDITOR_TYPE_NUM_DEC_SIGNED);
         tietGreen.setInputType(ColorPicker.EDITOR_TYPE_NUM_DEC_SIGNED);
         tietBlue.setInputType(ColorPicker.EDITOR_TYPE_NUM_DEC_SIGNED);
         ((TextView) dialog.findViewById(R.id.tv_color_space)).setText(colorSpace.toString());
-        sbAlpha.setOnSeekBarChangeListener((OnSBProgressChangedListener) (seekBar, progress) -> tietAlpha.setText(String.valueOf(progress / 100.0f)));
-        sbRed.setOnSeekBarChangeListener((OnSBProgressChangedListener) (seekBar, progress) -> tietRed.setText(String.valueOf(progress / 100.0f)));
-        sbGreen.setOnSeekBarChangeListener((OnSBProgressChangedListener) (seekBar, progress) -> tietGreen.setText(String.valueOf(progress / 100.0f)));
-        sbBlue.setOnSeekBarChangeListener((OnSBProgressChangedListener) (seekBar, progress) -> tietBlue.setText(String.valueOf(progress / 100.0f)));
-        tietAlpha.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(0, s, sbAlpha));
-        tietRed.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(1, s, sbRed));
-        tietGreen.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(2, s, sbGreen));
-        tietBlue.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(3, s, sbBlue));
+        sAlpha.addOnChangeListener((OnSliderValueChangeListener) (slider, value) -> tietAlpha.setText(String.valueOf(value)));
+        sRed.addOnChangeListener((OnSliderValueChangeListener) (slider, value) -> tietRed.setText(String.valueOf(value)));
+        sGreen.addOnChangeListener((OnSliderValueChangeListener) (slider, value) -> tietGreen.setText(String.valueOf(value)));
+        sBlue.addOnChangeListener((OnSliderValueChangeListener) (slider, value) -> tietBlue.setText(String.valueOf(value)));
+        tietAlpha.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(0, s, sAlpha));
+        tietRed.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(1, s, sRed));
+        tietGreen.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(2, s, sGreen));
+        tietBlue.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(3, s, sBlue));
 
         tietAlpha.setText(String.valueOf(Color.alpha(oldColor)));
         loadColor(oldColor);

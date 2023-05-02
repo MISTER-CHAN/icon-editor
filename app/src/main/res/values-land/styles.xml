@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="TextInputLayout" parent="Widget.Material3.TextInputLayout.FilledBox">
+    <style name="TextInputLayout" parent="Widget.Material3.TextInputLayout.FilledBox.Dense">
         <item name="android:layout_marginVertical">2dp</item>
     </style>
 
     <style name="ToolOptionsBTG" parent="ToolOptionsLL">
+        <item name="android:layout_gravity">center_horizontal</item>
         <item name="android:layout_marginVertical">2dp</item>
     </style>
 

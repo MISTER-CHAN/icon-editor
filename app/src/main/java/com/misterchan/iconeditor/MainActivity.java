@@ -48,8 +48,6 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
@@ -78,6 +76,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButtonToggleGroup;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
@@ -101,10 +100,10 @@ import com.misterchan.iconeditor.dialog.MatrixManager;
 import com.misterchan.iconeditor.dialog.NewImageDialog;
 import com.misterchan.iconeditor.dialog.NoiseGenerator;
 import com.misterchan.iconeditor.dialog.QualityManager;
-import com.misterchan.iconeditor.dialog.SeekBarDialog;
+import com.misterchan.iconeditor.dialog.SliderDialog;
 import com.misterchan.iconeditor.listener.AfterTextChangedListener;
 import com.misterchan.iconeditor.listener.OnButtonCheckedListener;
-import com.misterchan.iconeditor.listener.OnSBChangeListener;
+import com.misterchan.iconeditor.listener.OnSliderChangeListener;
 import com.misterchan.iconeditor.util.BitmapUtils;
 import com.misterchan.iconeditor.util.RunnableRunnable;
 import com.misterchan.iconeditor.util.UriUtils;
@@ -252,7 +251,6 @@ public class MainActivity extends AppCompatActivity {
     private boolean isEditingText = false;
     private boolean isShapeStopped = true;
     private boolean isWritingSoftStrokes = false;
-    private Button bZoom;
     private Canvas canvas;
     private Canvas chessboardCanvas;
     private Canvas gridCanvas;
@@ -315,6 +313,7 @@ public class MainActivity extends AppCompatActivity {
     private LinkedList<Long> palette;
     private List<Tab> tabs;
     private MaterialButtonToggleGroup btgEyedropperSrc;
+    private MaterialButtonToggleGroup btgMagicEraserSides;
     private MaterialButtonToggleGroup btgTools;
     private MaterialButtonToggleGroup btgZoom;
     private MaterialToolbar topAppBar;
@@ -331,8 +330,6 @@ public class MainActivity extends AppCompatActivity {
     private final PointF magErBD = new PointF(0.0f, 0.0f), magErFD = new PointF(0.0f, 0.0f); // Distance
     private Position marqueeBoundBeingDragged = null;
     private Preview imagePreview;
-    private RadioButton rbMagicEraserLeft, rbMagicEraserRight;
-    private CompoundButton cbMagicEraserPosition;
     private final Rect selection = new Rect();
     private final Ruler ruler = new Ruler();
     private SubMenu smLayerBlendModes;
@@ -568,7 +565,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onChanged(float hMin, float hMax, float sMin, float sMax, float vMin, float vMax, boolean stopped) {
-            MainActivity.this.runOrStart(() -> {
+            runOrStart(() -> {
                 if (hMin == 0 && hMax == 360 && sMin == 0x0 && sMax == 0xFF && vMin == 0x0 && vMax == 0xFF) {
                     imagePreview.clearFilters();
                 } else {
@@ -584,7 +581,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                     imagePreview.setPixels(dst, width, height);
                 }
-                MainActivity.this.drawImagePreviewOntoView(stopped);
+                drawImagePreviewOntoView(stopped);
             }, stopped);
             tvStatus.setText(getString(R.string.state_color_range,
                     hMin, hMax, sMin * 100.0f, sMax * 100.0f, vMin * 100.0f, vMax * 100.0f));
@@ -732,8 +729,8 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    private final OnSBChangeListener onFilterContrastSeekBarChangeListener = (seekBar, progress, stopped) -> {
-        final float scale = progress / 10.0f, shift = 0xFF / 2.0f * (1.0f - scale);
+    private final OnSliderChangeListener onFilterContrastSliderChangeListener = (slider, value, stopped) -> {
+        final float scale = value, shift = 0xFF / 2.0f * (1.0f - scale);
         runOrStart(() -> {
             imagePreview.addLightingColorFilter(scale, shift);
             drawImagePreviewOntoView(stopped);
@@ -741,38 +738,37 @@ public class MainActivity extends AppCompatActivity {
         tvStatus.setText(getString(R.string.state_contrast, scale));
     };
 
-    private final OnSBChangeListener onFilterHToASeekBarChangeListener = (seekBar, progress, stopped) -> {
+    private final OnSliderChangeListener onFilterHToASliderChangeListener = (slider, value, stopped) -> {
         runOrStart(() -> {
             final int w = imagePreview.getWidth(), h = imagePreview.getHeight();
             final int[] src = imagePreview.getPixels(), dst = new int[w * h];
-            BitmapUtils.setAlphaByHue(src, dst, progress);
+            BitmapUtils.setAlphaByHue(src, dst, value);
             imagePreview.setPixels(dst, w, h);
             drawImagePreviewOntoView(stopped);
         }, stopped);
-        tvStatus.setText(getString(R.string.state_hue, (float) progress));
+        tvStatus.setText(getString(R.string.state_hue, value));
     };
 
-    private final OnSBChangeListener onFilterLightnessSeekBarChangeListener = (seekBar, progress, stopped) -> {
+    private final OnSliderChangeListener onFilterLightnessSliderChangeListener = (slider, value, stopped) -> {
         runOrStart(() -> {
-            imagePreview.addLightingColorFilter(1.0f, progress);
+            imagePreview.addLightingColorFilter(1.0f, value);
             drawImagePreviewOntoView(stopped);
         }, stopped);
-        tvStatus.setText(getString(R.string.state_lightness, progress));
+        tvStatus.setText(getString(R.string.state_lightness, (int) value));
     };
 
-    private final OnSBChangeListener onFilterSaturationSeekBarChangeListener = (seekBar, progress, stopped) -> {
-        final float f = progress / 10.0f;
+    private final OnSliderChangeListener onFilterSaturationSliderChangeListener = (slider, value, stopped) -> {
         final ColorMatrix colorMatrix = new ColorMatrix();
-        colorMatrix.setSaturation(f);
+        colorMatrix.setSaturation(value);
         runOrStart(() -> {
             imagePreview.addColorMatrixColorFilter(colorMatrix.getArray());
             drawImagePreviewOntoView(stopped);
         }, stopped);
-        tvStatus.setText(getString(R.string.state_saturation, f));
+        tvStatus.setText(getString(R.string.state_saturation, value));
     };
 
-    private final OnSBChangeListener onFilterThresholdSeekBarChangeListener = (seekBar, progress, stopped) -> {
-        final float f = -0x100 * progress;
+    private final OnSliderChangeListener onFilterThresholdSliderChangeListener = (slider, value, stopped) -> {
+        final float f = -0x100 * value;
         runOrStart(() -> {
             imagePreview.addColorMatrixColorFilter(new float[]{
                     0.213f * 0x100, 0.715f * 0x100, 0.072f * 0x100, 0.0f, f,
@@ -782,23 +778,23 @@ public class MainActivity extends AppCompatActivity {
             });
             drawImagePreviewOntoView(stopped);
         }, stopped);
-        tvStatus.setText(getString(R.string.state_threshold, progress));
+        tvStatus.setText(getString(R.string.state_threshold, (int) value));
     };
 
-    private final OnSBChangeListener onLayerAlphaSeekBarChangeListener = (seekBar, progress, stopped) -> {
-        tab.paint.setAlpha(progress);
+    private final OnSliderChangeListener onLayerAlphaSliderChangeListener = (slider, value, stopped) -> {
+        tab.paint.setAlpha((int) value);
         drawBitmapOntoView(stopped);
         tvStatus.setText(String.format(
                 getString(R.string.state_alpha, Settings.INST.argbCompFormat()),
-                progress));
+                (int) value));
     };
 
-    private final OnSBChangeListener onChangeThresholdListener = (seekBar, progress, stopped) -> {
-        threshold = progress;
+    private final OnSliderChangeListener onChangeThresholdListener = (slider, value, stopped) -> {
+        threshold = (int) value;
         runOrStart(() -> {
-            if (progress == 0xFF) {
+            if (threshold == 0xFF) {
                 imagePreview.drawColor(Color.BLACK, BlendMode.SRC_IN);
-            } else if (progress == 0x00) {
+            } else if (threshold == 0x00) {
                 imagePreview.clearFilters();
             } else {
                 final int w = imagePreview.getWidth(), h = imagePreview.getHeight(), area = w * h;
@@ -806,22 +802,23 @@ public class MainActivity extends AppCompatActivity {
                 for (int i = 0; i < area; ++i) {
                     final int pixel = src[i];
                     dst[i] = pixel & Color.BLACK | Color.rgb(
-                            Color.red(pixel) / progress * progress,
-                            Color.green(pixel) / progress * progress,
-                            Color.blue(pixel) / progress * progress);
+                            Color.red(pixel) / threshold * threshold,
+                            Color.green(pixel) / threshold * threshold,
+                            Color.blue(pixel) / threshold * threshold);
                 }
                 imagePreview.setPixels(dst, 0, w, 0, 0, w, h);
             }
             drawImagePreviewOntoView(stopped);
         }, stopped);
-        tvStatus.setText(getString(R.string.state_threshold, progress));
+        tvStatus.setText(getString(R.string.state_threshold, threshold));
     };
 
     private final DialogInterface.OnClickListener onApplyThresholdListener = onClickImagePreviewNBListener;
 
     private final View.OnClickListener onClickToleranceButtonListener = v -> {
         createImagePreview();
-        new SeekBarDialog(this).setTitle(R.string.tolerance).setMin(0x00).setMax(0xFF).setProgress(threshold)
+        new SliderDialog(this).setTitle(R.string.tolerance).setValueFrom(0x00).setValueTo(0xFF).setValue(threshold)
+                .setStepSize(1.0f)
                 .setOnChangeListener(onChangeThresholdListener)
                 .setOnApplyListener(onApplyThresholdListener)
                 .setOnCancelListener(onCancelImagePreviewListener, false)
@@ -915,7 +912,7 @@ public class MainActivity extends AppCompatActivity {
         public void onTabReselected(TabLayout.Tab tab) {
             final int position = tab.getPosition();
 
-            final AlertDialog dialog = new AlertDialog.Builder(MainActivity.this)
+            final AlertDialog dialog = new MaterialAlertDialogBuilder(MainActivity.this)
                     .setTitle(R.string.move_layer)
                     .setView(R.layout.tab_layout)
                     .setNegativeButton(R.string.cancel, null)
@@ -1069,6 +1066,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         Tab.distinguishProjects(tabs);
+        Tab.updateFrameIndexIcons(tabs);
         final int pos = tabLayout.getSelectedTabPosition();
         selectTab(tabs.get(pos).getBackground().getFirstFrame() == firstFrameKept
                 ? pos : pos + 1);
@@ -1395,11 +1393,11 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public boolean onTouch(View v, MotionEvent event) {
             final float x = event.getX(), y = event.getY();
-            final int bx = MainActivity.this.toBitmapX(x), by = MainActivity.this.toBitmapY(y);
+            final int bx = toBitmapX(x), by = toBitmapY(y);
             final Bitmap src = refBm != null ? refBm : bitmap;
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN: {
-                    paint.setStrokeWidth(MainActivity.this.toScaled((int) paint.getStrokeWidth()));
+                    paint.setStrokeWidth(toScaled((int) paint.getStrokeWidth()));
                     if (isShapeStopped) {
                         isShapeStopped = false;
                         drawPointOntoView(bx, by);
@@ -1470,7 +1468,8 @@ public class MainActivity extends AppCompatActivity {
                     final int colorRight = refBm.getPixel(
                             satX(refBm, toBitmapX(x - radF * (float) Math.sin(theta))),
                             satY(refBm, toBitmapY(y + radF * (float) Math.cos(theta))));
-                    final int backgroundColor = cbMagicEraserPosition == rbMagicEraserLeft ? colorLeft : colorRight;
+                    final int backgroundColor =
+                            btgMagicEraserSides.getCheckedButtonId() == R.id.b_magic_eraser_left ? colorLeft : colorRight;
                     final int foregroundColor = backgroundColor == colorLeft ? colorRight : colorLeft;
 
                     final int left = Math.min(lastBX, bx) - rad, top = Math.min(lastBY, by) - rad,
@@ -2549,6 +2548,8 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    private View.OnTouchListener onTouchIVListener = onTouchIVWithPencilListener;
+
     @SuppressLint("NonConstantResourceId")
     private final MaterialButtonToggleGroup.OnButtonCheckedListener onToolButtonCheckedListener = (group, checkedId, isChecked) -> {
         switch (checkedId) {
@@ -2705,14 +2706,14 @@ public class MainActivity extends AppCompatActivity {
         if (isChecked) {
             flImageView.setOnTouchListener(onTouchIVWithZoomToolListener);
         } else {
-            flImageView.setOnTouchListener((View.OnTouchListener) bZoom.getTag());
+            flImageView.setOnTouchListener(onTouchIVListener);
         }
     };
 
     @SuppressLint("ClickableViewAccessibility")
     private final CompoundButton.OnCheckedChangeListener onSoftBrushTBCheckedChangeListener = (buttonView, isChecked) -> {
         onTouchIVWithSoftBrushListener = isChecked ? onTouchIVWithSoftBrushOnListener : onTouchIVWithSoftBrushOffListener;
-        bZoom.setTag(onTouchIVWithSoftBrushListener);
+        onTouchIVListener = onTouchIVWithSoftBrushListener;
         if (btgZoom.getCheckedButtonId() != R.id.b_zoom) {
             flImageView.setOnTouchListener(onTouchIVWithSoftBrushListener);
         }
@@ -3836,8 +3837,8 @@ public class MainActivity extends AppCompatActivity {
 
         final Button bEyedropper = findViewById(R.id.b_eyedropper);
         final Button bRuler = findViewById(R.id.b_ruler);
-        bZoom = findViewById(R.id.b_zoom);
         btgEyedropperSrc = findViewById(R.id.btg_eyedropper_src);
+        btgMagicEraserSides = findViewById(R.id.btg_magic_eraser_sides);
         btgTools = findViewById(R.id.btg_tools);
         btgZoom = findViewById(R.id.btg_zoom);
         cbBucketFillContiguous = findViewById(R.id.cb_bucket_fill_contiguous);
@@ -3866,10 +3867,6 @@ public class MainActivity extends AppCompatActivity {
         ivSelection = findViewById(R.id.iv_selection);
         llOptionsText = findViewById(R.id.ll_options_text);
         final RecyclerView rvSwatches = findViewById(R.id.rv_swatches);
-        rbMagicEraserLeft = findViewById(R.id.rb_magic_eraser_left);
-        rbMagicEraserRight = findViewById(R.id.rb_magic_eraser_right);
-        cbMagicEraserPosition = rbMagicEraserLeft;
-        final RadioGroup rgMagicEraserPosition = findViewById(R.id.rg_magic_eraser_position);
         svOptionsBucketFill = findViewById(R.id.sv_options_bucket_fill);
         svOptionsCloneStamp = findViewById(R.id.sv_options_clone_stamp);
         svOptionsEraser = findViewById(R.id.sv_options_eraser);
@@ -3915,7 +3912,6 @@ public class MainActivity extends AppCompatActivity {
             topAppBar = findViewById(R.id.top_app_bar);
         }
 
-        bZoom.setTag(onTouchIVWithPencilListener);
         btgTools.addOnButtonCheckedListener(onToolButtonCheckedListener);
         btgZoom.addOnButtonCheckedListener(onZoomToolButtonCheckedListener);
         findViewById(R.id.b_bucket_fill_tolerance).setOnClickListener(onClickToleranceButtonListener);
@@ -4016,12 +4012,12 @@ public class MainActivity extends AppCompatActivity {
         });
 
         ((CompoundButton) findViewById(R.id.cb_magic_eraser_style)).setOnCheckedChangeListener((buttonView, isChecked) -> {
-            rgMagicEraserPosition.setVisibility(isChecked ? View.GONE : View.VISIBLE);
+            btgMagicEraserSides.setVisibility(isChecked ? View.GONE : View.VISIBLE);
             cbMagErAccEnabled.setVisibility(isChecked ? View.VISIBLE : View.GONE);
             onTouchIVWithMagicEraserListener = isChecked
                     ? onTouchIVWithPreciseMagicEraserListener
                     : onTouchIVWithImpreciseMagicEraserListener;
-            bZoom.setTag(onTouchIVWithMagicEraserListener);
+            onTouchIVListener = onTouchIVWithMagicEraserListener;
             if (btgZoom.getCheckedButtonId() != R.id.b_zoom) {
                 flImageView.setOnTouchListener(onTouchIVWithMagicEraserListener);
             }
@@ -4031,16 +4027,6 @@ public class MainActivity extends AppCompatActivity {
                 eraseBitmapAndInvalidateView(previewBitmap, ivPreview);
             }
         });
-
-        {
-            final CompoundButton.OnCheckedChangeListener l = (buttonView, isChecked) -> {
-                if (isChecked) {
-                    cbMagicEraserPosition = buttonView;
-                }
-            };
-            rbMagicEraserLeft.setOnCheckedChangeListener(l);
-            rbMagicEraserRight.setOnCheckedChangeListener(l);
-        }
 
         {
             final LinearLayoutManager llm = new LinearLayoutManager(this);
@@ -4363,8 +4349,8 @@ public class MainActivity extends AppCompatActivity {
             case R.id.i_filter_contrast -> {
                 drawFloatingLayersIntoImage();
                 createImagePreview();
-                new SeekBarDialog(this).setTitle(R.string.contrast).setMin(-10).setMax(100).setProgress(10)
-                        .setOnChangeListener(onFilterContrastSeekBarChangeListener)
+                new SliderDialog(this).setTitle(R.string.contrast).setValueFrom(-1.0f).setValueTo(10.0f).setValue(1.0f)
+                        .setOnChangeListener(onFilterContrastSliderChangeListener)
                         .setOnApplyListener(onClickImagePreviewPBListener)
                         .setOnCancelListener(onCancelImagePreviewListener)
                         .show();
@@ -4394,12 +4380,12 @@ public class MainActivity extends AppCompatActivity {
             case R.id.i_filter_hue_to_alpha -> {
                 drawFloatingLayersIntoImage();
                 createImagePreview();
-                new SeekBarDialog(this).setTitle(R.string.hue).setMin(0).setMax(360).setProgress(0)
-                        .setOnChangeListener(onFilterHToASeekBarChangeListener)
+                new SliderDialog(this).setTitle(R.string.hue).setValueFrom(0.0f).setValueTo(360.0f).setValue(0.0f)
+                        .setOnChangeListener(onFilterHToASliderChangeListener)
                         .setOnApplyListener(onClickImagePreviewPBListener)
                         .setOnCancelListener(onCancelImagePreviewListener)
                         .show();
-                onFilterHToASeekBarChangeListener.onChange(null, 0, true);
+                onFilterHToASliderChangeListener.onChange(null, 0, true);
             }
             case R.id.i_filter_levels -> {
                 drawFloatingLayersIntoImage();
@@ -4415,8 +4401,9 @@ public class MainActivity extends AppCompatActivity {
             case R.id.i_filter_lightness -> {
                 drawFloatingLayersIntoImage();
                 createImagePreview();
-                new SeekBarDialog(this).setTitle(R.string.lightness).setMin(-0xFF).setMax(0xFF).setProgress(0)
-                        .setOnChangeListener(onFilterLightnessSeekBarChangeListener)
+                new SliderDialog(this).setTitle(R.string.lightness).setValueFrom(-0xFF).setValueTo(0xFF).setValue(0)
+                        .setStepSize(1.0f)
+                        .setOnChangeListener(onFilterLightnessSliderChangeListener)
                         .setOnApplyListener(onClickImagePreviewPBListener)
                         .setOnCancelListener(onCancelImagePreviewListener)
                         .show();
@@ -4425,8 +4412,8 @@ public class MainActivity extends AppCompatActivity {
             case R.id.i_filter_saturation -> {
                 drawFloatingLayersIntoImage();
                 createImagePreview();
-                new SeekBarDialog(this).setTitle(R.string.saturation).setMin(0).setMax(100).setProgress(10)
-                        .setOnChangeListener(onFilterSaturationSeekBarChangeListener)
+                new SliderDialog(this).setTitle(R.string.saturation).setValueFrom(-1.0f).setValueTo(10.0f).setValue(1.0f)
+                        .setOnChangeListener(onFilterSaturationSliderChangeListener)
                         .setOnApplyListener(onClickImagePreviewPBListener)
                         .setOnCancelListener(onCancelImagePreviewListener)
                         .show();
@@ -4435,12 +4422,13 @@ public class MainActivity extends AppCompatActivity {
             case R.id.i_filter_threshold -> {
                 drawFloatingLayersIntoImage();
                 createImagePreview();
-                new SeekBarDialog(this).setTitle(R.string.threshold).setMin(0).setMax(255).setProgress(128)
-                        .setOnChangeListener(onFilterThresholdSeekBarChangeListener)
+                new SliderDialog(this).setTitle(R.string.threshold).setValueFrom(0x00).setValueTo(0xFF).setValue(0x80)
+                        .setStepSize(1.0f)
+                        .setOnChangeListener(onFilterThresholdSliderChangeListener)
                         .setOnApplyListener(onClickImagePreviewPBListener)
                         .setOnCancelListener(onCancelImagePreviewListener)
                         .show();
-                onFilterThresholdSeekBarChangeListener.onChange(null, 128, true);
+                onFilterThresholdSliderChangeListener.onChange(null, 0x80, true);
                 clearStatus();
             }
             case R.id.i_flip_horizontally -> scale(-1.0f, 1.0f);
@@ -4450,7 +4438,7 @@ public class MainActivity extends AppCompatActivity {
                         .show();
             }
             case R.id.i_frame_delay -> {
-                final Tab frame = this.tab.getBackground();
+                final Tab frame = tab.getBackground();
                 new EditNumberDialog(this)
                         .setTitle(R.string.delay)
                         .setOnApplyListener(number -> frame.delay = number)
@@ -4527,7 +4515,7 @@ public class MainActivity extends AppCompatActivity {
                         .append(getString(R.string.config)).append('\n').append(bitmap.getConfig()).append("\n\n")
                         .append(getString(R.string.has_alpha)).append('\n').append(bitmap.hasAlpha()).append("\n\n")
                         .append(getString(R.string.color_space)).append('\n').append(bitmap.getColorSpace());
-                new AlertDialog.Builder(this)
+                new MaterialAlertDialogBuilder(this)
                         .setTitle(R.string.information)
                         .setMessage(message)
                         .setPositiveButton(R.string.ok, null)
@@ -4549,9 +4537,10 @@ public class MainActivity extends AppCompatActivity {
                 addTab(t, tabLayout.getSelectedTabPosition(), getString(R.string.mask));
             }
             case R.id.i_layer_alpha -> {
-                new SeekBarDialog(this).setTitle(R.string.alpha).setMin(0x00).setMax(0xFF)
-                        .setProgress(tab.paint.getAlpha())
-                        .setOnChangeListener(onLayerAlphaSeekBarChangeListener)
+                new SliderDialog(this).setTitle(R.string.alpha).setValueFrom(0x00).setValueTo(0xFF)
+                        .setValue(tab.paint.getAlpha())
+                        .setStepSize(1.0f)
+                        .setOnChangeListener(onLayerAlphaSliderChangeListener)
                         .setOnApplyListener((dialog, which) -> clearStatus())
                         .setOnCancelListener(dialog -> clearStatus(), false)
                         .show();
@@ -4824,7 +4813,7 @@ public class MainActivity extends AppCompatActivity {
                 updateReference();
             }
             case R.id.i_layer_rename -> {
-                final AlertDialog dialog = new AlertDialog.Builder(this)
+                final AlertDialog dialog = new MaterialAlertDialogBuilder(this)
                         .setNegativeButton(R.string.cancel, null)
                         .setPositiveButton(R.string.ok, onApplyLayerNameListener)
                         .setTitle(R.string.rename)
@@ -4960,13 +4949,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @SuppressLint("ClickableViewAccessibility")
-    private void onToolChanged(View.OnTouchListener onImageViewTouchListener) {
+    private void onToolChanged(View.OnTouchListener onTouchIVListener) {
         if (hasNotLoaded) {
             return;
         }
         btgZoom.uncheck(R.id.b_zoom);
-        bZoom.setTag(onImageViewTouchListener);
-        flImageView.setOnTouchListener(onImageViewTouchListener);
+        this.onTouchIVListener = onTouchIVListener;
+        flImageView.setOnTouchListener(onTouchIVListener);
         hideToolOptions();
         isShapeStopped = true;
         eraseBitmapAndInvalidateView(previewBitmap, ivPreview);
@@ -4976,8 +4965,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @SuppressLint("ClickableViewAccessibility")
-    private void onToolChanged(View.OnTouchListener onImageViewTouchListener, View toolOption) {
-        onToolChanged(onImageViewTouchListener);
+    private void onToolChanged(View.OnTouchListener onTouchIVListener, View toolOption) {
+        onToolChanged(onTouchIVListener);
         if (toolOption != null) {
             toolOption.setVisibility(View.VISIBLE);
         }
@@ -4988,7 +4977,7 @@ public class MainActivity extends AppCompatActivity {
         cbTransformerFilter.setVisibility(l != onTouchIVWithTTListener ? View.VISIBLE : View.GONE);
         cbTransformerLar.setVisibility(l == onTouchIVWithSTListener ? View.VISIBLE : View.GONE);
         onTouchIVWithTransformerListener = l;
-        bZoom.setTag(l);
+        onTouchIVListener = l;
         if (btgZoom.getCheckedButtonId() != R.id.b_zoom) {
             flImageView.setOnTouchListener(l);
         }
@@ -5180,7 +5169,7 @@ public class MainActivity extends AppCompatActivity {
         tab.bitmap = bm;
         addToHistory(tab);
 
-        if (tab == MainActivity.this.tab) {
+        if (tab == this.tab) {
             bitmap = bm;
             canvas = cv;
             calculateBackgroundSizeOnView();
@@ -5310,7 +5299,7 @@ public class MainActivity extends AppCompatActivity {
             }
             gifEncoder.setDither(tab.gifDither);
             final int size = tabs.size();
-            final AlertDialog dialog = new AlertDialog.Builder(this)
+            final AlertDialog dialog = new MaterialAlertDialogBuilder(this)
                     .setTitle(R.string.exporting)
                     .setView(R.layout.progress_bar)
                     .show();
@@ -5342,7 +5331,7 @@ public class MainActivity extends AppCompatActivity {
                     if (invalidFrames.isEmpty()) {
                         Toast.makeText(this, R.string.done, Toast.LENGTH_SHORT).show();
                     } else {
-                        new AlertDialog.Builder(this)
+                        new MaterialAlertDialogBuilder(this)
                                 .setTitle(R.string.done)
                                 .setMessage(getString(R.string.there_are_frames_invalid_which_are,
                                         invalidFrames.size(),
@@ -5416,7 +5405,7 @@ public class MainActivity extends AppCompatActivity {
         onTouchIVWithEyedropperListener = Settings.INST.argbColorType()
                 ? onTouchIVWithPreciseEyedropperListener : onTouchIVWithImpreciseEyedropperListener;
         if (btgTools != null && btgTools.getCheckedButtonId() == R.id.b_eyedropper) {
-            bZoom.setTag(onTouchIVWithEyedropperListener);
+            onTouchIVListener = onTouchIVWithEyedropperListener;
             if (btgZoom.getCheckedButtonId() != R.id.b_zoom) {
                 flImageView.setOnTouchListener(onTouchIVWithEyedropperListener);
             }

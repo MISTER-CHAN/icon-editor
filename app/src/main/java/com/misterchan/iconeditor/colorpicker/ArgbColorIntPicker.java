@@ -1,17 +1,17 @@
 package com.misterchan.iconeditor.colorpicker;
 
 import android.content.Context;
-import android.widget.SeekBar;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.ColorLong;
 import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
 
-import com.misterchan.iconeditor.listener.AfterTextChangedListener;
+import com.google.android.material.slider.Slider;
 import com.misterchan.iconeditor.Color;
-import com.misterchan.iconeditor.listener.OnSBProgressChangedListener;
 import com.misterchan.iconeditor.Settings;
+import com.misterchan.iconeditor.listener.AfterTextChangedListener;
+import com.misterchan.iconeditor.listener.OnSliderValueChangeListener;
 
 public class ArgbColorIntPicker extends ArgbColorPicker {
 
@@ -36,13 +36,13 @@ public class ArgbColorIntPicker extends ArgbColorPicker {
         radix = Settings.INST.argbCompRadix();
     }
 
-    protected void onComponentChanged(String s, SeekBar seekBar) {
+    protected void onComponentChanged(String s, Slider slider) {
         try {
-            seekBar.setProgress(Integer.parseUnsignedInt(s, radix));
+            slider.setValue(Integer.parseUnsignedInt(s, radix));
         } catch (NumberFormatException e) {
         }
-        final int color = Color.argb(sbAlpha.getProgress(),
-                sbRed.getProgress(), sbGreen.getProgress(), sbBlue.getProgress());
+        final int color = Color.argb((int) sAlpha.getValue(),
+                (int) sRed.getValue(), (int) sGreen.getValue(), (int) sBlue.getValue());
         newColor = Color.pack(color);
         vPreview.setBackgroundColor(color);
     }
@@ -65,14 +65,18 @@ public class ArgbColorIntPicker extends ArgbColorPicker {
             tietBlue.setKeyListener(ColorPicker.KEY_LISTENER_HEX);
         }
 
-        sbAlpha.setOnSeekBarChangeListener((OnSBProgressChangedListener) (seekBar, progress) -> tietAlpha.setText(String.format(format, progress)));
-        sbRed.setOnSeekBarChangeListener((OnSBProgressChangedListener) (seekBar, progress) -> tietRed.setText(String.format(format, progress)));
-        sbGreen.setOnSeekBarChangeListener((OnSBProgressChangedListener) (seekBar, progress) -> tietGreen.setText(String.format(format, progress)));
-        sbBlue.setOnSeekBarChangeListener((OnSBProgressChangedListener) (seekBar, progress) -> tietBlue.setText(String.format(format, progress)));
-        tietAlpha.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(s, sbAlpha));
-        tietRed.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(s, sbRed));
-        tietGreen.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(s, sbGreen));
-        tietBlue.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(s, sbBlue));
+        sAlpha.setStepSize(1.0f);
+        sRed.setStepSize(1.0f);
+        sGreen.setStepSize(1.0f);
+        sBlue.setStepSize(1.0f);
+        sAlpha.addOnChangeListener((OnSliderValueChangeListener) (slider, value) -> tietAlpha.setText(String.format(format, (int) value)));
+        sRed.addOnChangeListener((OnSliderValueChangeListener) (slider, value) -> tietRed.setText(String.format(format, (int) value)));
+        sGreen.addOnChangeListener((OnSliderValueChangeListener) (slider, value) -> tietGreen.setText(String.format(format, (int) value)));
+        sBlue.addOnChangeListener((OnSliderValueChangeListener) (slider, value) -> tietBlue.setText(String.format(format, (int) value)));
+        tietAlpha.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(s, sAlpha));
+        tietRed.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(s, sRed));
+        tietGreen.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(s, sGreen));
+        tietBlue.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(s, sBlue));
 
         final int color = Color.toArgb(oldColor);
         tietAlpha.setText(String.format(format, Color.alpha(color)));

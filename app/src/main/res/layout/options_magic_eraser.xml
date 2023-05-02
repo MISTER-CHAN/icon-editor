@@ -29,25 +29,26 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content">
 
-        <RadioGroup
-            android:id="@+id/rg_magic_eraser_position"
-            style="@style/ToolOptionsLL"
+        <com.google.android.material.button.MaterialButtonToggleGroup
+            android:id="@+id/btg_magic_eraser_sides"
+            style="@style/ToolOptionsBTG"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">
 
-            <RadioButton
-                android:id="@+id/rb_magic_eraser_left"
+            <Button
+                android:id="@+id/b_magic_eraser_left"
+                style="@style/OutlinedButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:checked="true"
                 android:text="@string/left" />
 
-            <RadioButton
-                android:id="@+id/rb_magic_eraser_right"
+            <Button
+                android:id="@+id/b_magic_eraser_right"
+                style="@style/OutlinedButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/right" />
-        </RadioGroup>
+        </com.google.android.material.button.MaterialButtonToggleGroup>
 
         <CheckBox
             android:id="@+id/cb_magic_eraser_acc_enabled"

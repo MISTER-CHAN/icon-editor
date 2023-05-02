@@ -17,35 +17,41 @@
             android:layout_margin="8dp"
             android:text="@string/h" />
 
-        <SeekBar
-            android:id="@+id/sb_hue"
+        <com.google.android.material.slider.Slider
+            android:id="@+id/s_hue"
+            android:layout_width="0dp"
             android:layout_gravity="center_vertical|fill_horizontal"
-            android:max="180"
-            android:min="-180"
-            android:progress="0" />
+            android:tag="0"
+            android:value="0"
+            android:valueFrom="-180"
+            android:valueTo="180" />
 
         <TextView
             android:layout_gravity="center_vertical"
             android:layout_margin="8dp"
             android:text="@string/s" />
 
-        <SeekBar
-            android:id="@+id/sb_saturation"
+        <com.google.android.material.slider.Slider
+            android:id="@+id/s_saturation"
+            android:layout_width="0dp"
             android:layout_gravity="center_vertical|fill_horizontal"
-            android:max="100"
-            android:min="-100"
-            android:progress="0" />
+            android:tag="1"
+            android:value="0"
+            android:valueFrom="-1"
+            android:valueTo="1" />
 
         <TextView
             android:layout_gravity="center_vertical"
             android:layout_margin="8dp"
             android:text="@string/v" />
 
-        <SeekBar
-            android:id="@+id/sb_value"
+        <com.google.android.material.slider.Slider
+            android:id="@+id/s_value"
+            android:layout_width="0dp"
             android:layout_gravity="center_vertical|fill_horizontal"
-            android:max="100"
-            android:min="-100"
-            android:progress="0" />
+            android:tag="2"
+            android:value="0"
+            android:valueFrom="-1"
+            android:valueTo="1" />
     </GridLayout>
 </LinearLayout>

@@ -12,6 +12,7 @@ import android.widget.SeekBar;
 import androidx.annotation.Size;
 import androidx.appcompat.app.AlertDialog;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.misterchan.iconeditor.R;
 
 public class HiddenImageMaker {
@@ -28,7 +29,7 @@ public class HiddenImageMaker {
 
         final HiddenImageMaker merger = new HiddenImageMaker();
 
-        merger.dialog = new AlertDialog.Builder(context)
+        merger.dialog = new MaterialAlertDialogBuilder(context)
                 .setNegativeButton(R.string.cancel, null)
                 .setTitle(R.string.merge_as_a_hidden_image)
                 .setView(R.layout.merge_as_hidden)
