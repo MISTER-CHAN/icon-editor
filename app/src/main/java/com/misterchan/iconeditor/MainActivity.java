@@ -564,19 +564,19 @@ public class MainActivity extends AppCompatActivity {
         private float[] hsv = new float[3];
 
         @Override
-        public void onChanged(float hMin, float hMax, float sMin, float sMax, float vMin, float vMax, boolean stopped) {
+        public void onChanged(float[] cuboid, boolean stopped) {
             runOrStart(() -> {
-                if (hMin == 0 && hMax == 360 && sMin == 0x0 && sMax == 0xFF && vMin == 0x0 && vMax == 0xFF) {
+                if (cuboid[0] == 0.0f && cuboid[3] == 360.0f && cuboid[1] == 0.0f && cuboid[4] == 1.0f && cuboid[2] == 0.0f && cuboid[5] == 1.0f) {
                     imagePreview.clearFilters();
                 } else {
                     final int width = imagePreview.getWidth(), height = imagePreview.getHeight();
                     final int[] src = imagePreview.getPixels(), dst = new int[width * height];
                     for (int i = 0; i < src.length; ++i) {
                         Color.colorToHSV(src[i], hsv);
-                        dst[i] = (hMin <= hsv[0] && hsv[0] <= hMax
-                                || hMin > hMax && (hMin <= hsv[0] || hsv[0] <= hMax))
-                                && (sMin <= hsv[1] && hsv[1] <= sMax)
-                                && (vMin <= hsv[2] && hsv[2] <= vMax)
+                        dst[i] = (cuboid[0] <= hsv[0] && hsv[0] <= cuboid[3]
+                                || cuboid[0] > cuboid[3] && (cuboid[0] <= hsv[0] || hsv[0] <= cuboid[3]))
+                                && (cuboid[1] <= hsv[1] && hsv[1] <= cuboid[4])
+                                && (cuboid[2] <= hsv[2] && hsv[2] <= cuboid[5])
                                 ? src[i] : Color.TRANSPARENT;
                     }
                     imagePreview.setPixels(dst, width, height);
@@ -584,11 +584,11 @@ public class MainActivity extends AppCompatActivity {
                 drawImagePreviewOntoView(stopped);
             }, stopped);
             tvStatus.setText(getString(R.string.state_color_range,
-                    hMin, hMax, sMin * 100.0f, sMax * 100.0f, vMin * 100.0f, vMax * 100.0f));
+                    cuboid[0], cuboid[3], cuboid[1] * 100.0f, cuboid[4] * 100.0f, cuboid[2] * 100.0f, cuboid[5] * 100.0f));
         }
     };
 
-    private final ColorRangeDialog.OnChangedListener onConfirmLayerDuplicatingByColorRangeListener = (hMin, hMax, sMin, sMax, vMin, vMax, stopped) -> {
+    private final ColorRangeDialog.OnChangedListener onConfirmLayerDuplicatingByColorRangeListener = (cuboid, stopped) -> {
         final Bitmap p = imagePreview.getEntire();
         final Bitmap bm = Bitmap.createBitmap(p.getWidth(), p.getHeight(),
                 p.getConfig(), true, p.getColorSpace());
@@ -3807,7 +3807,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    @SuppressLint({"ClickableViewAccessibility"})
+    @SuppressLint({"ClickableViewAccessibility", "NonConstantResourceId"})
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
@@ -4349,7 +4349,9 @@ public class MainActivity extends AppCompatActivity {
             case R.id.i_filter_contrast -> {
                 drawFloatingLayersIntoImage();
                 createImagePreview();
-                new SliderDialog(this).setTitle(R.string.contrast).setValueFrom(-1.0f).setValueTo(10.0f).setValue(1.0f)
+                new SliderDialog(this)
+                        .setIcon(item.getIcon()).setTitle(R.string.contrast)
+                        .setValueFrom(-1.0f).setValueTo(10.0f).setValue(1.0f)
                         .setOnChangeListener(onFilterContrastSliderChangeListener)
                         .setOnApplyListener(onClickImagePreviewPBListener)
                         .setOnCancelListener(onCancelImagePreviewListener)
@@ -4401,7 +4403,9 @@ public class MainActivity extends AppCompatActivity {
             case R.id.i_filter_lightness -> {
                 drawFloatingLayersIntoImage();
                 createImagePreview();
-                new SliderDialog(this).setTitle(R.string.lightness).setValueFrom(-0xFF).setValueTo(0xFF).setValue(0)
+                new SliderDialog(this)
+                        .setIcon(item.getIcon()).setTitle(R.string.lightness)
+                        .setValueFrom(-0xFF).setValueTo(0xFF).setValue(0)
                         .setStepSize(1.0f)
                         .setOnChangeListener(onFilterLightnessSliderChangeListener)
                         .setOnApplyListener(onClickImagePreviewPBListener)
@@ -4422,7 +4426,9 @@ public class MainActivity extends AppCompatActivity {
             case R.id.i_filter_threshold -> {
                 drawFloatingLayersIntoImage();
                 createImagePreview();
-                new SliderDialog(this).setTitle(R.string.threshold).setValueFrom(0x00).setValueTo(0xFF).setValue(0x80)
+                new SliderDialog(this)
+                        .setIcon(item.getIcon()).setTitle(R.string.threshold)
+                        .setValueFrom(0x00).setValueTo(0xFF).setValue(0x80)
                         .setStepSize(1.0f)
                         .setOnChangeListener(onFilterThresholdSliderChangeListener)
                         .setOnApplyListener(onClickImagePreviewPBListener)
@@ -4440,7 +4446,7 @@ public class MainActivity extends AppCompatActivity {
             case R.id.i_frame_delay -> {
                 final Tab frame = tab.getBackground();
                 new EditNumberDialog(this)
-                        .setTitle(R.string.delay)
+                        .setIcon(item.getIcon()).setTitle(R.string.delay)
                         .setOnApplyListener(number -> frame.delay = number)
                         .show(frame.delay, "ms");
             }
@@ -4480,7 +4486,7 @@ public class MainActivity extends AppCompatActivity {
             case R.id.i_frame_new -> createFrame();
             case R.id.i_frame_unify_delays -> {
                 new EditNumberDialog(this)
-                        .setTitle(R.string.delay)
+                        .setIcon(R.drawable.ic_access_time).setTitle(R.string.delay)
                         .setOnApplyListener(onApplyUniformFrameDelayListener)
                         .show(tab.getBackground().delay, "ms");
             }

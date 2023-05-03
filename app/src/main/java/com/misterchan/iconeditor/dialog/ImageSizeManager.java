@@ -42,6 +42,7 @@ public class ImageSizeManager {
         this.listener = listener;
 
         builder = new MaterialAlertDialogBuilder(context)
+                .setIcon(R.drawable.ic_photo_size_select_large)
                 .setNegativeButton(R.string.cancel, null)
                 .setTitle(R.string.image_size)
                 .setView(R.layout.image_size);

@@ -11,7 +11,7 @@
         android:layout_height="wrap_content"
         android:columnCount="2"
         android:orientation="horizontal"
-        android:rowCount="7">
+        android:rowCount="3">
 
         <FrameLayout
             android:layout_height="128dp"
@@ -33,77 +33,33 @@
         </FrameLayout>
 
         <TextView
-            android:layout_columnSpan="2"
+            android:layout_gravity="center_vertical|start"
             android:layout_margin="8dp"
-            android:layout_marginTop="16dp"
-            android:text="@string/input"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
+            android:text="@string/input" />
+
+        <com.google.android.material.slider.RangeSlider
+            android:id="@+id/rs_input"
+            android:layout_width="0dp"
+            android:layout_gravity="center_vertical|fill_horizontal"
+            android:stepSize="1"
+            android:valueFrom="0"
+            android:valueTo="255"
+            app:tickVisible="false"
+            app:values="@array/range_00_ff_values" />
 
         <TextView
             android:layout_gravity="center_vertical|start"
             android:layout_margin="8dp"
-            android:text="@string/shadows" />
+            android:text="@string/output" />
 
-        <com.google.android.material.slider.Slider
-            android:id="@+id/s_input_shadows"
+        <com.google.android.material.slider.RangeSlider
+            android:id="@+id/rs_output"
             android:layout_width="0dp"
             android:layout_gravity="center_vertical|fill_horizontal"
             android:stepSize="1"
-            android:value="0"
             android:valueFrom="0"
             android:valueTo="255"
-            app:tickVisible="false" />
-
-        <TextView
-            android:layout_gravity="center_vertical|start"
-            android:layout_margin="8dp"
-            android:text="@string/highlights" />
-
-        <com.google.android.material.slider.Slider
-            android:id="@+id/s_input_highlights"
-            android:layout_width="0dp"
-            android:layout_gravity="center_vertical|fill_horizontal"
-            android:stepSize="1"
-            android:value="255"
-            android:valueFrom="0"
-            android:valueTo="255"
-            app:tickVisible="false" />
-
-        <TextView
-            android:layout_columnSpan="2"
-            android:layout_margin="8dp"
-            android:layout_marginTop="16dp"
-            android:text="@string/output"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
-
-        <TextView
-            android:layout_gravity="center_vertical|start"
-            android:layout_margin="8dp"
-            android:text="@string/shadows" />
-
-        <com.google.android.material.slider.Slider
-            android:id="@+id/s_output_shadows"
-            android:layout_width="0dp"
-            android:layout_gravity="center_vertical|fill_horizontal"
-            android:stepSize="1"
-            android:value="0"
-            android:valueFrom="0"
-            android:valueTo="255"
-            app:tickVisible="false" />
-
-        <TextView
-            android:layout_gravity="center_vertical|start"
-            android:layout_margin="8dp"
-            android:text="@string/highlights" />
-
-        <com.google.android.material.slider.Slider
-            android:id="@+id/s_output_highlights"
-            android:layout_width="0dp"
-            android:layout_gravity="center_vertical|fill_horizontal"
-            android:stepSize="1"
-            android:value="255"
-            android:valueFrom="0"
-            android:valueTo="255"
-            app:tickVisible="false" />
+            app:tickVisible="false"
+            app:values="@array/range_00_ff_values" />
     </GridLayout>
 </LinearLayout>

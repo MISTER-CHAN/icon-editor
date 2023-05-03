@@ -11,14 +11,16 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.android.material.slider.Slider;
+import com.google.android.material.slider.RangeSlider;
 import com.misterchan.iconeditor.Color;
 import com.misterchan.iconeditor.R;
-import com.misterchan.iconeditor.listener.OnSliderChangeListener;
+import com.misterchan.iconeditor.listener.OnCircularRSChangeListener;
 
+import java.util.List;
 import java.util.function.Function;
 
 public class LevelsDialog {
@@ -31,12 +33,12 @@ public class LevelsDialog {
     private Bitmap progressBitmap;
     private final AlertDialog.Builder builder;
     private Canvas progressCanvas;
+    private float inputShadows = 0x00, inputHighlights = 0xFF;
+    private float outputShadows = 0x00, outputHighlights = 0xFF;
     private ImageView iv;
     private ImageView ivProgress;
     private OnLevelsChangedListener listener;
     private final Paint paint = new Paint();
-    private Slider sInputHighlights, sInputShadows;
-    private Slider sOutputHighlights, sOutputShadows;
 
     public LevelsDialog(Context context) {
         builder = new MaterialAlertDialogBuilder(context)
@@ -88,8 +90,8 @@ public class LevelsDialog {
 
     private void drawProgress() {
         progressBitmap.eraseColor(Color.TRANSPARENT);
-        progressCanvas.drawLine(sInputShadows.getValue(), 0.0f, sInputShadows.getValue(), 100.0f, paint);
-        progressCanvas.drawLine(sInputHighlights.getValue(), 0.0f, sInputHighlights.getValue(), 100.0f, paint);
+        progressCanvas.drawLine(inputShadows, 0.0f, inputShadows, 100.0f, paint);
+        progressCanvas.drawLine(inputHighlights, 0.0f, inputHighlights, 100.0f, paint);
         ivProgress.invalidate();
     }
 
@@ -120,21 +122,34 @@ public class LevelsDialog {
 
         iv = dialog.findViewById(R.id.iv);
         ivProgress = dialog.findViewById(R.id.iv_progress);
-        sInputHighlights = dialog.findViewById(R.id.s_input_highlights);
-        sInputShadows = dialog.findViewById(R.id.s_input_shadows);
-        sOutputHighlights = dialog.findViewById(R.id.s_output_highlights);
-        sOutputShadows = dialog.findViewById(R.id.s_output_shadows);
+        final RangeSlider rsInput = dialog.findViewById(R.id.rs_input);
+        final RangeSlider rsOutput = dialog.findViewById(R.id.rs_output);
 
-        final OnSliderChangeListener l = (slider, value, stopped) -> update(stopped);
+        final OnCircularRSChangeListener inputOscl = new OnCircularRSChangeListener(false) {
+            @Override
+            public void onChange(@NonNull RangeSlider slider, float value, boolean inclusive, boolean stopped) {
+                final List<Float> values = slider.getValues();
+                inputShadows = values.get(inclusive ? 0 : 1);
+                inputHighlights = values.get(inclusive ? 1 : 0);
+                drawProgress();
+                listener.onChanged(inputShadows, inputHighlights, outputShadows, outputHighlights, stopped);
+            }
+        };
 
-        sInputHighlights.addOnSliderTouchListener(l);
-        sInputHighlights.addOnChangeListener(l);
-        sInputShadows.addOnSliderTouchListener(l);
-        sInputShadows.addOnChangeListener(l);
-        sOutputHighlights.addOnSliderTouchListener(l);
-        sOutputHighlights.addOnChangeListener(l);
-        sOutputShadows.addOnSliderTouchListener(l);
-        sOutputShadows.addOnChangeListener(l);
+        final OnCircularRSChangeListener outputOscl = new OnCircularRSChangeListener(false) {
+            @Override
+            public void onChange(@NonNull RangeSlider slider, float value, boolean inclusive, boolean stopped) {
+                final List<Float> values = slider.getValues();
+                outputShadows = values.get(inclusive ? 0 : 1);
+                outputHighlights = values.get(inclusive ? 1 : 0);
+                listener.onChanged(inputShadows, inputHighlights, outputShadows, outputHighlights, stopped);
+            }
+        };
+
+        rsInput.addOnChangeListener(inputOscl);
+        rsInput.addOnSliderTouchListener(inputOscl);
+        rsOutput.addOnChangeListener(outputOscl);
+        rsOutput.addOnSliderTouchListener(outputOscl);
 
         bitmap = Bitmap.createBitmap(0x100, 100, Bitmap.Config.ARGB_4444);
         iv.setImageBitmap(bitmap);
@@ -146,12 +161,5 @@ public class LevelsDialog {
         drawProgress();
 
         return this;
-    }
-
-    private void update(boolean stopped) {
-        drawProgress();
-        listener.onChanged(sInputShadows.getValue(), sInputHighlights.getValue(),
-                sOutputShadows.getValue(), sOutputHighlights.getValue(),
-                stopped);
     }
 }

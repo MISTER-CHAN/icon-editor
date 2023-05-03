@@ -12,39 +12,23 @@
         android:layout_height="wrap_content"
         android:columnCount="2"
         android:orientation="horizontal"
-        android:rowCount="4">
+        android:rowCount="3">
 
         <TextView
             android:layout_gravity="fill_vertical|start"
             android:layout_margin="8dp"
             android:gravity="center_vertical|start"
-            android:text="@string/h_min" />
+            android:text="@string/h" />
 
-        <com.google.android.material.slider.Slider
-            android:id="@+id/s_hue_min"
+        <com.google.android.material.slider.RangeSlider
+            android:id="@+id/rs_hue"
             android:layout_width="0dp"
             android:layout_gravity="center_vertical|fill_horizontal"
             android:stepSize="1"
-            android:value="0"
             android:valueFrom="0"
             android:valueTo="360"
-            app:tickVisible="false" />
-
-        <TextView
-            android:layout_gravity="fill_vertical|start"
-            android:layout_margin="8dp"
-            android:gravity="center_vertical|start"
-            android:text="@string/h_max" />
-
-        <com.google.android.material.slider.Slider
-            android:id="@+id/s_hue_max"
-            android:layout_width="0dp"
-            android:layout_gravity="center_vertical|fill_horizontal"
-            android:stepSize="1"
-            android:value="360"
-            android:valueFrom="0"
-            android:valueTo="360"
-            app:tickVisible="false" />
+            app:tickVisible="false"
+            app:values="@array/range_0_360_values" />
 
         <TextView
             android:layout_gravity="center_vertical|start"
@@ -55,11 +39,11 @@
             android:id="@+id/rs_saturation"
             android:layout_width="0dp"
             android:layout_gravity="center_vertical|fill_horizontal"
-            android:stepSize="1"
+            android:stepSize="0.01"
             android:valueFrom="0"
-            android:valueTo="100"
+            android:valueTo="1"
             app:tickVisible="false"
-            app:values="@array/range_0_100_values" />
+            app:values="@array/range_0_1_values" />
 
         <TextView
             android:layout_gravity="center_vertical|start"
@@ -70,10 +54,10 @@
             android:id="@+id/rs_value"
             android:layout_width="0dp"
             android:layout_gravity="center_vertical|fill_horizontal"
-            android:stepSize="1"
+            android:stepSize="0.01"
             android:valueFrom="0"
-            android:valueTo="100"
+            android:valueTo="1"
             app:tickVisible="false"
-            app:values="@array/range_0_100_values" />
+            app:values="@array/range_0_1_values" />
     </GridLayout>
 </LinearLayout>

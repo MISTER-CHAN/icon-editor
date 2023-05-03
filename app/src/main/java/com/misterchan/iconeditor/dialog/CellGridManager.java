@@ -29,6 +29,7 @@ public class CellGridManager {
         this.onUpdateListener = onUpdateListener;
 
         builder = new MaterialAlertDialogBuilder(context)
+                .setIcon(R.drawable.ic_grid_on)
                 .setNegativeButton(R.string.cancel, null)
                 .setPositiveButton(R.string.ok, (dialog, which) -> update())
                 .setTitle(R.string.cell_grid)

@@ -1,7 +1,10 @@
 package com.misterchan.iconeditor.dialog;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 
+import androidx.annotation.DrawableRes;
+import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
 
@@ -22,6 +25,16 @@ public class EditNumberDialog {
     public EditNumberDialog(Context context) {
         builder = new MaterialAlertDialogBuilder(context).setView(R.layout.edit_text)
                 .setNegativeButton(R.string.cancel, null);
+    }
+
+    public EditNumberDialog setIcon(@Nullable Drawable drawable) {
+        builder.setIcon(drawable);
+        return this;
+    }
+
+    public EditNumberDialog setIcon(@DrawableRes int iconId) {
+        builder.setIcon(iconId);
+        return this;
     }
 
     public EditNumberDialog setOnApplyListener(OnPositiveButtonClickListener listener) {

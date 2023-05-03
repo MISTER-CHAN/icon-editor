@@ -88,8 +88,13 @@
         <item>255.0</item>
     </array>
 
-    <array name="range_0_100_values">
+    <array name="range_0_1_values">
         <item>0.0</item>
-        <item>20.0</item>
+        <item>1.0</item>
+    </array>
+
+    <array name="range_0_360_values">
+        <item>0.0</item>
+        <item>360.0</item>
     </array>
 </resources>

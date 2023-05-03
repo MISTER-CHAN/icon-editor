@@ -2,10 +2,13 @@ package com.misterchan.iconeditor.dialog;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.graphics.drawable.Drawable;
 import android.view.Gravity;
 import android.view.Window;
 import android.view.WindowManager;
 
+import androidx.annotation.DrawableRes;
+import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
 
@@ -23,6 +26,16 @@ public class SliderDialog {
     public SliderDialog(Context context) {
         builder = new MaterialAlertDialogBuilder(context)
                 .setView(R.layout.slider);
+    }
+
+    public SliderDialog setIcon(@DrawableRes int iconId) {
+        builder.setIcon(iconId);
+        return this;
+    }
+
+    public SliderDialog setIcon(@Nullable Drawable drawable) {
+        builder.setIcon(drawable);
+        return this;
     }
 
     public SliderDialog setOnApplyListener(DialogInterface.OnClickListener listener) {

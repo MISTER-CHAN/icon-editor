@@ -36,6 +36,7 @@ public class ColorBalanceDialog {
 
     public ColorBalanceDialog(Context context) {
         builder = new MaterialAlertDialogBuilder(context)
+                .setIcon(R.drawable.ic_balance)
                 .setTitle(R.string.color_balance)
                 .setView(R.layout.color_balance);
     }

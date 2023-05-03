@@ -5,17 +5,16 @@ import android.graphics.Bitmap;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.SeekBar;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.view.OneShotPreDrawListener;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.android.material.slider.Slider;
+import com.google.android.material.slider.RangeSlider;
 import com.misterchan.iconeditor.R;
 import com.misterchan.iconeditor.Tab;
-import com.misterchan.iconeditor.listener.OnSliderChangeListener;
+import com.misterchan.iconeditor.listener.OnCircularRSChangeListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,22 +22,22 @@ import java.util.List;
 public class AnimationClipper {
 
     public interface OnConfirmListener {
-        void onApply(int from, int to);
+        void onConfirm(int from, int to);
     }
 
     private final AlertDialog.Builder builder;
     private ImageView iv;
+    private int from, to;
     private final List<Bitmap> frames;
-    private Slider sFrom, sTo;
 
     public AnimationClipper(Context context, List<Tab> tabs, Tab firstFrame, OnConfirmListener listener) {
         frames = new ArrayList<>();
 
         builder = new MaterialAlertDialogBuilder(context)
-                .setTitle(R.string.clip)
+                .setIcon(R.drawable.ic_content_cut).setTitle(R.string.clip)
                 .setView(R.layout.animation_clipper)
                 .setPositiveButton(R.string.ok, (dialog, which) ->
-                        listener.onApply(frames.size() - (int) sTo.getValue(), frames.size() - (int) sFrom.getValue()))
+                        listener.onConfirm(frames.size() - to, frames.size() - from))
                 .setNegativeButton(R.string.cancel, null)
                 .setOnDismissListener(dialog -> frames.forEach(Bitmap::recycle));
 
@@ -57,6 +56,10 @@ public class AnimationClipper {
     }
 
     public AnimationClipper show() {
+        if (frames.size() < 2) {
+            return this;
+        }
+
         final AlertDialog dialog = builder.show();
 
         final Bitmap firstFrame = frames.get(0);
@@ -65,33 +68,30 @@ public class AnimationClipper {
 
         final FrameLayout flIv = dialog.findViewById(R.id.fl_iv);
         iv = dialog.findViewById(R.id.iv);
-        sFrom = dialog.findViewById(R.id.s_from);
-        sTo = dialog.findViewById(R.id.s_to);
+        final RangeSlider rs = dialog.findViewById(R.id.rs);
 
-        sFrom.setValueTo(lastPos);
-        sTo.setValueTo(lastPos);
-        sTo.setValue(lastPos);
+        rs.setValueTo(lastPos);
+        rs.setValues(0.0f, (float) lastPos);
 
-        {
-            final Slider.OnChangeListener ocl = (OnSliderChangeListener) (slider, value, stopped) ->
-                    iv.setImageBitmap(frames.get((int) value));
-
-            final Slider.OnSliderTouchListener ostl = new Slider.OnSliderTouchListener() {
-                @Override
-                public void onStartTrackingTouch(@NonNull Slider slider) {
-                    iv.setImageBitmap(frames.get((int) slider.getValue()));
+        final OnCircularRSChangeListener oscl = new OnCircularRSChangeListener(false) {
+            @Override
+            public void onChange(@NonNull RangeSlider slider, float value, boolean inclusive, boolean stopped) {
+                if (stopped) {
+                    return;
                 }
+                final List<Float> values = slider.getValues();
+                from = values.get(inclusive ? 0 : 1).intValue();
+                to = values.get(inclusive ? 1 : 0).intValue();
+                iv.setImageBitmap(frames.get((int) value));
+            }
 
-                @Override
-                public void onStopTrackingTouch(@NonNull Slider slider) {
-                }
-            };
-
-            sFrom.addOnChangeListener(ocl);
-            sFrom.addOnSliderTouchListener(ostl);
-            sTo.addOnChangeListener(ocl);
-            sTo.addOnSliderTouchListener(ostl);
-        }
+            @Override
+            public void onStartTrackingTouch(@NonNull RangeSlider slider) {
+                iv.setImageBitmap(frames.get(slider.getValues().get(slider.getFocusedThumbIndex()).intValue()));
+            }
+        };
+        rs.addOnChangeListener(oscl);
+        rs.addOnSliderTouchListener(oscl);
 
         OneShotPreDrawListener.add(flIv, () -> {
             final int w = flIv.getMeasuredWidth();

@@ -77,7 +77,7 @@
                         android:title="@string/new_" />
                     <item
                         android:id="@+id/i_file_open"
-                        android:icon="@drawable/ic_file_open"
+                        android:icon="@drawable/ic_folder_open"
                         android:title="@string/open" />
                     <item
                         android:id="@+id/i_file_open_from_clipboard"
@@ -212,7 +212,7 @@
                             android:title="@string/hsv" />
                         <item
                             android:id="@+id/i_filter_color_balance"
-                            android:icon="@drawable/ic_void"
+                            android:icon="@drawable/ic_balance"
                             android:title="@string/color_balance" />
                         <item
                             android:id="@+id/i_filter_channel_lighting"

@@ -7,29 +7,31 @@ import android.view.Window;
 import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Size;
 import androidx.appcompat.app.AlertDialog;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.slider.LabelFormatter;
 import com.google.android.material.slider.RangeSlider;
-import com.google.android.material.slider.Slider;
-import com.misterchan.iconeditor.listener.OnRSChangeListener;
 import com.misterchan.iconeditor.R;
-import com.misterchan.iconeditor.listener.OnSliderChangeListener;
+import com.misterchan.iconeditor.listener.OnCircularRSChangeListener;
+import com.misterchan.iconeditor.listener.OnRSChangeListener;
 
 import java.util.List;
 
 public class ColorRangeDialog {
 
     public interface OnChangedListener {
-        void onChanged(float hMin, float hMax, float sMin, float sMax, float vMin, float vMax, boolean stopped);
+        void onChanged(float[] cuboid, boolean stopped);
     }
 
     private final AlertDialog.Builder builder;
     private OnChangedListener listener;
 
-    private Slider sHueMin, sHueMax;
-    private RangeSlider rsSaturation, rsValue;
+    @Size(6)
+    private final float[] cuboid = new float[]{
+            0.0f, 0.0f, 0.0f, 360.0f, 1.0f, 1.0f
+    };
 
     public ColorRangeDialog(Context context) {
         builder = new MaterialAlertDialogBuilder(context)
@@ -45,7 +47,7 @@ public class ColorRangeDialog {
     }
 
     public ColorRangeDialog setOnPositiveButtonClickListener(OnChangedListener listener) {
-        builder.setPositiveButton(R.string.ok, (dialog, which) -> update(listener, true));
+        builder.setPositiveButton(R.string.ok, (dialog, which) -> listener.onChanged(cuboid, true));
         return this;
     }
 
@@ -63,34 +65,42 @@ public class ColorRangeDialog {
         lp.gravity = Gravity.BOTTOM;
         window.setAttributes(lp);
 
-        sHueMin = dialog.findViewById(R.id.s_hue_min);
-        sHueMax = dialog.findViewById(R.id.s_hue_max);
-        rsSaturation = dialog.findViewById(R.id.rs_saturation);
-        rsValue = dialog.findViewById(R.id.rs_value);
+        final RangeSlider rsHue = dialog.findViewById(R.id.rs_hue);
+        final RangeSlider rsSaturation = dialog.findViewById(R.id.rs_saturation);
+        final RangeSlider rsValue = dialog.findViewById(R.id.rs_value);
         final LabelFormatter dlf = value -> value + "°"; // Degree label formatter
-        final LabelFormatter plf = value -> value + "%"; // Percentage label formatter
-        final OnSliderChangeListener sl = (slider, value, stopped) -> update(listener, stopped);
-        final OnRSChangeListener rsl = (slider, value0, value1, stopped) -> update(listener, stopped);
+        final LabelFormatter plf = value -> value * 100.0f + "%"; // Percentage label formatter
 
-        sHueMin.addOnChangeListener(sl);
-        sHueMin.addOnSliderTouchListener(sl);
-        sHueMin.setLabelFormatter(dlf);
-        sHueMax.addOnChangeListener(sl);
-        sHueMax.addOnSliderTouchListener(sl);
-        sHueMax.setLabelFormatter(dlf);
-        rsSaturation.addOnChangeListener(rsl);
-        rsSaturation.addOnSliderTouchListener(rsl);
+        final OnCircularRSChangeListener hueOscl = new OnCircularRSChangeListener() {
+            @Override
+            public void onChange(@NonNull RangeSlider slider, float value, boolean inclusive, boolean stopped) {
+                final List<Float> values = slider.getValues();
+                cuboid[0] = values.get(inclusive ? 0 : 1);
+                cuboid[3] = values.get(inclusive ? 1 : 0);
+                listener.onChanged(cuboid, stopped);
+            }
+        };
+        final OnRSChangeListener satOscl = (slider, stopped) -> {
+            final List<Float> values = slider.getValues();
+            cuboid[1] = values.get(0);
+            cuboid[4] = values.get(1);
+            listener.onChanged(cuboid, stopped);
+        };
+        final OnRSChangeListener valOscl = (slider, stopped) -> {
+            final List<Float> values = slider.getValues();
+            cuboid[2] = values.get(0);
+            cuboid[5] = values.get(1);
+            listener.onChanged(cuboid, stopped);
+        };
+
+        rsHue.addOnChangeListener(hueOscl);
+        rsHue.addOnSliderTouchListener(hueOscl);
+        rsHue.setLabelFormatter(dlf);
+        rsSaturation.addOnChangeListener(satOscl);
+        rsSaturation.addOnSliderTouchListener(satOscl);
         rsSaturation.setLabelFormatter(plf);
-        rsValue.addOnChangeListener(rsl);
-        rsValue.addOnSliderTouchListener(rsl);
+        rsValue.addOnChangeListener(valOscl);
+        rsValue.addOnSliderTouchListener(valOscl);
         rsValue.setLabelFormatter(plf);
-    }
-
-    private void update(OnChangedListener listener, boolean stopped) {
-        final List<Float> s = rsSaturation.getValues(), v = rsValue.getValues();
-        listener.onChanged(sHueMin.getValue(), sHueMax.getValue(),
-                s.get(0) / 100.0f, s.get(1) / 100.0f,
-                v.get(0) / 100.0f, v.get(1) / 100.0f,
-                stopped);
     }
 }
