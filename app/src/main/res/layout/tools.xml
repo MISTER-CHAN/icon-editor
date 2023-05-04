@@ -10,28 +10,28 @@
 
     <Button
         android:id="@+id/b_selector"
-        style="@style/OutlinedButton"
+        style="@style/Widget_Button_OutlinedButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/select" />
 
     <Button
         android:id="@+id/b_transformer"
-        style="@style/OutlinedButton"
+        style="@style/Widget_Button_OutlinedButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/transform" />
 
     <Button
         android:id="@+id/b_eyedropper"
-        style="@style/OutlinedButton"
+        style="@style/Widget_Button_OutlinedButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/eyedropper" />
 
     <Button
         android:id="@+id/b_ruler"
-        style="@style/OutlinedButton"
+        style="@style/Widget_Button_OutlinedButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/ruler"
@@ -39,84 +39,84 @@
 
     <Button
         android:id="@+id/b_pencil"
-        style="@style/OutlinedButton"
+        style="@style/Widget_Button_OutlinedButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/pencil" />
 
     <Button
         android:id="@+id/b_eraser"
-        style="@style/OutlinedButton"
+        style="@style/Widget_Button_OutlinedButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/eraser" />
 
     <Button
         android:id="@+id/b_shape"
-        style="@style/OutlinedButton"
+        style="@style/Widget_Button_OutlinedButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/shape" />
 
     <Button
         android:id="@+id/b_path"
-        style="@style/OutlinedButton"
+        style="@style/Widget_Button_OutlinedButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/path" />
 
     <Button
         android:id="@+id/b_bucket_fill"
-        style="@style/OutlinedButton"
+        style="@style/Widget_Button_OutlinedButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/bucket_fill" />
 
     <Button
         android:id="@+id/b_text"
-        style="@style/OutlinedButton"
+        style="@style/Widget_Button_OutlinedButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/text" />
 
     <Button
         android:id="@+id/b_soft_brush"
-        style="@style/OutlinedButton"
+        style="@style/Widget_Button_OutlinedButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/soft_brush" />
 
     <Button
         android:id="@+id/b_gradient"
-        style="@style/OutlinedButton"
+        style="@style/Widget_Button_OutlinedButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/gradient" />
 
     <Button
         android:id="@+id/b_clone_stamp"
-        style="@style/OutlinedButton"
+        style="@style/Widget_Button_OutlinedButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/stamp" />
 
     <Button
         android:id="@+id/b_patcher"
-        style="@style/OutlinedButton"
+        style="@style/Widget_Button_OutlinedButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/patch" />
 
     <Button
         android:id="@+id/b_magic_paint"
-        style="@style/OutlinedButton"
+        style="@style/Widget_Button_OutlinedButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/magic_paint" />
 
     <Button
         android:id="@+id/b_magic_eraser"
-        style="@style/OutlinedButton"
+        style="@style/Widget_Button_OutlinedButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/magic_eraser" />

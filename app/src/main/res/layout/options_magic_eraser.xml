@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     style="@style/ToolOptionsLL"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content">
 
     <com.google.android.material.textfield.TextInputLayout
-        style="@style/TextInputLayout"
+        style="@style/Widget_TextInputLayout_Dense"
         android:layout_width="96dp"
         android:layout_height="wrap_content">
 
@@ -33,18 +34,21 @@
             android:id="@+id/btg_magic_eraser_sides"
             style="@style/ToolOptionsBTG"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            app:checkedButton="@id/b_magic_eraser_left"
+            app:selectionRequired="true"
+            app:singleSelection="true">
 
             <Button
                 android:id="@+id/b_magic_eraser_left"
-                style="@style/OutlinedButton"
+                style="@style/Widget_Button_OutlinedButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/left" />
 
             <Button
                 android:id="@+id/b_magic_eraser_right"
-                style="@style/OutlinedButton"
+                style="@style/Widget_Button_OutlinedButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/right" />

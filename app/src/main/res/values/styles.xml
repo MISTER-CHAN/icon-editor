@@ -1,17 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="OutlinedButton" parent="Widget.Material3.Button.OutlinedButton">
-        <item name="android:minWidth">0dp</item>
-        <item name="android:minHeight">0dp</item>
-        <item name="android:paddingLeft">16dp</item>
-        <item name="android:paddingRight">16dp</item>
-    </style>
-
-    <style name="TextInputLayout" parent="Widget.Material3.TextInputLayout.FilledBox.Dense">
-        <item name="android:layout_marginHorizontal">2dp</item>
-    </style>
-
     <style name="ToolOptionsBTG" parent="ToolOptionsLL">
         <item name="android:layout_gravity">center_vertical</item>
         <item name="android:layout_marginHorizontal">2dp</item>
@@ -31,6 +20,17 @@
     </style>
 
     <style name="View">
+        <item name="android:layout_marginHorizontal">2dp</item>
+    </style>
+
+    <style name="Widget_Button_OutlinedButton" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="android:minWidth">0dp</item>
+        <item name="android:minHeight">0dp</item>
+        <item name="android:paddingLeft">16dp</item>
+        <item name="android:paddingRight">16dp</item>
+    </style>
+
+    <style name="Widget_TextInputLayout_Dense" parent="Widget.Material3.TextInputLayout.FilledBox.Dense">
         <item name="android:layout_marginHorizontal">2dp</item>
     </style>
 </resources>

@@ -47,7 +47,6 @@ import android.widget.CompoundButton;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
@@ -77,6 +76,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButtonToggleGroup;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.progressindicator.LinearProgressIndicator;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
@@ -359,6 +360,7 @@ public class MainActivity extends AppCompatActivity {
     private Transformer transformer;
     private Uri fileToBeOpened;
     private View vBackgroundColor;
+    private View vContent;
     private View vForegroundColor;
 
     private final Paint bitmapPaint = new Paint() {
@@ -920,7 +922,6 @@ public class MainActivity extends AppCompatActivity {
 
             final Window window = dialog.getWindow();
             final WindowManager.LayoutParams lp = window.getAttributes();
-            lp.flags &= ~WindowManager.LayoutParams.FLAG_DIM_BEHIND;
             lp.gravity = Gravity.TOP;
             window.setAttributes(lp);
 
@@ -3621,7 +3622,7 @@ public class MainActivity extends AppCompatActivity {
                 bitmap.compress(tab.compressFormat, quality, fos);
                 fos.flush();
             } catch (IOException e) {
-                Toast.makeText(this, getString(R.string.failed) + '\n' + e.getMessage(), Toast.LENGTH_LONG).show();
+                Snackbar.make(vContent, getString(R.string.failed) + '\n' + e.getMessage(), Snackbar.LENGTH_LONG).show();
             }
         } else if (tab.fileType == Tab.FileType.GIF) {
             final GifEncoder gifEncoder = new GifEncoder();
@@ -3905,6 +3906,7 @@ public class MainActivity extends AppCompatActivity {
         final TextInputEditText tietTextSize = findViewById(R.id.tiet_text_size);
         tvStatus = findViewById(R.id.tv_status);
         vBackgroundColor = findViewById(R.id.v_background_color);
+        vContent = findViewById(android.R.id.content);
         vForegroundColor = findViewById(R.id.v_foreground_color);
         final ViewModel viewModel = new ViewModelProvider(this).get(ViewModel.class);
 
@@ -4288,7 +4290,7 @@ public class MainActivity extends AppCompatActivity {
                         .setOnFinishSettingListener(onApplyNewImagePropertiesListener)
                         .show();
             }
-            case R.id.i_file_open -> pickMultipleMedia.launch(pickVisualMediaRequest);
+            case R.id.i_file_open -> pickMedia();
             case R.id.i_file_open_from_clipboard -> {
                 final ClipboardManager clipboardManager = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
                 if (!clipboardManager.hasPrimaryClip()) {
@@ -4305,7 +4307,9 @@ public class MainActivity extends AppCompatActivity {
             case R.id.i_file_refer_to_clipboard -> {
                 final String filePath = tab.getBackground().getFirstFrame().filePath;
                 if (filePath == null) {
-                    Toast.makeText(this, R.string.please_save_first, Toast.LENGTH_SHORT).show();
+                    Snackbar.make(vContent, R.string.please_save_first, Snackbar.LENGTH_SHORT)
+                            .setAction(R.string.save, v -> save())
+                            .show();
                     break;
                 }
                 ((ClipboardManager) getSystemService(CLIPBOARD_SERVICE))
@@ -4996,7 +5000,9 @@ public class MainActivity extends AppCompatActivity {
         try (final InputStream inputStream = getContentResolver().openInputStream(uri)) {
             final Bitmap bm = BitmapFactory.decodeStream(inputStream);
             if (bm == null) {
-                Toast.makeText(this, R.string.image_is_invalid, Toast.LENGTH_SHORT).show();
+                Snackbar.make(vContent, R.string.image_is_invalid, Snackbar.LENGTH_SHORT)
+                        .setAction(R.string.open, v -> pickMedia())
+                        .show();
                 return;
             }
             openImage(bm, uri);
@@ -5050,8 +5056,10 @@ public class MainActivity extends AppCompatActivity {
                     addTab(bm, tabs.size(), name, path, type, null);
                 }
             } else {
-                Toast.makeText(this, R.string.not_supported_file_type, Toast.LENGTH_SHORT).show();
                 addTab(bm, tabs.size(), name);
+                Snackbar.make(vContent, R.string.not_supported_file_type, Snackbar.LENGTH_SHORT)
+                        .setAction(R.string.save_as, v -> save())
+                        .show();
             }
         } else {
             addTab(bm, tabs.size());
@@ -5073,6 +5081,10 @@ public class MainActivity extends AppCompatActivity {
                 tbSoftBrush.setChecked(true);
             }
         }
+    }
+
+    private void pickMedia() {
+        pickMultipleMedia.launch(pickVisualMediaRequest);
     }
 
     private void recycleAllBitmaps() {
@@ -5288,7 +5300,7 @@ public class MainActivity extends AppCompatActivity {
                 merged.compress(tab.compressFormat, quality, fos);
                 fos.flush();
             } catch (IOException e) {
-                Toast.makeText(this, getString(R.string.failed) + '\n' + e.getMessage(), Toast.LENGTH_LONG).show();
+                Snackbar.make(vContent, getString(R.string.failed) + '\n' + e.getMessage(), Snackbar.LENGTH_LONG).show();
                 e.printStackTrace();
             } finally {
                 merged.recycle();
@@ -5307,10 +5319,11 @@ public class MainActivity extends AppCompatActivity {
             final int size = tabs.size();
             final AlertDialog dialog = new MaterialAlertDialogBuilder(this)
                     .setTitle(R.string.exporting)
-                    .setView(R.layout.progress_bar)
+                    .setView(R.layout.progress_indicator)
+                    .setCancelable(false)
                     .show();
-            final ProgressBar pb = dialog.findViewById(R.id.progress_bar);
-            pb.setMax(size - 1);
+            final LinearProgressIndicator pi = dialog.findViewById(R.id.progress_indicator);
+            pi.setMax(size - 1);
             new Thread(() -> {
                 final List<String> invalidFrames = new LinkedList<>();
                 for (int i = tab.getBackgroundPosition(); i < size; ++i) {
@@ -5328,14 +5341,14 @@ public class MainActivity extends AppCompatActivity {
                         invalidFrames.add(String.valueOf(i));
                     }
                     final int progress = i;
-                    runOnUiThread(() -> pb.setProgress(progress));
+                    runOnUiThread(() -> pi.setProgressCompat(progress, true));
                 }
                 gifEncoder.close();
                 MediaScannerConnection.scanFile(this, new String[]{file.toString()}, null, null);
                 runOnUiThread(() -> {
                     dialog.dismiss();
                     if (invalidFrames.isEmpty()) {
-                        Toast.makeText(this, R.string.done, Toast.LENGTH_SHORT).show();
+                        Snackbar.make(vContent, R.string.done, Snackbar.LENGTH_SHORT).show();
                     } else {
                         new MaterialAlertDialogBuilder(this)
                                 .setTitle(R.string.done)

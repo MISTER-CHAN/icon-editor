@@ -190,7 +190,7 @@
 
                 <Button
                     android:id="@+id/b_zoom"
-                    style="@style/OutlinedButton"
+                    style="@style/Widget_Button_OutlinedButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/zoom" />

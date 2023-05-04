@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="TextInputLayout" parent="Widget.Material3.TextInputLayout.FilledBox.Dense">
+    <style name="Widget_TextInputLayout_Dense" parent="Widget.Material3.TextInputLayout.FilledBox.Dense">
         <item name="android:layout_marginVertical">2dp</item>
     </style>
 

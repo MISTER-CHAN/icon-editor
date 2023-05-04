@@ -10,7 +10,7 @@
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
         android:text="@string/convert_from_cmyk"
-        android:textColor="@color/blue" />
+        android:textColor="?android:attr/textColorLink" />
 
     <TextView
         android:id="@+id/tv_hsv"
@@ -18,7 +18,7 @@
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
         android:text="@string/convert_from_hsv"
-        android:textColor="@color/blue" />
+        android:textColor="?android:attr/textColorLink" />
 
     <TextView
         android:id="@+id/tv_lab"
@@ -26,7 +26,7 @@
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
         android:text="@string/convert_from_lab"
-        android:textColor="@color/blue" />
+        android:textColor="?android:attr/textColorLink" />
 
     <TextView
         android:id="@+id/tv_xyz"
@@ -34,7 +34,7 @@
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
         android:text="@string/convert_from_xyz"
-        android:textColor="@color/blue" />
+        android:textColor="?android:attr/textColorLink" />
 
     <TextView
         android:id="@+id/tv_xyy"
@@ -42,5 +42,5 @@
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
         android:text="@string/convert_from_xyy"
-        android:textColor="@color/blue" />
+        android:textColor="?android:attr/textColorLink" />
 </LinearLayout>

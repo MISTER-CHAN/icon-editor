@@ -16,14 +16,14 @@
 
         <Button
             android:id="@+id/b_eyedropper_current_layer"
-            style="@style/OutlinedButton"
+            style="@style/Widget_Button_OutlinedButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/current_layer" />
 
         <Button
             android:id="@+id/b_eyedropper_all_layers"
-            style="@style/OutlinedButton"
+            style="@style/Widget_Button_OutlinedButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/all_layers" />

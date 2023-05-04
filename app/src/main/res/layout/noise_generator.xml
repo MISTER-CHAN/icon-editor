@@ -25,21 +25,21 @@
 
         <Button
             android:id="@+id/b_pixel"
-            style="@style/OutlinedButton"
+            style="@style/Widget_Button_OutlinedButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/pixel" />
 
         <Button
             android:id="@+id/b_point"
-            style="@style/OutlinedButton"
+            style="@style/Widget_Button_OutlinedButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/point" />
 
         <Button
             android:id="@+id/b_ref"
-            style="@style/OutlinedButton"
+            style="@style/Widget_Button_OutlinedButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/reference" />
@@ -54,7 +54,8 @@
     <com.google.android.material.textfield.TextInputLayout
         style="@style/Widget.Material3.TextInputLayout.OutlinedBox.Dense"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        app:endIconMode="clear_text">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/tiet_seed"

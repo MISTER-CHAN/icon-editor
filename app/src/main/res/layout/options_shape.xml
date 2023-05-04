@@ -6,7 +6,7 @@
     android:layout_height="wrap_content">
 
     <com.google.android.material.textfield.TextInputLayout
-        style="@style/TextInputLayout"
+        style="@style/Widget_TextInputLayout_Dense"
         android:layout_width="96dp"
         android:layout_height="wrap_content">
 
@@ -38,28 +38,28 @@
 
         <Button
             android:id="@+id/b_line"
-            style="@style/OutlinedButton"
+            style="@style/Widget_Button_OutlinedButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/line" />
 
         <Button
             android:id="@+id/b_rect"
-            style="@style/OutlinedButton"
+            style="@style/Widget_Button_OutlinedButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/rectangle" />
 
         <Button
             android:id="@+id/b_oval"
-            style="@style/OutlinedButton"
+            style="@style/Widget_Button_OutlinedButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/oval" />
 
         <Button
             android:id="@+id/b_circle"
-            style="@style/OutlinedButton"
+            style="@style/Widget_Button_OutlinedButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/circle" />

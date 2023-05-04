@@ -5,7 +5,7 @@
     android:layout_height="match_parent">
 
     <com.google.android.material.textfield.TextInputLayout
-        style="@style/TextInputLayout"
+        style="@style/Widget_TextInputLayout_Dense"
         android:layout_width="96dp"
         android:layout_height="wrap_content">
 
@@ -21,7 +21,7 @@
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.textfield.TextInputLayout
-        style="@style/TextInputLayout"
+        style="@style/Widget_TextInputLayout_Dense"
         android:layout_width="96dp"
         android:layout_height="wrap_content">
 
