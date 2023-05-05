@@ -265,7 +265,9 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:fadingEdgeLength="16dp"
-                android:requiresFadingEdge="horizontal" />
+                android:orientation="horizontal"
+                android:requiresFadingEdge="horizontal"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
             <Button
                 android:id="@+id/b_swatches_add"

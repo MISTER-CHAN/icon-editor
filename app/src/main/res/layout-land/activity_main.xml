@@ -75,7 +75,9 @@
                     android:layout_height="0dp"
                     android:layout_weight="1"
                     android:fadingEdgeLength="16dp"
-                    android:requiresFadingEdge="vertical" />
+                    android:orientation="vertical"
+                    android:requiresFadingEdge="vertical"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
                 <Button
                     android:id="@+id/b_swatches_add"

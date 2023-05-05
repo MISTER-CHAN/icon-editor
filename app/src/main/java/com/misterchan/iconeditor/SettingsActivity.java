@@ -18,6 +18,8 @@ import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+
 public class SettingsActivity extends AppCompatActivity {
 
     @Override
@@ -82,7 +84,7 @@ public class SettingsActivity extends AppCompatActivity {
             if (key != null) {
                 switch (key) {
                     case Settings.KEY_CFU -> {
-                        new AlertDialog.Builder(getContext())
+                        new MaterialAlertDialogBuilder(getContext())
                                 .setMessage(R.string.check_for_updates_in_system_browser)
                                 .setPositiveButton(R.string.ok, (dialog, which) ->
                                         startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/MISTER-CHAN/icon-editor/releases"))))

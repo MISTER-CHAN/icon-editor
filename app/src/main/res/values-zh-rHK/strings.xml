@@ -108,6 +108,7 @@
     <string name="float_">浮點數</string>
     <string name="foreground_color">畫筆顏色</string>
     <string name="frame">幀</string>
+    <string name="frames">幀</string>
     <string name="from">從</string>
     <string name="fuzziness">容差</string>
     <string name="general">一般</string>
@@ -138,6 +139,7 @@
     <string name="language">語言</string>
     <string name="layer">圖層</string>
     <string name="layer_name">圖層名</string>
+    <string name="layers">圖層</string>
     <string name="left">左</string>
     <string name="level">階層</string>
     <string name="level_down">降階</string>

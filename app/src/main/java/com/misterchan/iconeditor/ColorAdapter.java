@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
-class ColorAdapter extends RecyclerView.Adapter<ColorAdapter.ViewHolder> {
+class ColorAdapter extends ItemMovableAdapter<ColorAdapter.ViewHolder> {
 
     protected static class ViewHolder extends RecyclerView.ViewHolder {
         private final View view;
@@ -26,6 +26,11 @@ class ColorAdapter extends RecyclerView.Adapter<ColorAdapter.ViewHolder> {
 
     public ColorAdapter(List<Long> colors) {
         this.colors = colors;
+    }
+
+    @Override
+    protected List<Long> getData() {
+        return colors;
     }
 
     @Override
@@ -56,5 +61,4 @@ class ColorAdapter extends RecyclerView.Adapter<ColorAdapter.ViewHolder> {
     public void setOnItemLongClickListener(View.OnLongClickListener listener) {
         onItemLongClickListener = listener;
     }
-
 }

@@ -70,6 +70,7 @@ import androidx.documentfile.provider.DocumentFile;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -77,6 +78,8 @@ import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButtonToggleGroup;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
+import com.google.android.material.sidesheet.SideSheetBehavior;
+import com.google.android.material.sidesheet.SideSheetDialog;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.textfield.TextInputEditText;
@@ -283,6 +286,7 @@ public class MainActivity extends AppCompatActivity {
     private float strokeWidth = 1.0f, eraserStrokeHalfWidth = 0.5f;
     private float textSize = 12.0f;
     private float translationX, translationY;
+    private Frame frame;
     private FrameLayout flImageView;
     private FrameLayout flToolOptions;
     private FrameLayout svOptionsSoftBrush;
@@ -310,8 +314,10 @@ public class MainActivity extends AppCompatActivity {
     private int textX, textY;
     private int threshold;
     private int viewWidth, viewHeight;
+    private Layer layer;
     private LinearLayout llOptionsText;
     private LinkedList<Long> palette;
+    private List<Project> projects;
     private List<Tab> tabs;
     private MaterialButtonToggleGroup btgEyedropperSrc;
     private MaterialButtonToggleGroup btgMagicEraserSides;
@@ -331,7 +337,9 @@ public class MainActivity extends AppCompatActivity {
     private final PointF magErBD = new PointF(0.0f, 0.0f), magErFD = new PointF(0.0f, 0.0f); // Distance
     private Position marqueeBoundBeingDragged = null;
     private Preview imagePreview;
+    private Project project;
     private final Rect selection = new Rect();
+    private RecyclerView rvLayerList;
     private final Ruler ruler = new Ruler();
     private SubMenu smLayerBlendModes;
     private Paint.Style style = Paint.Style.FILL_AND_STROKE;
@@ -2729,7 +2737,15 @@ public class MainActivity extends AppCompatActivity {
     };
 
     private void addDefaultTab() {
-        addTab(Bitmap.createBitmap(48, 48, Bitmap.Config.ARGB_8888), 0);
+        final Tab tab = addTab(Bitmap.createBitmap(48, 48, Bitmap.Config.ARGB_8888), 0);
+//        project = new Project();
+//        frame = new Frame();
+//        layer = new Layer();
+//        projects.add(project);
+//        project.frames.add(frame);
+//        frame.layers.add(layer);
+//        layer.bitmap = tab.bitmap;
+//        layer.name = getString(R.string.untitled);
     }
 
     private Tab addFrame(Bitmap bitmap, int position, boolean isFirst, int delay,
@@ -2780,6 +2796,10 @@ public class MainActivity extends AppCompatActivity {
         t.paint.setBlendMode(BlendMode.SRC_OVER);
         t.visible = visible;
         addTab(t, position, title, setSelected);
+//        final Layer layer = new Layer();
+//        frame.layers.add(0, layer);
+//        layer.bitmap = bitmap;
+//        layer.name = title;
         return t;
     }
 
@@ -4030,12 +4050,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        {
-            final LinearLayoutManager llm = new LinearLayoutManager(this);
-            llm.setOrientation(isLandscape ? RecyclerView.VERTICAL : RecyclerView.HORIZONTAL);
-            rvSwatches.setLayoutManager(llm);
-        }
-
         tietEraserBlurRadius.addTextChangedListener((AfterTextChangedListener) s -> {
             try {
                 final float f = Float.parseFloat(s);
@@ -4077,12 +4091,14 @@ public class MainActivity extends AppCompatActivity {
 
         chessboard = BitmapFactory.decodeResource(getResources(), R.mipmap.chessboard);
         fileToBeOpened = getIntent().getData();
+        projects = viewModel.getProjects();
         tabs = viewModel.getTabs();
 
         palette = viewModel.getPalette();
         colorAdapter = new ColorAdapter(palette);
         initColorAdapter();
         rvSwatches.setAdapter(colorAdapter);
+        colorAdapter.attachItemMoveHelperToRecycleView(rvSwatches);
 
         if (isLandscape) {
             final LinearLayout ll = findViewById(R.id.ll_tl);
@@ -4749,6 +4765,18 @@ public class MainActivity extends AppCompatActivity {
                 Tab.computeLayerTree(tabs, tab);
                 Tab.updateLevelIcons(tabs, tab);
                 drawBitmapOntoView(true);
+            }
+            case R.id.i_layer_list -> {
+                final SideSheetDialog dialog = new SideSheetDialog(this);
+                dialog.setTitle(R.string.layers);
+                dialog.setContentView(R.layout.layer_list);
+                dialog.show();
+
+                final RecyclerView rvLayerList = dialog.findViewById(R.id.rv_layer_list);
+
+                rvLayerList.setItemAnimator(new DefaultItemAnimator());
+                rvLayerList.setAdapter(frame.layerAdapter);
+                frame.layerAdapter.attachItemMoveHelperToRecycleView(rvLayerList);
             }
             case R.id.i_layer_merge_alpha -> {
                 final int pos = tabLayout.getSelectedTabPosition(), posBelow = pos + 1;
@@ -5600,6 +5628,7 @@ public class MainActivity extends AppCompatActivity {
         this.bitmap.recycle();
         this.bitmap = bitmap;
         tab.bitmap = this.bitmap;
+//        layer.bitmap = this.bitmap;
         canvas = new Canvas(this.bitmap);
 
         calculateBackgroundSizeOnView();

@@ -59,6 +59,18 @@
         </menu>
     </item>
     <item
+        android:id="@+id/i_layer_list"
+        android:icon="@drawable/ic_layers"
+        android:title="@string/layers"
+        android:visible="false"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/i_frame_list"
+        android:icon="@drawable/ic_movie"
+        android:title="@string/frames"
+        android:visible="false"
+        app:showAsAction="always" />
+    <item
         android:icon="@drawable/ic_more_vert"
         android:title="@string/more"
         app:showAsAction="always">

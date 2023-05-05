@@ -6,6 +6,7 @@ import java.util.List;
 
 public class ViewModel extends androidx.lifecycle.ViewModel {
     private LinkedList<Long> palette;
+    private List<Project> projects;
     private List<Tab> tabs;
 
     public LinkedList<Long> getPalette() {
@@ -24,6 +25,13 @@ public class ViewModel extends androidx.lifecycle.ViewModel {
             };
         }
         return palette;
+    }
+
+    public List<Project> getProjects() {
+        if (projects == null) {
+            projects = new ArrayList<>();
+        }
+        return projects;
     }
 
     public List<Tab> getTabs() {
