@@ -16,8 +16,8 @@ import androidx.appcompat.app.AlertDialog;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputEditText;
+import com.misterchan.iconeditor.Project;
 import com.misterchan.iconeditor.R;
-import com.misterchan.iconeditor.Tab;
 
 import java.io.File;
 import java.util.regex.Matcher;
@@ -25,6 +25,10 @@ import java.util.regex.Pattern;
 
 public class DirectorySelector {
     private static final Pattern PATTERN_TREE = Pattern.compile("^content://com\\.android\\.externalstorage\\.documents/tree/primary%3A(?<path>.*)$");
+
+    public interface OnApplyFileNameCallback {
+        void onApply(Project project);
+    }
 
     public static final class FileNameHelper {
         private static final Pattern PATTERN = Pattern.compile("[\"*/:<>?\\\\|]");
@@ -41,9 +45,9 @@ public class DirectorySelector {
     }
 
     private Context context;
-    private Runnable callback;
+    private OnApplyFileNameCallback callback;
     private String tree = "";
-    private Tab tab;
+    private Project src, dst;
 
     private final DialogInterface.OnClickListener onApplyFileNameListener = (dialog, which) -> {
         final TextInputEditText tietFileName = ((AlertDialog) dialog).findViewById(R.id.tiet_file_name);
@@ -53,23 +57,25 @@ public class DirectorySelector {
         if (fileName.length() <= 0) {
             return;
         }
-        tab.filePath = Environment.getExternalStorageDirectory().getPath() + File.separator + tree + File.separator + fileName;
-        tab.fileType = switch (fileType) {
-            case ".png" -> Tab.FileType.PNG;
-            case ".jpg" -> Tab.FileType.JPEG;
-            case ".gif" -> Tab.FileType.GIF;
-            case ".webp" -> Tab.FileType.WEBP;
-            default -> tab.fileType;
+        dst.filePath = Environment.getExternalStorageDirectory().getPath() + File.separator + tree + File.separator + fileName;
+        dst.fileType = switch (fileType) {
+            case ".png" -> Project.FileType.PNG;
+            case ".jpg" -> Project.FileType.JPEG;
+            case ".gif" -> Project.FileType.GIF;
+            case ".webp" -> Project.FileType.WEBP;
+            default -> src.fileType;
         };
-        tab.compressFormat = switch (fileType) {
+        dst.compressFormat = switch (fileType) {
             case ".png" -> Bitmap.CompressFormat.PNG;
             case ".jpg" -> Bitmap.CompressFormat.JPEG;
-            case ".webp" -> tab.compressFormat == Bitmap.CompressFormat.WEBP_LOSSY
+            case ".webp" -> src.compressFormat == Bitmap.CompressFormat.WEBP_LOSSY
                     ? Bitmap.CompressFormat.WEBP_LOSSY : Bitmap.CompressFormat.WEBP_LOSSLESS;
-            default -> tab.compressFormat;
+            default -> src.compressFormat;
         };
-        callback.run();
-        tab.setTitle(fileName);
+        dst.setTitle(fileName);
+        if (callback != null) {
+            callback.onApply(dst);
+        }
     };
 
     private final ActivityResultCallback<Uri> onDocTreeOpenedCallback = result -> {
@@ -90,7 +96,7 @@ public class DirectorySelector {
                 .setView(R.layout.file_name)
                 .show();
 
-        final Tab.FileType fileType = tab.getBackground().fileType;
+        final Project.FileType fileType = src.fileType;
         final Spinner sFileType = dialog.findViewById(R.id.s_file_type);
         final TextInputEditText tietFileName = dialog.findViewById(R.id.tiet_file_name);
 
@@ -101,7 +107,7 @@ public class DirectorySelector {
             case WEBP -> 3;
         });
         tietFileName.setFilters(FileNameHelper.FILTERS);
-        tietFileName.setText(tab.getName());
+        tietFileName.setText(src.getName());
     };
 
     private final ActivityResultLauncher<Uri> openDocTree;
@@ -111,9 +117,10 @@ public class DirectorySelector {
         openDocTree = activity.registerForActivityResult(new ActivityResultContracts.OpenDocumentTree(), onDocTreeOpenedCallback);
     }
 
-    public void open(Tab tabToWriteResult, Runnable callback) {
+    public void open(Project src, Project dst, OnApplyFileNameCallback callback) {
         this.callback = callback;
-        tab = tabToWriteResult;
+        this.src = src;
+        this.dst = dst;
         openDocTree.launch(null);
     }
 }

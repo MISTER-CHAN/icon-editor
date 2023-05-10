@@ -12,8 +12,9 @@ import androidx.core.view.OneShotPreDrawListener;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.slider.RangeSlider;
+import com.misterchan.iconeditor.Layers;
+import com.misterchan.iconeditor.Project;
 import com.misterchan.iconeditor.R;
-import com.misterchan.iconeditor.Tab;
 import com.misterchan.iconeditor.listener.OnCircularRSChangeListener;
 
 import java.util.ArrayList;
@@ -30,29 +31,29 @@ public class AnimationClipper {
     private int from, to;
     private final List<Bitmap> frames;
 
-    public AnimationClipper(Context context, List<Tab> tabs, Tab firstFrame, OnConfirmListener listener) {
+    public AnimationClipper(Context context, Project project, OnConfirmListener listener) {
         frames = new ArrayList<>();
-
-        builder = new MaterialAlertDialogBuilder(context)
-                .setIcon(R.drawable.ic_content_cut).setTitle(R.string.clip)
-                .setView(R.layout.animation_clipper)
-                .setPositiveButton(R.string.ok, (dialog, which) ->
-                        listener.onConfirm(frames.size() - to, frames.size() - from))
-                .setNegativeButton(R.string.cancel, null)
-                .setOnDismissListener(dialog -> frames.forEach(Bitmap::recycle));
-
-        for (int i = 0; i < tabs.size(); ++i) {
-            final Tab tab = tabs.get(i).getBackground();
-            i = tab.getBackgroundPosition();
-            if (tab.getFirstFrame() != firstFrame) {
-                if (frames.isEmpty()) {
-                    continue;
-                } else {
-                    break;
-                }
-            }
-            frames.add(Tab.mergeLayers(tab.layerTree));
-        }
+//
+        builder = new MaterialAlertDialogBuilder(context);
+//                .setIcon(R.drawable.ic_content_cut).setTitle(R.string.clip)
+//                .setView(R.layout.animation_clipper)
+//                .setPositiveButton(R.string.ok, (dialog, which) ->
+//                        listener.onConfirm(frames.size() - to, frames.size() - from))
+//                .setNegativeButton(R.string.cancel, null)
+//                .setOnDismissListener(dialog -> frames.forEach(Bitmap::recycle));
+//
+//        for (int i = 0; i < tabs.size(); ++i) {
+//            final Tab tab = tabs.get(i).getBackground();
+//            i = tab.getBackgroundPosition();
+//            if (tab.getFirstFrame() != firstFrame) {
+//                if (frames.isEmpty()) {
+//                    continue;
+//                } else {
+//                    break;
+//                }
+//            }
+//            frames.add(Layers.mergeLayers(tab.layerTree));
+//        }
     }
 
     public AnimationClipper show() {

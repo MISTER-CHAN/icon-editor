@@ -2,10 +2,12 @@ package com.misterchan.iconeditor.dialog;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.Window;
 import android.view.WindowManager;
@@ -53,9 +55,10 @@ public class LevelsDialog {
             progressBitmap = null;
         });
 
-        final TypedArray typedArray = context.getTheme().obtainStyledAttributes(new int[]{android.R.attr.textColorPrimary});
-        paint.setColor(typedArray.getColor(0, Color.BLACK));
-        typedArray.recycle();
+        final Resources.Theme theme = context.getTheme();
+        final TypedValue typedValue = new TypedValue();
+        theme.resolveAttribute(android.R.attr.textColorPrimary, typedValue, true);
+        paint.setColor(context.getResources().getColor(typedValue.resourceId, theme));
     }
 
     public static final Function<Integer, Integer> valueFunc =

@@ -3,11 +3,13 @@ package com.misterchan.iconeditor.dialog;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.BlendMode;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
@@ -109,8 +111,10 @@ public class CurvesDialog {
             histBitmaps = null;
         });
 
-        final TypedArray typedArray = context.getTheme().obtainStyledAttributes(new int[]{android.R.attr.textColorPrimary});
-        final int color = typedArray.getColor(0, Color.BLACK);
+        final Resources.Theme theme = context.getTheme();
+        final TypedValue typedValue = new TypedValue();
+        theme.resolveAttribute(android.R.attr.textColorPrimary, typedValue, true);
+        final int color = context.getResources().getColor(typedValue.resourceId, theme);
         normalPaint.setColor(color);
         compPaint.setColor(color);
         final int r = sat(Color.red(color) - 0x40) << 16,
@@ -120,7 +124,6 @@ public class CurvesDialog {
         paints[0].setColor(a | sat(r + 0x40) << 16 | g | b);
         paints[1].setColor(a | r | sat(g + 0x40) << 8 | b);
         paints[2].setColor(a | r | g | sat(b + 0x40));
-        typedArray.recycle();
     }
 
     @SuppressLint("ClickableViewAccessibility")

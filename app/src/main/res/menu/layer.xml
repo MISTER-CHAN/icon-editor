@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:id="@+id/layer_edit">
+        <item
+            android:id="@+id/i_layer_new"
+            android:icon="@drawable/ic_void"
+            android:title="@string/new_" />
+        <item
+            android:id="@+id/i_layer_duplicate"
+            android:icon="@drawable/ic_content_copy"
+            android:title="@string/duplicate" />
+        <item
+            android:id="@+id/i_layer_duplicate_by_color_range"
+            android:icon="@drawable/ic_void"
+            android:title="@string/duplicate_by_color_range" />
+        <item
+            android:id="@+id/i_layer_rename"
+            android:icon="@drawable/ic_drive_file_rename_outline"
+            android:title="@string/rename" />
+        <item
+            android:id="@+id/i_layer_delete"
+            android:icon="@drawable/ic_delete"
+            android:title="@string/delete" />
+        <item
+            android:id="@+id/i_layer_delete_invisible"
+            android:icon="@drawable/ic_void"
+            android:title="@string/delete_invisible" />
+    </group>
+    <group android:id="@+id/g_layer_merge">
+        <item
+            android:id="@+id/i_layer_merge_down"
+            android:icon="@drawable/ic_arrow_downward"
+            android:title="@string/merge_down" />
+        <item
+            android:id="@+id/i_layer_merge_visible"
+            android:icon="@drawable/ic_void"
+            android:title="@string/merge_visible" />
+        <item
+            android:icon="@drawable/ic_void"
+            android:title="@string/merge">
+            <menu>
+                <item
+                    android:id="@+id/i_layer_merge_alpha"
+                    android:title="@string/merge_alpha" />
+                <item
+                    android:id="@+id/i_layer_merge_as_hidden"
+                    android:title="@string/merge_as_a_hidden_image" />
+            </menu>
+        </item>
+    </group>
+    <group android:id="@+id/layer_properties">
+        <item
+            android:id="@+id/i_layer_alpha"
+            android:icon="@drawable/ic_void"
+            android:title="@string/alpha" />
+        <item
+            android:id="@+id/i_blend_mode"
+            android:icon="@drawable/ic_void"
+            android:title="@string/blend_mode">
+            <menu>
+                <group android:id="@+id/g_blend_mode_0_12">
+                    <item
+                        android:id="@+id/i_layer_blend_mode_clear"
+                        android:checkable="true"
+                        android:title="@string/clear" />
+                    <item
+                        android:id="@+id/i_layer_blend_mode_src"
+                        android:checkable="true"
+                        android:title="@string/source" />
+                    <item
+                        android:id="@+id/i_layer_blend_mode_dst"
+                        android:checkable="true"
+                        android:title="@string/destination" />
+                    <item
+                        android:id="@+id/i_layer_blend_mode_src_over"
+                        android:checkable="true"
+                        android:checked="true"
+                        android:title="@string/source_over" />
+                    <item
+                        android:id="@+id/i_layer_blend_mode_dst_over"
+                        android:checkable="true"
+                        android:title="@string/destination_over" />
+                    <item
+                        android:id="@+id/i_layer_blend_mode_src_in"
+                        android:checkable="true"
+                        android:title="@string/source_in" />
+                    <item
+                        android:id="@+id/i_layer_blend_mode_dst_in"
+                        android:checkable="true"
+                        android:title="@string/destination_in" />
+                    <item
+                        android:id="@+id/i_layer_blend_mode_src_out"
+                        android:checkable="true"
+                        android:title="@string/source_out" />
+                    <item
+                        android:id="@+id/i_layer_blend_mode_dst_out"
+                        android:checkable="true"
+                        android:title="@string/destination_out" />
+                    <item
+                        android:id="@+id/i_layer_blend_mode_src_atop"
+                        android:checkable="true"
+                        android:title="@string/source_atop" />
+                    <item
+                        android:id="@+id/i_layer_blend_mode_dst_atop"
+                        android:checkable="true"
+                        android:title="@string/destination_atop" />
+                    <item
+                        android:id="@+id/i_layer_blend_mode_xor"
+                        android:checkable="true"
+                        android:title="@string/xor" />
+                    <item
+                        android:id="@+id/i_layer_blend_mode_plus"
+                        android:checkable="true"
+                        android:title="@string/plus" />
+                </group>
+                <group android:id="@+id/g_blend_mode_13_15">
+                    <item
+                        android:id="@+id/i_layer_blend_mode_modulate"
+                        android:checkable="true"
+                        android:title="@string/modulate" />
+                    <item
+                        android:id="@+id/i_layer_blend_mode_screen"
+                        android:checkable="true"
+                        android:title="@string/screen" />
+                    <item
+                        android:id="@+id/i_layer_blend_mode_overlay"
+                        android:checkable="true"
+                        android:title="@string/overlay" />
+                </group>
+                <group android:id="@+id/g_blend_mode_16_17">
+                    <item
+                        android:id="@+id/i_layer_blend_mode_darken"
+                        android:checkable="true"
+                        android:title="@string/darken" />
+                    <item
+                        android:id="@+id/i_layer_blend_mode_lighten"
+                        android:checkable="true"
+                        android:title="@string/lighten" />
+                </group>
+                <group android:id="@+id/g_blend_mode_18_19">
+                    <item
+                        android:id="@+id/i_layer_blend_mode_color_dodge"
+                        android:checkable="true"
+                        android:title="@string/color_dodge" />
+                    <item
+                        android:id="@+id/i_layer_blend_mode_color_burn"
+                        android:checkable="true"
+                        android:title="@string/color_burn" />
+                </group>
+                <group android:id="@+id/g_blend_mode_20_21">
+                    <item
+                        android:id="@+id/i_layer_blend_mode_hard_light"
+                        android:checkable="true"
+                        android:title="@string/hard_light" />
+                    <item
+                        android:id="@+id/i_layer_blend_mode_soft_light"
+                        android:checkable="true"
+                        android:title="@string/soft_light" />
+                </group>
+                <group android:id="@+id/g_blend_mode_22_24">
+                    <item
+                        android:id="@+id/i_layer_blend_mode_difference"
+                        android:checkable="true"
+                        android:title="@string/difference" />
+                    <item
+                        android:id="@+id/i_layer_blend_mode_exclusion"
+                        android:checkable="true"
+                        android:title="@string/exclusion" />
+                    <item
+                        android:id="@+id/i_layer_blend_mode_multiply"
+                        android:checkable="true"
+                        android:title="@string/multiply" />
+                </group>
+                <group android:id="@+id/g_blend_mode_25_28">
+                    <item
+                        android:id="@+id/i_layer_blend_mode_hue"
+                        android:checkable="true"
+                        android:title="@string/hue" />
+                    <item
+                        android:id="@+id/i_layer_blend_mode_saturation"
+                        android:checkable="true"
+                        android:title="@string/saturation" />
+                    <item
+                        android:id="@+id/i_layer_blend_mode_color"
+                        android:checkable="true"
+                        android:title="@string/color" />
+                    <item
+                        android:id="@+id/i_layer_blend_mode_luminosity"
+                        android:checkable="true"
+                        android:title="@string/luminosity" />
+                </group>
+            </menu>
+        </item>
+        <item
+            android:icon="@drawable/ic_filter"
+            android:title="@string/filters">
+            <menu>
+                <group android:id="@+id/g_layer_filters">
+                    <item
+                        android:id="@+id/i_layer_curves"
+                        android:checkable="true"
+                        android:title="@string/curves" />
+                    <item
+                        android:id="@+id/i_layer_hsv"
+                        android:checkable="true"
+                        android:title="@string/hsv" />
+                    <item
+                        android:id="@+id/i_layer_color_matrix"
+                        android:checkable="true"
+                        android:title="@string/channel_mixer" />
+                </group>
+                <group android:id="@+id/g_layer_filter_set">
+                    <item
+                        android:id="@+id/i_layer_filter_set"
+                        android:title="@string/set" />
+                </group>
+            </menu>
+        </item>
+        <item
+            android:icon="@drawable/ic_void"
+            android:title="@string/level">
+            <menu>
+                <item
+                    android:id="@+id/i_layer_level_up"
+                    android:icon="@drawable/ic_arrow_upward"
+                    android:title="@string/level_up" />
+                <item
+                    android:id="@+id/i_layer_level_down"
+                    android:icon="@drawable/ic_arrow_downward"
+                    android:title="@string/level_down" />
+                <item
+                    android:id="@+id/i_layer_add_layer_mask"
+                    android:icon="@drawable/ic_void"
+                    android:title="@string/fast_add_layer_mask" />
+                <item
+                    android:id="@+id/i_layer_create_clipping_mask"
+                    android:icon="@drawable/ic_void"
+                    android:title="@string/fast_create_clipping_mask" />
+                <item
+                    android:id="@+id/i_layer_create_group"
+                    android:icon="@drawable/ic_create_new_folder"
+                    android:title="@string/fast_create_group" />
+            </menu>
+        </item>
+        <item
+            android:id="@+id/i_layer_reference"
+            android:checkable="true"
+            android:icon="@drawable/ic_void"
+            android:title="@string/reference" />
+        <item
+            android:id="@+id/i_layer_draw_below"
+            android:checkable="true"
+            android:icon="@drawable/ic_void"
+            android:title="@string/draw_below" />
+    </group>
+</menu>

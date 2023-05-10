@@ -23,7 +23,7 @@ public class Settings {
     private boolean indTranslAndScale = false;
     private boolean newLayerLevel = false;
     private int argbCompRadix = 16;
-    private MainActivity mainActivity;
+    public MainActivity mainActivity;
     private String argbCompFormat = FORMAT_02X;
 
     private Settings() {
@@ -51,10 +51,6 @@ public class Settings {
 
     public boolean newLayerLevel() {
         return newLayerLevel;
-    }
-
-    public void setMainActivity(MainActivity mainActivity) {
-        this.mainActivity = mainActivity;
     }
 
     public void update(SharedPreferences preferences) {

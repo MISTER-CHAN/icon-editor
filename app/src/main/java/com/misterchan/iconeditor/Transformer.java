@@ -1,12 +1,9 @@
 package com.misterchan.iconeditor;
 
 import android.graphics.Bitmap;
-import android.graphics.BlendMode;
 import android.graphics.Canvas;
-import android.graphics.DrawFilter;
 import android.graphics.Matrix;
 import android.graphics.Paint;
-import android.graphics.PaintFlagsDrawFilter;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
@@ -68,12 +65,12 @@ class Transformer {
         return bitmap.getWidth();
     }
 
-    public Tab makeTab() {
-        Tab tab = new Tab();
-        tab.bitmap = bitmap;
-        tab.left = rect.left;
-        tab.top = rect.top;
-        return tab;
+    public Layer makeLayer() {
+        Layer layer = new Layer();
+        layer.bitmap = bitmap;
+        layer.left = rect.left;
+        layer.top = rect.top;
+        return layer;
     }
 
     public void recycle() {

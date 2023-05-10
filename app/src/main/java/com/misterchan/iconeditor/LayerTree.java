@@ -43,11 +43,11 @@ package com.misterchan.iconeditor;
  */
 class LayerTree {
     public static class Node {
-        private final Tab val;
+        private final Layer val;
         private LayerTree children;
         private Node above;
 
-        public Node(Tab val) {
+        public Node(Layer val) {
             this.val = val;
         }
 
@@ -62,7 +62,7 @@ class LayerTree {
             return children;
         }
 
-        public Tab getTab() {
+        public Layer getLayer() {
             return val;
         }
 
@@ -82,8 +82,8 @@ class LayerTree {
         return size == 0;
     }
 
-    public Node push(Tab tab) {
-        final Node node = new Node(tab);
+    public Node push(Layer layer) {
+        final Node node = new Node(layer);
         if (foreground == null)
             background = node;
         else

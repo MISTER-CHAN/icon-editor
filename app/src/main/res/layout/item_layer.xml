@@ -1,19 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/cl"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:gravity="center_vertical|start"
-    android:orientation="horizontal"
+    android:background="?android:attr/selectableItemBackground"
     android:padding="8dp">
+
+    <RadioButton
+        android:id="@+id/rb"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:minWidth="0dp"
+        app:layout_constraintBottom_toBottomOf="@id/fl_thumbnail"
+        app:layout_constraintEnd_toStartOf="@id/cb_visible"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/fl_thumbnail" />
 
     <CheckBox
         android:id="@+id/cb_visible"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:button="@drawable/sl_layer_visible"
+        app:layout_constraintBottom_toBottomOf="@id/fl_thumbnail"
+        app:layout_constraintEnd_toStartOf="@id/fl_thumbnail"
+        app:layout_constraintStart_toEndOf="@id/rb"
+        app:layout_constraintTop_toTopOf="@id/fl_thumbnail" />
 
     <FrameLayout
+        android:id="@+id/fl_thumbnail"
         android:layout_width="64dp"
-        android:layout_height="64dp">
+        android:layout_height="64dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@id/cb_visible"
+        app:layout_constraintTop_toTopOf="parent">
 
         <ImageView
             android:layout_width="match_parent"
@@ -33,5 +53,8 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
-        android:layout_weight="1" />
-</LinearLayout>
+        app:layout_constraintBottom_toBottomOf="@id/fl_thumbnail"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/fl_thumbnail"
+        app:layout_constraintTop_toTopOf="@id/fl_thumbnail" />
+</androidx.constraintlayout.widget.ConstraintLayout>

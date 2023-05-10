@@ -97,7 +97,8 @@
                     android:id="@+id/btg_zoom"
                     style="@style/ToolOptionsBTG"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content">
+                    android:layout_height="wrap_content"
+                    app:singleSelection="true">
 
                     <Button
                         android:id="@+id/b_zoom"
