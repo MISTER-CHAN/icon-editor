@@ -134,6 +134,7 @@
     <string name="help">Help</string>
     <string name="hex">Hex</string>
     <string name="hidden_image">Hidden Image</string>
+    <string name="hide_frame_list">Hide frame list</string>
     <string name="highlights">Highlights</string>
     <string name="history_max_size">Maximum Size of History</string>
     <string name="homepage">Homepage</string>
@@ -260,6 +261,8 @@
     <string name="shadows">Shadows</string>
     <string name="shape">Shape</string>
     <string name="shift">Shift</string>
+    <string name="show_animation_film">Show Animation Film</string>
+    <string name="show_frame_list">Show frame list</string>
     <string name="simple_fast">Simple Fast</string>
     <string name="size">Size</string>
     <string name="soft_brush">Soft Brush</string>

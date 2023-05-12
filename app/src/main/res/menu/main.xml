@@ -53,7 +53,7 @@
                     android:title="@string/select_all" />
                 <item
                     android:id="@+id/i_deselect"
-                    android:icon="@drawable/ic_clear"
+                    android:icon="@drawable/ic_deselect"
                     android:title="@string/deselect" />
             </group>
         </menu>
@@ -67,6 +67,7 @@
         android:id="@+id/i_frame_list"
         android:icon="@drawable/ic_movie"
         android:title="@string/frames"
+        android:visible="false"
         app:showAsAction="always" />
     <item
         android:icon="@drawable/ic_more_vert"
@@ -99,7 +100,7 @@
                         android:title="@string/save" />
                     <item
                         android:id="@+id/i_file_save_as"
-                        android:icon="@drawable/ic_void"
+                        android:icon="@drawable/ic_save_as"
                         android:title="@string/save_as" />
                     <item
                         android:id="@+id/i_file_refer_to_clipboard"

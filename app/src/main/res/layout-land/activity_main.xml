@@ -102,7 +102,7 @@
 
                     <Button
                         android:id="@+id/b_zoom"
-                        style="@style/Widget_Button_OutlinedButton"
+                        style="@style/Widget_Button_OutlinedButton_Dense"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/zoom" />

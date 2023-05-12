@@ -120,6 +120,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -356,6 +357,7 @@ public class MainActivity extends AppCompatActivity {
     private MaterialButtonToggleGroup btgTools;
     private MaterialButtonToggleGroup btgZoom;
     private MaterialToolbar topAppBar;
+    private MenuItem miFrameList;
     private MenuItem miHasAlpha;
     private Point cloneStampSrc;
     private Point magErB, magErF; // Magic eraser background and foreground
@@ -366,6 +368,7 @@ public class MainActivity extends AppCompatActivity {
     private final Rect selection = new Rect();
     private RecyclerView rvLayerList;
     private final Ruler ruler = new Ruler();
+    private SideSheetDialog ssdLayerList;
     private Paint.Style style = Paint.Style.FILL_AND_STROKE;
     private TabLayout tlProjectList;
     private TextInputEditText tietSoftBrushBlurRadius;
@@ -541,7 +544,7 @@ public class MainActivity extends AppCompatActivity {
                             R.string.add,
                             (oldColor, newColor) -> {
                                 palette.offerFirst(newColor);
-                                colorAdapter.notifyDataSetChanged();
+                                colorAdapter.notifyItemInserted(0);
                             },
                             paint.getColorLong())
                     .show();
@@ -637,7 +640,7 @@ public class MainActivity extends AppCompatActivity {
         imagePreview = null;
         addLayer(bm, tlProjectList.getSelectedTabPosition(),
                 layer.getLevel(), layer.left, layer.top,
-                layer.visible, getString(R.string.copy_noun));
+                layer.visible, getString(R.string.copy_noun), true);
         clearStatus();
     };
 
@@ -862,51 +865,17 @@ public class MainActivity extends AppCompatActivity {
     };
 
     @SuppressLint("NonConstantResourceId")
-    private final LayerAdapter.OnItemSelectedListener onLayerSelectedListener = (view, position) -> {
-        drawFloatingLayersIntoImage();
-
-        layer = frame.layers.get(position);
-        frame.selectedLayerIndex = position;
-        bitmap = layer.bitmap;
-        canvas = new Canvas(bitmap);
-
-        calculateBackgroundSizeOnView();
-
-        if (transformer != null) {
-            recycleTransformer();
-        }
-
-        switch (btgTools.getCheckedButtonId()) {
-            case R.id.b_clone_stamp -> {
-                cloneStampSrc = null;
-            }
-            case R.id.b_soft_brush -> {
-                tbSoftBrush.setEnabled(hasSelection);
-                if (!hasSelection) {
-                    tbSoftBrush.setChecked(true);
-                }
-            }
-        }
-
-        updateReference();
-
-        miHasAlpha.setChecked(bitmap.hasAlpha());
-
-        drawBitmapOntoView(true, true);
-        drawChessboardOntoView();
-        drawGridOntoView();
-        drawSelectionOntoView();
-        eraseBitmapAndInvalidateView(previewBitmap, ivPreview);
-
-        tvStatus.setText(getString(R.string.state_size, bitmap.getWidth(), bitmap.getHeight()));
-
-        try {
-            frame.layerAdapter.notifyDataSetChanged();
-        } catch (IllegalStateException e) {
-        }
+    private final LayerAdapter.OnItemSelectedListener onLayerItemSelectedListener = (view, position) -> {
+        final int unselectedPos = frame.selectedLayerIndex;
+        selectLayer(position);
+        rvLayerList.post(() -> {
+            frame.layerAdapter.notifyLayerSelected(unselectedPos, false);
+            frame.layerAdapter.notifyLayerSelected(frame.selectedLayerIndex, true);
+            rvLayerList.post(() -> frame.layerAdapter.notifyLevelChanged());
+        });
     };
 
-    private final LayerAdapter.OnItemSelectedListener onLayerReselectedListener = (view, position) -> {
+    private final LayerAdapter.OnItemSelectedListener onLayerItemReselectedListener = (view, position) -> {
         final PopupMenu popupMenu = new PopupMenu(this, view);
         final Menu menu = popupMenu.getMenu();
         MenuCompat.setGroupDividerEnabled(menu, true);
@@ -955,16 +924,20 @@ public class MainActivity extends AppCompatActivity {
         drawGridOntoView();
         drawSelectionOntoView();
 
-        try {
-            frame.layerAdapter.notifyDataSetChanged();
-        } catch (IllegalStateException e) {
-        }
+        rvLayerList.post(() -> {
+            frame.layerAdapter.notifyItemRangeChanged(Math.min(fromPos, toPos), Math.abs(toPos - fromPos) + 1);
+            rvLayerList.post(() -> frame.layerAdapter.notifyLevelChanged());
+        });
     };
 
     private final LayerAdapter.OnItemSelectedListener onFrameSelectedListener = (view, position) -> {
         frame = project.frames.get(position);
         rvLayerList.setAdapter(frame.layerAdapter);
         selectLayer(frame.selectedLayerIndex);
+        rvLayerList.post(() -> {
+            frame.layerAdapter.notifyDataSetChanged();
+            rvLayerList.post(() -> frame.layerAdapter.notifyLevelChanged());
+        });
     };
 
     private final TabLayout.OnTabSelectedListener onProjSelectedListener = new TabLayout.OnTabSelectedListener() {
@@ -2742,22 +2715,18 @@ public class MainActivity extends AppCompatActivity {
         addProject(null, 0);
     }
 
-    private Frame addFrame(Bitmap bitmap, int position, int delay) {
-        return addFrame(bitmap, position, delay, false);
-    }
-
     private Frame addFrame(Bitmap bitmap, int position, int delay, boolean setSelected) {
         final Frame frame = new Frame();
         frame.delay = delay;
         addFrame(frame, position, false);
         this.frame = frame;
-        addLayer(bitmap, 0);
+        addLayer(bitmap, true);
         return frame;
     }
 
     private Frame addFrame(Frame frame, int position, boolean setSelected) {
         project.frames.add(position, frame);
-        frame.layerAdapter.setOnItemSelectedListener(onLayerSelectedListener, onLayerReselectedListener);
+        frame.layerAdapter.setOnItemSelectedListener(onLayerItemSelectedListener, onLayerItemReselectedListener);
         frame.layerAdapter.setOnLayerVisibleChangedListener((buttonView, isChecked) -> drawBitmapOntoView(true));
         if (setSelected) {
 
@@ -2765,33 +2734,12 @@ public class MainActivity extends AppCompatActivity {
         return frame;
     }
 
-    private Layer addLayer() {
-        return addLayer(null, 0);
-    }
-
-    private Layer addLayer(Bitmap bitmap, int position) {
-        return addLayer(bitmap, position, 0, 0, 0);
-    }
-
-    private Layer addLayer(Bitmap bitmap, int position, CharSequence name) {
-        return addLayer(bitmap, position, 0, 0, 0, true, name, true);
-    }
-
-    private Layer addLayer(Bitmap bitmap, int position, int level, CharSequence name) {
-        return addLayer(bitmap, position, level, 0, 0, true, name, true);
+    private Layer addLayer(Bitmap bitmap, boolean setSelected) {
+        return addLayer(bitmap, 0, 0, getString(R.string.untitled), setSelected);
     }
 
     private Layer addLayer(Bitmap bitmap, int position, int level, CharSequence name, boolean setSelected) {
         return addLayer(bitmap, position, level, 0, 0, true, name, setSelected);
-    }
-
-    private Layer addLayer(Bitmap bitmap, int position, int level, int left, int top) {
-        return addLayer(bitmap, position, level, left, top, true, getString(R.string.untitled));
-    }
-
-    private Layer addLayer(Bitmap bitmap, int position, int level, int left, int top,
-                           boolean visible, CharSequence name) {
-        return addLayer(bitmap, position, level, left, top, visible, name, false);
     }
 
     private Layer addLayer(Bitmap bitmap, int position, int level, int left, int top,
@@ -2812,7 +2760,15 @@ public class MainActivity extends AppCompatActivity {
         addToHistory(layer);
         frame.computeLayerTree();
         if (setSelected) {
-            selectLayer(0);
+            selectLayer(position);
+            rvLayerList.post(() -> {
+                if (frame.selectedLayerIndex < frame.layers.size() - 1) {
+                    frame.layerAdapter.notifyLayerSelected(frame.selectedLayerIndex, false);
+                }
+                frame.layerAdapter.notifyItemInserted(position);
+                frame.layerAdapter.notifyItemRangeChanged(position + 1, frame.layers.size() - position);
+                rvLayerList.post(() -> frame.layerAdapter.notifyLevelChanged());
+            });
         }
         return layer;
     }
@@ -2935,7 +2891,13 @@ public class MainActivity extends AppCompatActivity {
         if (frame.layers.size() > 1) {
             deleteLayer(position);
             frame.computeLayerTree();
-            selectLayer(Math.min(frame.selectedLayerIndex, frame.layers.size() - 1));
+            final int posToSelect = Math.min(frame.selectedLayerIndex, frame.layers.size() - 1);
+            selectLayer(posToSelect);
+            rvLayerList.post(() -> {
+                frame.layerAdapter.notifyItemRemoved(position);
+                frame.layerAdapter.notifyItemRangeChanged(posToSelect, frame.layers.size() - posToSelect);
+                rvLayerList.post(() -> frame.layerAdapter.notifyLevelChanged());
+            });
         } else {
             closeFrame();
         }
@@ -2992,10 +2954,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void deleteFrame(int position) {
         final Frame frame = project.frames.remove(position);
-        for (int i = 0; i < frame.layers.size() - 1; ++i) {
+        for (int i = frame.layers.size() - 1; i >= 0; --i) {
             deleteLayer(i);
         }
-        closeLayer(0);
     }
 
     private void deleteLayer(int position) {
@@ -3009,7 +2970,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void deleteProject(int position) {
         final Project project = projects.remove(position);
-        for (int i = 0; i < project.frames.size(); ++i) {
+        for (int i = project.frames.size() - 1; i >= 0; --i) {
             deleteFrame(i);
         }
         tlProjectList.removeOnTabSelectedListener(onProjSelectedListener);
@@ -3723,12 +3684,14 @@ public class MainActivity extends AppCompatActivity {
             ArgbColorPicker.make(MainActivity.this,
                             R.string.swatch,
                             (oldColor, newColor) -> {
+                                final int index = palette.indexOf(oldColor);
                                 if (newColor != null) {
-                                    palette.set(palette.indexOf(oldColor), newColor);
+                                    palette.set(index, newColor);
+                                    colorAdapter.notifyItemChanged(index);
                                 } else {
-                                    palette.remove(oldColor);
+                                    palette.remove(index);
+                                    colorAdapter.notifyItemRemoved(index);
                                 }
-                                colorAdapter.notifyDataSetChanged();
                             },
                             (Long) view.getTag(),
                             R.string.delete)
@@ -3965,7 +3928,11 @@ public class MainActivity extends AppCompatActivity {
             topAppBar.setOnMenuItemClickListener(onOptionsItemSelectedListener);
             final Menu menu = topAppBar.getMenu();
             MenuCompat.setGroupDividerEnabled(menu, true);
+
+            miFrameList = menu.findItem(R.id.i_frame_list);
             miHasAlpha = menu.findItem(R.id.i_image_has_alpha);
+
+            Settings.INST.update(preferences, Settings.KEY_FL);
         }
 
         bEyedropper.setOnLongClickListener(v -> {
@@ -4461,11 +4428,16 @@ public class MainActivity extends AppCompatActivity {
             }
             case R.id.i_layer_list -> {
                 frame.layerAdapter.notifyDataSetChanged();
-                final SideSheetDialog dialog = new SideSheetDialog(this);
-                dialog.setTitle(R.string.layers);
-                dialog.setContentView(vLayerList);
-                dialog.setOnDismissListener(d -> ((ViewGroup) vLayerList.getParent()).removeAllViews());
-                dialog.show();
+                rvLayerList.post(() -> frame.layerAdapter.notifyLevelChanged());
+
+                ssdLayerList = new SideSheetDialog(this);
+                ssdLayerList.setTitle(R.string.layers);
+                ssdLayerList.setContentView(vLayerList);
+                ssdLayerList.setOnDismissListener(d -> {
+                    ((ViewGroup) vLayerList.getParent()).removeAllViews();
+                    ssdLayerList = null;
+                });
+                ssdLayerList.show();
             }
             case R.id.i_paste -> {
                 if (clipboard == null) {
@@ -4648,8 +4620,12 @@ public class MainActivity extends AppCompatActivity {
                 addLayer(l, frame.selectedLayerIndex, true);
             }
             case R.id.i_layer_alpha -> {
-                new SliderDialog(this).setTitle(R.string.alpha).setValueFrom(0x00).setValueTo(0xFF)
-                        .setValue(layer.paint.getAlpha())
+                if (ssdLayerList != null) {
+                    ssdLayerList.dismiss();
+                }
+                new SliderDialog(this)
+                        .setIcon(item.getIcon()).setTitle(R.string.alpha)
+                        .setValueFrom(0x00).setValueTo(0xFF).setValue(layer.paint.getAlpha())
                         .setStepSize(1.0f)
                         .setOnChangeListener(onLayerAlphaSliderChangeListener)
                         .setOnApplyListener((dialog, which) -> clearStatus())
@@ -4689,6 +4665,7 @@ public class MainActivity extends AppCompatActivity {
                 layer.paint.setBlendMode(blendMode);
                 Layers.levelDown(frame.layers, tlProjectList.getSelectedTabPosition());
                 frame.computeLayerTree();
+                frame.layerAdapter.notifyLevelChanged();
                 drawBitmapOntoView(true);
             }
             case R.id.i_layer_create_group -> {
@@ -4698,9 +4675,13 @@ public class MainActivity extends AppCompatActivity {
                 final int pos = frame.group();
                 final Bitmap bg = frame.getBackgroundLayer().bitmap;
                 final Bitmap bm = Bitmap.createBitmap(bg.getWidth(), bg.getHeight(), bg.getConfig(), bg.hasAlpha(), bg.getColorSpace());
-                final Layer bottom = frame.layers.get(pos);
-                addLayer(bm, pos + 1, bottom.getLevel() - 1, getString(R.string.group), false);
+                addLayer(bm, pos, frame.layers.get(pos - 1).getLevel() - 1, getString(R.string.group), false);
                 frame.computeLayerTree();
+                rvLayerList.post(() -> {
+                    frame.layerAdapter.notifyItemInserted(pos);
+                    frame.layerAdapter.notifyItemRangeChanged(pos + 1, frame.layers.size() - pos - 1);
+                    rvLayerList.post(() -> frame.layerAdapter.notifyLevelChanged());
+                });
                 drawBitmapOntoView(true);
             }
             case R.id.i_layer_curves -> {
@@ -4714,9 +4695,9 @@ public class MainActivity extends AppCompatActivity {
             }
             case R.id.i_layer_delete -> closeLayer(frame.selectedLayerIndex);
             case R.id.i_layer_delete_invisible -> {
-                for (int i = 0; i < frame.layers.size(); ++i) {
+                for (int i = frame.layers.size() - 1; i >= 0; --i) {
                     final Layer l = frame.layers.get(i);
-                    if (!l.visible) {
+                    if (!l.visible && l != layer) {
                         deleteLayer(i);
                         if (i < frame.selectedLayerIndex) {
                             --frame.selectedLayerIndex;
@@ -4724,10 +4705,15 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
                 if (!layer.visible) {
+                    rvLayerList.post(() -> frame.layerAdapter.notifyDataSetChanged());
                     closeLayer(frame.selectedLayerIndex);
                 } else {
                     frame.computeLayerTree();
                     selectLayer(frame.selectedLayerIndex);
+                    rvLayerList.post(() -> {
+                        frame.layerAdapter.notifyDataSetChanged();
+                        rvLayerList.post(() -> frame.layerAdapter.notifyLevelChanged());
+                    });
                 }
             }
             case R.id.i_layer_draw_below -> {
@@ -4748,7 +4734,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 addLayer(bm, tlProjectList.getSelectedTabPosition(),
                         layer.getLevel(), layer.left, layer.top,
-                        layer.visible, getString(R.string.copy_noun));
+                        layer.visible, getString(R.string.copy_noun), true);
             }
             case R.id.i_layer_duplicate_by_color_range -> {
                 drawFloatingLayersIntoImage();
@@ -4771,6 +4757,9 @@ public class MainActivity extends AppCompatActivity {
             case R.id.i_layer_filter_set -> {
                 if (layer.filter == null) {
                     break;
+                }
+                if (ssdLayerList != null) {
+                    ssdLayerList.dismiss();
                 }
                 switch (layer.filter) {
                     case COLOR_MATRIX -> {
@@ -4803,13 +4792,13 @@ public class MainActivity extends AppCompatActivity {
             case R.id.i_layer_level_down -> {
                 layer.levelDown();
                 frame.computeLayerTree();
-//                Tab.updateLevelIcons(tabs, tab);
+                frame.layerAdapter.notifyLevelChanged();
                 drawBitmapOntoView(true);
             }
             case R.id.i_layer_level_up -> {
                 layer.levelUp();
                 frame.computeLayerTree();
-//                Tab.updateLevelIcons(tabs, tab);
+                frame.layerAdapter.notifyLevelChanged();
                 drawBitmapOntoView(true);
             }
             case R.id.i_layer_merge_alpha -> {
@@ -4844,6 +4833,11 @@ public class MainActivity extends AppCompatActivity {
                 deleteLayer(pos);
                 frame.computeLayerTree();
                 selectLayer(pos);
+                rvLayerList.post(() -> {
+                    frame.layerAdapter.notifyItemRemoved(pos);
+                    frame.layerAdapter.notifyItemRangeChanged(pos, frame.layers.size() - pos);
+                    rvLayerList.post(() -> frame.layerAdapter.notifyLevelChanged());
+                });
                 addToHistory();
             }
             case R.id.i_layer_merge_visible -> {
@@ -4852,7 +4846,7 @@ public class MainActivity extends AppCompatActivity {
                 for (final Layer l : frame.layers) {
                     l.visible = false;
                 }
-                addLayer(bm, 0);
+                addLayer(bm, true);
             }
             case R.id.i_layer_new -> {
                 if (Settings.INST.newLayerLevel()) {
@@ -5299,11 +5293,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void saveAs() {
-        dirSelector.open(project, project, null);
+        dirSelector.open(project, project, project -> saveInQuality());
     }
 
     private void saveInQuality() {
-        setQuality(project, null);
+        setQuality(project, project -> setQuality(project, p -> save()));
     }
 
     private void scale(float sx, float sy) {
@@ -5349,7 +5343,42 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void selectLayer(int position) {
-        onLayerSelectedListener.onItemSelected(null, position);
+        drawFloatingLayersIntoImage();
+
+        layer = frame.layers.get(position);
+        frame.selectedLayerIndex = position;
+        bitmap = layer.bitmap;
+        canvas = new Canvas(bitmap);
+
+        calculateBackgroundSizeOnView();
+
+        if (transformer != null) {
+            recycleTransformer();
+        }
+
+        switch (btgTools.getCheckedButtonId()) {
+            case R.id.b_clone_stamp -> {
+                cloneStampSrc = null;
+            }
+            case R.id.b_soft_brush -> {
+                tbSoftBrush.setEnabled(hasSelection);
+                if (!hasSelection) {
+                    tbSoftBrush.setChecked(true);
+                }
+            }
+        }
+
+        updateReference();
+
+        miHasAlpha.setChecked(bitmap.hasAlpha());
+
+        drawBitmapOntoView(true, true);
+        drawChessboardOntoView();
+        drawGridOntoView();
+        drawSelectionOntoView();
+        eraseBitmapAndInvalidateView(previewBitmap, ivPreview);
+
+        tvStatus.setText(getString(R.string.state_size, bitmap.getWidth(), bitmap.getHeight()));
     }
 
     private void selectProject(int position) {
@@ -5384,9 +5413,13 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    void setFrameListMenuItemVisible(boolean visible) {
+        miFrameList.setVisible(visible);
+    }
+
     private void setQuality(Project project, DirectorySelector.OnApplyFileNameCallback callback) {
         switch (project.fileType) {
-            case PNG -> save();
+            case PNG -> callback.onApply(project);
             case GIF -> {
 //                new QualityManager(this,
 //                        layer.gifEncodingType == null ? GifEncoder.EncodingType.ENCODING_TYPE_NORMAL_LOW_MEMORY : layer.gifEncodingType,

@@ -12,6 +12,7 @@ public class Settings {
     static final String KEY_ACT = "act"; // ARGB Color Type
     static final String KEY_CFU = "cfu"; // Check for Updates
     static final String KEY_FB = "fb"; // Filter Bitmap
+    static final String KEY_FL = "fl"; // Frame List
     static final String KEY_HMS = "hms"; // History Max Size
     static final String KEY_ITS = "its"; // Independent Translation and Scale
     static final String KEY_LOC = "loc"; // Locale
@@ -58,7 +59,6 @@ public class Settings {
         update(preferences, KEY_ACT);
         update(preferences, KEY_FB);
         update(preferences, KEY_HMS);
-        update(preferences, KEY_ITS);
         update(preferences, KEY_MT);
         update(preferences, KEY_NLL);
     }
@@ -78,6 +78,7 @@ public class Settings {
                 mainActivity.setArgbColorType();
             }
             case KEY_FB -> mainActivity.setFilterBitmap(preferences.getBoolean(KEY_FB, false));
+            case KEY_FL -> mainActivity.setFrameListMenuItemVisible(preferences.getBoolean(KEY_FL, false));
             case KEY_HMS -> {
                 try {
                     historyMaxSize = Integer.parseUnsignedInt(preferences.getString(KEY_HMS, "50"));

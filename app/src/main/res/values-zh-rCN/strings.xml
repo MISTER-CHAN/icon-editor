@@ -120,6 +120,7 @@
     <string name="help">帮助</string>
     <string name="hex">十六进制</string>
     <string name="hidden_image">隐藏图</string>
+    <string name="hide_frame_list">隐藏帧列表</string>
     <string name="highlights">亮点</string>
     <string name="history_max_size">历史记录最大数量</string>
     <string name="homepage">主页</string>
@@ -234,6 +235,8 @@
     <string name="shadows">阴影</string>
     <string name="shape">形状</string>
     <string name="shift">偏移</string>
+    <string name="show_animation_film">显示动画菲林</string>
+    <string name="show_frame_list">显示帧列表</string>
     <string name="simple_fast">简单快速</string>
     <string name="size">尺寸</string>
     <string name="soft_brush">软笔</string>

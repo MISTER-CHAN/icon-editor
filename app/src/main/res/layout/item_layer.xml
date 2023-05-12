@@ -27,13 +27,25 @@
         app:layout_constraintStart_toEndOf="@id/rb"
         app:layout_constraintTop_toTopOf="@id/fl_thumbnail" />
 
+    <LinearLayout
+        android:id="@+id/ll_fg_leaf"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toTopOf="@id/fl_thumbnail"
+        app:layout_constraintEnd_toEndOf="@id/fl_thumbnail"
+        app:layout_constraintStart_toStartOf="@id/fl_thumbnail"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <FrameLayout
         android:id="@+id/fl_thumbnail"
         android:layout_width="64dp"
         android:layout_height="64dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:padding="4dp"
+        app:layout_constraintBottom_toTopOf="@id/ll_parent_bg"
+        app:layout_constraintEnd_toStartOf="@id/tv_name"
         app:layout_constraintStart_toEndOf="@id/cb_visible"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toBottomOf="@id/ll_fg_leaf">
 
         <ImageView
             android:layout_width="match_parent"
@@ -47,6 +59,39 @@
             android:layout_height="match_parent"
             android:scaleType="fitCenter" />
     </FrameLayout>
+
+    <LinearLayout
+        android:id="@+id/ll_parent_bg"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toTopOf="@id/v_lower_level"
+        app:layout_constraintEnd_toEndOf="@id/fl_thumbnail"
+        app:layout_constraintStart_toStartOf="@id/fl_thumbnail"
+        app:layout_constraintTop_toBottomOf="@id/fl_thumbnail" />
+
+    <View
+        android:id="@+id/v_lower_level"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:background="@drawable/ic_arrow_downward"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textColor="?android:attr/textColorSecondary"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/ll_root"
+        app:layout_constraintEnd_toEndOf="@id/fl_thumbnail"
+        app:layout_constraintStart_toStartOf="@id/fl_thumbnail"
+        app:layout_constraintTop_toBottomOf="@id/ll_parent_bg" />
+
+    <LinearLayout
+        android:id="@+id/ll_root"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@id/fl_thumbnail"
+        app:layout_constraintStart_toStartOf="@id/fl_thumbnail"
+        app:layout_constraintTop_toBottomOf="@id/v_lower_level" />
 
     <TextView
         android:id="@+id/tv_name"

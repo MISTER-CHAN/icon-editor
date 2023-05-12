@@ -23,7 +23,7 @@
         <item name="android:layout_marginHorizontal">2dp</item>
     </style>
 
-    <style name="Widget_Button_OutlinedButton" parent="Widget.Material3.Button.OutlinedButton">
+    <style name="Widget_Button_OutlinedButton_Dense" parent="Widget.Material3.Button.OutlinedButton">
         <item name="android:minWidth">0dp</item>
         <item name="android:minHeight">0dp</item>
         <item name="android:paddingLeft">16dp</item>

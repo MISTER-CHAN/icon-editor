@@ -4,11 +4,11 @@
 
         <SwitchPreferenceCompat
             app:defaultValue="false"
-            app:key="its"
+            app:key="fl"
             app:singleLineTitle="false"
-            app:summaryOff="@string/unified_transl_and_scale"
-            app:summaryOn="@string/independent_transl_and_scale"
-            app:title="@string/independent_layer" />
+            app:summaryOff="@string/hide_frame_list"
+            app:summaryOn="@string/show_frame_list"
+            app:title="@string/show_animation_film" />
 
         <ListPreference
             app:defaultValue="top"

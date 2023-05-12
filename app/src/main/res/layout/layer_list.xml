@@ -28,9 +28,12 @@
         android:layout_height="wrap_content" />
 
     <Button
+        android:id="@+id/b_new"
+        style="?attr/materialIconButtonFilledStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="24dp"
         android:layout_marginTop="16dp"
-        android:layout_marginBottom="24dp" />
+        android:layout_marginBottom="24dp"
+        app:icon="@drawable/ic_add" />
 </LinearLayout>

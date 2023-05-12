@@ -16,28 +16,28 @@
 
         <Button
             android:id="@+id/b_transformer_translation"
-            style="@style/Widget_Button_OutlinedButton"
+            style="@style/Widget_Button_OutlinedButton_Dense"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/translate" />
 
         <Button
             android:id="@+id/b_transformer_scale"
-            style="@style/Widget_Button_OutlinedButton"
+            style="@style/Widget_Button_OutlinedButton_Dense"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/scale" />
 
         <Button
             android:id="@+id/b_transformer_rotation"
-            style="@style/Widget_Button_OutlinedButton"
+            style="@style/Widget_Button_OutlinedButton_Dense"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/rotate" />
 
         <Button
             android:id="@+id/b_transformer_poly"
-            style="@style/Widget_Button_OutlinedButton"
+            style="@style/Widget_Button_OutlinedButton_Dense"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/poly" />

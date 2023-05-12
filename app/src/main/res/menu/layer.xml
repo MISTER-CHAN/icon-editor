@@ -51,7 +51,7 @@
     <group android:id="@+id/layer_properties">
         <item
             android:id="@+id/i_layer_alpha"
-            android:icon="@drawable/ic_void"
+            android:icon="@drawable/ic_opacity"
             android:title="@string/alpha" />
         <item
             android:id="@+id/i_blend_mode"

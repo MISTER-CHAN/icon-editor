@@ -48,7 +48,7 @@ public class Frame {
             }
             layer.levelDown();
         }
-        return bottomPos;
+        return bottomPos + 1;
     }
 
     public Bitmap mergeReferenceLayers() {

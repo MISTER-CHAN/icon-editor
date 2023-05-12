@@ -41,14 +41,14 @@
 
             <Button
                 android:id="@+id/b_magic_eraser_left"
-                style="@style/Widget_Button_OutlinedButton"
+                style="@style/Widget_Button_OutlinedButton_Dense"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/left" />
 
             <Button
                 android:id="@+id/b_magic_eraser_right"
-                style="@style/Widget_Button_OutlinedButton"
+                style="@style/Widget_Button_OutlinedButton_Dense"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/right" />
