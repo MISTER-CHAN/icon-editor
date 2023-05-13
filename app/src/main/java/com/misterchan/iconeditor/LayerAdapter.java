@@ -29,10 +29,6 @@ import java.util.List;
 
 class LayerAdapter extends ItemMovableAdapter<LayerAdapter.ViewHolder> {
 
-    public interface OnItemSelectedListener {
-        void onItemSelected(View view, int position);
-    }
-
     protected static class ViewHolder extends RecyclerView.ViewHolder {
         private final CheckBox cbVisible;
         private final ConstraintLayout cl;
@@ -97,19 +93,22 @@ class LayerAdapter extends ItemMovableAdapter<LayerAdapter.ViewHolder> {
     }
 
     public void notifyLayerSelected(int position, boolean selected) {
-        final ViewHolder vh = (ViewHolder) recyclerView.findViewHolderForAdapterPosition(position);
-        if (vh == null) {
+        final ViewHolder holder = (ViewHolder) recyclerView.findViewHolderForAdapterPosition(position);
+        if (holder == null) {
             return;
         }
-        vh.rb.setOnCheckedChangeListener(null);
-        vh.rb.setChecked(selected);
-        vh.rb.setOnCheckedChangeListener((OnCBCheckedListener) buttonView ->
-                onItemSelectedListener.onItemSelected(vh.itemView, position));
-        vh.tvName.setTextColor(selected ? colorPrimary : textColorPrimary);
-        vh.tvName.setTypeface(Typeface.defaultFromStyle(selected ? Typeface.BOLD : Typeface.NORMAL));
+        holder.rb.setOnCheckedChangeListener(null);
+        holder.rb.setChecked(selected);
+        holder.rb.setOnCheckedChangeListener((OnCBCheckedListener) buttonView ->
+                onItemSelectedListener.onItemSelected(holder.itemView, position));
+        holder.tvName.setTextColor(selected ? colorPrimary : textColorPrimary);
+        holder.tvName.setTypeface(Typeface.defaultFromStyle(selected ? Typeface.BOLD : Typeface.NORMAL));
     }
 
     public void notifyLevelChanged() {
+        if (recyclerView == null) {
+            return;
+        }
         Layer lastLayer = null;
         ViewHolder lastHolder = null;
         for (int i = frame.layers.size() - 1; i >= 0; --i) {
@@ -135,13 +134,13 @@ class LayerAdapter extends ItemMovableAdapter<LayerAdapter.ViewHolder> {
                     for (int l = 0; l < (lastLayer.getLevel() > 0 ? levelDiff : levelDiff - 1); ++l) {
                         final View v = LayoutInflater.from(context).inflate(R.layout.bracket, null);
                         v.setBackground(AppCompatResources.getDrawable(context, R.drawable.np_bracket_open));
-                        holder.llParentBg.addView(v);
+                        lastHolder.llParentBg.addView(v);
                     }
                 } else if (levelDiff < 0) {
                     for (int l = 0; l < (layer.getLevel() > 0 ? -levelDiff : -levelDiff - 1); ++l) {
                         final View v = LayoutInflater.from(context).inflate(R.layout.bracket, null);
                         v.setBackground(AppCompatResources.getDrawable(context, R.drawable.np_bracket_close));
-                        holder.llFgLeaf.addView(v);
+                        lastHolder.llFgLeaf.addView(v);
                     }
                 }
             }

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    style="@style/ToolOptionsLL"
+    style="@style/Widget_App_LinearLayout_ToolOptions"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content">
 
     <com.google.android.material.textfield.TextInputLayout
-        style="@style/Widget_TextInputLayout_Dense"
+        style="@style/Widget.App.TextInputLayout.Dense"
         android:layout_width="96dp"
         android:layout_height="wrap_content">
 
@@ -20,7 +20,7 @@
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.textfield.TextInputLayout
-        style="@style/Widget_TextInputLayout_Dense"
+        style="@style/Widget.App.TextInputLayout.Dense"
         android:layout_width="96dp"
         android:layout_height="wrap_content">
 
@@ -48,7 +48,7 @@
 
     <Button
         android:id="@+id/b_magic_paint_tolerance"
-        style="@style/View"
+        style="@style/Widget_App_View"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/tolerance" />

@@ -1,5 +1,7 @@
 package com.misterchan.iconeditor;
 
+import android.view.View;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
@@ -12,6 +14,10 @@ public abstract class ItemMovableAdapter<VH extends RecyclerView.ViewHolder> ext
 
     public interface OnItemMoveListener {
         void onItemMove(int fromPos, int toPos);
+    }
+
+    public interface OnItemSelectedListener {
+        void onItemSelected(View view, int position);
     }
 
     public static ItemTouchHelper createItemMoveHelper(OnItemMoveListener onItemMoveListener) {

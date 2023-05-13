@@ -1,21 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Widget_TextInputLayout_Dense" parent="Widget.Material3.TextInputLayout.FilledBox.Dense">
-        <item name="android:layout_marginVertical">2dp</item>
-    </style>
-
-    <style name="ToolOptionsBTG" parent="ToolOptionsLL">
+    <style name="Widget_App_ButtonToggleGroup_ToolOptions" parent="Widget_App_LinearLayout_ToolOptions">
         <item name="android:layout_gravity">center_horizontal</item>
         <item name="android:layout_marginVertical">2dp</item>
     </style>
 
-    <style name="ToolOptionsLL">
+    <style name="Widget_App_LinearLayout_ToolOptions">
         <item name="android:gravity">center_horizontal</item>
         <item name="android:orientation">vertical</item>
     </style>
 
-    <style name="ToolOptionsSV">
+    <style name="Widget_App_ScrollView_ToolOptions">
         <item name="android:layout_gravity">center_horizontal</item>
         <item name="android:fadingEdgeLength">16dp</item>
         <item name="android:requiresFadingEdge">vertical</item>
@@ -23,7 +19,11 @@
         <item name="android:visibility">invisible</item>
     </style>
 
-    <style name="View">
+    <style name="Widget.App.TextInputLayout.Dense" parent="Widget.Material3.TextInputLayout.FilledBox.Dense">
+        <item name="android:layout_marginVertical">2dp</item>
+    </style>
+
+    <style name="Widget_App_View">
         <item name="android:layout_marginVertical">2dp</item>
     </style>
 </resources>

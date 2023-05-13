@@ -25,21 +25,21 @@
 
         <Button
             android:id="@+id/b_pixel"
-            style="@style/Widget_Button_OutlinedButton_Dense"
+            style="@style/Widget.App.Button.OutlinedButton.Dense"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/pixel" />
 
         <Button
             android:id="@+id/b_point"
-            style="@style/Widget_Button_OutlinedButton_Dense"
+            style="@style/Widget.App.Button.OutlinedButton.Dense"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/point" />
 
         <Button
             android:id="@+id/b_ref"
-            style="@style/Widget_Button_OutlinedButton_Dense"
+            style="@style/Widget.App.Button.OutlinedButton.Dense"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/reference" />

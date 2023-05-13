@@ -19,6 +19,7 @@ public class Project {
     public Bitmap.CompressFormat compressFormat;
     public float scale = Float.NaN;
     public float translationX = Float.NaN, translationY = Float.NaN;
+    public FrameAdapter frameAdapter = new FrameAdapter(this);
     public int selectedFrameIndex = 0;
     public final List<Frame> frames = new ArrayList<>();
     public GifEncoder.EncodingType gifEncodingType;
@@ -27,6 +28,10 @@ public class Project {
     public String filePath;
     private String title;
     public TabLayout.Tab tab;
+
+    public Frame getFirstFrame() {
+        return frames.get(0);
+    }
 
     public String getName() {
         final int i = title.lastIndexOf('.');

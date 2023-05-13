@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    style="@style/ToolOptionsLL"
+    style="@style/Widget_App_LinearLayout_ToolOptions"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content">
 
     <com.google.android.material.button.MaterialButtonToggleGroup
         android:id="@+id/btg_eyedropper_src"
-        style="@style/ToolOptionsBTG"
+        style="@style/Widget_App_ButtonToggleGroup_ToolOptions"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:checkedButton="@id/b_eyedropper_current_layer"
@@ -16,14 +16,14 @@
 
         <Button
             android:id="@+id/b_eyedropper_current_layer"
-            style="@style/Widget_Button_OutlinedButton_Dense"
+            style="@style/Widget.App.Button.OutlinedButton.Dense"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/current_layer" />
 
         <Button
             android:id="@+id/b_eyedropper_all_layers"
-            style="@style/Widget_Button_OutlinedButton_Dense"
+            style="@style/Widget.App.Button.OutlinedButton.Dense"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/all_layers" />

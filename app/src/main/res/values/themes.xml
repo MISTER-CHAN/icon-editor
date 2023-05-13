@@ -1,13 +1,11 @@
 <resources>
     <!-- Base application theme. -->
-    <style name="Theme.IconEditor" parent="Theme.Material3.DayNight.NoActionBar">
-        <item name="toolbarStyle">@style/Widget.MaterialComponents.Toolbar</item>
-<!--        <item name="colorPrimary">@color/purple_80</item>-->
-<!--        <item name="colorOnPrimary">@color/white</item>-->
-<!--        <item name="colorSecondary">@color/purple_grey_80</item>-->
-<!--        <item name="colorOnSecondary">@color/white</item>-->
-<!--        <item name="colorTertiary">@color/pink_80</item>-->
-<!--        <item name="colorOnTertiary">@color/white</item>-->
+    <style name="Theme.IconEditor" parent="Theme.Material3.DayNight">
         <!-- Customize your theme here. -->
+    </style>
+
+    <style name="Theme.IconEditor.NoActionBar" parent="Theme.IconEditor">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
     </style>
 </resources>

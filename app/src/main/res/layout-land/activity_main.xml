@@ -95,14 +95,14 @@
 
                 <com.google.android.material.button.MaterialButtonToggleGroup
                     android:id="@+id/btg_zoom"
-                    style="@style/ToolOptionsBTG"
+                    style="@style/Widget_App_ButtonToggleGroup_ToolOptions"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     app:singleSelection="true">
 
                     <Button
                         android:id="@+id/b_zoom"
-                        style="@style/Widget_Button_OutlinedButton_Dense"
+                        style="@style/Widget.App.Button.OutlinedButton.Dense"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/zoom" />
@@ -140,7 +140,7 @@
 
                     <ScrollView
                         android:id="@+id/sv_options_bucket_fill"
-                        style="@style/ToolOptionsSV"
+                        style="@style/Widget_App_ScrollView_ToolOptions"
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent">
 
@@ -149,7 +149,7 @@
 
                     <ScrollView
                         android:id="@+id/sv_options_clone_stamp"
-                        style="@style/ToolOptionsSV"
+                        style="@style/Widget_App_ScrollView_ToolOptions"
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent">
 
@@ -158,7 +158,7 @@
 
                     <ScrollView
                         android:id="@+id/sv_options_eraser"
-                        style="@style/ToolOptionsSV"
+                        style="@style/Widget_App_ScrollView_ToolOptions"
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent">
 
@@ -167,7 +167,7 @@
 
                     <ScrollView
                         android:id="@+id/sv_options_eyedropper"
-                        style="@style/ToolOptionsSV"
+                        style="@style/Widget_App_ScrollView_ToolOptions"
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent">
 
@@ -176,7 +176,7 @@
 
                     <ScrollView
                         android:id="@+id/sv_options_gradient"
-                        style="@style/ToolOptionsSV"
+                        style="@style/Widget_App_ScrollView_ToolOptions"
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent">
 
@@ -185,7 +185,7 @@
 
                     <ScrollView
                         android:id="@+id/sv_options_magic_eraser"
-                        style="@style/ToolOptionsSV"
+                        style="@style/Widget_App_ScrollView_ToolOptions"
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent">
 
@@ -194,7 +194,7 @@
 
                     <ScrollView
                         android:id="@+id/sv_options_magic_paint"
-                        style="@style/ToolOptionsSV"
+                        style="@style/Widget_App_ScrollView_ToolOptions"
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent">
 
@@ -203,7 +203,7 @@
 
                     <ScrollView
                         android:id="@+id/sv_options_patcher"
-                        style="@style/ToolOptionsSV"
+                        style="@style/Widget_App_ScrollView_ToolOptions"
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent">
 
@@ -212,7 +212,7 @@
 
                     <ScrollView
                         android:id="@+id/sv_options_path"
-                        style="@style/ToolOptionsSV"
+                        style="@style/Widget_App_ScrollView_ToolOptions"
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent">
 
@@ -221,7 +221,7 @@
 
                     <ScrollView
                         android:id="@+id/sv_options_pencil"
-                        style="@style/ToolOptionsSV"
+                        style="@style/Widget_App_ScrollView_ToolOptions"
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent">
 
@@ -230,7 +230,7 @@
 
                     <ScrollView
                         android:id="@+id/sv_options_shape"
-                        style="@style/ToolOptionsSV"
+                        style="@style/Widget_App_ScrollView_ToolOptions"
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent">
 
@@ -239,7 +239,7 @@
 
                     <ScrollView
                         android:id="@+id/sv_options_soft_brush"
-                        style="@style/ToolOptionsSV"
+                        style="@style/Widget_App_ScrollView_ToolOptions"
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent">
 
@@ -248,7 +248,7 @@
 
                     <LinearLayout
                         android:id="@+id/ll_options_text"
-                        style="@style/ToolOptionsLL"
+                        style="@style/Widget_App_LinearLayout_ToolOptions"
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
                         android:visibility="invisible">
@@ -258,7 +258,7 @@
 
                     <ScrollView
                         android:id="@+id/sv_options_transformer"
-                        style="@style/ToolOptionsSV"
+                        style="@style/Widget_App_ScrollView_ToolOptions"
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent">
 

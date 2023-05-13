@@ -33,6 +33,8 @@ import android.os.Environment;
 import android.os.Looper;
 import android.os.MessageQueue;
 import android.text.Editable;
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -74,6 +76,7 @@ import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.appbar.MaterialToolbar;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButtonToggleGroup;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.sidesheet.SideSheetDialog;
@@ -120,7 +123,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -288,6 +290,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean isEditingText = false;
     private boolean isShapeStopped = true;
     private boolean isWritingSoftStrokes = false;
+    private BottomSheetDialog bsdFrameList;
     private Canvas canvas;
     private Canvas chessboardCanvas;
     private Canvas gridCanvas;
@@ -366,6 +369,7 @@ public class MainActivity extends AppCompatActivity {
     private Preview imagePreview;
     private Project project;
     private final Rect selection = new Rect();
+    private RecyclerView rvFrameList;
     private RecyclerView rvLayerList;
     private final Ruler ruler = new Ruler();
     private SideSheetDialog ssdLayerList;
@@ -396,7 +400,7 @@ public class MainActivity extends AppCompatActivity {
     private View vBackgroundColor;
     private View vContent;
     private View vForegroundColor;
-
+    private View vFrameList;
     private View vLayerList;
 
     private final Paint bitmapPaint = new Paint() {
@@ -638,7 +642,7 @@ public class MainActivity extends AppCompatActivity {
         }
         imagePreview.recycle();
         imagePreview = null;
-        addLayer(bm, tlProjectList.getSelectedTabPosition(),
+        addLayer(project, frame, bm, tlProjectList.getSelectedTabPosition(),
                 layer.getLevel(), layer.left, layer.top,
                 layer.visible, getString(R.string.copy_noun), true);
         clearStatus();
@@ -864,18 +868,76 @@ public class MainActivity extends AppCompatActivity {
         onChangeThresholdListener.onChange(null, threshold, true);
     };
 
+    private final ItemMovableAdapter.OnItemMoveListener onFrameItemMoveListener = (fromPos, toPos) -> {
+        if (project.selectedFrameIndex == fromPos) {
+            project.selectedFrameIndex = toPos;
+        } else if (project.selectedFrameIndex == toPos) {
+            if (fromPos < toPos) {
+                --project.selectedFrameIndex;
+            } else if (fromPos > toPos) {
+                ++project.selectedFrameIndex;
+            }
+        }
+
+        rvFrameList.post(() -> {
+            project.frameAdapter.notifyItemRangeChanged(Math.min(fromPos, toPos), Math.abs(toPos - fromPos) + 1);
+        });
+    };
+
+    private final ItemMovableAdapter.OnItemMoveListener onLayerItemMoveListener = (fromPos, toPos) -> {
+        if (frame.selectedLayerIndex == fromPos) {
+            frame.selectedLayerIndex = toPos;
+        } else if (frame.selectedLayerIndex == toPos) {
+            if (fromPos < toPos) {
+                --frame.selectedLayerIndex;
+            } else if (fromPos > toPos) {
+                ++frame.selectedLayerIndex;
+            }
+        }
+        frame.computeLayerTree();
+
+        drawBitmapOntoView(true, true);
+        drawChessboardOntoView();
+        drawGridOntoView();
+        drawSelectionOntoView();
+
+        rvLayerList.post(() -> {
+            frame.layerAdapter.notifyItemRangeChanged(Math.min(fromPos, toPos), Math.abs(toPos - fromPos) + 1);
+            rvLayerList.post(frame.layerAdapter::notifyLevelChanged);
+        });
+    };
+
+    private final ItemMovableAdapter.OnItemSelectedListener onFrameItemSelectedListener = (view, position) -> {
+        final int unselectedPos = project.selectedFrameIndex;
+        selectFrame(position);
+        rvFrameList.post(() -> {
+            project.frameAdapter.notifyFrameSelected(unselectedPos, false);
+            project.frameAdapter.notifyFrameSelected(position, true);
+        });
+    };
+
+    private final ItemMovableAdapter.OnItemSelectedListener onFrameItemReselectedListener = (view, position) -> {
+        final PopupMenu popupMenu = new PopupMenu(this, view);
+        final Menu menu = popupMenu.getMenu();
+        MenuCompat.setGroupDividerEnabled(menu, true);
+        popupMenu.getMenuInflater().inflate(R.menu.frame, menu);
+        popupMenu.setForceShowIcon(true);
+        popupMenu.setOnMenuItemClickListener(this::onFrameOptionsItemSelected);
+        popupMenu.show();
+    };
+
     @SuppressLint("NonConstantResourceId")
-    private final LayerAdapter.OnItemSelectedListener onLayerItemSelectedListener = (view, position) -> {
+    private final ItemMovableAdapter.OnItemSelectedListener onLayerItemSelectedListener = (view, position) -> {
         final int unselectedPos = frame.selectedLayerIndex;
         selectLayer(position);
         rvLayerList.post(() -> {
             frame.layerAdapter.notifyLayerSelected(unselectedPos, false);
-            frame.layerAdapter.notifyLayerSelected(frame.selectedLayerIndex, true);
-            rvLayerList.post(() -> frame.layerAdapter.notifyLevelChanged());
+            frame.layerAdapter.notifyLayerSelected(position, true);
+            rvLayerList.post(frame.layerAdapter::notifyLevelChanged);
         });
     };
 
-    private final LayerAdapter.OnItemSelectedListener onLayerItemReselectedListener = (view, position) -> {
+    private final ItemMovableAdapter.OnItemSelectedListener onLayerItemReselectedListener = (view, position) -> {
         final PopupMenu popupMenu = new PopupMenu(this, view);
         final Menu menu = popupMenu.getMenu();
         MenuCompat.setGroupDividerEnabled(menu, true);
@@ -907,45 +969,13 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    private final ItemMovableAdapter.OnItemMoveListener onLayerMoveListener = (fromPos, toPos) -> {
-        if (frame.selectedLayerIndex == fromPos) {
-            frame.selectedLayerIndex = toPos;
-        } else if (frame.selectedLayerIndex == toPos) {
-            if (fromPos < toPos) {
-                --frame.selectedLayerIndex;
-            } else if (fromPos > toPos) {
-                ++frame.selectedLayerIndex;
-            }
-        }
-        frame.computeLayerTree();
-
-        drawBitmapOntoView(true, true);
-        drawChessboardOntoView();
-        drawGridOntoView();
-        drawSelectionOntoView();
-
-        rvLayerList.post(() -> {
-            frame.layerAdapter.notifyItemRangeChanged(Math.min(fromPos, toPos), Math.abs(toPos - fromPos) + 1);
-            rvLayerList.post(() -> frame.layerAdapter.notifyLevelChanged());
-        });
-    };
-
-    private final LayerAdapter.OnItemSelectedListener onFrameSelectedListener = (view, position) -> {
-        frame = project.frames.get(position);
-        rvLayerList.setAdapter(frame.layerAdapter);
-        selectLayer(frame.selectedLayerIndex);
-        rvLayerList.post(() -> {
-            frame.layerAdapter.notifyDataSetChanged();
-            rvLayerList.post(() -> frame.layerAdapter.notifyLevelChanged());
-        });
-    };
-
-    private final TabLayout.OnTabSelectedListener onProjSelectedListener = new TabLayout.OnTabSelectedListener() {
+    private final TabLayout.OnTabSelectedListener onProjItemSelectedListener = new TabLayout.OnTabSelectedListener() {
         @Override
         public void onTabSelected(TabLayout.Tab tab) {
             final int position = tab.getPosition();
 
             project = projects.get(position);
+            rvFrameList.setAdapter(project.frameAdapter);
 
             translationX = project.translationX;
             translationY = project.translationY;
@@ -2715,34 +2745,40 @@ public class MainActivity extends AppCompatActivity {
         addProject(null, 0);
     }
 
-    private Frame addFrame(Bitmap bitmap, int position, int delay, boolean setSelected) {
+    private Frame addFrame(Project project, Bitmap bitmap, int position, int delay, boolean setSelected) {
         final Frame frame = new Frame();
         frame.delay = delay;
-        addFrame(frame, position, false);
-        this.frame = frame;
-        addLayer(bitmap, true);
+        addFrame(project, frame, bitmap, position, setSelected);
         return frame;
     }
 
-    private Frame addFrame(Frame frame, int position, boolean setSelected) {
+    private Frame addFrame(Project project, Frame frame, Bitmap bitmap, int position, boolean setSelected) {
         project.frames.add(position, frame);
         frame.layerAdapter.setOnItemSelectedListener(onLayerItemSelectedListener, onLayerItemReselectedListener);
         frame.layerAdapter.setOnLayerVisibleChangedListener((buttonView, isChecked) -> drawBitmapOntoView(true));
+        addLayer(project, frame, bitmap, false);
         if (setSelected) {
-
+            selectFrame(project, position);
+            rvFrameList.post(() -> {
+                if (project.selectedFrameIndex > 0) {
+                    project.frameAdapter.notifyFrameSelected(project.selectedFrameIndex - 1, false);
+                }
+                project.frameAdapter.notifyItemInserted(position);
+                project.frameAdapter.notifyItemRangeChanged(position + 1, project.frames.size() - position);
+            });
         }
         return frame;
     }
 
-    private Layer addLayer(Bitmap bitmap, boolean setSelected) {
-        return addLayer(bitmap, 0, 0, getString(R.string.untitled), setSelected);
+    private Layer addLayer(Project project, Frame frame, Bitmap bitmap, boolean setSelected) {
+        return addLayer(project, frame, bitmap, 0, 0, getString(R.string.untitled), setSelected);
     }
 
-    private Layer addLayer(Bitmap bitmap, int position, int level, CharSequence name, boolean setSelected) {
-        return addLayer(bitmap, position, level, 0, 0, true, name, setSelected);
+    private Layer addLayer(Project project, Frame frame, Bitmap bitmap, int position, int level, CharSequence name, boolean setSelected) {
+        return addLayer(project, frame, bitmap, position, level, 0, 0, true, name, setSelected);
     }
 
-    private Layer addLayer(Bitmap bitmap, int position, int level, int left, int top,
+    private Layer addLayer(Project project, Frame frame, Bitmap bitmap, int position, int level, int left, int top,
                            boolean visible, CharSequence name, boolean setSelected) {
         final Layer layer = new Layer();
         layer.bitmap = bitmap != null ? bitmap : Bitmap.createBitmap(48, 48, Bitmap.Config.ARGB_8888);
@@ -2752,10 +2788,10 @@ public class MainActivity extends AppCompatActivity {
         layer.visible = visible;
         layer.name = name;
         fitOnScreen(project, layer);
-        return addLayer(layer, position, setSelected);
+        return addLayer(frame, layer, position, setSelected);
     }
 
-    private Layer addLayer(Layer layer, int position, boolean setSelected) {
+    private Layer addLayer(Frame frame, Layer layer, int position, boolean setSelected) {
         frame.layers.add(position, layer);
         addToHistory(layer);
         frame.computeLayerTree();
@@ -2767,7 +2803,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 frame.layerAdapter.notifyItemInserted(position);
                 frame.layerAdapter.notifyItemRangeChanged(position + 1, frame.layers.size() - position);
-                rvLayerList.post(() -> frame.layerAdapter.notifyLevelChanged());
+                rvLayerList.post(frame.layerAdapter::notifyLevelChanged);
             });
         }
         return layer;
@@ -2787,19 +2823,18 @@ public class MainActivity extends AppCompatActivity {
         project.filePath = path;
         project.fileType = type;
         project.compressFormat = compressFormat;
-        addProject(project, position, false);
+        addProject(project, bitmap, position, true);
         project.setTitle(title);
-        this.project = project;
-        addFrame(bitmap, 0, 0, false);
-        selectProject(position);
         return project;
     }
 
-    private void addProject(Project project, int position, boolean setSelected) {
+    private void addProject(Project project, Bitmap bitmap, int position, boolean setSelected) {
         projects.add(position, project);
         loadTab(project, position);
+        project.frameAdapter.setOnItemSelectedListener(onFrameItemSelectedListener, onFrameItemReselectedListener);
+        addFrame(project, bitmap, 0, 0, false);
         if (setSelected) {
-            selectProject(0);
+            selectProject(position);
         }
     }
 
@@ -2896,7 +2931,7 @@ public class MainActivity extends AppCompatActivity {
             rvLayerList.post(() -> {
                 frame.layerAdapter.notifyItemRemoved(position);
                 frame.layerAdapter.notifyItemRangeChanged(posToSelect, frame.layers.size() - posToSelect);
-                rvLayerList.post(() -> frame.layerAdapter.notifyLevelChanged());
+                rvLayerList.post(frame.layerAdapter::notifyLevelChanged);
             });
         } else {
             closeFrame();
@@ -2914,11 +2949,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void createFrame() {
-//        final Tab firstFrame = layer.getBackground().getFirstFrame();
-//        final Bitmap bm = Bitmap.createBitmap(firstFrame.bitmap.getWidth(), firstFrame.bitmap.getHeight(),
-//                firstFrame.bitmap.getConfig(), firstFrame.bitmap.hasAlpha(), firstFrame.bitmap.getColorSpace());
-//        final int pos = Tab.getPosOfProjEnd(tabs, firstFrame);
-//        addFrame(bm, pos, firstFrame.delay, true);
+        final Frame firstFrame = project.getFirstFrame();
+        final Bitmap ffblb = firstFrame.getBackgroundLayer().bitmap;
+        final Bitmap bm = Bitmap.createBitmap(ffblb.getWidth(), ffblb.getHeight(),
+                ffblb.getConfig(), ffblb.hasAlpha(), ffblb.getColorSpace());
+        addFrame(project, bm, project.frames.size(), firstFrame.delay, true);
     }
 
     private void createImage(int width, int height) {
@@ -2930,7 +2965,7 @@ public class MainActivity extends AppCompatActivity {
                              Bitmap.Config config, ColorSpace colorSpace,
                              int level, int left, int top, int position) {
         final Bitmap bm = Bitmap.createBitmap(width, height, config, true, colorSpace);
-        addLayer(bm, position, level, left, top, true, getString(R.string.untitled), true);
+        addLayer(project, frame, bm, position, level, left, top, true, getString(R.string.untitled), true);
     }
 
     private void createImagePreview() {
@@ -2973,9 +3008,9 @@ public class MainActivity extends AppCompatActivity {
         for (int i = project.frames.size() - 1; i >= 0; --i) {
             deleteFrame(i);
         }
-        tlProjectList.removeOnTabSelectedListener(onProjSelectedListener);
+        tlProjectList.removeOnTabSelectedListener(onProjItemSelectedListener);
         tlProjectList.removeTabAt(position);
-        tlProjectList.addOnTabSelectedListener(onProjSelectedListener);
+        tlProjectList.addOnTabSelectedListener(onProjItemSelectedListener);
     }
 
     private boolean dragMarqueeBound(float viewX, float viewY) {
@@ -3798,7 +3833,9 @@ public class MainActivity extends AppCompatActivity {
 
         // Content view
         setContentView(R.layout.activity_main);
-        vLayerList = getLayoutInflater().inflate(R.layout.layer_list, null);
+        final LayoutInflater layoutInflater = getLayoutInflater();
+        vFrameList = layoutInflater.inflate(R.layout.frame_list, null);
+        vLayerList = layoutInflater.inflate(R.layout.layer_list, null);
 
         final Button bEyedropper = findViewById(R.id.b_eyedropper);
         final Button bRuler = findViewById(R.id.b_ruler);
@@ -3831,6 +3868,7 @@ public class MainActivity extends AppCompatActivity {
         ivRulerV = findViewById(R.id.iv_ruler_vertical);
         ivSelection = findViewById(R.id.iv_selection);
         llOptionsText = findViewById(R.id.ll_options_text);
+        rvFrameList = vFrameList.findViewById(R.id.rv_frame_list);
         rvLayerList = vLayerList.findViewById(R.id.rv_layer_list);
         final RecyclerView rvSwatches = findViewById(R.id.rv_swatches);
         svOptionsBucketFill = findViewById(R.id.sv_options_bucket_fill);
@@ -3902,7 +3940,7 @@ public class MainActivity extends AppCompatActivity {
         ivRulerH.setOnTouchListener(onTouchRulerHListener);
         ivRulerV.setOnTouchListener(onTouchRulerVListener);
         rvSwatches.setItemAnimator(new DefaultItemAnimator());
-        tlProjectList.addOnTabSelectedListener(onProjSelectedListener);
+        tlProjectList.addOnTabSelectedListener(onProjItemSelectedListener);
         tbSoftBrush.setOnCheckedChangeListener(onSoftBrushTBCheckedChangeListener);
         tietCloneStampBlurRadius.addTextChangedListener(onBlurRadiusETTextChangedListener);
         tietCloneStampStrokeWidth.addTextChangedListener(onStrokeWidthETTextChangedListener);
@@ -3991,8 +4029,11 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        rvFrameList.setItemAnimator(new DefaultItemAnimator());
+        ItemMovableAdapter.createItemMoveHelper(onFrameItemMoveListener).attachToRecyclerView(rvFrameList);
+
         rvLayerList.setItemAnimator(new DefaultItemAnimator());
-        ItemMovableAdapter.createItemMoveHelper(onLayerMoveListener).attachToRecyclerView(rvLayerList);
+        ItemMovableAdapter.createItemMoveHelper(onLayerItemMoveListener).attachToRecyclerView(rvLayerList);
 
         tietEraserBlurRadius.addTextChangedListener((AfterTextChangedListener) s -> {
             try {
@@ -4379,6 +4420,18 @@ public class MainActivity extends AppCompatActivity {
             }
             case R.id.i_flip_horizontally -> scale(-1.0f, 1.0f);
             case R.id.i_flip_vertically -> scale(1.0f, -1.0f);
+            case R.id.i_frame_list -> {
+                project.frameAdapter.notifyDataSetChanged();
+
+                bsdFrameList = new BottomSheetDialog(this);
+                bsdFrameList.setTitle(R.string.frames);
+                bsdFrameList.setContentView(vFrameList);
+                bsdFrameList.setOnDismissListener(d -> {
+                    ((ViewGroup) vFrameList.getParent()).removeAllViews();
+                    bsdFrameList = null;
+                });
+                bsdFrameList.show();
+            }
             case R.id.i_generate_noise -> {
                 drawFloatingLayersIntoImage();
                 createImagePreview();
@@ -4428,7 +4481,7 @@ public class MainActivity extends AppCompatActivity {
             }
             case R.id.i_layer_list -> {
                 frame.layerAdapter.notifyDataSetChanged();
-                rvLayerList.post(() -> frame.layerAdapter.notifyLevelChanged());
+                rvLayerList.post(frame.layerAdapter::notifyLevelChanged);
 
                 ssdLayerList = new SideSheetDialog(this);
                 ssdLayerList.setTitle(R.string.layers);
@@ -4617,7 +4670,7 @@ public class MainActivity extends AppCompatActivity {
                     l.bitmap.eraseColor(Color.BLACK);
                     cv.drawRect(selection, PAINT_DST_OUT);
                 }
-                addLayer(l, frame.selectedLayerIndex, true);
+                addLayer(frame, l, frame.selectedLayerIndex, true);
             }
             case R.id.i_layer_alpha -> {
                 if (ssdLayerList != null) {
@@ -4675,12 +4728,12 @@ public class MainActivity extends AppCompatActivity {
                 final int pos = frame.group();
                 final Bitmap bg = frame.getBackgroundLayer().bitmap;
                 final Bitmap bm = Bitmap.createBitmap(bg.getWidth(), bg.getHeight(), bg.getConfig(), bg.hasAlpha(), bg.getColorSpace());
-                addLayer(bm, pos, frame.layers.get(pos - 1).getLevel() - 1, getString(R.string.group), false);
+                addLayer(project, frame, bm, pos, frame.layers.get(pos - 1).getLevel() - 1, getString(R.string.group), false);
                 frame.computeLayerTree();
                 rvLayerList.post(() -> {
                     frame.layerAdapter.notifyItemInserted(pos);
                     frame.layerAdapter.notifyItemRangeChanged(pos + 1, frame.layers.size() - pos - 1);
-                    rvLayerList.post(() -> frame.layerAdapter.notifyLevelChanged());
+                    rvLayerList.post(frame.layerAdapter::notifyLevelChanged);
                 });
                 drawBitmapOntoView(true);
             }
@@ -4712,7 +4765,7 @@ public class MainActivity extends AppCompatActivity {
                     selectLayer(frame.selectedLayerIndex);
                     rvLayerList.post(() -> {
                         frame.layerAdapter.notifyDataSetChanged();
-                        rvLayerList.post(() -> frame.layerAdapter.notifyLevelChanged());
+                        rvLayerList.post(frame.layerAdapter::notifyLevelChanged);
                     });
                 }
             }
@@ -4732,7 +4785,7 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     cv.drawBitmap(bitmap, 0.0f, 0.0f, PAINT_SRC);
                 }
-                addLayer(bm, tlProjectList.getSelectedTabPosition(),
+                addLayer(project, frame, bm, tlProjectList.getSelectedTabPosition(),
                         layer.getLevel(), layer.left, layer.top,
                         layer.visible, getString(R.string.copy_noun), true);
             }
@@ -4836,7 +4889,7 @@ public class MainActivity extends AppCompatActivity {
                 rvLayerList.post(() -> {
                     frame.layerAdapter.notifyItemRemoved(pos);
                     frame.layerAdapter.notifyItemRangeChanged(pos, frame.layers.size() - pos);
-                    rvLayerList.post(() -> frame.layerAdapter.notifyLevelChanged());
+                    rvLayerList.post(frame.layerAdapter::notifyLevelChanged);
                 });
                 addToHistory();
             }
@@ -4846,7 +4899,7 @@ public class MainActivity extends AppCompatActivity {
                 for (final Layer l : frame.layers) {
                     l.visible = false;
                 }
-                addLayer(bm, true);
+                addLayer(project, frame, bm, true);
             }
             case R.id.i_layer_new -> {
                 if (Settings.INST.newLayerLevel()) {
@@ -5339,7 +5392,19 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void selectFrame(int position) {
-        onFrameSelectedListener.onItemSelected(null, position);
+        selectFrame(project, position);
+    }
+
+    private void selectFrame(Project project, int position) {
+        drawFloatingLayersIntoImage();
+
+        frame = project.frames.get(position);
+        project.selectedFrameIndex = position;
+        rvLayerList.setAdapter(frame.layerAdapter);
+
+        selectLayer(frame.selectedLayerIndex);
+        frame.layerAdapter.notifyDataSetChanged();
+        rvLayerList.post(frame.layerAdapter::notifyLevelChanged);
     }
 
     private void selectLayer(int position) {
@@ -5386,7 +5451,7 @@ public class MainActivity extends AppCompatActivity {
         if (position != tlProjectList.getSelectedTabPosition()) {
             tabToBeSelected.select();
         } else {
-            onProjSelectedListener.onTabSelected(tabToBeSelected);
+            onProjItemSelectedListener.onTabSelected(tabToBeSelected);
         }
     }
 
