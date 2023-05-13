@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:icon="@drawable/ic_flip"
+        android:title="@string/flip"
+        app:showAsAction="always">
+        <menu>
+            <item
+                android:id="@+id/i_flip_horizontally"
+                android:title="@string/horizontally" />
+            <item
+                android:id="@+id/i_flip_vertically"
+                android:title="@string/vertically" />
+        </menu>
+    </item>
+    <item
+        android:icon="@drawable/ic_rotate_90_degrees_ccw"
+        android:title="@string/rotate"
+        app:showAsAction="always">
+        <menu>
+            <item
+                android:id="@+id/i_rotate_90"
+                android:title="@string/ninety_degrees" />
+            <item
+                android:id="@+id/i_rotate_180"
+                android:title="@string/one_eighty_degrees" />
+            <item
+                android:id="@+id/i_rotate_270"
+                android:title="@string/two_seventy_degrees" />
+        </menu>
+    </item>
+    <item
+        android:id="@+id/i_ok"
+        android:icon="@drawable/ic_done"
+        android:title="@string/ok"
+        app:showAsAction="always" />
+</menu>

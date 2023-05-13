@@ -100,7 +100,7 @@ public class DirectorySelector {
         final Spinner sFileType = dialog.findViewById(R.id.s_file_type);
         final TextInputEditText tietFileName = dialog.findViewById(R.id.tiet_file_name);
 
-        sFileType.setSelection(fileType == null ? 0 : switch (fileType) {
+        sFileType.setSelection(fileType == null ? src.frames.size() > 1 ? 2 : 0 : switch (fileType) {
             case PNG -> 0;
             case JPEG -> 1;
             case GIF -> 2;

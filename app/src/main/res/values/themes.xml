@@ -2,6 +2,11 @@
     <!-- Base application theme. -->
     <style name="Theme.IconEditor" parent="Theme.Material3.DayNight">
         <!-- Customize your theme here. -->
+        <item name="actionBarStyle">@style/Widget.App.ActionBar</item>
+        <item name="actionModeCloseDrawable">@drawable/ic_close</item>
+        <item name="actionModeStyle">@style/Widget.App.ActionMode</item>
+        <item name="toolbarStyle">@style/Widget.Material3.Toolbar.Surface</item>
+        <item name="windowActionModeOverlay">true</item>
     </style>
 
     <style name="Theme.IconEditor.NoActionBar" parent="Theme.IconEditor">

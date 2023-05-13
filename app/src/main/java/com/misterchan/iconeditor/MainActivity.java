@@ -65,6 +65,7 @@ import androidx.annotation.Size;
 import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.view.ActionMode;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.FileProvider;
 import androidx.core.view.MenuCompat;
@@ -79,6 +80,7 @@ import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButtonToggleGroup;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.android.material.sidesheet.SideSheetDialog;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
@@ -111,6 +113,7 @@ import com.misterchan.iconeditor.listener.OnSliderChangeListener;
 import com.misterchan.iconeditor.util.BitmapUtils;
 import com.misterchan.iconeditor.util.RunnableRunnable;
 import com.misterchan.iconeditor.util.UriUtils;
+import com.waynejo.androidndkgif.GifDecoder;
 import com.waynejo.androidndkgif.GifEncoder;
 
 import java.io.File;
@@ -273,6 +276,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private ActionMode transformerActionMode;
     private Bitmap bitmap;
     private Bitmap refBm;
     private Bitmap chessboard;
@@ -524,6 +528,31 @@ public class MainActivity extends AppCompatActivity {
         drawTextOntoView();
     };
 
+    private final ActionMode.Callback onTransformerActionModeCallback = new ActionMode.Callback() {
+        @Override
+        public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+            getMenuInflater().inflate(R.menu.action_mode_transformer, menu);
+            return true;
+        }
+
+        @Override
+        public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+            return false;
+        }
+
+        @Override
+        public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+            return onTransformerActionItemClicked(mode, item);
+        }
+
+        @Override
+        public void onDestroyActionMode(ActionMode mode) {
+            if (transformer != null) {
+                undoOrRedo(layer.history.getCurrent());
+            }
+        }
+    };
+
     private final CompoundButton.OnCheckedChangeListener onAntiAliasCBCheckedChangeListener = (buttonView, isChecked) -> {
         antiAlias = isChecked;
         paint.setAntiAlias(isChecked);
@@ -659,7 +688,7 @@ public class MainActivity extends AppCompatActivity {
     private final HiddenImageMaker.OnMakeListener onMakeHiddenImageListener = bitmap -> {
         final Bitmap bm = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
         new Canvas(bm).drawBitmap(bitmap, 0.0f, 0.0f, PAINT_SRC);
-//        addProject(bm, tabLayout.getSelectedTabPosition() + 2);
+        addProject(bm, tlProjectList.getSelectedTabPosition() + 2);
         bitmap.recycle();
     };
 
@@ -757,18 +786,6 @@ public class MainActivity extends AppCompatActivity {
             drawImagePreviewOntoView(stopped);
         }, stopped);
         clearStatus();
-    };
-
-    private final EditNumberDialog.OnPositiveButtonClickListener onApplyUniformFrameDelayListener = number -> {
-//        final Tab firstFrame = layer.getBackground().getFirstFrame();
-//        for (int i = firstFrame.getBackgroundPosition(); i < tabs.size(); ++i) {
-//            final Tab frame = tabs.get(i).getBackground();
-//            if (frame.getFirstFrame() != firstFrame) {
-//                break;
-//            }
-//            i = frame.getBackgroundPosition();
-//            frame.delay = number;
-//        }
     };
 
     private final OnSliderChangeListener onFilterContrastSliderChangeListener = (slider, value, stopped) -> {
@@ -874,7 +891,7 @@ public class MainActivity extends AppCompatActivity {
         } else if (project.selectedFrameIndex == toPos) {
             if (fromPos < toPos) {
                 --project.selectedFrameIndex;
-            } else if (fromPos > toPos) {
+            } else /* if (fromPos > toPos) */ {
                 ++project.selectedFrameIndex;
             }
         }
@@ -890,7 +907,7 @@ public class MainActivity extends AppCompatActivity {
         } else if (frame.selectedLayerIndex == toPos) {
             if (fromPos < toPos) {
                 --frame.selectedLayerIndex;
-            } else if (fromPos > toPos) {
+            } else /* if (fromPos > toPos) */ {
                 ++frame.selectedLayerIndex;
             }
         }
@@ -911,8 +928,8 @@ public class MainActivity extends AppCompatActivity {
         final int unselectedPos = project.selectedFrameIndex;
         selectFrame(position);
         rvFrameList.post(() -> {
-            project.frameAdapter.notifyFrameSelected(unselectedPos, false);
-            project.frameAdapter.notifyFrameSelected(position, true);
+            project.frameAdapter.notifyFrameSelectedChanged(unselectedPos, false);
+            project.frameAdapter.notifyFrameSelectedChanged(position, true);
         });
     };
 
@@ -931,8 +948,8 @@ public class MainActivity extends AppCompatActivity {
         final int unselectedPos = frame.selectedLayerIndex;
         selectLayer(position);
         rvLayerList.post(() -> {
-            frame.layerAdapter.notifyLayerSelected(unselectedPos, false);
-            frame.layerAdapter.notifyLayerSelected(position, true);
+            frame.layerAdapter.notifyLayerSelectedChanged(unselectedPos, false);
+            frame.layerAdapter.notifyLayerSelectedChanged(position, true);
             rvLayerList.post(frame.layerAdapter::notifyLevelChanged);
         });
     };
@@ -973,7 +990,6 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onTabSelected(TabLayout.Tab tab) {
             final int position = tab.getPosition();
-
             project = projects.get(position);
             rvFrameList.setAdapter(project.frameAdapter);
 
@@ -981,7 +997,7 @@ public class MainActivity extends AppCompatActivity {
             translationY = project.translationY;
             scale = project.scale;
 
-            selectFrame(0);
+            selectFrame(project.selectedFrameIndex);
         }
 
         @Override
@@ -1059,37 +1075,16 @@ public class MainActivity extends AppCompatActivity {
     };
 
     private final AnimationClipper.OnConfirmListener onConfirmClipListener = (from, to) -> {
-//        final Tab firstFrame = layer.getBackground().getFirstFrame();
-//        Tab firstFrameKept = null;
-//        for (int i = tabs.size() - 1, j = 0; i >= 0; --i) {
-//            final Tab tab = tabs.get(i);
-//            if (layer.isBackground) {
-//                if (layer.getBackground().getFirstFrame() == firstFrame) {
-//                    ++j;
-//                } else if (j > 0) {
-//                    break;
-//                }
-//            }
-//            if (j <= 0) {
-//                continue;
-//            }
-//            if (from <= j && j <= to
-//                    || from > to && (from <= j || j <= to)) {
-//                if (layer.isBackground) {
-//                    firstFrameKept = tab;
-//                }
-//            } else {
-//                closeTab(i, false);
-//                if (layer.isFirstFrame && firstFrameKept != null) {
-//                    firstFrameKept.isFirstFrame = true;
-//                }
-//            }
-//        }
-//        Tab.distinguishProjects(tabs);
-//        Tab.updateFrameIndexIcons(tabs);
-//        final int pos = tabLayout.getSelectedTabPosition();
-//        selectTab(tabs.get(pos).getBackground().getFirstFrame() == firstFrameKept
-//                ? pos : pos + 1);
+        for (int i = project.frames.size() - 1; i >= 0; --i) {
+            if (!(from <= i && i <= to || from > to && (from <= i || i <= to))) {
+                deleteFrame(i);
+                if (i < project.selectedFrameIndex) {
+                    --project.selectedFrameIndex;
+                }
+            }
+        }
+        rvFrameList.post(() -> project.frameAdapter.notifyDataSetChanged());
+        selectFrame(Math.min(project.selectedFrameIndex, project.frames.size() - 1));
     };
 
     private final CellGridManager.OnApplyListener onApplyCellGridListener = this::drawGridOntoView;
@@ -2742,7 +2737,7 @@ public class MainActivity extends AppCompatActivity {
     };
 
     private void addDefaultTab() {
-        addProject(null, 0);
+        addProject(Bitmap.createBitmap(48, 48, Bitmap.Config.ARGB_8888), 0);
     }
 
     private Frame addFrame(Project project, Bitmap bitmap, int position, int delay, boolean setSelected) {
@@ -2756,16 +2751,20 @@ public class MainActivity extends AppCompatActivity {
         project.frames.add(position, frame);
         frame.layerAdapter.setOnItemSelectedListener(onLayerItemSelectedListener, onLayerItemReselectedListener);
         frame.layerAdapter.setOnLayerVisibleChangedListener((buttonView, isChecked) -> drawBitmapOntoView(true));
-        addLayer(project, frame, bitmap, false);
+        if (bitmap != null) {
+            addLayer(project, frame, bitmap, false);
+        }
         if (setSelected) {
             selectFrame(project, position);
-            rvFrameList.post(() -> {
-                if (project.selectedFrameIndex > 0) {
-                    project.frameAdapter.notifyFrameSelected(project.selectedFrameIndex - 1, false);
-                }
-                project.frameAdapter.notifyItemInserted(position);
-                project.frameAdapter.notifyItemRangeChanged(position + 1, project.frames.size() - position);
-            });
+            if (bsdFrameList != null) {
+                rvFrameList.post(() -> {
+                    if (project.selectedFrameIndex > 0) {
+                        project.frameAdapter.notifyFrameSelectedChanged(project.selectedFrameIndex - 1, false);
+                    }
+                    project.frameAdapter.notifyItemInserted(position);
+                    project.frameAdapter.notifyItemRangeChanged(position + 1, project.frames.size() - position);
+                });
+            }
         }
         return frame;
     }
@@ -2797,14 +2796,16 @@ public class MainActivity extends AppCompatActivity {
         frame.computeLayerTree();
         if (setSelected) {
             selectLayer(position);
-            rvLayerList.post(() -> {
-                if (frame.selectedLayerIndex < frame.layers.size() - 1) {
-                    frame.layerAdapter.notifyLayerSelected(frame.selectedLayerIndex, false);
-                }
-                frame.layerAdapter.notifyItemInserted(position);
-                frame.layerAdapter.notifyItemRangeChanged(position + 1, frame.layers.size() - position);
-                rvLayerList.post(frame.layerAdapter::notifyLevelChanged);
-            });
+            if (ssdLayerList != null) {
+                rvLayerList.post(() -> {
+                    if (frame.selectedLayerIndex < frame.layers.size() - 1) {
+                        frame.layerAdapter.notifyLayerSelectedChanged(frame.selectedLayerIndex, false);
+                    }
+                    frame.layerAdapter.notifyItemInserted(position);
+                    frame.layerAdapter.notifyItemRangeChanged(position + 1, frame.layers.size() - position);
+                    rvLayerList.post(frame.layerAdapter::notifyLevelChanged);
+                });
+            }
         }
         return layer;
     }
@@ -2819,12 +2820,18 @@ public class MainActivity extends AppCompatActivity {
 
     private Project addProject(Bitmap bitmap, int position,
                                String title, String path, Project.FileType type, Bitmap.CompressFormat compressFormat) {
+        return addProject(bitmap, position, title, path, type, compressFormat, true);
+    }
+
+    private Project addProject(Bitmap bitmap, int position,
+                               String title, String path, Project.FileType type, Bitmap.CompressFormat compressFormat,
+                               boolean setSelected) {
         final Project project = new Project();
         project.filePath = path;
         project.fileType = type;
         project.compressFormat = compressFormat;
-        addProject(project, bitmap, position, true);
         project.setTitle(title);
+        addProject(project, bitmap, position, setSelected);
         return project;
     }
 
@@ -2832,7 +2839,9 @@ public class MainActivity extends AppCompatActivity {
         projects.add(position, project);
         loadTab(project, position);
         project.frameAdapter.setOnItemSelectedListener(onFrameItemSelectedListener, onFrameItemReselectedListener);
-        addFrame(project, bitmap, 0, 0, false);
+        if (bitmap != null) {
+            addFrame(project, bitmap, 0, 0, false);
+        }
         if (setSelected) {
             selectProject(position);
         }
@@ -2913,10 +2922,17 @@ public class MainActivity extends AppCompatActivity {
         tvStatus.setText("");
     }
 
-    private void closeFrame() {
+    private void closeFrame(int position) {
         if (project.frames.size() > 1) {
-            deleteFrame(project.selectedFrameIndex);
-            selectFrame(Math.min(project.selectedFrameIndex, project.frames.size() - 1));
+            deleteFrame(position);
+            final int posToSelect = Math.min(project.selectedFrameIndex, project.frames.size() - 1);
+            selectFrame(posToSelect);
+            if (bsdFrameList != null) {
+                rvFrameList.post(() -> {
+                    project.frameAdapter.notifyItemRemoved(position);
+                    project.frameAdapter.notifyItemRangeChanged(posToSelect, project.frames.size() - posToSelect);
+                });
+            }
         } else {
             closeProject(0);
         }
@@ -2934,7 +2950,7 @@ public class MainActivity extends AppCompatActivity {
                 rvLayerList.post(frame.layerAdapter::notifyLevelChanged);
             });
         } else {
-            closeFrame();
+            closeFrame(project.selectedFrameIndex);
         }
     }
 
@@ -2985,32 +3001,41 @@ public class MainActivity extends AppCompatActivity {
                 selection);
         canvas.drawRect(selection.left, selection.top, selection.right, selection.bottom,
                 eraser);
+        transformerActionMode = startSupportActionMode(onTransformerActionModeCallback);
+        transformerActionMode.setTitle(R.string.transform);
     }
 
     private void deleteFrame(int position) {
-        final Frame frame = project.frames.remove(position);
+        final Frame frame = project.frames.get(position);
         for (int i = frame.layers.size() - 1; i >= 0; --i) {
-            deleteLayer(i);
+            deleteLayer(frame, i);
         }
+        project.frames.remove(position);
     }
 
     private void deleteLayer(int position) {
-        final Layer layer = frame.layers.remove(position);
+        deleteLayer(frame, position);
+    }
+
+    private void deleteLayer(Frame frame, int position) {
+        final Layer layer = frame.layers.get(position);
         if (layer == this.layer && transformer != null) {
             recycleTransformer();
         }
         layer.bitmap.recycle();
         layer.history.clear();
+        frame.layers.remove(position);
     }
 
     private void deleteProject(int position) {
-        final Project project = projects.remove(position);
+        final Project project = projects.get(position);
         for (int i = project.frames.size() - 1; i >= 0; --i) {
             deleteFrame(i);
         }
         tlProjectList.removeOnTabSelectedListener(onProjItemSelectedListener);
         tlProjectList.removeTabAt(position);
         tlProjectList.addOnTabSelectedListener(onProjItemSelectedListener);
+        projects.remove(position);
     }
 
     private boolean dragMarqueeBound(float viewX, float viewY) {
@@ -3788,16 +3813,15 @@ public class MainActivity extends AppCompatActivity {
                 final Project p = projects.get(i);
                 loadTab(p, i);
             }
-            tlProjectList.getTabAt(0).select();
+            selectProject(0);
         }
 
     }
 
-    private TabLayout.Tab loadTab(Project project, int position) {
-        final TabLayout.Tab t = tlProjectList.newTab().setTag(project);
+    private void loadTab(Project project, int position) {
+        final TabLayout.Tab t = tlProjectList.newTab().setText(project.getTitle()).setTag(project);
         project.tab = t;
         tlProjectList.addTab(t, position, false);
-        return t;
     }
 
     @Override
@@ -4491,6 +4515,13 @@ public class MainActivity extends AppCompatActivity {
                     ssdLayerList = null;
                 });
                 ssdLayerList.show();
+
+                ssdLayerList.findViewById(R.id.b_new).setOnClickListener(v ->
+                        onLayerOptionsItemSelected(null, R.id.i_layer_new));
+                ssdLayerList.findViewById(R.id.b_duplicate).setOnClickListener(v ->
+                        onLayerOptionsItemSelected(null, R.id.i_layer_duplicate));
+                ssdLayerList.findViewById(R.id.b_delete).setOnClickListener(v ->
+                        onLayerOptionsItemSelected(null, R.id.i_layer_delete));
             }
             case R.id.i_paste -> {
                 if (clipboard == null) {
@@ -4597,63 +4628,55 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
             case R.id.i_frame_clip -> {
-//                new AnimationClipper(this, tabs, layer.getBackground().getFirstFrame(), onConfirmClipListener)
-//                        .show();
+                new AnimationClipper(this, project, onConfirmClipListener).show();
             }
             case R.id.i_frame_delay -> {
-//                final Tab frame = layer.getBackground();
-//                new EditNumberDialog(this)
-//                        .setIcon(item.getIcon()).setTitle(R.string.delay)
-//                        .setOnApplyListener(number -> frame.delay = number)
-//                        .show(frame.delay, "ms");
+                new EditNumberDialog(this)
+                        .setIcon(item.getIcon()).setTitle(R.string.delay)
+                        .setOnApplyListener(number -> {
+                            frame.delay = number;
+                            rvFrameList.post(() -> project.frameAdapter.notifyItemChanged(project.selectedFrameIndex));
+                        })
+                        .show(frame.delay, "ms");
             }
-            case R.id.i_frame_delete -> {
-//                final Tab frame = layer.getBackground();
-//                int i = frame.getBackgroundPosition();
-//                for (; i >= 0; --i) {
-//                    final Tab tab = tabs.get(i);
-//                    if (layer.getBackground() != frame) {
-//                        break;
-//                    }
-//                    if (tab != this.tab) {
-//                        closeTab(i, false);
-//                    }
-//                }
-//                closeTab();
-            }
+            case R.id.i_frame_delete -> closeFrame(project.selectedFrameIndex);
             case R.id.i_frame_duplicate -> {
-//                final Tab bg = layer.getBackground();
-//                final int bgPos = bg.getBackgroundPosition(), newPos = bgPos + 1;
-//                final Tab newFrame = addFrame(Bitmap.createBitmap(bg.bitmap), newPos, false, bg.delay,
-//                        bg.getTitle(), bg.filePath, bg.fileType, false);
-//                for (int i = bgPos - 1; i >= 0; --i) {
-//                    final Tab tab = tabs.get(i);
-//                    if (layer.isBackground) {
-//                        break;
-//                    }
-//                    addLayer(Bitmap.createBitmap(layer.bitmap), newPos,
-//                            layer.getLevel(), layer.left, layer.top, layer.visible, layer.getTitle(), false);
-//                }
-//                Tab.distinguishProjects(tabs);
-//                Tab.updateBackgroundIcons(tabs);
-//                Tab.computeLayerTree(tabs, newFrame);
-//                Tab.updateLevelIcons(tabs, newFrame);
-//                tabLayout.getTabAt(newPos).select();
+                final int unselectedPos = project.selectedFrameIndex, pos = unselectedPos + 1;
+                final Frame src = frame;
+                final Frame dst = addFrame(project, null, pos, src.delay, false);
+                for (int i = 0; i < src.layers.size(); ++i) {
+                    final Layer l = src.layers.get(i);
+                    addLayer(project, dst, Bitmap.createBitmap(l.bitmap), i,
+                            l.getLevel(), l.left, l.top, l.visible, l.name, false);
+                }
+                rvFrameList.post(() -> {
+                    project.frameAdapter.notifyFrameSelectedChanged(unselectedPos, false);
+                    project.frameAdapter.notifyItemInserted(pos);
+                    project.frameAdapter.notifyItemRangeChanged(pos + 1, project.frames.size() - pos - 2);
+                });
+                selectFrame(pos);
             }
             case R.id.i_frame_new -> createFrame();
             case R.id.i_frame_unify_delays -> {
-//                new EditNumberDialog(this)
-//                        .setIcon(R.drawable.ic_access_time).setTitle(R.string.delay)
-//                        .setOnApplyListener(onApplyUniformFrameDelayListener)
-//                        .show(layer.getBackground().delay, "ms");
+                new EditNumberDialog(this)
+                        .setIcon(R.drawable.ic_access_time).setTitle(R.string.delay)
+                        .setOnApplyListener(number -> {
+                            project.frames.forEach(f -> f.delay = number);
+                            rvFrameList.post(() -> project.frameAdapter.notifyDataSetChanged());
+                        })
+                        .show(frame.delay, "ms");
             }
         }
         return true;
     }
 
-    @SuppressLint("NonConstantResourceId")
     private boolean onLayerOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
+        return onLayerOptionsItemSelected(item, item.getItemId());
+    }
+
+    @SuppressLint("NonConstantResourceId")
+    private boolean onLayerOptionsItemSelected(MenuItem item, int itemId) {
+        switch (itemId) {
             default -> {
                 return false;
             }
@@ -4785,11 +4808,14 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     cv.drawBitmap(bitmap, 0.0f, 0.0f, PAINT_SRC);
                 }
-                addLayer(project, frame, bm, tlProjectList.getSelectedTabPosition(),
+                addLayer(project, frame, bm, frame.selectedLayerIndex,
                         layer.getLevel(), layer.left, layer.top,
                         layer.visible, getString(R.string.copy_noun), true);
             }
             case R.id.i_layer_duplicate_by_color_range -> {
+                if (ssdLayerList != null) {
+                    ssdLayerList.dismiss();
+                }
                 drawFloatingLayersIntoImage();
                 createImagePreview();
                 new ColorRangeDialog(this)
@@ -4866,14 +4892,14 @@ public class MainActivity extends AppCompatActivity {
                 addToHistory();
             }
             case R.id.i_layer_merge_as_hidden -> {
-//                final int j = tlProjectList.getSelectedTabPosition() + 1;
-//                if (j >= projects.size()) {
-//                    break;
-//                }
-//                drawFloatingLayersIntoImage();
-//                HiddenImageMaker.merge(this,
-//                        new Bitmap[]{bitmap, tabs.get(j).bitmap},
-//                        onMakeHiddenImageListener);
+                final int j = tlProjectList.getSelectedTabPosition() + 1;
+                if (j >= projects.size()) {
+                    break;
+                }
+                drawFloatingLayersIntoImage();
+                HiddenImageMaker.merge(this,
+                        new Bitmap[]{bitmap, projects.get(j).getFirstFrame().getBackgroundLayer().bitmap},
+                        onMakeHiddenImageListener);
             }
             case R.id.i_layer_merge_down -> {
                 final int pos = frame.selectedLayerIndex, posBelow = pos + 1;
@@ -4971,6 +4997,22 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @SuppressLint("NonConstantResourceId")
+    private boolean onTransformerActionItemClicked(ActionMode mode, MenuItem item) {
+        switch (item.getItemId()) {
+            default -> {
+                return false;
+            }
+            case R.id.i_flip_horizontally -> scale(-1.0f, 1.0f);
+            case R.id.i_flip_vertically -> scale(1.0f, -1.0f);
+            case R.id.i_rotate_90 -> rotate(90.0f);
+            case R.id.i_rotate_180 -> rotate(180.0f);
+            case R.id.i_rotate_270 -> rotate(270.0f);
+            case R.id.i_ok -> drawTransformerIntoImage();
+        }
+        return true;
+    }
+
     @SuppressLint("ClickableViewAccessibility")
     private void onTransformerChange(View.OnTouchListener l) {
         cbTransformerFilter.setVisibility(l != onTouchIVWithTTListener ? View.VISIBLE : View.GONE);
@@ -5024,23 +5066,21 @@ public class MainActivity extends AppCompatActivity {
                 path = UriUtils.getRealPath(this, uri);
                 addProject(bm, projects.size(), name, path, type, compressFormat);
             } else if (type == Project.FileType.GIF) {
-//                path = UriUtils.getRealPath(this, uri);
-//                final GifDecoder gifDecoder = new GifDecoder();
-//                if (path != null && gifDecoder.load(path)) {
-//                    final int begin = tabs.size();
-//                    final Frame[] frames = new Frame[gifDecoder.frameNum()];
-//                    for (int i = 0; i < gifDecoder.frameNum(); ++i) {
-//                        final Frame newFrame = addFrame(gifDecoder.frame(i), tabs.size(),
-//                                gifDecoder.delay(i));
-//                        frames[i] = newFrame;
-//                    }
-//                    for (final Frame frame : frames) {
-//                        frame.computeLayerTree();
-//                    }
-//                    tlProjectList.getTabAt(begin).select();
-//                } else {
-//                    addProject(bm, projects.size(), name, path, type, null);
-//                }
+                path = UriUtils.getRealPath(this, uri);
+                final GifDecoder gifDecoder = new GifDecoder();
+                if (path != null && gifDecoder.load(path)) {
+                    final Project proj = addProject(null, projects.size(), name, path, type, null, false);
+                    final Frame[] frames = new Frame[gifDecoder.frameNum()];
+                    for (int i = 0; i < gifDecoder.frameNum(); ++i) {
+                        final Frame newFrame = addFrame(proj, gifDecoder.frame(i),
+                                i, gifDecoder.delay(i), false);
+                        frames[i] = newFrame;
+                        frames[i].computeLayerTree();
+                    }
+                    selectProject(projects.size() - 1);
+                } else {
+                    addProject(bm, projects.size(), name, path, type, null);
+                }
             } else {
                 addProject(bm, projects.size(), name);
                 Snackbar.make(vContent, R.string.not_supported_file_type, Snackbar.LENGTH_SHORT)
@@ -5134,6 +5174,10 @@ public class MainActivity extends AppCompatActivity {
     private void recycleTransformer() {
         transformer.recycle();
         transformer = null;
+        if (transformerActionMode != null) {
+            transformerActionMode.finish();
+            transformerActionMode = null;
+        }
     }
 
     private void resizeImage(Layer layer, int width, int height,
@@ -5289,58 +5333,56 @@ public class MainActivity extends AppCompatActivity {
             MediaScannerConnection.scanFile(this, new String[]{file.toString()}, null, null);
 
         } else if (project.fileType == Project.FileType.GIF) {
-//            final GifEncoder gifEncoder = new GifEncoder();
-//            final int width = layer.bitmap.getWidth(), height = layer.bitmap.getHeight();
-//            try {
-//                gifEncoder.init(width, height, project.filePath);
-//            } catch (FileNotFoundException e) {
-//                return;
-//            }
-//            gifEncoder.setDither(project.gifDither);
-//            final int size = tabs.size();
-//            final AlertDialog dialog = new MaterialAlertDialogBuilder(this)
-//                    .setTitle(R.string.exporting)
-//                    .setView(R.layout.progress_indicator)
-//                    .setCancelable(false)
-//                    .show();
-//            final LinearProgressIndicator pi = dialog.findViewById(R.id.progress_indicator);
-//            pi.setMax(size - 1);
-//            new Thread(() -> {
-//                final List<String> invalidFrames = new LinkedList<>();
-////                for (int i = project.getBackgroundPosition(); i < size; ++i) {
-////                    final Tab t = tabs.get(i).getBackground();
-////                    i = t.getBackgroundPosition();
-////                    if (t.getFirstFrame() != tab) {
-////                        break;
-////                    }
-////                    if (t.bitmap.getWidth() == width && t.bitmap.getHeight() == height
-////                            && t.bitmap.getConfig() == Bitmap.Config.ARGB_8888) {
-////                        final Bitmap merged = Tab.mergeLayers(t.layerTree);
-////                        gifEncoder.encodeFrame(merged, t.delay);
-////                        merged.recycle();
-////                    } else {
-////                        invalidFrames.add(String.valueOf(i));
-////                    }
-////                    final int progress = i;
-////                    runOnUiThread(() -> pi.setProgressCompat(progress, true));
-////                }
-//                gifEncoder.close();
-//                MediaScannerConnection.scanFile(this, new String[]{file.toString()}, null, null);
-//                runOnUiThread(() -> {
-//                    dialog.dismiss();
-//                    if (invalidFrames.isEmpty()) {
-//                        Snackbar.make(vContent, R.string.done, Snackbar.LENGTH_SHORT).show();
-//                    } else {
-//                        new MaterialAlertDialogBuilder(this)
-//                                .setTitle(R.string.done)
-//                                .setMessage(getString(R.string.there_are_frames_invalid_which_are,
-//                                        invalidFrames.size(),
-//                                        String.join(", ", invalidFrames)))
-//                                .setPositiveButton(R.string.ok, null)
-//                                .show();
-//                    }
-//                });
-//            }).start();
+            final GifEncoder gifEncoder = new GifEncoder();
+            final Bitmap ffblb = project.getFirstFrame().getBackgroundLayer().bitmap;
+            final int width = ffblb.getWidth(), height = ffblb.getHeight();
+            try {
+                gifEncoder.init(width, height, project.filePath);
+            } catch (FileNotFoundException e) {
+                return;
+            }
+            gifEncoder.setDither(project.gifDither);
+            final int size = project.frames.size();
+            final AlertDialog dialog = new MaterialAlertDialogBuilder(this)
+                    .setTitle(R.string.exporting)
+                    .setView(R.layout.progress_indicator)
+                    .setCancelable(false)
+                    .show();
+            final LinearProgressIndicator pi = dialog.findViewById(R.id.progress_indicator);
+            pi.setMax(size);
+            new Thread(() -> {
+                final List<String> invalidFrames = new LinkedList<>();
+                for (int i = 0; i < project.frames.size(); ++i) {
+                    final Frame f = project.frames.get(i);
+                    final Bitmap blb = f.getBackgroundLayer().bitmap;
+                    if (blb.getWidth() == width && blb.getHeight() == height
+                            && blb.getConfig() == Bitmap.Config.ARGB_8888) {
+                        final Bitmap merged = Layers.mergeLayers(f.layerTree);
+                        gifEncoder.encodeFrame(merged, f.delay);
+                        merged.recycle();
+                    } else {
+                        invalidFrames.add(String.valueOf(i));
+                    }
+                    final int progress = i + 1;
+                    runOnUiThread(() -> pi.setProgressCompat(progress, true));
+                }
+                gifEncoder.close();
+                MediaScannerConnection.scanFile(this, new String[]{file.toString()}, null, null);
+                runOnUiThread(() -> {
+                    dialog.dismiss();
+                    if (invalidFrames.isEmpty()) {
+                        Snackbar.make(vContent, R.string.done, Snackbar.LENGTH_SHORT).show();
+                    } else {
+                        new MaterialAlertDialogBuilder(this)
+                                .setTitle(R.string.done)
+                                .setMessage(getString(R.string.there_are_frames_invalid_which_are,
+                                        invalidFrames.size(),
+                                        String.join(", ", invalidFrames)))
+                                .setPositiveButton(R.string.ok, null)
+                                .show();
+                    }
+                });
+            }).start();
         }
 
     }
@@ -5350,7 +5392,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void saveInQuality() {
-        setQuality(project, project -> setQuality(project, p -> save()));
+        setQuality(project, project -> save());
     }
 
     private void scale(float sx, float sy) {
@@ -5435,7 +5477,9 @@ public class MainActivity extends AppCompatActivity {
 
         updateReference();
 
-        miHasAlpha.setChecked(bitmap.hasAlpha());
+        if (getResources().getConfiguration().orientation != Configuration.ORIENTATION_LANDSCAPE) {
+            miHasAlpha.setChecked(bitmap.hasAlpha());
+        }
 
         drawBitmapOntoView(true, true);
         drawChessboardOntoView();
@@ -5447,11 +5491,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void selectProject(int position) {
-        final TabLayout.Tab tabToBeSelected = tlProjectList.getTabAt(position);
-        if (position != tlProjectList.getSelectedTabPosition()) {
-            tabToBeSelected.select();
+        final TabLayout.Tab tab = tlProjectList.getTabAt(position);
+        if (tab.isSelected()) {
+            onProjItemSelectedListener.onTabSelected(tab);
         } else {
-            onProjItemSelectedListener.onTabSelected(tabToBeSelected);
+            tab.select();
         }
     }
 
@@ -5486,15 +5530,15 @@ public class MainActivity extends AppCompatActivity {
         switch (project.fileType) {
             case PNG -> callback.onApply(project);
             case GIF -> {
-//                new QualityManager(this,
-//                        layer.gifEncodingType == null ? GifEncoder.EncodingType.ENCODING_TYPE_NORMAL_LOW_MEMORY : layer.gifEncodingType,
-//                        layer.gifDither,
-//                        (encodingType, dither) -> {
-//                            layer.gifEncodingType = encodingType;
-//                            layer.gifDither = dither;
-//                            callback.run();
-//                        })
-//                        .show();
+                new QualityManager(this,
+                        project.gifEncodingType == null ? GifEncoder.EncodingType.ENCODING_TYPE_NORMAL_LOW_MEMORY : project.gifEncodingType,
+                        project.gifDither,
+                        (encodingType, dither) -> {
+                            project.gifEncodingType = encodingType;
+                            project.gifDither = dither;
+                            callback.onApply(project);
+                        })
+                        .show();
             }
             default -> {
                 new QualityManager(this,

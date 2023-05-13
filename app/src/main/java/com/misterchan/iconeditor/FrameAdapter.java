@@ -3,22 +3,16 @@ package com.misterchan.iconeditor;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.Typeface;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.content.res.AppCompatResources;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.view.OneShotPreDrawListener;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -30,7 +24,6 @@ class FrameAdapter extends ItemMovableAdapter<FrameAdapter.ViewHolder> {
 
     protected static class ViewHolder extends RecyclerView.ViewHolder {
         private final FrameLayout flThumbnail;
-        private final LinearLayout ll;
         private final RadioButton rb;
         private final TextView tvThumbnail;
         private final View itemView;
@@ -40,7 +33,6 @@ class FrameAdapter extends ItemMovableAdapter<FrameAdapter.ViewHolder> {
             this.itemView = itemView;
             flThumbnail = itemView.findViewById(R.id.fl_thumbnail);
             tvThumbnail = itemView.findViewById(R.id.tv_thumbnail);
-            ll = itemView.findViewById(R.id.ll);
             rb = itemView.findViewById(R.id.rb);
         }
     }
@@ -73,7 +65,7 @@ class FrameAdapter extends ItemMovableAdapter<FrameAdapter.ViewHolder> {
         return project.frames.size();
     }
 
-    public void notifyFrameSelected(int position, boolean selected) {
+    public void notifyFrameSelectedChanged(int position, boolean selected) {
         final ViewHolder holder = (ViewHolder) recyclerView.findViewHolderForAdapterPosition(position);
         if (holder == null) {
             return;
@@ -102,11 +94,19 @@ class FrameAdapter extends ItemMovableAdapter<FrameAdapter.ViewHolder> {
                 onItemReselectedListener.onItemSelected(v, position);
             }
         });
+        OneShotPreDrawListener.add(holder.flThumbnail, () -> {
+            final Bitmap background = frame.getBackgroundLayer().bitmap;
+            final LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) holder.flThumbnail.getLayoutParams();
+            final int w = background.getWidth(), h = background.getHeight();
+            lp.width = w >= h ? dim64Dip : dim64Dip * w / h;
+            lp.height = w >= h ? dim64Dip * h / w : dim64Dip;
+            holder.flThumbnail.setLayoutParams(lp);
+        });
         holder.rb.setOnCheckedChangeListener(null);
         holder.rb.setChecked(selected);
         holder.rb.setOnCheckedChangeListener((OnCBCheckedListener) buttonView ->
                 onItemSelectedListener.onItemSelected(holder.itemView, position));
-        holder.rb.setText(String.valueOf(position));
+        holder.rb.setText(context.getString(R.string.milliseconds, frame.delay));
         holder.tvThumbnail.setText(String.valueOf(position));
     }
 

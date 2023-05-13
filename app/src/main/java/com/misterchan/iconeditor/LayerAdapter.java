@@ -3,7 +3,6 @@ package com.misterchan.iconeditor;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Typeface;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,14 +23,12 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.misterchan.iconeditor.listener.OnCBCheckedListener;
 
-import java.util.ArrayList;
 import java.util.List;
 
 class LayerAdapter extends ItemMovableAdapter<LayerAdapter.ViewHolder> {
 
     protected static class ViewHolder extends RecyclerView.ViewHolder {
         private final CheckBox cbVisible;
-        private final ConstraintLayout cl;
         private final FrameLayout flThumbnail;
         private final ImageView ivThumbnail;
         private final LinearLayout llRoot, llParentBg, llFgLeaf;
@@ -44,7 +41,6 @@ class LayerAdapter extends ItemMovableAdapter<LayerAdapter.ViewHolder> {
             super(itemView);
             this.itemView = itemView;
             cbVisible = itemView.findViewById(R.id.cb_visible);
-            cl = itemView.findViewById(R.id.cl);
             flThumbnail = itemView.findViewById(R.id.fl_thumbnail);
             ivThumbnail = itemView.findViewById(R.id.iv_thumbnail);
             rb = itemView.findViewById(R.id.rb);
@@ -92,7 +88,10 @@ class LayerAdapter extends ItemMovableAdapter<LayerAdapter.ViewHolder> {
         return frame.layers.size();
     }
 
-    public void notifyLayerSelected(int position, boolean selected) {
+    public void notifyLayerSelectedChanged(int position, boolean selected) {
+        if (recyclerView == null) {
+            return;
+        }
         final ViewHolder holder = (ViewHolder) recyclerView.findViewHolderForAdapterPosition(position);
         if (holder == null) {
             return;
