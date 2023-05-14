@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Widget.App.ActionBar" parent="Widget.Material3.ActionBar.Solid">
-        <item name="elevation">0dp</item>
-    </style>
-
     <style name="Widget.App.ActionMode" parent="Widget.Material3.ActionMode">
         <item name="background">?attr/colorSurface</item>
     </style>

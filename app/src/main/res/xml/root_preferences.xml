@@ -6,9 +6,7 @@
             app:defaultValue="false"
             app:key="fl"
             app:singleLineTitle="false"
-            app:summaryOff="@string/hide_frame_list"
-            app:summaryOn="@string/show_frame_list"
-            app:title="@string/show_animation_film" />
+            app:title="@string/show_timeline" />
 
         <ListPreference
             app:defaultValue="top"

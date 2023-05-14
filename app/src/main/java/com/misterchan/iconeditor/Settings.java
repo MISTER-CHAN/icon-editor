@@ -14,14 +14,12 @@ public class Settings {
     static final String KEY_FB = "fb"; // Filter Bitmap
     static final String KEY_FL = "fl"; // Frame List
     static final String KEY_HMS = "hms"; // History Max Size
-    static final String KEY_ITS = "its"; // Independent Translation and Scale
     static final String KEY_LOC = "loc"; // Locale
     static final String KEY_MT = "mt"; // Multithreaded
     static final String KEY_NLL = "nll"; // New Layer Level
 
     private boolean argbColorType = false;
     private int historyMaxSize = 50;
-    private boolean indTranslAndScale = false;
     private boolean newLayerLevel = false;
     private int argbCompRadix = 16;
     public MainActivity mainActivity;
@@ -44,10 +42,6 @@ public class Settings {
 
     public int historyMaxSize() {
         return historyMaxSize;
-    }
-
-    public boolean indTranslAndScale() {
-        return indTranslAndScale;
     }
 
     public boolean newLayerLevel() {
@@ -86,7 +80,6 @@ public class Settings {
                     historyMaxSize = 50;
                 }
             }
-            case KEY_ITS -> indTranslAndScale = preferences.getBoolean(KEY_ITS, false);
             case KEY_MT -> mainActivity.setRunnableRunner(preferences.getBoolean(KEY_MT, true));
             case KEY_NLL -> newLayerLevel = "sel".equals(preferences.getString(KEY_NLL, "top"));
         }

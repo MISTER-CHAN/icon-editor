@@ -5,30 +5,36 @@
         android:id="@+id/i_undo"
         android:icon="@drawable/ic_undo"
         android:title="@string/undo"
+        app:iconTint="?attr/colorOnSurfaceVariant"
         app:showAsAction="always" />
     <item
         android:id="@+id/i_redo"
         android:icon="@drawable/ic_redo"
         android:title="@string/redo"
+        app:iconTint="?attr/colorOnSurfaceVariant"
         app:showAsAction="always" />
     <item
         android:icon="@drawable/ic_edit"
         android:title="@string/edit"
+        app:iconTint="?attr/colorOnSurfaceVariant"
         app:showAsAction="always">
         <menu>
             <group android:id="@+id/g_edit">
                 <item
                     android:id="@+id/i_cut"
                     android:icon="@drawable/ic_content_cut"
-                    android:title="@string/cut" />
+                    android:title="@string/cut"
+                    app:iconTint="?attr/colorOnSurfaceVariant" />
                 <item
                     android:id="@+id/i_copy"
                     android:icon="@drawable/ic_content_copy"
-                    android:title="@string/copy_verb" />
+                    android:title="@string/copy_verb"
+                    app:iconTint="?attr/colorOnSurfaceVariant" />
                 <item
                     android:id="@+id/i_paste"
                     android:icon="@drawable/ic_content_paste"
-                    android:title="@string/paste" />
+                    android:title="@string/paste"
+                    app:iconTint="?attr/colorOnSurfaceVariant" />
                 <item
                     android:id="@+id/i_clone"
                     android:icon="@drawable/ic_void"
@@ -39,22 +45,25 @@
                     android:title="@string/clone_as_new" />
                 <item
                     android:id="@+id/i_draw_color"
-                    android:icon="@drawable/ic_format_color_fill"
+                    android:icon="@drawable/ic_void"
                     android:title="@string/draw_color" />
                 <item
                     android:id="@+id/i_delete"
                     android:icon="@drawable/ic_delete"
-                    android:title="@string/delete" />
+                    android:title="@string/delete"
+                    app:iconTint="?attr/colorOnSurfaceVariant" />
             </group>
             <group android:id="@+id/g_select">
                 <item
                     android:id="@+id/i_select_all"
                     android:icon="@drawable/ic_select_all"
-                    android:title="@string/select_all" />
+                    android:title="@string/select_all"
+                    app:iconTint="?attr/colorOnSurfaceVariant" />
                 <item
                     android:id="@+id/i_deselect"
                     android:icon="@drawable/ic_deselect"
-                    android:title="@string/deselect" />
+                    android:title="@string/deselect"
+                    app:iconTint="?attr/colorOnSurfaceVariant" />
             </group>
         </menu>
     </item>
@@ -62,25 +71,30 @@
         android:id="@+id/i_layer_list"
         android:icon="@drawable/ic_layers"
         android:title="@string/layers"
+        app:iconTint="?attr/colorOnSurfaceVariant"
         app:showAsAction="always" />
     <item
         android:id="@+id/i_frame_list"
         android:icon="@drawable/ic_movie"
         android:title="@string/frames"
         android:visible="false"
+        app:iconTint="?attr/colorOnSurfaceVariant"
         app:showAsAction="always" />
     <item
         android:icon="@drawable/ic_more_vert"
         android:title="@string/more"
+        app:iconTint="?attr/colorOnSurfaceVariant"
         app:showAsAction="always">
         <menu>
             <item
                 android:id="@+id/i_save"
                 android:icon="@drawable/ic_save"
-                android:title="@string/save" />
+                android:title="@string/save"
+                app:iconTint="?attr/colorOnSurfaceVariant" />
             <item
                 android:icon="@drawable/ic_insert_drive_file"
-                android:title="@string/file">
+                android:title="@string/file"
+                app:iconTint="?attr/colorOnSurfaceVariant">
                 <menu>
                     <item
                         android:id="@+id/i_file_new"
@@ -89,7 +103,8 @@
                     <item
                         android:id="@+id/i_file_open"
                         android:icon="@drawable/ic_folder_open"
-                        android:title="@string/open" />
+                        android:title="@string/open"
+                        app:iconTint="?attr/colorOnSurfaceVariant" />
                     <item
                         android:id="@+id/i_file_open_from_clipboard"
                         android:icon="@drawable/ic_void"
@@ -97,11 +112,13 @@
                     <item
                         android:id="@+id/i_file_save"
                         android:icon="@drawable/ic_save"
-                        android:title="@string/save" />
+                        android:title="@string/save"
+                        app:iconTint="?attr/colorOnSurfaceVariant" />
                     <item
                         android:id="@+id/i_file_save_as"
                         android:icon="@drawable/ic_save_as"
-                        android:title="@string/save_as" />
+                        android:title="@string/save_as"
+                        app:iconTint="?attr/colorOnSurfaceVariant" />
                     <item
                         android:id="@+id/i_file_refer_to_clipboard"
                         android:icon="@drawable/ic_void"
@@ -113,28 +130,34 @@
                     <item
                         android:id="@+id/i_file_close"
                         android:icon="@drawable/ic_close"
-                        android:title="@string/close" />
+                        android:title="@string/close"
+                        app:iconTint="?attr/colorOnSurfaceVariant" />
                 </menu>
             </item>
             <item
                 android:icon="@drawable/ic_image"
-                android:title="@string/image">
+                android:title="@string/image"
+                app:iconTint="?attr/colorOnSurfaceVariant">
                 <menu>
                     <item
                         android:id="@+id/i_size"
                         android:icon="@drawable/ic_photo_size_select_large"
-                        android:title="@string/size" />
+                        android:title="@string/size"
+                        app:iconTint="?attr/colorOnSurfaceVariant" />
                     <item
                         android:id="@+id/i_crop"
                         android:icon="@drawable/ic_crop"
-                        android:title="@string/crop" />
+                        android:title="@string/crop"
+                        app:iconTint="?attr/colorOnSurfaceVariant" />
                     <item
                         android:icon="@drawable/ic_transform"
-                        android:title="@string/transform">
+                        android:title="@string/transform"
+                        app:iconTint="?attr/colorOnSurfaceVariant">
                         <menu>
                             <item
                                 android:icon="@drawable/ic_flip"
-                                android:title="@string/flip">
+                                android:title="@string/flip"
+                                app:iconTint="?attr/colorOnSurfaceVariant">
                                 <menu>
                                     <item
                                         android:id="@+id/i_flip_horizontally"
@@ -146,7 +169,8 @@
                             </item>
                             <item
                                 android:icon="@drawable/ic_rotate_90_degrees_ccw"
-                                android:title="@string/rotate">
+                                android:title="@string/rotate"
+                                app:iconTint="?attr/colorOnSurfaceVariant">
                                 <menu>
                                     <item
                                         android:id="@+id/i_rotate_90"
@@ -162,7 +186,8 @@
                             <item
                                 android:id="@+id/i_transform"
                                 android:icon="@drawable/ic_transform"
-                                android:title="@string/more" />
+                                android:title="@string/more"
+                                app:iconTint="?attr/colorOnSurfaceVariant" />
                         </menu>
                     </item>
                     <item
@@ -187,22 +212,26 @@
                     <item
                         android:id="@+id/i_information"
                         android:icon="@drawable/ic_info"
-                        android:title="@string/information" />
+                        android:title="@string/information"
+                        app:iconTint="?attr/colorOnSurfaceVariant" />
                 </menu>
             </item>
             <item
                 android:icon="@drawable/ic_filter"
-                android:title="@string/filters">
+                android:title="@string/filters"
+                app:iconTint="?attr/colorOnSurfaceVariant">
                 <menu>
                     <group android:id="@+id/g_filter_lighting">
                         <item
                             android:id="@+id/i_filter_lightness"
                             android:icon="@drawable/ic_brightness_5"
-                            android:title="@string/lightness" />
+                            android:title="@string/lightness"
+                            app:iconTint="?attr/colorOnSurfaceVariant" />
                         <item
                             android:id="@+id/i_filter_contrast"
                             android:icon="@drawable/ic_contrast"
-                            android:title="@string/contrast" />
+                            android:title="@string/contrast"
+                            app:iconTint="?attr/colorOnSurfaceVariant" />
                         <item
                             android:id="@+id/i_filter_levels"
                             android:icon="@drawable/ic_void"
@@ -224,7 +253,8 @@
                         <item
                             android:id="@+id/i_filter_color_balance"
                             android:icon="@drawable/ic_balance"
-                            android:title="@string/color_balance" />
+                            android:title="@string/color_balance"
+                            app:iconTint="?attr/colorOnSurfaceVariant" />
                         <item
                             android:id="@+id/i_filter_channel_lighting"
                             android:icon="@drawable/ic_void"
@@ -232,16 +262,19 @@
                         <item
                             android:id="@+id/i_filter_color_matrix"
                             android:icon="@drawable/ic_filter"
-                            android:title="@string/channel_mixer" />
+                            android:title="@string/channel_mixer"
+                            app:iconTint="?attr/colorOnSurfaceVariant" />
                     </group>
                     <group android:id="@+id/g_filter_more">
                         <item
                             android:id="@+id/i_filter_threshold"
                             android:icon="@drawable/ic_filter_b_and_w"
-                            android:title="@string/threshold" />
+                            android:title="@string/threshold"
+                            app:iconTint="?attr/colorOnSurfaceVariant" />
                         <item
                             android:icon="@drawable/ic_more_horiz"
-                            android:title="@string/more">
+                            android:title="@string/more"
+                            app:iconTint="?attr/colorOnSurfaceVariant">
                             <menu>
                                 <item
                                     android:id="@+id/i_filter_hue_to_alpha"
@@ -253,17 +286,20 @@
             </item>
             <item
                 android:icon="@drawable/ic_visibility"
-                android:title="@string/view">
+                android:title="@string/view"
+                app:iconTint="?attr/colorOnSurfaceVariant">
                 <menu>
                     <group android:id="@+id/g_view_scale">
                         <item
                             android:id="@+id/i_view_fit_on_screen"
                             android:icon="@drawable/ic_fit_screen"
-                            android:title="@string/fit_on_screen" />
+                            android:title="@string/fit_on_screen"
+                            app:iconTint="?attr/colorOnSurfaceVariant" />
                         <item
                             android:id="@+id/i_view_actual_pixels"
                             android:icon="@drawable/ic_photo_size_select_actual"
-                            android:title="@string/actual_pixels" />
+                            android:title="@string/actual_pixels"
+                            app:iconTint="?attr/colorOnSurfaceVariant" />
                     </group>
                     <group android:id="@+id/g_guide">
                         <item
@@ -279,14 +315,16 @@
                         <item
                             android:id="@+id/i_cell_grid"
                             android:icon="@drawable/ic_grid_on"
-                            android:title="@string/cell_grid" />
+                            android:title="@string/cell_grid"
+                            app:iconTint="?attr/colorOnSurfaceVariant" />
                     </group>
                 </menu>
             </item>
             <item
                 android:id="@+id/i_settings"
                 android:icon="@drawable/ic_settings"
-                android:title="@string/settings" />
+                android:title="@string/settings"
+                app:iconTint="?attr/colorOnSurfaceVariant" />
         </menu>
     </item>
 </menu>

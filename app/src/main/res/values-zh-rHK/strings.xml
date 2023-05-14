@@ -3,6 +3,7 @@
     <string name="about">關於</string>
     <string name="actual_pixels">實際像素</string>
     <string name="add">新增</string>
+    <string name="align">對齊</string>
     <string name="all_layers">全部圖層</string>
     <string name="anti_alias">抗鋸齒</string>
     <string name="app_name">Icon Editor</string>
@@ -18,10 +19,12 @@
     <string name="below_background">背景底下</string>
     <string name="blend_mode">混合模式</string>
     <string name="blur_radius">模糊半徑</string>
+    <string name="bold">粗體</string>
     <string name="bottom">底</string>
     <string name="bucket_fill">油漆桶</string>
     <string name="cancel">取消</string>
     <string name="cell_grid">網格</string>
+    <string name="center">中</string>
     <string name="channels">通道</string>
     <string name="channel_lighting">通道照明</string>
     <string name="channel_mixer">通道混合器</string>
@@ -69,6 +72,7 @@
     <string name="cut">剪下</string>
     <string name="dec">十進制</string>
     <string name="default_">缺省</string>
+    <string name="default_bold">缺省粗體</string>
     <string name="degrees_">角度：%f°</string>
     <string name="delay">延遲</string>
     <string name="delete">刪除</string>
@@ -120,7 +124,6 @@
     <string name="help">幫助</string>
     <string name="hex">十六進制</string>
     <string name="hidden_image">隱藏圖</string>
-    <string name="hide_frame_list">隱藏幀列表</string>
     <string name="highlights">重點</string>
     <string name="history_max_size">歷史記錄最大数量</string>
     <string name="homepage">主頁</string>
@@ -131,12 +134,11 @@
     <string name="image">圖像</string>
     <string name="image_is_invalid">圖像無效。</string>
     <string name="image_size">圖像尺寸</string>
-    <string name="independent_layer">獨立圖層</string>
-    <string name="independent_transl_and_scale">獨立各圖層之可見子集</string>
     <string name="information">資訊</string>
     <string name="input">輸入</string>
     <string name="integer">整數</string>
     <string name="invert">反相</string>
+    <string name="italic">斜體</string>
     <string name="language">語言</string>
     <string name="layer">圖層</string>
     <string name="layer_name">圖層名</string>
@@ -168,6 +170,7 @@
     <string name="merge_down">向下合併</string>
     <string name="merge_visible">合倂可見</string>
     <string name="min">最小</string>
+    <string name="monospace">等寬</string>
     <string name="more">更多</string>
     <string name="move_layer">移動圖層</string>
     <string name="new_">新建</string>
@@ -219,6 +222,7 @@
     <string name="rotate_around_g">繞 G 軸旋轉</string>
     <string name="rotate_around_b">繞 B 軸旋轉</string>
     <string name="ruler">間尺</string>
+    <string name="sans_serif">黑體</string>
     <string name="saturation">飽和度</string>
     <string name="save">儲存</string>
     <string name="save_as">另存爲</string>
@@ -230,13 +234,13 @@
     <string name="select_all">全選</string>
     <string name="selected_layers">選中圖層階層</string>
     <string name="send_to_back">置底</string>
+    <string name="serif"> 白體</string>
     <string name="set">設定</string>
     <string name="settings">設定</string>
     <string name="shadows">陰影</string>
     <string name="shape">形狀</string>
     <string name="shift">偏移</string>
-    <string name="show_animation_film">顯示動畫菲林</string>
-    <string name="show_frame_list">顯示幀列表</string>
+    <string name="show_timeline">顯示時間線</string>
     <string name="simple_fast">簡單快速</string>
     <string name="size">尺寸</string>
     <string name="soft_brush">軟筆</string>
@@ -265,7 +269,9 @@
     <string name="state_start_stop_">始：(%d, %d)，止：(%d, %d)，</string>
     <string name="state_threshold">閾値：%d</string>
     <string name="stretch">拉伸</string>
+    <string name="strike_thru">擊穿</string>
     <string name="stroke_width">筆劃寬度</string>
+    <string name="subpixel">子像素</string>
     <string name="swap">交換</string>
     <string name="swatch">顏色</string>
     <string name="synchronously_draw_image_and_ui">同步繪畫圖像與用戶介面</string>
@@ -282,8 +288,9 @@
     <string name="transform">變換</string>
     <string name="translate">平移</string>
     <string name="tutorial_merge_as_hidden">Tutorial</string>
+    <string name="typeface">字型</string>
+    <string name="underlined">底線</string>
     <string name="undo">撤回</string>
-    <string name="unified_transl_and_scale">統一各圖層之可見子集</string>
     <string name="unify_delays">統一延遲</string>
     <string name="untitled">無標題</string>
     <string name="version">版本（發布日期）</string>

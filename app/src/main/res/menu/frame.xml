@@ -1,15 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/i_frame_new"
         android:icon="@drawable/ic_void"
         android:title="@string/new_" />
     <item
         android:id="@+id/i_frame_duplicate"
+        app:iconTint="?attr/colorOnSurfaceVariant"
         android:icon="@drawable/ic_content_copy"
         android:title="@string/duplicate" />
     <item
         android:id="@+id/i_frame_delay"
+        app:iconTint="?attr/colorOnSurfaceVariant"
         android:icon="@drawable/ic_access_time"
         android:title="@string/delay" />
     <item
@@ -18,10 +21,12 @@
         android:title="@string/unify_delays" />
     <item
         android:id="@+id/i_frame_clip"
+        app:iconTint="?attr/colorOnSurfaceVariant"
         android:icon="@drawable/ic_content_cut"
         android:title="@string/clip" />
     <item
         android:id="@+id/i_frame_delete"
+        app:iconTint="?attr/colorOnSurfaceVariant"
         android:icon="@drawable/ic_delete"
         android:title="@string/delete" />
 </menu>

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
     <group android:id="@+id/layer_edit">
         <item
             android:id="@+id/i_layer_new"
@@ -8,7 +9,8 @@
         <item
             android:id="@+id/i_layer_duplicate"
             android:icon="@drawable/ic_content_copy"
-            android:title="@string/duplicate" />
+            android:title="@string/duplicate"
+            app:iconTint="?attr/colorOnSurfaceVariant" />
         <item
             android:id="@+id/i_layer_duplicate_by_color_range"
             android:icon="@drawable/ic_void"
@@ -16,11 +18,13 @@
         <item
             android:id="@+id/i_layer_rename"
             android:icon="@drawable/ic_drive_file_rename_outline"
-            android:title="@string/rename" />
+            android:title="@string/rename"
+            app:iconTint="?attr/colorOnSurfaceVariant" />
         <item
             android:id="@+id/i_layer_delete"
             android:icon="@drawable/ic_delete"
-            android:title="@string/delete" />
+            android:title="@string/delete"
+            app:iconTint="?attr/colorOnSurfaceVariant" />
         <item
             android:id="@+id/i_layer_delete_invisible"
             android:icon="@drawable/ic_void"
@@ -30,7 +34,8 @@
         <item
             android:id="@+id/i_layer_merge_down"
             android:icon="@drawable/ic_arrow_downward"
-            android:title="@string/merge_down" />
+            android:title="@string/merge_down"
+            app:iconTint="?attr/colorOnSurfaceVariant" />
         <item
             android:id="@+id/i_layer_merge_visible"
             android:icon="@drawable/ic_void"
@@ -52,7 +57,8 @@
         <item
             android:id="@+id/i_layer_alpha"
             android:icon="@drawable/ic_opacity"
-            android:title="@string/alpha" />
+            android:title="@string/alpha"
+            app:iconTint="?attr/colorOnSurfaceVariant" />
         <item
             android:id="@+id/i_blend_mode"
             android:icon="@drawable/ic_void"
@@ -193,7 +199,8 @@
         </item>
         <item
             android:icon="@drawable/ic_filter"
-            android:title="@string/filters">
+            android:title="@string/filters"
+            app:iconTint="?attr/colorOnSurfaceVariant">
             <menu>
                 <group android:id="@+id/g_layer_filters">
                     <item
@@ -223,11 +230,13 @@
                 <item
                     android:id="@+id/i_layer_level_up"
                     android:icon="@drawable/ic_arrow_upward"
-                    android:title="@string/level_up" />
+                    android:title="@string/level_up"
+                    app:iconTint="?attr/colorOnSurfaceVariant" />
                 <item
                     android:id="@+id/i_layer_level_down"
                     android:icon="@drawable/ic_arrow_downward"
-                    android:title="@string/level_down" />
+                    android:title="@string/level_down"
+                    app:iconTint="?attr/colorOnSurfaceVariant" />
                 <item
                     android:id="@+id/i_layer_add_layer_mask"
                     android:icon="@drawable/ic_void"
@@ -239,7 +248,8 @@
                 <item
                     android:id="@+id/i_layer_create_group"
                     android:icon="@drawable/ic_create_new_folder"
-                    android:title="@string/fast_create_group" />
+                    android:title="@string/fast_create_group"
+                    app:iconTint="?attr/colorOnSurfaceVariant" />
             </menu>
         </item>
         <item

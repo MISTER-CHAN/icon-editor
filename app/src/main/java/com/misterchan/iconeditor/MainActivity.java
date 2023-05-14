@@ -26,6 +26,7 @@ import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Shader;
+import android.graphics.Typeface;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Bundle;
@@ -33,7 +34,6 @@ import android.os.Environment;
 import android.os.Looper;
 import android.os.MessageQueue;
 import android.text.Editable;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -276,6 +276,8 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private ActionMode softStrokesActionMode;
+    private ActionMode textActionMode;
     private ActionMode transformerActionMode;
     private Bitmap bitmap;
     private Bitmap refBm;
@@ -361,6 +363,7 @@ public class MainActivity extends AppCompatActivity {
     private List<Project> projects;
     private MaterialButtonToggleGroup btgEyedropperSrc;
     private MaterialButtonToggleGroup btgMagicEraserSides;
+    private MaterialButtonToggleGroup btgPathWtd; // What to draw
     private MaterialButtonToggleGroup btgTools;
     private MaterialButtonToggleGroup btgZoom;
     private MaterialToolbar topAppBar;
@@ -528,10 +531,105 @@ public class MainActivity extends AppCompatActivity {
         drawTextOntoView();
     };
 
+    private final ActionMode.Callback onSoftStrokesActionModeCallback = new ActionMode.Callback() {
+        @Override
+        public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+            getMenuInflater().inflate(R.menu.action_mode_soft_strokes, menu);
+            menu.setGroupDividerEnabled(true);
+            return true;
+        }
+
+        @Override
+        public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+            return false;
+        }
+
+        @Override
+        public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+            return onSoftStrokesActionItemClicked(mode, item);
+        }
+
+        @Override
+        public void onDestroyActionMode(ActionMode mode) {
+            if (isWritingSoftStrokes) {
+                isWritingSoftStrokes = false;
+                eraseBitmapAndInvalidateView(previewBitmap, ivPreview);
+            }
+        }
+    };
+
+    private final ActionMode.Callback onTextActionModeCallback = new ActionMode.Callback() {
+        private MenuItem miAlignLeft, miAlignCenter, miAlignRight;
+
+        @Override
+        public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+            getMenuInflater().inflate(R.menu.action_mode_text, menu);
+            menu.setGroupDividerEnabled(true);
+
+            final MenuItem miTypefaceBold = menu.findItem(R.id.i_typeface_bold);
+            final MenuItem miTypefaceItalic = menu.findItem(R.id.i_typeface_italic);
+            final MenuItem miUnderlined = menu.findItem(R.id.i_underlined);
+            final MenuItem miStrikeThru = menu.findItem(R.id.i_strike_thru);
+            miAlignLeft = menu.findItem(R.id.i_align_left);
+            miAlignCenter = menu.findItem(R.id.i_align_center);
+            miAlignRight = menu.findItem(R.id.i_align_right);
+            final Typeface typeface = paint.getTypeface();
+            final Paint.Align align = paint.getTextAlign();
+
+            miTypefaceBold.setChecked(typeface != null && typeface.isBold());
+            miTypefaceItalic.setChecked(typeface != null && typeface.isItalic());
+            miUnderlined.setChecked(paint.isUnderlineText());
+            miStrikeThru.setChecked(paint.isStrikeThruText());
+            miAlignLeft.setChecked(align == Paint.Align.LEFT);
+            miAlignCenter.setChecked(align == Paint.Align.CENTER);
+            miAlignRight.setChecked(align == Paint.Align.RIGHT);
+            return true;
+        }
+
+        @Override
+        public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+            return false;
+        }
+
+        @SuppressLint("NonConstantResourceId")
+        @Override
+        public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+            switch (item.getItemId()) {
+                default -> {
+                    return onTextActionItemClicked(mode, item);
+                }
+                case R.id.i_align_left -> setAlign(item, Paint.Align.LEFT);
+                case R.id.i_align_center -> setAlign(item, Paint.Align.CENTER);
+                case R.id.i_align_right -> setAlign(item, Paint.Align.RIGHT);
+            }
+            return true;
+        }
+
+        @Override
+        public void onDestroyActionMode(ActionMode mode) {
+            if (isEditingText) {
+                isEditingText = false;
+                paint.setTextSize(textSize);
+                eraseBitmapAndInvalidateView(previewBitmap, ivPreview);
+                hideSoftInputFromWindow();
+                llOptionsText.setVisibility(View.INVISIBLE);
+            }
+        }
+
+        private void setAlign(MenuItem item, Paint.Align align) {
+            miAlignLeft.setChecked(item == miAlignLeft);
+            miAlignCenter.setChecked(item == miAlignCenter);
+            miAlignRight.setChecked(item == miAlignRight);
+            paint.setTextAlign(align);
+            drawTextOntoView();
+        }
+    };
+
     private final ActionMode.Callback onTransformerActionModeCallback = new ActionMode.Callback() {
         @Override
         public boolean onCreateActionMode(ActionMode mode, Menu menu) {
             getMenuInflater().inflate(R.menu.action_mode_transformer, menu);
+            menu.setGroupDividerEnabled(true);
             return true;
         }
 
@@ -996,6 +1094,8 @@ public class MainActivity extends AppCompatActivity {
             translationX = project.translationX;
             translationY = project.translationY;
             scale = project.scale;
+
+            hasSelection = false;
 
             selectFrame(project.selectedFrameIndex);
         }
@@ -1782,6 +1882,7 @@ public class MainActivity extends AppCompatActivity {
     private final View.OnTouchListener onTouchIVWithPathListener = new View.OnTouchListener() {
         private Path path, previewPath;
 
+        @SuppressLint("NonConstantResourceId")
         @Override
         public boolean onTouch(View v, MotionEvent event) {
             switch (event.getAction()) {
@@ -1805,12 +1906,17 @@ public class MainActivity extends AppCompatActivity {
                     tvStatus.setText(getString(R.string.coordinates, bx, by));
                 }
                 case MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                    canvas.drawPath(path, paint);
+                    switch (btgPathWtd.getCheckedButtonId()) {
+                        case R.id.b_path_path -> canvas.drawPath(path, paint);
+                        case R.id.b_path_text ->
+                                canvas.drawTextOnPath(tietText.getText().toString(), path, 0.0f, 0.0f, paint);
+                    }
                     final RectF bounds = new RectF();
                     path.computeBounds(bounds, false);
                     drawBitmapOntoView((int) Math.floor(bounds.left), (int) Math.floor(bounds.top),
                             (int) Math.ceil(bounds.right), (int) Math.ceil(bounds.bottom),
-                            strokeWidth / 2.0f + blurRadius);
+                            strokeWidth / 2.0f + blurRadius
+                                    + (btgPathWtd.getCheckedButtonId() == R.id.b_path_text ? textSize : 0));
                     eraseBitmapAndInvalidateView(previewBitmap, ivPreview);
                     addToHistory();
                     clearStatus();
@@ -1964,6 +2070,8 @@ public class MainActivity extends AppCompatActivity {
                         llOptionsText.setVisibility(View.VISIBLE);
                         isEditingText = true;
                         drawTextOntoView();
+                        textActionMode = startSupportActionMode(onTextActionModeCallback);
+                        textActionMode.setTitle(R.string.text);
                         dx = toViewX(0);
                         dy = toViewY(0);
                     }
@@ -2173,7 +2281,11 @@ public class MainActivity extends AppCompatActivity {
                     final float x = event.getX(), y = event.getY();
                     final float rad = strokeWidth / 2.0f + blurRadius;
                     if (hasSelection) {
-                        isWritingSoftStrokes = true;
+                        if (!isWritingSoftStrokes) {
+                            isWritingSoftStrokes = true;
+                            softStrokesActionMode = startSupportActionMode(onSoftStrokesActionModeCallback);
+                            softStrokesActionMode.setTitle(R.string.soft_brush);
+                        }
                         final float scale = Math.max(
                                 (float) viewWidth / (float) selection.width(),
                                 (float) viewHeight / (float) selection.height());
@@ -2506,7 +2618,7 @@ public class MainActivity extends AppCompatActivity {
                             final float deltaX = x - dx, deltaY = y - dy;
                             translationX += deltaX;
                             translationY += deltaY;
-                            drawAfterTranslatingOrScaling(true);
+                            drawAfterTransformingView(true);
                             dx = x;
                             dy = y;
                         }
@@ -2525,10 +2637,10 @@ public class MainActivity extends AppCompatActivity {
                             final double diagonalRatio = diagonal / lastDiagonal;
                             scale = (float) (scale * diagonalRatio);
                             calculateBackgroundSizeOnView();
-                            final float pivotX = (float) (lastPivotX * diagonalRatio), pivotY = (float) (lastPivotY * diagonalRatio);
-                            translationX = translationX - pivotX + lastPivotX;
-                            translationY = translationY - pivotY + lastPivotY;
-                            drawAfterTranslatingOrScaling(true);
+                            final float pivotX = (x0 + x1) / 2.0f, pivotY = (y0 + y1) / 2.0f;
+                            translationX = (float) (pivotX - (lastPivotX - translationX) * diagonalRatio);
+                            translationY = (float) (pivotY - (lastPivotY - translationY) * diagonalRatio);
+                            drawAfterTransformingView(true);
                             lastPivotX = pivotX;
                             lastPivotY = pivotY;
                             lastDiagonal = diagonal;
@@ -2536,8 +2648,8 @@ public class MainActivity extends AppCompatActivity {
                         case MotionEvent.ACTION_POINTER_DOWN -> {
                             final float x0 = event.getX(0), y0 = event.getY(0),
                                     x1 = event.getX(1), y1 = event.getY(1);
-                            lastPivotX = (x0 + x1) / 2.0f - translationX;
-                            lastPivotY = (y0 + y1) / 2.0f - translationY;
+                            lastPivotX = (x0 + x1) / 2.0f;
+                            lastPivotY = (y0 + y1) / 2.0f;
                             lastDiagonal = Math.hypot(x0 - x1, y0 - y1);
                             clearStatus();
                         }
@@ -2856,7 +2968,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void calculateBackgroundSizeOnView() {
-        final Bitmap background = frame.layers.get(frame.layers.size() - 1).bitmap;
+        final Bitmap background = frame.getBackgroundLayer().bitmap;
         backgroundScaledW = toScaled(background.getWidth());
         backgroundScaledH = toScaled(background.getHeight());
     }
@@ -2995,12 +3107,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void createTransformer() {
-        transformer = new Transformer(
-                Bitmap.createBitmap(bitmap,
-                        selection.left, selection.top, selection.width(), selection.height()),
-                selection);
-        canvas.drawRect(selection.left, selection.top, selection.right, selection.bottom,
-                eraser);
+        final Bitmap bm = Bitmap.createBitmap(bitmap, selection.left, selection.top, selection.width(), selection.height());
+        canvas.drawRect(selection.left, selection.top, selection.right, selection.bottom, eraser);
+        createTransformer(bm);
+    }
+
+    private void createTransformer(Bitmap bitmap) {
+        transformer = new Transformer(bitmap, selection);
         transformerActionMode = startSupportActionMode(onTransformerActionModeCallback);
         transformerActionMode.setTitle(R.string.transform);
     }
@@ -3019,7 +3132,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void deleteLayer(Frame frame, int position) {
         final Layer layer = frame.layers.get(position);
-        if (layer == this.layer && transformer != null) {
+        if (layer == this.layer) {
             recycleTransformer();
         }
         layer.bitmap.recycle();
@@ -3068,7 +3181,7 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-    private void drawAfterTranslatingOrScaling(boolean doNotMerge) {
+    private void drawAfterTransformingView(boolean doNotMerge) {
         if (doNotMerge) {
             drawBitmapLastOntoView(false);
         } else {
@@ -3169,8 +3282,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private final Runnable mergeLayersEntireRunner = () -> {
-        final Layer background = frame.layers.get(frame.layers.size() - 1);
-        final Rect vs = new Rect(0, 0, background.bitmap.getWidth(), background.bitmap.getHeight());
+        final Bitmap background = frame.getBackgroundLayer().bitmap;
+        final Rect vs = new Rect(0, 0, background.getWidth(), background.getHeight());
 
         Layer extraLayer = null;
         if (transformer != null) {
@@ -3195,7 +3308,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void drawBitmapLastOntoView() {
-        final Bitmap background = layer.bitmap;
+        final Bitmap background = frame.getBackgroundLayer().bitmap;
         final Rect vs = getVisibleSubset(translationX, translationY,
                 background.getWidth(), background.getHeight());
 
@@ -3210,8 +3323,8 @@ public class MainActivity extends AppCompatActivity {
 
     private void drawBitmapSubsetOntoView(final Bitmap bitmap,
                                           int left, int top, int right, int bottom) {
-        final Layer background = frame.layers.get(frame.layers.size() - 1);
-        final int width = background.bitmap.getWidth(), height = background.bitmap.getHeight();
+        final Bitmap background = frame.getBackgroundLayer().bitmap;
+        final int width = background.getWidth(), height = background.getHeight();
         left = Math.max(left, 0);
         top = Math.max(top, 0);
         right = Math.min(right, width);
@@ -3251,8 +3364,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void drawBitmapVisibleOntoView(final Bitmap bitmap, final boolean eraseVisible) {
-        final Layer background = frame.layers.get(frame.layers.size() - 1);
-        final Rect vs = getVisibleSubset(translationX, translationY, background.bitmap.getWidth(), background.bitmap.getHeight());
+        final Bitmap background = frame.getBackgroundLayer().bitmap;
+        final Rect vs = getVisibleSubset(translationX, translationY, background.getWidth(), background.getHeight());
         if (vs.isEmpty()) {
             runOnUiThread(() -> {
                 eraseBitmap(viewBitmap);
@@ -3545,6 +3658,10 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
         isWritingSoftStrokes = false;
+        if (softStrokesActionMode != null) {
+            softStrokesActionMode.finish();
+            softStrokesActionMode = null;
+        }
         final Rect src = new Rect(0, 0, viewWidth, viewHeight);
         final RectF dst = new RectF();
         final float width = selection.width(), height = selection.height();
@@ -3579,6 +3696,10 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
         isEditingText = false;
+        if (textActionMode != null) {
+            textActionMode.finish();
+            textActionMode = null;
+        }
         paint.setTextSize(textSize);
         canvas.drawText(tietText.getText().toString(), textX, textY, paint);
         drawBitmapOntoView(true, true);
@@ -3865,6 +3986,7 @@ public class MainActivity extends AppCompatActivity {
         final Button bRuler = findViewById(R.id.b_ruler);
         btgEyedropperSrc = findViewById(R.id.btg_eyedropper_src);
         btgMagicEraserSides = findViewById(R.id.btg_magic_eraser_sides);
+        btgPathWtd = findViewById(R.id.btg_path_wtd);
         btgTools = findViewById(R.id.btg_tools);
         btgZoom = findViewById(R.id.btg_zoom);
         cbBucketFillContiguous = findViewById(R.id.cb_bucket_fill_contiguous);
@@ -4032,7 +4154,8 @@ public class MainActivity extends AppCompatActivity {
         });
 
         cbTextFill.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            paint.setStyle(isChecked ? Paint.Style.FILL_AND_STROKE : Paint.Style.STROKE);
+            style = isChecked ? Paint.Style.FILL_AND_STROKE : Paint.Style.STROKE;
+            paint.setStyle(style);
             drawTextOntoView();
         });
 
@@ -4155,7 +4278,7 @@ public class MainActivity extends AppCompatActivity {
                     final Bitmap bm = hasSelection
                             ? Bitmap.createBitmap(bitmap, selection.left, selection.top, selection.width(), selection.height())
                             : Bitmap.createBitmap(bitmap);
-                    transformer = new Transformer(bm, selection);
+                    createTransformer(bm);
                     btgTools.check(R.id.b_transformer);
                     drawSelectionOntoView();
                 } else {
@@ -4541,7 +4664,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 selection.right = selection.left + clipboard.getWidth();
                 selection.bottom = selection.top + clipboard.getHeight();
-                transformer = new Transformer(Bitmap.createBitmap(clipboard), selection);
+                createTransformer(Bitmap.createBitmap(clipboard));
                 btgTools.check(R.id.b_transformer);
                 drawBitmapOntoView(selection);
                 drawSelectionOntoView();
@@ -4607,7 +4730,7 @@ public class MainActivity extends AppCompatActivity {
                 translationY = project.translationY = 0.0f;
                 scale = project.scale = 1.0f;
                 calculateBackgroundSizeOnView();
-                drawAfterTranslatingOrScaling(false);
+                drawAfterTransformingView(false);
             }
             case R.id.i_view_fit_on_screen -> {
                 fitOnScreen();
@@ -4615,7 +4738,7 @@ public class MainActivity extends AppCompatActivity {
                 translationY = project.translationY;
                 scale = project.scale;
                 calculateBackgroundSizeOnView();
-                drawAfterTranslatingOrScaling(false);
+                drawAfterTransformingView(false);
             }
         }
         return true;
@@ -4896,6 +5019,9 @@ public class MainActivity extends AppCompatActivity {
                 if (j >= projects.size()) {
                     break;
                 }
+                if (ssdLayerList != null) {
+                    ssdLayerList.dismiss();
+                }
                 drawFloatingLayersIntoImage();
                 HiddenImageMaker.merge(this,
                         new Bitmap[]{bitmap, projects.get(j).getFirstFrame().getBackgroundLayer().bitmap},
@@ -4995,6 +5121,83 @@ public class MainActivity extends AppCompatActivity {
         if (toolOption != null) {
             toolOption.setVisibility(View.VISIBLE);
         }
+    }
+
+    @SuppressLint("NonConstantResourceId")
+    private boolean onSoftStrokesActionItemClicked(ActionMode mode, MenuItem item) {
+        switch (item.getItemId()) {
+            default -> {
+                return false;
+            }
+            case R.id.i_ok -> tbSoftBrush.setChecked(false);
+        }
+        return true;
+    }
+
+    @SuppressLint({"NonConstantResourceId", "WrongConstant"})
+    private boolean onTextActionItemClicked(ActionMode mode, MenuItem item) {
+        switch (item.getItemId()) {
+            default -> {
+                return false;
+            }
+            case R.id.i_typeface_default -> {
+                paint.setTypeface(Typeface.create(Typeface.DEFAULT,
+                        paint.getTypeface() != null ? paint.getTypeface().getStyle() : Typeface.NORMAL));
+                drawTextOntoView();
+            }
+            case R.id.i_typeface_default_bold -> {
+                paint.setTypeface(Typeface.create(Typeface.DEFAULT_BOLD,
+                        paint.getTypeface() != null ? paint.getTypeface().getStyle() : Typeface.NORMAL));
+                drawTextOntoView();
+            }
+            case R.id.i_typeface_sans_serif -> {
+                paint.setTypeface(Typeface.create(Typeface.SANS_SERIF,
+                        paint.getTypeface() != null ? paint.getTypeface().getStyle() : Typeface.NORMAL));
+                drawTextOntoView();
+            }
+            case R.id.i_typeface_serif -> {
+                paint.setTypeface(Typeface.create(Typeface.SERIF,
+                        paint.getTypeface() != null ? paint.getTypeface().getStyle() : Typeface.NORMAL));
+                drawTextOntoView();
+            }
+            case R.id.i_typeface_monospace -> {
+                paint.setTypeface(Typeface.create(Typeface.MONOSPACE,
+                        paint.getTypeface() != null ? paint.getTypeface().getStyle() : Typeface.NORMAL));
+                drawTextOntoView();
+            }
+            case R.id.i_typeface_bold -> {
+                final boolean checked = !item.isChecked();
+                item.setChecked(checked);
+                final Typeface typeface = paint.getTypeface() != null ? paint.getTypeface() : Typeface.DEFAULT;
+                final int oldStyle = typeface.getStyle();
+                final int newStyle = checked ? oldStyle | Typeface.BOLD : oldStyle & ~Typeface.BOLD;
+                paint.setTypeface(Typeface.create(typeface, newStyle));
+                drawTextOntoView();
+            }
+            case R.id.i_typeface_italic -> {
+                final boolean checked = !item.isChecked();
+                item.setChecked(checked);
+                final Typeface typeface = paint.getTypeface() != null ? paint.getTypeface() : Typeface.DEFAULT;
+                final int oldStyle = typeface.getStyle();
+                final int style = checked ? oldStyle | Typeface.ITALIC : oldStyle & ~Typeface.ITALIC;
+                paint.setTypeface(Typeface.create(typeface, style));
+                drawTextOntoView();
+            }
+            case R.id.i_underlined -> {
+                final boolean checked = !item.isChecked();
+                item.setChecked(checked);
+                paint.setUnderlineText(checked);
+                drawTextOntoView();
+            }
+            case R.id.i_strike_thru -> {
+                final boolean checked = !item.isChecked();
+                item.setChecked(checked);
+                paint.setStrikeThruText(checked);
+                drawTextOntoView();
+            }
+            case R.id.i_ok -> drawTextIntoImage();
+        }
+        return true;
     }
 
     @SuppressLint("NonConstantResourceId")
@@ -5172,6 +5375,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void recycleTransformer() {
+        if (transformer == null) {
+            return;
+        }
         transformer.recycle();
         transformer = null;
         if (transformerActionMode != null) {
@@ -5218,9 +5424,7 @@ public class MainActivity extends AppCompatActivity {
             canvas = cv;
             calculateBackgroundSizeOnView();
 
-            if (transformer != null) {
-                recycleTransformer();
-            }
+            recycleTransformer();
             hasSelection = false;
 
             if (btgTools.getCheckedButtonId() == R.id.b_soft_brush) {
@@ -5438,8 +5642,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void selectFrame(Project project, int position) {
-        drawFloatingLayersIntoImage();
-
         frame = project.frames.get(position);
         project.selectedFrameIndex = position;
         rvLayerList.setAdapter(frame.layerAdapter);
@@ -5459,9 +5661,8 @@ public class MainActivity extends AppCompatActivity {
 
         calculateBackgroundSizeOnView();
 
-        if (transformer != null) {
-            recycleTransformer();
-        }
+        recycleTransformer();
+        optimizeSelection();
 
         switch (btgTools.getCheckedButtonId()) {
             case R.id.b_clone_stamp -> {
@@ -5524,6 +5725,8 @@ public class MainActivity extends AppCompatActivity {
 
     void setFrameListMenuItemVisible(boolean visible) {
         miFrameList.setVisible(visible);
+        topAppBar.setTitle(!visible || getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE
+                ? R.string.app_name : R.string.app_name_abbrev);
     }
 
     private void setQuality(Project project, DirectorySelector.OnApplyFileNameCallback callback) {
@@ -5688,9 +5891,7 @@ public class MainActivity extends AppCompatActivity {
 
         calculateBackgroundSizeOnView();
 
-        if (transformer != null) {
-            recycleTransformer();
-        }
+        recycleTransformer();
 
         miHasAlpha.setChecked(this.bitmap.hasAlpha());
 

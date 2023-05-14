@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:icon="@drawable/ic_format_bold"
+        android:title="@string/typeface"
+        app:iconTint="?attr/colorOnSurfaceVariant"
+        app:showAsAction="always">
+        <menu>
+            <group android:id="@+id/g_family_name">
+                <item
+                    android:id="@+id/i_typeface_default"
+                    android:icon="@drawable/ic_void"
+                    android:title="@string/default_" />
+                <item
+                    android:id="@+id/i_typeface_default_bold"
+                    android:icon="@drawable/ic_void"
+                    android:title="@string/default_bold" />
+                <item
+                    android:id="@+id/i_typeface_sans_serif"
+                    android:icon="@drawable/ic_void"
+                    android:title="@string/sans_serif" />
+                <item
+                    android:id="@+id/i_typeface_serif"
+                    android:icon="@drawable/ic_void"
+                    android:title="@string/serif" />
+                <item
+                    android:id="@+id/i_typeface_monospace"
+                    android:icon="@drawable/ic_void"
+                    android:title="@string/monospace" />
+            </group>
+            <group android:id="@+id/g_style">
+                <item
+                    android:id="@+id/i_typeface_bold"
+                    android:checkable="true"
+                    android:icon="@drawable/ic_format_bold"
+                    android:title="@string/bold"
+                    app:iconTint="?attr/colorOnSurfaceVariant" />
+                <item
+                    android:id="@+id/i_typeface_italic"
+                    android:checkable="true"
+                    android:icon="@drawable/ic_format_italic"
+                    android:title="@string/italic"
+                    app:iconTint="?attr/colorOnSurfaceVariant" />
+                <item
+                    android:id="@+id/i_underlined"
+                    android:checkable="true"
+                    android:icon="@drawable/ic_format_underlined"
+                    android:title="@string/underlined"
+                    app:iconTint="?attr/colorOnSurfaceVariant" />
+                <item
+                    android:id="@+id/i_strike_thru"
+                    android:checkable="true"
+                    android:icon="@drawable/ic_format_strikethrough"
+                    android:title="@string/strike_thru"
+                    app:iconTint="?attr/colorOnSurfaceVariant" />
+            </group>
+        </menu>
+    </item>
+    <item
+        android:icon="@drawable/ic_format_align_left"
+        android:title="@string/align"
+        app:iconTint="?attr/colorOnSurfaceVariant"
+        app:showAsAction="always">
+        <menu>
+            <item
+                android:id="@+id/i_align_left"
+                android:checkable="true"
+                android:icon="@drawable/ic_format_align_left"
+                android:title="@string/left"
+                app:iconTint="?attr/colorOnSurfaceVariant" />
+            <item
+                android:id="@+id/i_align_center"
+                android:checkable="true"
+                android:icon="@drawable/ic_format_align_center"
+                android:title="@string/center"
+                app:iconTint="?attr/colorOnSurfaceVariant" />
+            <item
+                android:id="@+id/i_align_right"
+                android:checkable="true"
+                android:icon="@drawable/ic_format_align_right"
+                android:title="@string/right"
+                app:iconTint="?attr/colorOnSurfaceVariant" />
+        </menu>
+    </item>
+    <item
+        android:id="@+id/i_ok"
+        android:icon="@drawable/ic_done"
+        android:title="@string/ok"
+        app:iconTint="?attr/colorOnSurfaceVariant"
+        app:showAsAction="always" />
+</menu>
