@@ -24,7 +24,6 @@ public class Layer {
     public boolean visible = true;
     public Bitmap bitmap;
     public final CellGrid cellGrid = new CellGrid();
-    private CheckBox cbVisible;
     public final Deque<Guide> guides = new LinkedList<>();
     public Filter filter;
     public final History history = new History();
