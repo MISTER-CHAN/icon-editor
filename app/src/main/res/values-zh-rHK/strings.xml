@@ -81,7 +81,7 @@
     <string name="dither">混色</string>
     <string name="done">已完成</string>
     <string name="draw">繪畫</string>
-    <string name="draw_below">畫底下圖層</string>
+    <string name="draw_alpha_inv">畫反轉 Alpha</string>
     <string name="draw_color">畫顏色</string>
     <string name="draw_on_not_ui_thread">繪畫於非用戶介面線程</string>
     <string name="duplicate">複製</string>
@@ -96,12 +96,14 @@
     <string name="eyedropper">滴管</string>
     <string name="failed">失敗</string>
     <string name="fast">快速</string>
+    <string name="fast_add_filter_layer_with_mask">快速新增帶遮罩之濾鏡圖層</string>
     <string name="fast_add_layer_mask">快速新增圖層遮罩</string>
     <string name="fast_create_clipping_mask">快速建立剪裁遮罩</string>
     <string name="fast_create_group">快速建立組</string>
     <string name="file">檔案</string>
     <string name="file_name">檔案名</string>
     <string name="fill">塡充</string>
+    <string name="filter_layer">濾鏡圖層</string>
     <string name="filter_noun">濾鏡</string>
     <string name="filter_verb">過濾</string>
     <string name="filter_displayed_image_after_zooming_out">過濾縮小後顯示之圖像</string>

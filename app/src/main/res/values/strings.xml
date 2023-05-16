@@ -90,7 +90,7 @@
     <string name="dither">Dither</string>
     <string name="done">Done</string>
     <string name="draw">Draw</string>
-    <string name="draw_below">Draw Layers below</string>
+    <string name="draw_alpha_inv">Draw Alpha Inverted</string>
     <string name="draw_color">Draw Color</string>
     <string name="draw_on_not_ui_thread">Draw on Not U.I. Thread</string>
     <string name="duplicate">Duplicate</string>
@@ -105,12 +105,14 @@
     <string name="eyedropper">Eyedropper</string>
     <string name="failed">Failed</string>
     <string name="fast">Fast</string>
+    <string name="fast_add_filter_layer_with_mask">Fast Add a Filter Layer with Mask</string>
     <string name="fast_add_layer_mask">Fast Add a Layer Mask</string>
     <string name="fast_create_clipping_mask">Fast Create a Clipping Mask</string>
     <string name="fast_create_group">Fast Create a Group</string>
     <string name="file">File</string>
     <string name="file_name">File name</string>
     <string name="fill">Fill</string>
+    <string name="filter_layer">Filter Layer</string>
     <string name="filter_noun">Filter</string>
     <string name="filter_verb">Filter</string>
     <string name="filter_displayed_image_after_zooming_out">Filter the displayed image after zooming out</string>

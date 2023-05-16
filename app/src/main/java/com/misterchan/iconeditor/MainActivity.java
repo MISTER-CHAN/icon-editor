@@ -33,8 +33,6 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Looper;
 import android.os.MessageQueue;
-import android.text.Editable;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -1065,7 +1063,7 @@ public class MainActivity extends AppCompatActivity {
 
         final MenuItem miLayerColorMatrix = menu.findItem(R.id.i_layer_color_matrix);
         final MenuItem miLayerCurves = menu.findItem(R.id.i_layer_curves);
-        final MenuItem miLayerDrawBelow = menu.findItem(R.id.i_layer_draw_below);
+        final MenuItem miLayerDrawBelow = menu.findItem(R.id.i_layer_draw_inv);
         final MenuItem miLayerFilterSet = menu.findItem(R.id.i_layer_filter_set);
         final MenuItem miLayerHsv = menu.findItem(R.id.i_layer_hsv);
         final MenuItem miLayerLevelUp = menu.findItem(R.id.i_layer_level_up);
@@ -1074,7 +1072,7 @@ public class MainActivity extends AppCompatActivity {
 
         miLayerColorMatrix.setChecked(layer.filter == Layer.Filter.COLOR_MATRIX);
         miLayerCurves.setChecked(layer.filter == Layer.Filter.CURVES);
-        miLayerDrawBelow.setChecked(layer.drawBelow);
+        miLayerDrawBelow.setChecked(layer.drawInv);
         miLayerFilterSet.setEnabled(layer.filter != null);
         miLayerHsv.setChecked(layer.filter == Layer.Filter.HSV);
         miLayerLevelUp.setEnabled(layer.getLevel() > 0);
@@ -4824,6 +4822,22 @@ public class MainActivity extends AppCompatActivity {
                 }
                 addLayer(frame, l, frame.selectedLayerIndex, true);
             }
+            case R.id.i_layer_add_filter_layer_with_mask -> {
+                final Layer l = new Layer();
+                l.bitmap = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(),
+                        bitmap.getConfig(), true, bitmap.getColorSpace());
+                l.drawInv = true;
+                l.name = getString(R.string.filter_layer);
+                l.setLevel(layer.getLevel());
+                l.moveTo(layer.left, layer.top);
+                l.paint.setBlendMode(BlendMode.DST_OUT);
+                if (hasSelection) {
+                    final Canvas cv = new Canvas(l.bitmap);
+                    l.bitmap.eraseColor(Color.BLACK);
+                    cv.drawRect(selection, PAINT_DST_OUT);
+                }
+                addLayer(frame, l, frame.selectedLayerIndex, true);
+            }
             case R.id.i_layer_alpha -> {
                 if (ssdLayerList != null) {
                     ssdLayerList.dismiss();
@@ -4866,7 +4880,7 @@ public class MainActivity extends AppCompatActivity {
                 drawBitmapOntoView(true);
             }
             case R.id.i_layer_create_clipping_mask -> {
-                final BlendMode blendMode = layer.drawBelow ? BlendMode.SRC : BlendMode.SRC_ATOP;
+                final BlendMode blendMode = layer.drawInv ? BlendMode.SRC : BlendMode.SRC_ATOP;
                 layer.paint.setBlendMode(blendMode);
                 Layers.levelDown(frame.layers, tlProjectList.getSelectedTabPosition());
                 frame.computeLayerTree();
@@ -4921,10 +4935,10 @@ public class MainActivity extends AppCompatActivity {
                     });
                 }
             }
-            case R.id.i_layer_draw_below -> {
+            case R.id.i_layer_draw_inv -> {
                 final boolean checked = !item.isChecked();
                 item.setChecked(checked);
-                layer.drawBelow = checked;
+                layer.drawInv = checked;
                 drawBitmapOntoView(true);
             }
             case R.id.i_layer_duplicate -> {

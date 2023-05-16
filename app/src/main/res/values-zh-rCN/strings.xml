@@ -81,7 +81,7 @@
     <string name="dither">仿色</string>
     <string name="done">已完成</string>
     <string name="draw">绘画</string>
-    <string name="draw_below">画底下图层</string>
+    <string name="draw_alpha_inv">画反转 Alpha</string>
     <string name="draw_color">画颜色</string>
     <string name="draw_on_not_ui_thread">绘画于非用户界面线程</string>
     <string name="duplicate">复制</string>
@@ -96,12 +96,14 @@
     <string name="eyedropper">滴管</string>
     <string name="failed">失败</string>
     <string name="fast">快速</string>
+    <string name="fast_add_filter_layer_with_mask">快速添加带蒙版的滤镜图层</string>
     <string name="fast_add_layer_mask">快速添加图层蒙版</string>
     <string name="fast_create_clipping_mask">快速创建剪贴蒙版</string>
     <string name="fast_create_group">快速创建组</string>
     <string name="file">文件</string>
     <string name="file_name">文件名</string>
     <string name="fill">填充</string>
+    <string name="filter_layer">滤镜图层</string>
     <string name="filter_noun">滤镜</string>
     <string name="filter_verb">过滤</string>
     <string name="filter_displayed_image_after_zooming_out">过滤缩小后显示的图像</string>

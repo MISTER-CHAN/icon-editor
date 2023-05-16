@@ -245,6 +245,10 @@
                     android:icon="@drawable/ic_void"
                     android:title="@string/fast_create_clipping_mask" />
                 <item
+                    android:id="@+id/i_layer_add_filter_layer_with_mask"
+                    android:icon="@drawable/ic_void"
+                    android:title="@string/fast_add_filter_layer_with_mask" />
+                <item
                     android:id="@+id/i_layer_create_group"
                     android:icon="@drawable/ic_create_new_folder"
                     android:iconTint="?attr/colorOnSurfaceVariant"
@@ -257,9 +261,9 @@
             android:icon="@drawable/ic_void"
             android:title="@string/reference" />
         <item
-            android:id="@+id/i_layer_draw_below"
+            android:id="@+id/i_layer_draw_inv"
             android:checkable="true"
             android:icon="@drawable/ic_void"
-            android:title="@string/draw_below" />
+            android:title="@string/draw_alpha_inv" />
     </group>
 </menu>

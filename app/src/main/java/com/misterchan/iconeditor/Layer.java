@@ -1,25 +1,20 @@
 package com.misterchan.iconeditor;
 
 import android.graphics.Bitmap;
-import android.graphics.BlendMode;
 import android.graphics.Paint;
-import android.view.View;
-import android.widget.CheckBox;
-import android.widget.TextView;
 
 import androidx.annotation.IntRange;
 import androidx.annotation.Size;
 
 import java.util.Deque;
 import java.util.LinkedList;
-import java.util.List;
 
 public class Layer {
     public enum Filter {
         COLOR_MATRIX, CURVES, HSV
     }
 
-    public boolean drawBelow = false;
+    public boolean drawInv = false;
     public boolean reference = false;
     public boolean visible = true;
     public Bitmap bitmap;

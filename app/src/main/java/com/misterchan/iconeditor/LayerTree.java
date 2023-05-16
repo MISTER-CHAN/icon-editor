@@ -17,8 +17,20 @@ package com.misterchan.iconeditor;
  * &nbsp; &nbsp;└──────────┘<br />
  * </nobr></code>
  * <br />
- * The tab bar should display it like this:<br />
- * <code><u>Layer 2</u> &nbsp;<u>[Layer Mask of Clipping Mask →</u> &nbsp;<u>Clipping Mask] →</u> &nbsp;<u>Layer Mask →</u> &nbsp;<u>Layer 1</u> &nbsp;<u>Background │</u></code><br />
+ * The layer list should display it like this:<br />
+ * <code>
+ * &nbsp;Layer 2<br />
+ * ┌───────────────────────────┐<br />
+ * &nbsp;Layer Mask of Clipping Mask<br />
+ * &nbsp;↓<br />
+ * &nbsp;Clipping Mask<br />
+ * └─────────────┘<br />
+ * &nbsp;↓<br />
+ * &nbsp;Layer Mask<br />
+ * &nbsp;↓<br />
+ * &nbsp;Layer 1<br />
+ * &nbsp;Background<br />
+ * </code><br />
  * <br />
  * In Adobe Photoshop, it should be displayed on layer panel like this:<br />
  * <code><nobr>
@@ -43,12 +55,18 @@ package com.misterchan.iconeditor;
  */
 class LayerTree {
     public static class Node {
-        private final Layer val;
-        private LayerTree children;
+        public final boolean isRoot;
+        public final Layer layer;
+        public LayerTree children;
         private Node above;
 
-        public Node(Layer val) {
-            this.val = val;
+        public Node(Layer layer) {
+            this(layer, false);
+        }
+
+        public Node(Layer layer, boolean isRoot) {
+            this.isRoot = isRoot;
+            this.layer = layer;
         }
 
         /**
@@ -56,18 +74,6 @@ class LayerTree {
          */
         public Node getAbove() {
             return above;
-        }
-
-        public LayerTree getChildren() {
-            return children;
-        }
-
-        public Layer getLayer() {
-            return val;
-        }
-
-        public void setChildren(LayerTree children) {
-            this.children = children;
         }
     }
 
@@ -83,7 +89,11 @@ class LayerTree {
     }
 
     public Node push(Layer layer) {
-        final Node node = new Node(layer);
+        return push(layer, false);
+    }
+
+    public Node push(Layer layer, boolean isRoot) {
+        final Node node = new Node(layer, isRoot);
         if (foreground == null)
             background = node;
         else

@@ -261,6 +261,17 @@ public class BitmapUtils {
         }
     }
 
+    public static void invertAlpha(final Bitmap src, final Bitmap dst) {
+        final int w = src.getWidth(), h = src.getHeight(), area = w * h;
+        final int[] srcPixels = new int[area], dstPixels = new int[area];
+        src.getPixels(srcPixels, 0, w, 0, 0, w, h);
+        dst.getPixels(dstPixels, 0, w, 0, 0, w, h);
+        for (int i = 0; i < area; ++i) {
+            dstPixels[i] = 0xFF000000 - (srcPixels[i] & Color.BLACK) | Color.rgb(srcPixels[i]);
+        }
+        dst.setPixels(dstPixels, 0, w, 0, 0, w, h);
+    }
+
     public static void mergeAlpha(final Bitmap src, final Bitmap dst) {
         final int w = Math.min(src.getWidth(), dst.getWidth()), h = Math.min(src.getHeight(), dst.getHeight()), area = w * h;
         final int[] srcPixels = new int[area], dstPixels = new int[area];
