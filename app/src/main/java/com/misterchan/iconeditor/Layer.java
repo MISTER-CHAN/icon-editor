@@ -24,16 +24,13 @@ public class Layer {
     public boolean visible = true;
     public Bitmap bitmap;
     public final CellGrid cellGrid = new CellGrid();
-    public CharSequence name;
     private CheckBox cbVisible;
     public final Deque<Guide> guides = new LinkedList<>();
     public Filter filter;
     public final History history = new History();
     private int level = 0;
     public int left = 0, top = 0;
-    private TextView tvFrameIndex;
-    private TextView tvLowerLevel, tvRoot, tvParent, tvLeaf;
-    private TextView tvName;
+    public String name;
 
     @Size(20)
     public float[] colorMatrix;

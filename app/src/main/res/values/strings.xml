@@ -53,7 +53,7 @@
     <string name="color_replace">Color Replace</string>
     <string name="color_space">Color Space</string>
     <string name="color_type">Color Type</string>
-    <string name="component_radix">Component Radix</string>
+    <string name="component_numeral_system">Component Numeral System</string>
     <string name="config">Config</string>
     <string name="contiguous">Contiguous</string>
     <string name="contrast">Contrast</string>

@@ -34,6 +34,7 @@ import android.os.Environment;
 import android.os.Looper;
 import android.os.MessageQueue;
 import android.text.Editable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -282,7 +283,7 @@ public class MainActivity extends AppCompatActivity {
     private Bitmap bitmap;
     private Bitmap refBm;
     private Bitmap chessboard;
-    private Bitmap chessboardImage;
+    private Bitmap chessboardBitmap;
     private Bitmap clipboard;
     private Bitmap gridBitmap;
     private Bitmap lastMerged;
@@ -663,11 +664,12 @@ public class MainActivity extends AppCompatActivity {
 
     private final DialogInterface.OnClickListener onApplyLayerNameListener = (dialog, which) -> {
         final TextInputEditText tietFileName = ((AlertDialog) dialog).findViewById(R.id.tiet_file_name);
-        final Editable name = tietFileName.getText();
+        final String name = tietFileName.getText().toString();
         if (name.length() <= 0) {
             return;
         }
         layer.name = name;
+        frame.layerAdapter.notifyItemChanged(frame.selectedLayerIndex);
     };
 
     private final View.OnClickListener onClickAddSwatchViewListener = v ->
@@ -1084,7 +1086,7 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    private final TabLayout.OnTabSelectedListener onProjItemSelectedListener = new TabLayout.OnTabSelectedListener() {
+    private final TabLayout.OnTabSelectedListener onProjTabSelectedListener = new TabLayout.OnTabSelectedListener() {
         @Override
         public void onTabSelected(TabLayout.Tab tab) {
             final int position = tab.getPosition();
@@ -2864,7 +2866,7 @@ public class MainActivity extends AppCompatActivity {
         frame.layerAdapter.setOnItemSelectedListener(onLayerItemSelectedListener, onLayerItemReselectedListener);
         frame.layerAdapter.setOnLayerVisibleChangedListener((buttonView, isChecked) -> drawBitmapOntoView(true));
         if (bitmap != null) {
-            addLayer(project, frame, bitmap, false);
+            addLayer(project, frame, bitmap, getString(R.string.background), false);
         }
         if (setSelected) {
             selectFrame(project, position);
@@ -2881,16 +2883,16 @@ public class MainActivity extends AppCompatActivity {
         return frame;
     }
 
-    private Layer addLayer(Project project, Frame frame, Bitmap bitmap, boolean setSelected) {
-        return addLayer(project, frame, bitmap, 0, 0, getString(R.string.untitled), setSelected);
+    private Layer addLayer(Project project, Frame frame, Bitmap bitmap, String name, boolean setSelected) {
+        return addLayer(project, frame, bitmap, 0, 0, name, setSelected);
     }
 
-    private Layer addLayer(Project project, Frame frame, Bitmap bitmap, int position, int level, CharSequence name, boolean setSelected) {
+    private Layer addLayer(Project project, Frame frame, Bitmap bitmap, int position, int level, String name, boolean setSelected) {
         return addLayer(project, frame, bitmap, position, level, 0, 0, true, name, setSelected);
     }
 
     private Layer addLayer(Project project, Frame frame, Bitmap bitmap, int position, int level, int left, int top,
-                           boolean visible, CharSequence name, boolean setSelected) {
+                           boolean visible, String name, boolean setSelected) {
         final Layer layer = new Layer();
         layer.bitmap = bitmap != null ? bitmap : Bitmap.createBitmap(48, 48, Bitmap.Config.ARGB_8888);
         layer.setLevel(level);
@@ -3093,7 +3095,7 @@ public class MainActivity extends AppCompatActivity {
                              Bitmap.Config config, ColorSpace colorSpace,
                              int level, int left, int top, int position) {
         final Bitmap bm = Bitmap.createBitmap(width, height, config, true, colorSpace);
-        addLayer(project, frame, bm, position, level, left, top, true, getString(R.string.untitled), true);
+        addLayer(project, frame, bm, position, level, left, top, true, getString(R.string.layer), true);
     }
 
     private void createImagePreview() {
@@ -3145,9 +3147,9 @@ public class MainActivity extends AppCompatActivity {
         for (int i = project.frames.size() - 1; i >= 0; --i) {
             deleteFrame(i);
         }
-        tlProjectList.removeOnTabSelectedListener(onProjItemSelectedListener);
+        tlProjectList.removeOnTabSelectedListener(onProjTabSelectedListener);
         tlProjectList.removeTabAt(position);
-        tlProjectList.addOnTabSelectedListener(onProjItemSelectedListener);
+        tlProjectList.addOnTabSelectedListener(onProjTabSelectedListener);
         projects.remove(position);
     }
 
@@ -3396,7 +3398,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void drawChessboardOntoView() {
-        eraseBitmap(chessboardImage);
+        eraseBitmap(chessboardBitmap);
 
         final float left = Math.max(0.0f, translationX);
         final float top = Math.max(0.0f, translationY);
@@ -3906,9 +3908,9 @@ public class MainActivity extends AppCompatActivity {
         rulerVCanvas = new Canvas(rulerVBitmap);
         ivRulerV.setImageBitmap(rulerVBitmap);
 
-        chessboardImage = Bitmap.createBitmap(viewWidth, viewHeight, Bitmap.Config.ARGB_4444);
-        chessboardCanvas = new Canvas(chessboardImage);
-        ivChessboard.setImageBitmap(chessboardImage);
+        chessboardBitmap = Bitmap.createBitmap(viewWidth, viewHeight, Bitmap.Config.ARGB_4444);
+        chessboardCanvas = new Canvas(chessboardBitmap);
+        ivChessboard.setImageBitmap(chessboardBitmap);
 
         gridBitmap = Bitmap.createBitmap(viewWidth, viewHeight, Bitmap.Config.ARGB_4444);
         gridCanvas = new Canvas(gridBitmap);
@@ -3933,6 +3935,10 @@ public class MainActivity extends AppCompatActivity {
             for (int i = 0; i < projects.size(); ++i) {
                 final Project p = projects.get(i);
                 loadTab(p, i);
+                p.frameAdapter.setOnItemSelectedListener(onFrameItemSelectedListener, onFrameItemReselectedListener);
+                for (final Frame f : p.frames) {
+                    f.layerAdapter.setOnItemSelectedListener(onLayerItemSelectedListener, onLayerItemReselectedListener);
+                }
             }
             selectProject(0);
         }
@@ -4086,7 +4092,7 @@ public class MainActivity extends AppCompatActivity {
         ivRulerH.setOnTouchListener(onTouchRulerHListener);
         ivRulerV.setOnTouchListener(onTouchRulerVListener);
         rvSwatches.setItemAnimator(new DefaultItemAnimator());
-        tlProjectList.addOnTabSelectedListener(onProjItemSelectedListener);
+        tlProjectList.addOnTabSelectedListener(onProjTabSelectedListener);
         tbSoftBrush.setOnCheckedChangeListener(onSoftBrushTBCheckedChangeListener);
         tietCloneStampBlurRadius.addTextChangedListener(onBlurRadiusETTextChangedListener);
         tietCloneStampStrokeWidth.addTextChangedListener(onStrokeWidthETTextChangedListener);
@@ -5051,7 +5057,7 @@ public class MainActivity extends AppCompatActivity {
                 for (final Layer l : frame.layers) {
                     l.visible = false;
                 }
-                addLayer(project, frame, bm, true);
+                addLayer(project, frame, bm, getString(R.string.layer), true);
             }
             case R.id.i_layer_new -> {
                 if (Settings.INST.newLayerLevel()) {
@@ -5325,9 +5331,9 @@ public class MainActivity extends AppCompatActivity {
             chessboard.recycle();
             chessboard = null;
         }
-        if (chessboardImage != null) {
-            chessboardImage.recycle();
-            chessboardImage = null;
+        if (chessboardBitmap != null) {
+            chessboardBitmap.recycle();
+            chessboardBitmap = null;
             chessboardCanvas = null;
         }
         if (clipboard != null) {
@@ -5694,7 +5700,7 @@ public class MainActivity extends AppCompatActivity {
     private void selectProject(int position) {
         final TabLayout.Tab tab = tlProjectList.getTabAt(position);
         if (tab.isSelected()) {
-            onProjItemSelectedListener.onTabSelected(tab);
+            onProjTabSelectedListener.onTabSelected(tab);
         } else {
             tab.select();
         }

@@ -261,9 +261,8 @@
                             android:title="@string/channel_lighting" />
                         <item
                             android:id="@+id/i_filter_color_matrix"
-                            android:icon="@drawable/ic_filter"
-                            android:title="@string/channel_mixer"
-                            app:iconTint="?attr/colorOnSurfaceVariant" />
+                            android:icon="@drawable/ic_void"
+                            android:title="@string/channel_mixer" />
                     </group>
                     <group android:id="@+id/g_filter_more">
                         <item

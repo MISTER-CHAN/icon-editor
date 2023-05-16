@@ -29,6 +29,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.tabs.TabItem;
 import com.google.android.material.tabs.TabLayout;
 import com.misterchan.iconeditor.Color;
+import com.misterchan.iconeditor.Settings;
 import com.misterchan.iconeditor.listener.OnCBCheckedListener;
 import com.misterchan.iconeditor.R;
 
@@ -84,6 +85,8 @@ public class CurvesDialog {
             setBlendMode(BlendMode.CLEAR);
         }
     };
+
+    private final Paint.FontMetrics fontMetrics = normalPaint.getFontMetrics();
 
     {
         initPaint(compPaint);
@@ -186,6 +189,7 @@ public class CurvesDialog {
 
     private void drawGrid() {
         final Canvas cv = new Canvas(grid);
+
         cv.drawLine(0.0f, 0.0f, 256.0f, 0.0f, normalPaint);
         cv.drawLine(0.0f, 64.0f, 256.0f, 64.0f, normalPaint);
         cv.drawLine(0.0f, 128.0f, 256.0f, 128.0f, normalPaint);
@@ -196,6 +200,14 @@ public class CurvesDialog {
         cv.drawLine(128.0f, 0.0f, 128.0f, 256.0f, normalPaint);
         cv.drawLine(192.0f, 0.0f, 192.0f, 256.0f, normalPaint);
         cv.drawLine(256.0f, 0.0f, 256.0f, 256.0f, normalPaint);
+
+        final String format = Settings.INST.argbCompFormat();
+        normalPaint.setTextAlign(Paint.Align.LEFT);
+        cv.drawText(String.format(format, 0x00), 0.0f, grid.getHeight(), normalPaint);
+        cv.drawText(String.format(format, 0xFF), 0.0f, -fontMetrics.ascent, normalPaint);
+        normalPaint.setTextAlign(Paint.Align.RIGHT);
+        cv.drawText(String.format(format, 0xFF), grid.getWidth(), grid.getHeight(), normalPaint);
+
         ivGrid.invalidate();
     }
 

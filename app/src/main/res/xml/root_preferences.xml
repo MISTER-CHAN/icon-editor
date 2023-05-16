@@ -46,7 +46,7 @@
             app:entryValues="@array/radix_values"
             app:key="acr"
             app:singleLineTitle="false"
-            app:title="@string/component_radix"
+            app:title="@string/component_numeral_system"
             app:useSimpleSummaryProvider="true" />
 
     </PreferenceCategory>
