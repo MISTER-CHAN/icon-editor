@@ -226,33 +226,37 @@
             android:icon="@drawable/ic_void"
             android:title="@string/level">
             <menu>
-                <item
-                    android:id="@+id/i_layer_level_up"
-                    android:icon="@drawable/ic_arrow_upward"
-                    android:iconTint="?attr/colorOnSurfaceVariant"
-                    android:title="@string/level_up" />
-                <item
-                    android:id="@+id/i_layer_level_down"
-                    android:icon="@drawable/ic_arrow_downward"
-                    android:iconTint="?attr/colorOnSurfaceVariant"
-                    android:title="@string/level_down" />
-                <item
-                    android:id="@+id/i_layer_add_layer_mask"
-                    android:icon="@drawable/ic_void"
-                    android:title="@string/fast_add_layer_mask" />
-                <item
-                    android:id="@+id/i_layer_create_clipping_mask"
-                    android:icon="@drawable/ic_void"
-                    android:title="@string/fast_create_clipping_mask" />
-                <item
-                    android:id="@+id/i_layer_add_filter_layer_with_mask"
-                    android:icon="@drawable/ic_void"
-                    android:title="@string/fast_add_filter_layer_with_mask" />
-                <item
-                    android:id="@+id/i_layer_create_group"
-                    android:icon="@drawable/ic_create_new_folder"
-                    android:iconTint="?attr/colorOnSurfaceVariant"
-                    android:title="@string/fast_create_group" />
+                <group android:id="@+id/g_layer_level">
+                    <item
+                        android:id="@+id/i_layer_level_up"
+                        android:icon="@drawable/ic_arrow_upward"
+                        android:iconTint="?attr/colorOnSurfaceVariant"
+                        android:title="@string/level_up" />
+                    <item
+                        android:id="@+id/i_layer_level_down"
+                        android:icon="@drawable/ic_arrow_downward"
+                        android:iconTint="?attr/colorOnSurfaceVariant"
+                        android:title="@string/level_down" />
+                </group>
+                <group android:id="@+id/g_layer_shortcuts">
+                    <item
+                        android:id="@+id/i_layer_add_layer_mask"
+                        android:icon="@drawable/ic_void"
+                        android:title="@string/fast_add_layer_mask" />
+                    <item
+                        android:id="@+id/i_layer_create_clipping_mask"
+                        android:icon="@drawable/ic_void"
+                        android:title="@string/fast_create_clipping_mask" />
+                    <item
+                        android:id="@+id/i_layer_add_filter_layer_with_mask"
+                        android:icon="@drawable/ic_void"
+                        android:title="@string/fast_add_filter_layer_with_mask" />
+                    <item
+                        android:id="@+id/i_layer_create_group"
+                        android:icon="@drawable/ic_create_new_folder"
+                        android:iconTint="?attr/colorOnSurfaceVariant"
+                        android:title="@string/fast_create_group" />
+                </group>
             </menu>
         </item>
         <item
@@ -261,9 +265,9 @@
             android:icon="@drawable/ic_void"
             android:title="@string/reference" />
         <item
-            android:id="@+id/i_layer_draw_inv"
+            android:id="@+id/i_layer_fill_in"
             android:checkable="true"
             android:icon="@drawable/ic_void"
-            android:title="@string/draw_alpha_inv" />
+            android:title="@string/fill_in_blank" />
     </group>
 </menu>

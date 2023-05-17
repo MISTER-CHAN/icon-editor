@@ -133,6 +133,21 @@ public class BitmapUtils {
         return null;
     }
 
+    public static void fillInBlank(final Bitmap src, final Bitmap dst) {
+        final int w = src.getWidth(), h = src.getHeight(), area = w * h;
+        final int[] srcPixels = new int[area], dstPixels = new int[area];
+        src.getPixels(srcPixels, 0, w, 0, 0, w, h);
+        dst.getPixels(dstPixels, 0, w, 0, 0, w, h);
+        for (int i = 0; i < area; ++i) {
+            final int sa = Color.alpha(srcPixels[i]), sr = Color.red(srcPixels[i]), sg = Color.green(srcPixels[i]), sb = Color.blue(srcPixels[i]);
+            final int da = Color.alpha(dstPixels[i]), dr = Color.red(dstPixels[i]), dg = Color.green(dstPixels[i]), db = Color.blue(dstPixels[i]);
+            final int sa_ = Math.max(0x00, sa - da);
+            final int dr_ = (sa_ * sr + da * dr) / 0xFF, dg_ = (sa_ * sg + da * dg) / 0xFF, db_ = (sa_ * sb + da * db) / 0xFF;
+            dstPixels[i] = Color.argb(sa, dr_, dg_, db_);
+        }
+        dst.setPixels(dstPixels, 0, w, 0, 0, w, h);
+    }
+
     public static void floodFill(final Bitmap src, final Bitmap dst, Rect rect,
                                  int x, int y, @ColorInt final int color,
                                  final boolean ignoreAlpha, final int tolerance) {

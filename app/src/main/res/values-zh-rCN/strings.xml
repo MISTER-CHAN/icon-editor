@@ -81,7 +81,6 @@
     <string name="dither">仿色</string>
     <string name="done">已完成</string>
     <string name="draw">绘画</string>
-    <string name="draw_alpha_inv">画反转 Alpha</string>
     <string name="draw_color">画颜色</string>
     <string name="draw_on_not_ui_thread">绘画于非用户界面线程</string>
     <string name="duplicate">复制</string>
@@ -103,6 +102,7 @@
     <string name="file">文件</string>
     <string name="file_name">文件名</string>
     <string name="fill">填充</string>
+    <string name="fill_in_blank">填入空缺</string>
     <string name="filter_layer">滤镜图层</string>
     <string name="filter_noun">滤镜</string>
     <string name="filter_verb">过滤</string>

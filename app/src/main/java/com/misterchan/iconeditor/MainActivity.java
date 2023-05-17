@@ -1063,7 +1063,7 @@ public class MainActivity extends AppCompatActivity {
 
         final MenuItem miLayerColorMatrix = menu.findItem(R.id.i_layer_color_matrix);
         final MenuItem miLayerCurves = menu.findItem(R.id.i_layer_curves);
-        final MenuItem miLayerDrawBelow = menu.findItem(R.id.i_layer_draw_inv);
+        final MenuItem miLayerDrawBelow = menu.findItem(R.id.i_layer_fill_in);
         final MenuItem miLayerFilterSet = menu.findItem(R.id.i_layer_filter_set);
         final MenuItem miLayerHsv = menu.findItem(R.id.i_layer_hsv);
         final MenuItem miLayerLevelUp = menu.findItem(R.id.i_layer_level_up);
@@ -1072,7 +1072,7 @@ public class MainActivity extends AppCompatActivity {
 
         miLayerColorMatrix.setChecked(layer.filter == Layer.Filter.COLOR_MATRIX);
         miLayerCurves.setChecked(layer.filter == Layer.Filter.CURVES);
-        miLayerDrawBelow.setChecked(layer.drawInv);
+        miLayerDrawBelow.setChecked(layer.fillIn);
         miLayerFilterSet.setEnabled(layer.filter != null);
         miLayerHsv.setChecked(layer.filter == Layer.Filter.HSV);
         miLayerLevelUp.setEnabled(layer.getLevel() > 0);
@@ -4826,8 +4826,8 @@ public class MainActivity extends AppCompatActivity {
                 final Layer l = new Layer();
                 l.bitmap = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(),
                         bitmap.getConfig(), true, bitmap.getColorSpace());
-                l.drawInv = true;
-                l.name = getString(R.string.filter_layer);
+                l.fillIn = true;
+                l.name = getString(R.string.filter_noun);
                 l.setLevel(layer.getLevel());
                 l.moveTo(layer.left, layer.top);
                 l.paint.setBlendMode(BlendMode.DST_OUT);
@@ -4880,7 +4880,7 @@ public class MainActivity extends AppCompatActivity {
                 drawBitmapOntoView(true);
             }
             case R.id.i_layer_create_clipping_mask -> {
-                final BlendMode blendMode = layer.drawInv ? BlendMode.SRC : BlendMode.SRC_ATOP;
+                final BlendMode blendMode = layer.fillIn ? BlendMode.SRC : BlendMode.SRC_ATOP;
                 layer.paint.setBlendMode(blendMode);
                 Layers.levelDown(frame.layers, tlProjectList.getSelectedTabPosition());
                 frame.computeLayerTree();
@@ -4935,10 +4935,10 @@ public class MainActivity extends AppCompatActivity {
                     });
                 }
             }
-            case R.id.i_layer_draw_inv -> {
+            case R.id.i_layer_fill_in -> {
                 final boolean checked = !item.isChecked();
                 item.setChecked(checked);
-                layer.drawInv = checked;
+                layer.fillIn = checked;
                 drawBitmapOntoView(true);
             }
             case R.id.i_layer_duplicate -> {

@@ -90,7 +90,6 @@
     <string name="dither">Dither</string>
     <string name="done">Done</string>
     <string name="draw">Draw</string>
-    <string name="draw_alpha_inv">Draw Alpha Inverted</string>
     <string name="draw_color">Draw Color</string>
     <string name="draw_on_not_ui_thread">Draw on Not U.I. Thread</string>
     <string name="duplicate">Duplicate</string>
@@ -112,6 +111,7 @@
     <string name="file">File</string>
     <string name="file_name">File name</string>
     <string name="fill">Fill</string>
+    <string name="fill_in_blank">Draw Alpha Inverted</string>
     <string name="filter_layer">Filter Layer</string>
     <string name="filter_noun">Filter</string>
     <string name="filter_verb">Filter</string>

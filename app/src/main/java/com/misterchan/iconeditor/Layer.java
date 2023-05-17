@@ -14,7 +14,7 @@ public class Layer {
         COLOR_MATRIX, CURVES, HSV
     }
 
-    public boolean drawInv = false;
+    public boolean fillIn = false;
     public boolean reference = false;
     public boolean visible = true;
     public Bitmap bitmap;
