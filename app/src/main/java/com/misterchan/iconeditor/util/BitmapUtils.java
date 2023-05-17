@@ -76,15 +76,15 @@ public class BitmapUtils {
         }
     }
 
-    public static void applyCurves(final Bitmap bitmap, @Size(5) int[][] curves) {
-        final int w = bitmap.getWidth(), h = bitmap.getHeight();
+    public static void applyCurves(final Bitmap bitmap, final Rect rect, @Size(5) final int[][] curves) {
+        final int w = rect.width(), h = rect.height();
         final int[] pixels = new int[w * h];
-        bitmap.getPixels(pixels, 0, w, 0, 0, w, h);
+        bitmap.getPixels(pixels, 0, w, rect.left, rect.top, w, h);
         applyCurves(pixels, pixels, curves);
-        bitmap.setPixels(pixels, 0, w, 0, 0, w, h);
+        bitmap.setPixels(pixels, 0, w, rect.left, rect.top, w, h);
     }
 
-    public static void applyCurves(@ColorInt final int[] src, @ColorInt final int[] dst, @Size(5) int[][] curves) {
+    public static void applyCurves(@ColorInt final int[] src, @ColorInt final int[] dst, @Size(5) final int[][] curves) {
         for (int i = 0; i < src.length; ++i) {
             final int pixel = src[i];
             final int a = Color.alpha(pixel),
@@ -133,11 +133,11 @@ public class BitmapUtils {
         return null;
     }
 
-    public static void fillInBlank(final Bitmap src, final Bitmap dst) {
-        final int w = src.getWidth(), h = src.getHeight(), area = w * h;
+    public static void fillInBlank(final Bitmap src, final Rect srcRect, final Bitmap dst, final Rect dstRect) {
+        final int w = srcRect.width(), h = srcRect.height(), area = w * h;
         final int[] srcPixels = new int[area], dstPixels = new int[area];
-        src.getPixels(srcPixels, 0, w, 0, 0, w, h);
-        dst.getPixels(dstPixels, 0, w, 0, 0, w, h);
+        src.getPixels(srcPixels, 0, w, srcRect.left, srcRect.top, w, h);
+        dst.getPixels(dstPixels, 0, w, dstRect.left, dstRect.top, w, h);
         for (int i = 0; i < area; ++i) {
             final int sa = Color.alpha(srcPixels[i]), sr = Color.red(srcPixels[i]), sg = Color.green(srcPixels[i]), sb = Color.blue(srcPixels[i]);
             final int da = Color.alpha(dstPixels[i]), dr = Color.red(dstPixels[i]), dg = Color.green(dstPixels[i]), db = Color.blue(dstPixels[i]);
@@ -145,7 +145,7 @@ public class BitmapUtils {
             final int dr_ = (sa_ * sr + da * dr) / 0xFF, dg_ = (sa_ * sg + da * dg) / 0xFF, db_ = (sa_ * sb + da * db) / 0xFF;
             dstPixels[i] = Color.argb(sa, dr_, dg_, db_);
         }
-        dst.setPixels(dstPixels, 0, w, 0, 0, w, h);
+        dst.setPixels(dstPixels, 0, w, dstRect.left, dstRect.top, w, h);
     }
 
     public static void floodFill(final Bitmap src, final Bitmap dst, Rect rect,
@@ -369,12 +369,12 @@ public class BitmapUtils {
         }
     }
 
-    public static void shiftHsv(final Bitmap bitmap, @Size(3) final float[] deltaHSV) {
-        final int w = bitmap.getWidth(), h = bitmap.getHeight();
+    public static void shiftHsv(final Bitmap bitmap, final Rect rect, @Size(3) final float[] deltaHSV) {
+        final int w = rect.width(), h = rect.height();
         final int[] pixels = new int[w * h];
-        bitmap.getPixels(pixels, 0, w, 0, 0, w, h);
+        bitmap.getPixels(pixels, 0, w, rect.left, rect.top, w, h);
         shiftHsv(pixels, pixels, deltaHSV);
-        bitmap.setPixels(pixels, 0, w, 0, 0, w, h);
+        bitmap.setPixels(pixels, 0, w, rect.left, rect.top, w, h);
     }
 
     public static void whiteBalance(@ColorInt final int[] src, @ColorInt int[] dst, @ColorInt int white) {

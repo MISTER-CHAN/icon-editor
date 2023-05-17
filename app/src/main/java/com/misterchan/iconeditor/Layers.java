@@ -29,14 +29,18 @@ public class Layers {
     };
 
     private static void addFilters(Bitmap bitmap, Layer layer) {
+        addFilters(bitmap, new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight()), layer);
+    }
+
+    private static void addFilters(Bitmap bitmap, Rect rect, Layer layer) {
         if (layer.filter == null) {
             return;
         }
         switch (layer.filter) {
             case COLOR_MATRIX -> BitmapUtils.addColorMatrixColorFilter(
                     bitmap, 0, 0, bitmap, 0, 0, layer.colorMatrix);
-            case CURVES -> BitmapUtils.applyCurves(bitmap, layer.curves);
-            case HSV -> BitmapUtils.shiftHsv(bitmap, layer.deltaHsv);
+            case CURVES -> BitmapUtils.applyCurves(bitmap, rect, layer.curves);
+            case HSV -> BitmapUtils.shiftHsv(bitmap, rect, layer.deltaHsv);
         }
     }
 
@@ -175,18 +179,24 @@ public class Layers {
                         }
                     }
 
-                    if (!layer.fillIn || node == backgroundNode) {
-                        final Paint paint = node != backgroundNode || node.isRoot ? layer.paint : PAINT_SRC;
+                    final Paint paint = node != backgroundNode || node.isRoot ? layer.paint : PAINT_SRC;
+                    final boolean fillIn = layer.fillIn && node != backgroundNode;
+                    final Bitmap bm = !fillIn ? null : Bitmap.createBitmap(intW, intH, Bitmap.Config.ARGB_8888);
+                    final Canvas cv = !fillIn ? null : new Canvas(bm);
+                    try {
+                        if (fillIn) {
+                            cv.drawBitmap(bitmap, dst, intRel, PAINT_SRC);
+                        }
                         if (layer == specifiedLayer) {
                             if (extraDst != null) {
-                                final Bitmap bm = Bitmap.createBitmap(intW, intH, Bitmap.Config.ARGB_8888); // Intersection bitmap
-                                final Canvas cv = new Canvas(bm);
+                                final Bitmap bmExtra = Bitmap.createBitmap(intW, intH, Bitmap.Config.ARGB_8888); // Intersection bitmap
+                                final Canvas cvExtra = new Canvas(bmExtra);
                                 try {
-                                    cv.drawBitmap(bmOfSpecifiedLayer, src, intRel, PAINT_SRC);
-                                    cv.drawBitmap(extraLayer.bitmap, extraSrc, extraDst, extraLayer.paint);
-                                    canvas.drawBitmap(bm, intRel, dst, paint);
+                                    cvExtra.drawBitmap(bmOfSpecifiedLayer, src, intRel, PAINT_SRC);
+                                    cvExtra.drawBitmap(extraLayer.bitmap, extraSrc, extraDst, extraLayer.paint);
+                                    canvas.drawBitmap(bmExtra, intRel, dst, paint);
                                 } finally {
-                                    bm.recycle();
+                                    bmExtra.recycle();
                                 }
                             } else {
                                 canvas.drawBitmap(bmOfSpecifiedLayer, src, dst, paint);
@@ -194,23 +204,12 @@ public class Layers {
                         } else {
                             canvas.drawBitmap(layer.bitmap, src, dst, paint);
                         }
-                        addFilters(bitmap, layer);
-                    } else {
-                        final Bitmap bm = Bitmap.createBitmap(intW, intH, Bitmap.Config.ARGB_8888); // Intersection bitmap
-                        final Canvas cv = new Canvas(bm);
-                        try {
-                            cv.drawBitmap(bitmap, 0.0f, 0.0f, PAINT_SRC);
-                            if (layer == specifiedLayer) {
-                                canvas.drawBitmap(bmOfSpecifiedLayer, src, intRel, layer.paint);
-                                if (extraDst != null) {
-                                    canvas.drawBitmap(extraLayer.bitmap, extraSrc, extraDst, extraLayer.paint);
-                                }
-                            } else {
-                                canvas.drawBitmap(layer.bitmap, src, intRel, layer.paint);
-                            }
-                            addFilters(bitmap, layer);
-                            BitmapUtils.fillInBlank(bm, bitmap);
-                        } finally {
+                        addFilters(bitmap, dst, layer);
+                        if (fillIn) {
+                            BitmapUtils.fillInBlank(bm, intRel, bitmap, dst);
+                        }
+                    } finally {
+                        if (bm != null) {
                             bm.recycle();
                         }
                     }
@@ -227,7 +226,7 @@ public class Layers {
                             cv.drawBitmap(bitmap, 0.0f, 0.0f, PAINT_SRC);
                             canvas.drawBitmap(mergedChildren, 0.0f, 0.0f, layer.paint);
                             addFilters(bitmap, layer);
-                            BitmapUtils.fillInBlank(bm, bitmap);
+                            BitmapUtils.fillInBlank(bm, rect, bitmap, rect);
                         } finally {
                             bm.recycle();
                         }
