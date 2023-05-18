@@ -133,19 +133,19 @@ public class BitmapUtils {
         return null;
     }
 
-    public static void fillInBlank(final Bitmap src, final Rect srcRect, final Bitmap dst, final Rect dstRect) {
-        final int w = srcRect.width(), h = srcRect.height(), area = w * h;
-        final int[] srcPixels = new int[area], dstPixels = new int[area];
-        src.getPixels(srcPixels, 0, w, srcRect.left, srcRect.top, w, h);
-        dst.getPixels(dstPixels, 0, w, dstRect.left, dstRect.top, w, h);
+    public static void fillInBlank(final Bitmap src, final Bitmap dst) {
+        final int w = dst.getWidth(), h = dst.getHeight(), area = w * h;
+        final int[] dstPixels = new int[area], srcPixels = new int[area];
+        src.getPixels(srcPixels, 0, w, 0, 0, w, h);
+        dst.getPixels(dstPixels, 0, w, 0, 0, w, h);
         for (int i = 0; i < area; ++i) {
             final int sa = Color.alpha(srcPixels[i]), sr = Color.red(srcPixels[i]), sg = Color.green(srcPixels[i]), sb = Color.blue(srcPixels[i]);
             final int da = Color.alpha(dstPixels[i]), dr = Color.red(dstPixels[i]), dg = Color.green(dstPixels[i]), db = Color.blue(dstPixels[i]);
-            final int sa_ = Math.max(0x00, sa - da);
-            final int dr_ = (sa_ * sr + da * dr) / 0xFF, dg_ = (sa_ * sg + da * dg) / 0xFF, db_ = (sa_ * sb + da * db) / 0xFF;
-            dstPixels[i] = Color.argb(sa, dr_, dg_, db_);
+            final int da_ = Math.max(0x00, da - sa);
+            final int dr_ = (da_ * dr + sa * sr) / 0xFF, dg_ = (da_ * dg + sa * sg) / 0xFF, db_ = (da_ * db + sa * sb) / 0xFF;
+            dstPixels[i] = Color.argb(da, dr_, dg_, db_);
         }
-        dst.setPixels(dstPixels, 0, w, dstRect.left, dstRect.top, w, h);
+        dst.setPixels(dstPixels, 0, w, 0, 0, w, h);
     }
 
     public static void floodFill(final Bitmap src, final Bitmap dst, Rect rect,
@@ -274,17 +274,6 @@ public class BitmapUtils {
                         paint);
             }
         }
-    }
-
-    public static void invertAlpha(final Bitmap src, final Bitmap dst) {
-        final int w = src.getWidth(), h = src.getHeight(), area = w * h;
-        final int[] srcPixels = new int[area], dstPixels = new int[area];
-        src.getPixels(srcPixels, 0, w, 0, 0, w, h);
-        dst.getPixels(dstPixels, 0, w, 0, 0, w, h);
-        for (int i = 0; i < area; ++i) {
-            dstPixels[i] = 0xFF000000 - (srcPixels[i] & Color.BLACK) | Color.rgb(srcPixels[i]);
-        }
-        dst.setPixels(dstPixels, 0, w, 0, 0, w, h);
     }
 
     public static void mergeAlpha(final Bitmap src, final Bitmap dst) {

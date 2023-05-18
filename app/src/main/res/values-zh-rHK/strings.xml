@@ -95,14 +95,13 @@
     <string name="eyedropper">滴管</string>
     <string name="failed">失敗</string>
     <string name="fast">快速</string>
-    <string name="fast_add_filter_layer_with_mask">快速新增帶遮罩之濾鏡圖層</string>
+    <string name="fast_add_filter_layer">快速新增濾鏡圖層</string>
     <string name="fast_add_layer_mask">快速新增圖層遮罩</string>
     <string name="fast_create_clipping_mask">快速建立剪裁遮罩</string>
     <string name="fast_create_group">快速建立組</string>
     <string name="file">檔案</string>
     <string name="file_name">檔案名</string>
     <string name="fill">塡充</string>
-    <string name="fill_in_blank">塡入空缺</string>
     <string name="filter_layer">濾鏡圖層</string>
     <string name="filter_noun">濾鏡</string>
     <string name="filter_verb">過濾</string>
@@ -191,6 +190,7 @@
     <string name="oval">橢圓</string>
     <string name="paint">畫筆</string>
     <string name="palette">調色板</string>
+    <string name="pass_layers_below">傳遞底下圖層</string>
     <string name="paste">貼上</string>
     <string name="patch">修補</string>
     <string name="path">路徑</string>

@@ -248,9 +248,9 @@
                         android:icon="@drawable/ic_void"
                         android:title="@string/fast_create_clipping_mask" />
                     <item
-                        android:id="@+id/i_layer_add_filter_layer_with_mask"
+                        android:id="@+id/i_layer_add_filter_layer"
                         android:icon="@drawable/ic_void"
-                        android:title="@string/fast_add_filter_layer_with_mask" />
+                        android:title="@string/fast_add_filter_layer" />
                     <item
                         android:id="@+id/i_layer_create_group"
                         android:icon="@drawable/ic_create_new_folder"
@@ -265,9 +265,9 @@
             android:icon="@drawable/ic_void"
             android:title="@string/reference" />
         <item
-            android:id="@+id/i_layer_fill_in"
+            android:id="@+id/i_layer_pass_below"
             android:checkable="true"
             android:icon="@drawable/ic_void"
-            android:title="@string/fill_in_blank" />
+            android:title="@string/pass_layers_below" />
     </group>
 </menu>

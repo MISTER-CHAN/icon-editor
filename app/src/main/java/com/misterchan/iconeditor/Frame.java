@@ -34,7 +34,7 @@ public class Frame {
 
     public int group() {
         int bottomPos = layers.size() - 1;
-        for (int i = selectedLayerIndex; i < bottomPos; ++i) {
+        for (int i = selectedLayerIndex; i <= bottomPos; ++i) {
             final Layer layer = layers.get(i);
             if (!layer.visible) {
                 bottomPos = i - 1;

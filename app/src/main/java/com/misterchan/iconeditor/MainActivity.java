@@ -1063,19 +1063,19 @@ public class MainActivity extends AppCompatActivity {
 
         final MenuItem miLayerColorMatrix = menu.findItem(R.id.i_layer_color_matrix);
         final MenuItem miLayerCurves = menu.findItem(R.id.i_layer_curves);
-        final MenuItem miLayerDrawBelow = menu.findItem(R.id.i_layer_fill_in);
         final MenuItem miLayerFilterSet = menu.findItem(R.id.i_layer_filter_set);
         final MenuItem miLayerHsv = menu.findItem(R.id.i_layer_hsv);
         final MenuItem miLayerLevelUp = menu.findItem(R.id.i_layer_level_up);
+        final MenuItem miLayerPassBelow = menu.findItem(R.id.i_layer_pass_below);
         final MenuItem miLayerReference = menu.findItem(R.id.i_layer_reference);
         final SubMenu smLayerBlendModes = menu.findItem(R.id.i_blend_mode).getSubMenu();
 
         miLayerColorMatrix.setChecked(layer.filter == Layer.Filter.COLOR_MATRIX);
         miLayerCurves.setChecked(layer.filter == Layer.Filter.CURVES);
-        miLayerDrawBelow.setChecked(layer.fillIn);
         miLayerFilterSet.setEnabled(layer.filter != null);
         miLayerHsv.setChecked(layer.filter == Layer.Filter.HSV);
         miLayerLevelUp.setEnabled(layer.getLevel() > 0);
+        miLayerPassBelow.setChecked(layer.passBelow);
         miLayerReference.setChecked(layer.reference);
 
         for (int i = 0; i < BlendModeValues.COUNT; ++i) {
@@ -4822,15 +4822,15 @@ public class MainActivity extends AppCompatActivity {
                 }
                 addLayer(frame, l, frame.selectedLayerIndex, true);
             }
-            case R.id.i_layer_add_filter_layer_with_mask -> {
+            case R.id.i_layer_add_filter_layer -> {
                 final Layer l = new Layer();
                 l.bitmap = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(),
                         bitmap.getConfig(), true, bitmap.getColorSpace());
-                l.fillIn = true;
                 l.name = getString(R.string.filter_noun);
                 l.setLevel(layer.getLevel());
                 l.moveTo(layer.left, layer.top);
                 l.paint.setBlendMode(BlendMode.DST_OUT);
+                l.passBelow = true;
                 if (hasSelection) {
                     final Canvas cv = new Canvas(l.bitmap);
                     l.bitmap.eraseColor(Color.BLACK);
@@ -4880,7 +4880,7 @@ public class MainActivity extends AppCompatActivity {
                 drawBitmapOntoView(true);
             }
             case R.id.i_layer_create_clipping_mask -> {
-                final BlendMode blendMode = layer.fillIn ? BlendMode.SRC : BlendMode.SRC_ATOP;
+                final BlendMode blendMode = layer.passBelow ? BlendMode.SRC : BlendMode.SRC_ATOP;
                 layer.paint.setBlendMode(blendMode);
                 Layers.levelDown(frame.layers, tlProjectList.getSelectedTabPosition());
                 frame.computeLayerTree();
@@ -4934,12 +4934,6 @@ public class MainActivity extends AppCompatActivity {
                         rvLayerList.post(frame.layerAdapter::notifyLevelChanged);
                     });
                 }
-            }
-            case R.id.i_layer_fill_in -> {
-                final boolean checked = !item.isChecked();
-                item.setChecked(checked);
-                layer.fillIn = checked;
-                drawBitmapOntoView(true);
             }
             case R.id.i_layer_duplicate -> {
                 drawFloatingLayersIntoImage();
@@ -5083,6 +5077,12 @@ public class MainActivity extends AppCompatActivity {
                     createLayer(bg.getWidth(), bg.getHeight(), bg.getConfig(), bg.getColorSpace(),
                             0, 0, 0, frame.selectedLayerIndex);
                 }
+            }
+            case R.id.i_layer_pass_below -> {
+                final boolean checked = !item.isChecked();
+                item.setChecked(checked);
+                layer.passBelow = checked;
+                drawBitmapOntoView(true);
             }
             case R.id.i_layer_reference -> {
                 final boolean checked = !item.isChecked();
