@@ -3,7 +3,8 @@
     <group android:id="@+id/layer_edit">
         <item
             android:id="@+id/i_layer_new"
-            android:icon="@drawable/ic_void"
+            android:icon="@drawable/ic_add"
+            android:iconTint="?attr/colorOnSurfaceVariant"
             android:title="@string/new_" />
         <item
             android:id="@+id/i_layer_duplicate"

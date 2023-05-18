@@ -98,8 +98,9 @@
                 <menu>
                     <item
                         android:id="@+id/i_file_new"
-                        android:icon="@drawable/ic_void"
-                        android:title="@string/new_" />
+                        android:icon="@drawable/ic_insert_drive_file"
+                        android:title="@string/new_"
+                        app:iconTint="?attr/colorOnSurfaceVariant" />
                     <item
                         android:id="@+id/i_file_open"
                         android:icon="@drawable/ic_folder_open"

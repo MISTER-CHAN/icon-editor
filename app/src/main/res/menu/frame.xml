@@ -2,7 +2,8 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/i_frame_new"
-        android:icon="@drawable/ic_void"
+        android:icon="@drawable/ic_add"
+        android:iconTint="?attr/colorOnSurfaceVariant"
         android:title="@string/new_" />
     <item
         android:id="@+id/i_frame_duplicate"
