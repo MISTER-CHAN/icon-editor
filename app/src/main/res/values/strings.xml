@@ -336,7 +336,7 @@
     <string name="vertically">Vertically</string>
     <string name="view">View</string>
     <string name="visible">Visible</string>
-    <string name="when_resizing">When resizing</string>
+    <string name="when_resizing">When\nResizing</string>
     <string name="white_balance">White Balance</string>
     <string name="width">Width</string>
     <string name="with_eraser">With Eraser</string>

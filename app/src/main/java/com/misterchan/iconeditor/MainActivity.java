@@ -4829,7 +4829,7 @@ public class MainActivity extends AppCompatActivity {
                 l.name = getString(R.string.filter_noun);
                 l.setLevel(layer.getLevel());
                 l.moveTo(layer.left, layer.top);
-                l.paint.setBlendMode(BlendMode.DST_OUT);
+                l.paint.setBlendMode(BlendMode.SRC_OVER);
                 l.passBelow = true;
                 if (hasSelection) {
                     final Canvas cv = new Canvas(l.bitmap);
