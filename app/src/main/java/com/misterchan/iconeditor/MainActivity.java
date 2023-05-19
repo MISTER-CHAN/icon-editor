@@ -4835,10 +4835,11 @@ public class MainActivity extends AppCompatActivity {
                 l.setLevel(Settings.INST.newLayerLevel() ? layer.getLevel() : 0);
                 l.paint.setBlendMode(BlendMode.SRC_OVER);
                 l.passBelow = true;
+                if (Settings.INST.newLayerLevel()) {
+                    l.moveBy(layer.left, layer.top);
+                }
                 if (hasSelection) {
-                    l.moveTo(selection.left, selection.top);
-                } else if (Settings.INST.newLayerLevel()) {
-                    l.moveTo(layer.left, layer.top);
+                    l.moveBy(selection.left, selection.top);
                 }
                 addLayer(frame, l, frame.selectedLayerIndex, true);
             }
