@@ -4815,7 +4815,7 @@ public class MainActivity extends AppCompatActivity {
                 l.bitmap = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(),
                         bitmap.getConfig(), true, bitmap.getColorSpace());
                 l.name = getString(R.string.mask);
-                l.setLevel(Settings.INST.newLayerLevel() ? layer.getLevel() + 1 : 0);
+                l.setLevel(layer.getLevel() + 1);
                 l.moveTo(layer.left, layer.top);
                 l.paint.setBlendMode(BlendMode.DST_OUT);
                 if (hasSelection) {
@@ -4827,13 +4827,17 @@ public class MainActivity extends AppCompatActivity {
             }
             case R.id.i_layer_add_filter_layer -> {
                 final Layer l = new Layer();
-                l.bitmap = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(),
+                l.bitmap = Bitmap.createBitmap(
+                        hasSelection ? selection.width() : bitmap.getWidth(),
+                        hasSelection ? selection.height() : bitmap.getHeight(),
                         bitmap.getConfig(), true, bitmap.getColorSpace());
                 l.name = getString(R.string.filter_noun);
+                l.setLevel(Settings.INST.newLayerLevel() ? layer.getLevel() : 0);
                 l.paint.setBlendMode(BlendMode.SRC_OVER);
                 l.passBelow = true;
-                if (Settings.INST.newLayerLevel()) {
-                    l.setLevel(layer.getLevel());
+                if (hasSelection) {
+                    l.moveTo(selection.left, selection.top);
+                } else if (Settings.INST.newLayerLevel()) {
                     l.moveTo(layer.left, layer.top);
                 }
                 addLayer(frame, l, frame.selectedLayerIndex, true);
