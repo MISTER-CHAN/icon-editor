@@ -7,6 +7,11 @@ import androidx.annotation.Size;
 
 public class Color extends android.graphics.Color {
 
+    @ColorInt
+    public static int argb(@IntRange(from = 0, to = 255) int alpha, @ColorInt int rgb) {
+        return alpha << 24 | rgb;
+    }
+
     @Size(3)
     public static void colorToHSV(@ColorInt int color, @Size(3) float[] hsv) {
         final float r = red(color) / 255.0f, g = green(color) / 255.0f, b = blue(color) / 255.0f;

@@ -12,7 +12,7 @@
         android:layout_height="wrap_content"
         android:columnCount="2"
         android:orientation="horizontal"
-        android:rowCount="3">
+        android:rowCount="4">
 
         <TextView
             android:layout_gravity="fill_vertical|start"
@@ -59,5 +59,20 @@
             android:valueTo="1"
             app:tickVisible="false"
             app:values="@array/range_0_1_values" />
+
+        <TextView
+            android:layout_gravity="center_vertical|start"
+            android:layout_margin="8dp"
+            android:text="@string/tolerance" />
+
+        <com.google.android.material.slider.Slider
+            android:id="@+id/s_tolerance"
+            android:layout_width="0dp"
+            android:layout_gravity="center_vertical|fill_horizontal"
+            android:value="0"
+            android:valueFrom="0"
+            android:valueTo="1"
+            app:labelBehavior="gone"
+            app:tickVisible="false" />
     </GridLayout>
 </LinearLayout>

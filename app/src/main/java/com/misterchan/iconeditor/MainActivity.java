@@ -33,6 +33,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Looper;
 import android.os.MessageQueue;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -730,26 +731,38 @@ public class MainActivity extends AppCompatActivity {
 
     private final ColorRangeDialog.OnChangedListener onColorRangeChangedListener = new ColorRangeDialog.OnChangedListener() {
         @Size(3)
-        private float[] hsv = new float[3];
+        private final float[] hsv = new float[3];
 
         @Override
-        public void onChanged(float[] cuboid, boolean stopped) {
+        public void onChanged(float[] cuboid, float tolerance, boolean stopped) {
             runOrStart(() -> {
-                if (cuboid[0] == 0.0f && cuboid[3] == 360.0f && cuboid[1] == 0.0f && cuboid[4] == 1.0f && cuboid[2] == 0.0f && cuboid[5] == 1.0f) {
-                    imagePreview.clearFilters();
-                } else {
-                    final int width = imagePreview.getWidth(), height = imagePreview.getHeight();
-                    final int[] src = imagePreview.getPixels(), dst = new int[width * height];
-                    for (int i = 0; i < src.length; ++i) {
-                        Color.colorToHSV(src[i], hsv);
-                        dst[i] = (cuboid[0] <= hsv[0] && hsv[0] <= cuboid[3]
-                                || cuboid[0] > cuboid[3] && (cuboid[0] <= hsv[0] || hsv[0] <= cuboid[3]))
-                                && (cuboid[1] <= hsv[1] && hsv[1] <= cuboid[4])
-                                && (cuboid[2] <= hsv[2] && hsv[2] <= cuboid[5])
-                                ? src[i] : Color.TRANSPARENT;
+                final int width = imagePreview.getWidth(), height = imagePreview.getHeight();
+                final int[] src = imagePreview.getPixels(), dst = new int[src.length];
+                for (int i = 0; i < src.length; ++i) {
+                    Color.colorToHSV(src[i], hsv);
+                    float a_ = 0.0f;
+                    final float ao3 = Color.alpha(src[i]) / 255.0f / 3.0f; // Alpha over 3
+                    float hi = 0.0f, ha = 0.0f; // Hue min and max
+                    if (tolerance > 0.0f) {
+                        hi = cuboid[0] - tolerance * 360.0f;
+                        ha = cuboid[3] + tolerance * 360.0f;
+                        if (hi > ha) {
+                            if (hsv[0] < ha) hi -= 360.0f;
+                            if (hsv[0] > hi) ha += 360.0f;
+                        }
                     }
-                    imagePreview.setPixels(dst, width, height);
+                    a_ += tolerance > 0.0f
+                            ? Math.min(Math.min(hsv[0] - hi, ha - hsv[0]) / (tolerance * 360.0f), 1.0f) * ao3
+                            : (cuboid[0] <= cuboid[3] ? cuboid[0] <= hsv[0] && hsv[0] <= cuboid[3] : cuboid[0] <= hsv[0] || hsv[0] <= cuboid[3]) ? ao3 : ao3 * -2;
+                    a_ += tolerance > 0.0f
+                            ? Math.min(Math.min(hsv[1] - (cuboid[1] - tolerance), (cuboid[4] + tolerance) - hsv[1]) / tolerance, 1.0f) * ao3
+                            : cuboid[1] <= hsv[1] && hsv[1] <= cuboid[4] ? ao3 : ao3 * -2;
+                    a_ += tolerance > 0.0f
+                            ? Math.min(Math.min(hsv[2] - (cuboid[2] - tolerance), (cuboid[5] + tolerance) - hsv[2]) / tolerance, 1.0f) * ao3
+                            : cuboid[2] <= hsv[2] && hsv[2] <= cuboid[5] ? ao3 : ao3 * -2;
+                    dst[i] = Color.argb((int) (Math.max(a_, 0.0f) * 255.0f), Color.rgb(src[i]));
                 }
+                imagePreview.setPixels(dst, width, height);
                 drawImagePreviewOntoView(stopped);
             }, stopped);
             tvStatus.setText(getString(R.string.state_color_range,
@@ -757,7 +770,7 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    private final ColorRangeDialog.OnChangedListener onConfirmLayerDuplicatingByColorRangeListener = (cuboid, stopped) -> {
+    private final ColorRangeDialog.OnChangedListener onConfirmLayerDuplicatingByColorRangeListener = (cuboid, tolerance, stopped) -> {
         final Bitmap p = imagePreview.getEntire();
         final Bitmap bm = Bitmap.createBitmap(p.getWidth(), p.getHeight(),
                 p.getConfig(), true, p.getColorSpace());
@@ -769,7 +782,7 @@ public class MainActivity extends AppCompatActivity {
         }
         imagePreview.recycle();
         imagePreview = null;
-        addLayer(project, frame, bm, tlProjectList.getSelectedTabPosition(),
+        addLayer(project, frame, bm, frame.selectedLayerIndex,
                 layer.getLevel(), layer.left, layer.top,
                 layer.visible, getString(R.string.copy_noun), true);
         clearStatus();
@@ -4253,16 +4266,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onSaveInstanceState(@NonNull Bundle outState) {
-        super.onSaveInstanceState(outState);
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        return true;
-    }
-
-    @Override
     protected void onDestroy() {
         recycleAllBitmaps();
         super.onDestroy();
@@ -4880,9 +4883,8 @@ public class MainActivity extends AppCompatActivity {
                 drawBitmapOntoView(true);
             }
             case R.id.i_layer_create_clipping_mask -> {
-                final BlendMode blendMode = layer.passBelow ? BlendMode.SRC : BlendMode.SRC_ATOP;
-                layer.paint.setBlendMode(blendMode);
-                Layers.levelDown(frame.layers, tlProjectList.getSelectedTabPosition());
+                layer.paint.setBlendMode(layer.passBelow ? BlendMode.SRC_OVER : BlendMode.SRC_ATOP);
+                Layers.levelDown(frame.layers, frame.selectedLayerIndex);
                 frame.computeLayerTree();
                 frame.layerAdapter.notifyLevelChanged();
                 drawBitmapOntoView(true);

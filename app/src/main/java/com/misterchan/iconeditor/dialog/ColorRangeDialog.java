@@ -13,19 +13,22 @@ import androidx.appcompat.app.AlertDialog;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.slider.LabelFormatter;
 import com.google.android.material.slider.RangeSlider;
+import com.google.android.material.slider.Slider;
 import com.misterchan.iconeditor.R;
 import com.misterchan.iconeditor.listener.OnCircularRSChangeListener;
 import com.misterchan.iconeditor.listener.OnRSChangeListener;
+import com.misterchan.iconeditor.listener.OnSliderChangeListener;
 
 import java.util.List;
 
 public class ColorRangeDialog {
 
     public interface OnChangedListener {
-        void onChanged(float[] cuboid, boolean stopped);
+        void onChanged(float[] cuboid, float tolerance, boolean stopped);
     }
 
     private final AlertDialog.Builder builder;
+    private float tolerance;
     private OnChangedListener listener;
 
     @Size(6)
@@ -47,7 +50,7 @@ public class ColorRangeDialog {
     }
 
     public ColorRangeDialog setOnPositiveButtonClickListener(OnChangedListener listener) {
-        builder.setPositiveButton(R.string.ok, (dialog, which) -> listener.onChanged(cuboid, true));
+        builder.setPositiveButton(R.string.ok, (dialog, which) -> listener.onChanged(cuboid, tolerance, true));
         return this;
     }
 
@@ -68,6 +71,7 @@ public class ColorRangeDialog {
         final RangeSlider rsHue = dialog.findViewById(R.id.rs_hue);
         final RangeSlider rsSaturation = dialog.findViewById(R.id.rs_saturation);
         final RangeSlider rsValue = dialog.findViewById(R.id.rs_value);
+        final Slider sTolerance = dialog.findViewById(R.id.s_tolerance);
         final LabelFormatter dlf = value -> value + "°"; // Degree label formatter
         final LabelFormatter plf = value -> value * 100.0f + "%"; // Percentage label formatter
 
@@ -77,20 +81,24 @@ public class ColorRangeDialog {
                 final List<Float> values = slider.getValues();
                 cuboid[0] = values.get(inclusive ? 0 : 1);
                 cuboid[3] = values.get(inclusive ? 1 : 0);
-                listener.onChanged(cuboid, stopped);
+                listener.onChanged(cuboid, tolerance, stopped);
             }
         };
         final OnRSChangeListener satOscl = (slider, stopped) -> {
             final List<Float> values = slider.getValues();
             cuboid[1] = values.get(0);
             cuboid[4] = values.get(1);
-            listener.onChanged(cuboid, stopped);
+            listener.onChanged(cuboid, tolerance, stopped);
         };
         final OnRSChangeListener valOscl = (slider, stopped) -> {
             final List<Float> values = slider.getValues();
             cuboid[2] = values.get(0);
             cuboid[5] = values.get(1);
-            listener.onChanged(cuboid, stopped);
+            listener.onChanged(cuboid, tolerance, stopped);
+        };
+        final OnSliderChangeListener tolOscl = (slider, value, stopped) -> {
+            tolerance = value;
+            listener.onChanged(cuboid, tolerance, stopped);
         };
 
         rsHue.addOnChangeListener(hueOscl);
@@ -102,5 +110,7 @@ public class ColorRangeDialog {
         rsValue.addOnChangeListener(valOscl);
         rsValue.addOnSliderTouchListener(valOscl);
         rsValue.setLabelFormatter(plf);
+        sTolerance.addOnChangeListener(tolOscl);
+        sTolerance.addOnSliderTouchListener(tolOscl);
     }
 }
