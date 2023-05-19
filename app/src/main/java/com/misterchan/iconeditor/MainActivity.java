@@ -4815,7 +4815,7 @@ public class MainActivity extends AppCompatActivity {
                 l.bitmap = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(),
                         bitmap.getConfig(), true, bitmap.getColorSpace());
                 l.name = getString(R.string.mask);
-                l.setLevel(layer.getLevel() + 1);
+                l.setLevel(Settings.INST.newLayerLevel() ? layer.getLevel() + 1 : 0);
                 l.moveTo(layer.left, layer.top);
                 l.paint.setBlendMode(BlendMode.DST_OUT);
                 if (hasSelection) {
@@ -4830,14 +4830,11 @@ public class MainActivity extends AppCompatActivity {
                 l.bitmap = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(),
                         bitmap.getConfig(), true, bitmap.getColorSpace());
                 l.name = getString(R.string.filter_noun);
-                l.setLevel(layer.getLevel());
-                l.moveTo(layer.left, layer.top);
                 l.paint.setBlendMode(BlendMode.SRC_OVER);
                 l.passBelow = true;
-                if (hasSelection) {
-                    final Canvas cv = new Canvas(l.bitmap);
-                    l.bitmap.eraseColor(Color.BLACK);
-                    cv.drawRect(selection, PAINT_DST_OUT);
+                if (Settings.INST.newLayerLevel()) {
+                    l.setLevel(layer.getLevel());
+                    l.moveTo(layer.left, layer.top);
                 }
                 addLayer(frame, l, frame.selectedLayerIndex, true);
             }
