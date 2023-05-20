@@ -322,6 +322,7 @@
     <string name="top">Top</string>
     <string name="top_level">Top</string>
     <string name="transform">Transform</string>
+    <string name="transition">Transition</string>
     <string name="translate">Translate</string>
     <string name="tutorial_merge_as_hidden">Tutorial</string>
     <string name="two_seventy_degrees" translatable="false">270°</string>

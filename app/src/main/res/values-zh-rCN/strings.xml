@@ -288,6 +288,7 @@
     <string name="top">顶</string>
     <string name="top_level">顶阶</string>
     <string name="transform">变换</string>
+    <string name="transition">过渡</string>
     <string name="translate">平移</string>
     <string name="tutorial_merge_as_hidden">Tutorial</string>
     <string name="typeface">字型</string>

@@ -734,7 +734,7 @@ public class MainActivity extends AppCompatActivity {
         private final float[] hsv = new float[3];
 
         @Override
-        public void onChanged(float[] cuboid, float tolerance, boolean stopped) {
+        public void onChanged(float[] cuboid, float transition, boolean stopped) {
             runOrStart(() -> {
                 final int width = imagePreview.getWidth(), height = imagePreview.getHeight();
                 final int[] src = imagePreview.getPixels(), dst = new int[src.length];
@@ -743,22 +743,22 @@ public class MainActivity extends AppCompatActivity {
                     float a_ = 0.0f;
                     final float ao3 = Color.alpha(src[i]) / 255.0f / 3.0f; // Alpha over 3
                     float hi = 0.0f, ha = 0.0f; // Hue min and max
-                    if (tolerance > 0.0f) {
-                        hi = cuboid[0] - tolerance * 360.0f;
-                        ha = cuboid[3] + tolerance * 360.0f;
+                    if (transition > 0.0f) {
+                        hi = cuboid[0] - transition * 360.0f;
+                        ha = cuboid[3] + transition * 360.0f;
                         if (hi > ha) {
                             if (hsv[0] < ha) hi -= 360.0f;
                             if (hsv[0] > hi) ha += 360.0f;
                         }
                     }
-                    a_ += tolerance > 0.0f
-                            ? Math.min(Math.min(hsv[0] - hi, ha - hsv[0]) / (tolerance * 360.0f), 1.0f) * ao3
+                    a_ += transition > 0.0f
+                            ? Math.min(Math.min(hsv[0] - hi, ha - hsv[0]) / (transition * 360.0f), 1.0f) * ao3
                             : (cuboid[0] <= cuboid[3] ? cuboid[0] <= hsv[0] && hsv[0] <= cuboid[3] : cuboid[0] <= hsv[0] || hsv[0] <= cuboid[3]) ? ao3 : ao3 * -2;
-                    a_ += tolerance > 0.0f
-                            ? Math.min(Math.min(hsv[1] - (cuboid[1] - tolerance), (cuboid[4] + tolerance) - hsv[1]) / tolerance, 1.0f) * ao3
+                    a_ += transition > 0.0f
+                            ? Math.min(Math.min(hsv[1] - (cuboid[1] - transition), (cuboid[4] + transition) - hsv[1]) / transition, 1.0f) * ao3
                             : cuboid[1] <= hsv[1] && hsv[1] <= cuboid[4] ? ao3 : ao3 * -2;
-                    a_ += tolerance > 0.0f
-                            ? Math.min(Math.min(hsv[2] - (cuboid[2] - tolerance), (cuboid[5] + tolerance) - hsv[2]) / tolerance, 1.0f) * ao3
+                    a_ += transition > 0.0f
+                            ? Math.min(Math.min(hsv[2] - (cuboid[2] - transition), (cuboid[5] + transition) - hsv[2]) / transition, 1.0f) * ao3
                             : cuboid[2] <= hsv[2] && hsv[2] <= cuboid[5] ? ao3 : ao3 * -2;
                     dst[i] = Color.argb((int) (Math.max(a_, 0.0f) * 255.0f), Color.rgb(src[i]));
                 }
@@ -770,7 +770,7 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    private final ColorRangeDialog.OnChangedListener onConfirmLayerDuplicatingByColorRangeListener = (cuboid, tolerance, stopped) -> {
+    private final ColorRangeDialog.OnChangedListener onConfirmLayerDuplicatingByColorRangeListener = (cuboid, transition, stopped) -> {
         final Bitmap p = imagePreview.getEntire();
         final Bitmap bm = Bitmap.createBitmap(p.getWidth(), p.getHeight(),
                 p.getConfig(), true, p.getColorSpace());
@@ -3060,7 +3060,7 @@ public class MainActivity extends AppCompatActivity {
                 });
             }
         } else {
-            closeProject(0);
+            closeProject(tlProjectList.getSelectedTabPosition());
         }
     }
 
