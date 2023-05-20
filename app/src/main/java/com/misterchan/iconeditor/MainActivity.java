@@ -5679,12 +5679,17 @@ public class MainActivity extends AppCompatActivity {
     private void selectLayer(int position) {
         drawFloatingLayersIntoImage();
 
+        final Layer unselectedLayer = layer;
         layer = frame.layers.get(position);
         frame.selectedLayerIndex = position;
         bitmap = layer.bitmap;
         canvas = new Canvas(bitmap);
 
         calculateBackgroundSizeOnView();
+
+        if (hasSelection) {
+            selection.offset(unselectedLayer.left - layer.left, unselectedLayer.top - layer.top);
+        }
 
         recycleTransformer();
         optimizeSelection();
