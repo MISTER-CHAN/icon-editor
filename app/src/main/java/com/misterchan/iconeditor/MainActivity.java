@@ -2920,6 +2920,7 @@ public class MainActivity extends AppCompatActivity {
         addToHistory(layer);
         frame.computeLayerTree();
         if (setSelected) {
+            hasSelection = false;
             selectLayer(position);
             if (ssdLayerList != null) {
                 rvLayerList.post(() -> {
