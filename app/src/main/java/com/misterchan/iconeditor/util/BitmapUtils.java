@@ -160,7 +160,7 @@ public class BitmapUtils {
         if (pixel == color && tolerance == 0) {
             return;
         }
-        final int w = rect.right - rect.left, h = rect.bottom - rect.top, area = w * h;
+        final int w = rect.width(), h = rect.height(), area = w * h;
         final int[] srcPixels = new int[area], dstPixels = src == dst ? srcPixels : new int[area];
         src.getPixels(srcPixels, 0, w, rect.left, rect.top, w, h);
         if (src != dst) {
