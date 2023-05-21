@@ -41,7 +41,7 @@ public class NoiseGenerator {
             return noRepeats;
         }
 
-        public float noisy() {
+        public float noisiness() {
             return noisiness;
         }
 

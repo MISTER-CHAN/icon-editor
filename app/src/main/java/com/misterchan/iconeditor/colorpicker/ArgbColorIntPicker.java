@@ -15,7 +15,7 @@ import com.misterchan.iconeditor.listener.OnSliderValueChangeListener;
 
 public class ArgbColorIntPicker extends ArgbColorPicker {
 
-    private int radix = 16;
+    private int radix;
     private String format;
 
     protected ArgbColorIntPicker(Context context, int titleId,

@@ -33,7 +33,6 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Looper;
 import android.os.MessageQueue;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -59,7 +58,6 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.ColorLong;
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.Size;
 import androidx.annotation.StringRes;
@@ -86,7 +84,6 @@ import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
-import com.misterchan.iconeditor.colorpicker.ArgbColorIntPicker;
 import com.misterchan.iconeditor.colorpicker.ArgbColorPicker;
 import com.misterchan.iconeditor.dialog.AnimationClipper;
 import com.misterchan.iconeditor.dialog.CellGridManager;
@@ -672,7 +669,7 @@ public class MainActivity extends AppCompatActivity {
     };
 
     private final View.OnClickListener onClickAddSwatchViewListener = v ->
-            ArgbColorIntPicker.make(MainActivity.this,
+            ArgbColorPicker.make(MainActivity.this,
                             R.string.add,
                             (oldColor, newColor) -> {
                                 palette.offerFirst(newColor);
@@ -682,7 +679,7 @@ public class MainActivity extends AppCompatActivity {
                     .show();
 
     private final View.OnClickListener onClickBackgroundColorListener = v ->
-            ArgbColorIntPicker.make(MainActivity.this,
+            ArgbColorPicker.make(MainActivity.this,
                             R.string.background_color,
                             (oldColor, newColor) -> {
                                 if (newColor != null) {
@@ -702,7 +699,7 @@ public class MainActivity extends AppCompatActivity {
     };
 
     private final View.OnClickListener onClickForegroundColorListener = v ->
-            ArgbColorIntPicker.make(MainActivity.this,
+            ArgbColorPicker.make(MainActivity.this,
                             R.string.foreground_color,
                             (oldColor, newColor) -> {
                                 if (newColor != null) {
@@ -862,35 +859,35 @@ public class MainActivity extends AppCompatActivity {
 
     private final NoiseGenerator.OnPropChangedListener onNoisePropChangedListener = (properties, stopped) -> {
         runOrStart(() -> {
-            if (properties.noisy() == 0.0f) {
+            if (properties.noisiness() == 0.0f) {
                 imagePreview.clearFilters();
             } else {
                 switch (properties.whatToDraw()) {
                     case PIXEL -> {
-                        if (properties.noisy() == 1.0f && properties.noRepeats()) {
+                        if (properties.noisiness() == 1.0f && properties.noRepeats()) {
                             imagePreview.drawColor(paint.getColor(), BlendMode.SRC);
                             break;
                         }
                         final int w = imagePreview.getWidth(), h = imagePreview.getHeight();
                         final int[] pixels = imagePreview.getPixels(w, h);
                         BitmapUtils.generateNoise(pixels, paint.getColor(),
-                                properties.noisy(), properties.seed(), properties.noRepeats());
+                                properties.noisiness(), properties.seed(), properties.noRepeats());
                         imagePreview.setPixels(pixels, w, h);
                     }
                     case POINT -> {
-                        if (properties.noisy() == 1.0f && properties.noRepeats()) {
+                        if (properties.noisiness() == 1.0f && properties.noRepeats()) {
                             imagePreview.drawColor(paint.getColor(), BlendMode.SRC);
                             break;
                         }
                         imagePreview.clearFilters();
                         BitmapUtils.generateNoise(imagePreview.getCanvas(), imagePreview.getRect(), paint,
-                                properties.noisy(), properties.seed(), properties.noRepeats());
+                                properties.noisiness(), properties.seed(), properties.noRepeats());
                     }
                     case REF -> {
                         imagePreview.clearFilters();
                         BitmapUtils.generateNoise(imagePreview.getCanvas(), imagePreview.getRect(),
                                 refBm != null ? refBm : imagePreview.getOriginal(), paint,
-                                properties.noisy(), properties.seed(), properties.noRepeats());
+                                properties.noisiness(), properties.seed(), properties.noRepeats());
                     }
                 }
             }

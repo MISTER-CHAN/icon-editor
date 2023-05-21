@@ -202,11 +202,13 @@ public class CurvesDialog {
         cv.drawLine(256.0f, 0.0f, 256.0f, 256.0f, normalPaint);
 
         final String format = Settings.INST.argbCompFormat();
+        final String min = Settings.INST.argbColorType() ? "Min" : String.format(format, 0x00);
+        final String max = Settings.INST.argbColorType() ? "Max" : String.format(format, 0xFF);
         normalPaint.setTextAlign(Paint.Align.LEFT);
-        cv.drawText(String.format(format, 0x00), 0.0f, grid.getHeight(), normalPaint);
-        cv.drawText(String.format(format, 0xFF), 0.0f, -fontMetrics.ascent, normalPaint);
+        cv.drawText(min, 0.0f, grid.getHeight(), normalPaint);
+        cv.drawText(max, 0.0f, -fontMetrics.ascent, normalPaint);
         normalPaint.setTextAlign(Paint.Align.RIGHT);
-        cv.drawText(String.format(format, 0xFF), grid.getWidth(), grid.getHeight(), normalPaint);
+        cv.drawText(max, grid.getWidth(), grid.getHeight(), normalPaint);
 
         ivGrid.invalidate();
     }

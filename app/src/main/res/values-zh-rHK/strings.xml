@@ -271,7 +271,7 @@
     <string name="state_start_stop_">始：(%d, %d)，止：(%d, %d)，</string>
     <string name="state_threshold">閾値：%d</string>
     <string name="stretch">拉伸</string>
-    <string name="strike_thru">擊穿</string>
+    <string name="strike_thru">消除線</string>
     <string name="stroke_width">筆劃寬度</string>
     <string name="subpixel">子像素</string>
     <string name="swap">交換</string>
