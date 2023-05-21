@@ -41,7 +41,7 @@ public class BitmapUtils {
     }
 
     public static void addLightingColorFilter(@ColorInt final int[] src, @ColorInt final int[] dst,
-                                              @Size(8) float[] lighting) {
+                                              @Size(8) final float[] lighting) {
         for (int i = 0; i < src.length; ++i) {
             final int r = Color.red(src[i]), g = Color.green(src[i]), b = Color.blue(src[i]),
                     a = Color.alpha(src[i]);
@@ -214,17 +214,17 @@ public class BitmapUtils {
     }
 
     public static void generateNoise(@ColorInt final int[] pixels, @ColorInt final int color,
-                                     @FloatRange(from = 0.0f, to = 1.0f) final float noisy, final Long seed,
+                                     @FloatRange(from = 0.0f, to = 1.0f) final float noisiness, final Long seed,
                                      final boolean noRepeats) {
         final Random random = seed == null ? new Random() : new Random(seed);
         if (noRepeats) {
             for (int i = 0; i < pixels.length; ++i) {
-                if (random.nextFloat() < noisy) {
+                if (random.nextFloat() < noisiness) {
                     pixels[i] = color;
                 }
             }
         } else {
-            final int amount = (int) (pixels.length * noisy);
+            final int amount = (int) (pixels.length * noisiness);
             for (int i = 0; i < amount; ++i) {
                 pixels[(int) (pixels.length * random.nextFloat())] = color;
             }
@@ -232,19 +232,19 @@ public class BitmapUtils {
     }
 
     public static void generateNoise(final Canvas canvas, final Rect rect, final Paint paint,
-                                     @FloatRange(from = 0.0f, to = 1.0f) final float noisy, final Long seed,
+                                     @FloatRange(from = 0.0f, to = 1.0f) final float noisiness, final Long seed,
                                      final boolean noRepeats) {
         final Random random = seed == null ? new Random() : new Random(seed);
         if (noRepeats) {
             for (float y = rect.top + 0.5f; y < rect.bottom; ++y) {
                 for (float x = rect.left + 0.5f; x < rect.right; ++x) {
-                    if (random.nextFloat() < noisy) {
+                    if (random.nextFloat() < noisiness) {
                         canvas.drawPoint(x, y, paint);
                     }
                 }
             }
         } else {
-            final int amount = (int) (rect.width() * rect.height() * noisy);
+            final int amount = (int) (rect.width() * rect.height() * noisiness);
             for (int i = 0; i < amount; ++i) {
                 canvas.drawPoint(rect.left + rect.width() * random.nextFloat(),
                         rect.top + rect.height() * random.nextFloat(), paint);
@@ -253,20 +253,20 @@ public class BitmapUtils {
     }
 
     public static void generateNoise(final Canvas canvas, final Rect rect, final Bitmap bitmap, final Paint paint,
-                                     @FloatRange(from = 0.0f, to = 1.0f) final float noisy, final Long seed,
+                                     @FloatRange(from = 0.0f, to = 1.0f) final float noisiness, final Long seed,
                                      final boolean noRepeats) {
         final Random random = seed == null ? new Random() : new Random(seed);
         final int w = bitmap.getWidth(), h = bitmap.getHeight();
         if (noRepeats) {
             for (float y = rect.top - h; y < rect.bottom; y += h) {
                 for (float x = rect.left - w; x < rect.right; x += w) {
-                    if (random.nextFloat() < noisy) {
+                    if (random.nextFloat() < noisiness) {
                         canvas.drawBitmap(bitmap, x, y, paint);
                     }
                 }
             }
         } else {
-            final int amount = (int) ((rect.width() / w + 1) * (rect.height() / h + 1) * noisy);
+            final int amount = (int) ((rect.width() / w + 1) * (rect.height() / h + 1) * noisiness);
             for (int i = 0; i < amount; ++i) {
                 canvas.drawBitmap(bitmap,
                         (rect.width() + w) * random.nextFloat() - w,
