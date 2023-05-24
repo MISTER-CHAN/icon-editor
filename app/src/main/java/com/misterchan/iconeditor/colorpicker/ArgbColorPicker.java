@@ -1,7 +1,6 @@
 package com.misterchan.iconeditor.colorpicker;
 
 import android.content.Context;
-import android.widget.SeekBar;
 
 import androidx.annotation.ColorLong;
 import androidx.annotation.StringRes;
@@ -75,19 +74,19 @@ public abstract class ArgbColorPicker extends ColorPicker {
     }
 
     protected void showOtherColorPickers(AlertDialog dialog, OnColorPickListener l) {
-        dialog.findViewById(R.id.tv_cmyk).setOnClickListener(v ->
+        dialog.findViewById(R.id.b_cmyk).setOnClickListener(v ->
                 CmykColorPicker.make(context, l, newColor).show());
 
-        dialog.findViewById(R.id.tv_hsv).setOnClickListener(v ->
+        dialog.findViewById(R.id.b_hsv).setOnClickListener(v ->
                 HsvColorPicker.make(context, l, newColor).show());
 
-        dialog.findViewById(R.id.tv_lab).setOnClickListener(v ->
+        dialog.findViewById(R.id.b_lab).setOnClickListener(v ->
                 LabColorPicker.make(context, l, newColor).show());
 
-        dialog.findViewById(R.id.tv_xyz).setOnClickListener(v ->
+        dialog.findViewById(R.id.b_xyz).setOnClickListener(v ->
                 XyzColorPicker.make(context, l, newColor).show());
 
-        dialog.findViewById(R.id.tv_xyy).setOnClickListener(v ->
+        dialog.findViewById(R.id.b_xyy).setOnClickListener(v ->
                 XyYColorPicker.make(context, l, newColor).show());
     }
 }

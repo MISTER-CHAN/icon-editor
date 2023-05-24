@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.Resources;
-import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.BlendMode;
 import android.graphics.Canvas;
@@ -14,11 +13,9 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.CompoundButton;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RadioButton;
 
 import androidx.annotation.IntRange;
 import androidx.annotation.Size;
@@ -26,11 +23,9 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.core.view.OneShotPreDrawListener;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.android.material.tabs.TabItem;
 import com.google.android.material.tabs.TabLayout;
 import com.misterchan.iconeditor.Color;
 import com.misterchan.iconeditor.Settings;
-import com.misterchan.iconeditor.listener.OnCBCheckedListener;
 import com.misterchan.iconeditor.R;
 
 import java.util.function.Function;
@@ -343,7 +338,7 @@ public class CurvesDialog {
             fl.setLayoutParams(lp);
         });
 
-        dialog.findViewById(R.id.tv_reset).setOnClickListener(v -> {
+        dialog.findViewById(R.id.b_reset).setOnClickListener(v -> {
             reset();
             bitmap.eraseColor(Color.TRANSPARENT);
             canvas.drawLine(0.0f, 256.0f, 256.0f, 0.0f, paint);

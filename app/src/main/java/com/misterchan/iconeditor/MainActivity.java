@@ -3864,15 +3864,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initColorAdapter() {
-        colorAdapter.setOnItemClickListener(view -> {
-            final long color = (Long) view.getTag();
+        colorAdapter.setOnItemClickListener((view, color) -> {
             paint.setColor(color);
             vForegroundColor.setBackgroundColor(Color.toArgb(color));
             if (isEditingText) {
                 drawTextOntoView();
             }
         });
-        colorAdapter.setOnItemLongClickListener(view -> {
+        colorAdapter.setOnItemLongClickListener((view, color) -> {
             ArgbColorPicker.make(MainActivity.this,
                             R.string.swatch,
                             (oldColor, newColor) -> {
@@ -3885,7 +3884,7 @@ public class MainActivity extends AppCompatActivity {
                                     colorAdapter.notifyItemRemoved(index);
                                 }
                             },
-                            (Long) view.getTag(),
+                            color,
                             R.string.delete)
                     .show();
             return true;

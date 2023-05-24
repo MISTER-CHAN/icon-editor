@@ -11,6 +11,14 @@ import java.util.List;
 
 class ColorAdapter extends ItemMovableAdapter<ColorAdapter.ViewHolder> {
 
+    public interface OnItemClickListener {
+        void onItemClick(View view, Long color);
+    }
+
+    public interface OnItemLongClickListener {
+        boolean onItemLongClick(View view, Long color);
+    }
+
     protected static class ViewHolder extends RecyclerView.ViewHolder {
         private final View view;
 
@@ -21,8 +29,8 @@ class ColorAdapter extends ItemMovableAdapter<ColorAdapter.ViewHolder> {
     }
 
     private final List<Long> colors;
-    private View.OnClickListener onItemClickListener;
-    private View.OnLongClickListener onItemLongClickListener;
+    private OnItemClickListener onItemClickListener;
+    private OnItemLongClickListener onItemLongClickListener;
 
     public ColorAdapter(List<Long> colors) {
         this.colors = colors;
@@ -42,9 +50,8 @@ class ColorAdapter extends ItemMovableAdapter<ColorAdapter.ViewHolder> {
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         final Long color = colors.get(position);
         holder.view.setBackgroundColor(Color.toArgb(color));
-        holder.view.setOnClickListener(onItemClickListener);
-        holder.view.setOnLongClickListener(onItemLongClickListener);
-        holder.view.setTag(color);
+        holder.view.setOnClickListener(v -> onItemClickListener.onItemClick(v, color));
+        holder.view.setOnLongClickListener(v -> onItemLongClickListener.onItemLongClick(v, color));
     }
 
     @NonNull
@@ -54,11 +61,11 @@ class ColorAdapter extends ItemMovableAdapter<ColorAdapter.ViewHolder> {
         return new ViewHolder(item);
     }
 
-    public void setOnItemClickListener(View.OnClickListener listener) {
+    public void setOnItemClickListener(OnItemClickListener listener) {
         onItemClickListener = listener;
     }
 
-    public void setOnItemLongClickListener(View.OnLongClickListener listener) {
+    public void setOnItemLongClickListener(OnItemLongClickListener listener) {
         onItemLongClickListener = listener;
     }
 }

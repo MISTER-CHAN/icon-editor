@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.TextView;
@@ -24,6 +25,7 @@ class FrameAdapter extends ItemMovableAdapter<FrameAdapter.ViewHolder> {
 
     protected static class ViewHolder extends RecyclerView.ViewHolder {
         private final FrameLayout flThumbnail;
+        private final ImageView ivThumbnail;
         private final RadioButton rb;
         private final TextView tvThumbnail;
         private final View itemView;
@@ -32,6 +34,7 @@ class FrameAdapter extends ItemMovableAdapter<FrameAdapter.ViewHolder> {
             super(itemView);
             this.itemView = itemView;
             flThumbnail = itemView.findViewById(R.id.fl_thumbnail);
+            ivThumbnail = itemView.findViewById(R.id.iv_thumbnail);
             tvThumbnail = itemView.findViewById(R.id.tv_thumbnail);
             rb = itemView.findViewById(R.id.rb);
         }
@@ -102,6 +105,7 @@ class FrameAdapter extends ItemMovableAdapter<FrameAdapter.ViewHolder> {
             lp.height = w >= h ? dim64Dip * h / w : dim64Dip;
             holder.flThumbnail.setLayoutParams(lp);
         });
+        holder.ivThumbnail.setImageBitmap(frame.getBackgroundLayer().bitmap);
         holder.rb.setOnCheckedChangeListener(null);
         holder.rb.setChecked(selected);
         holder.rb.setOnCheckedChangeListener((OnCBCheckedListener) buttonView ->

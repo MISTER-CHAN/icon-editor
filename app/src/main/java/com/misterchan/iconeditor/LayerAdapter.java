@@ -183,7 +183,7 @@ class LayerAdapter extends ItemMovableAdapter<LayerAdapter.ViewHolder> {
             }
         });
         OneShotPreDrawListener.add(holder.flThumbnail, () -> {
-            final ConstraintLayout.LayoutParams lp = (ConstraintLayout.LayoutParams) holder.flThumbnail.getLayoutParams();
+            final LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) holder.flThumbnail.getLayoutParams();
             final int w = layer.bitmap.getWidth(), h = layer.bitmap.getHeight();
             lp.width = w >= h ? dim64Dip : dim64Dip * w / h;
             lp.height = w >= h ? dim64Dip * h / w : dim64Dip;

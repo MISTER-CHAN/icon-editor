@@ -26,6 +26,13 @@
             android:scaleType="center"
             android:src="@mipmap/chessboard" />
 
+        <ImageView
+            android:id="@+id/iv_thumbnail"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:scaleType="fitCenter" />
+
         <TextView
             android:id="@+id/tv_thumbnail"
             android:layout_width="wrap_content"

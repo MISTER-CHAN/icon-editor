@@ -4,43 +4,38 @@
     android:layout_height="wrap_content"
     android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/tv_cmyk"
+    <Button
+        android:id="@+id/b_cmyk"
+        style="@style/Widget.App.Button.TextButton.Dense"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="8dp"
-        android:text="@string/convert_from_cmyk"
-        android:textColor="?android:attr/textColorLink" />
+        android:text="@string/convert_from_cmyk" />
 
-    <TextView
-        android:id="@+id/tv_hsv"
+    <Button
+        android:id="@+id/b_hsv"
+        style="@style/Widget.App.Button.TextButton.Dense"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="8dp"
-        android:text="@string/convert_from_hsv"
-        android:textColor="?android:attr/textColorLink" />
+        android:text="@string/convert_from_hsv" />
 
-    <TextView
-        android:id="@+id/tv_lab"
+    <Button
+        android:id="@+id/b_lab"
+        style="@style/Widget.App.Button.TextButton.Dense"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="8dp"
-        android:text="@string/convert_from_lab"
-        android:textColor="?android:attr/textColorLink" />
+        android:text="@string/convert_from_lab" />
 
-    <TextView
-        android:id="@+id/tv_xyz"
+    <Button
+        android:id="@+id/b_xyz"
+        style="@style/Widget.App.Button.TextButton.Dense"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="8dp"
-        android:text="@string/convert_from_xyz"
-        android:textColor="?android:attr/textColorLink" />
+        android:text="@string/convert_from_xyz" />
 
-    <TextView
-        android:id="@+id/tv_xyy"
+    <Button
+        android:id="@+id/b_xyy"
+        style="@style/Widget.App.Button.TextButton.Dense"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="8dp"
-        android:text="@string/convert_from_xyy"
-        android:textColor="?android:attr/textColorLink" />
+        android:text="@string/convert_from_xyy" />
 </LinearLayout>
