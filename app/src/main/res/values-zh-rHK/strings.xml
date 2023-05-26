@@ -229,8 +229,9 @@
     <string name="save">儲存</string>
     <string name="save_as">另存爲</string>
     <string name="scale">縮放</string>
-    <string name="scale_to_white">壓縮至白色</string>
     <string name="scale_to_black">壓縮至黑色</string>
+    <string name="scale_to_white">壓縮至白色</string>
+    <string name="scale_type">縮放類型</string>
     <string name="seed">種子</string>
     <string name="select">選取</string>
     <string name="select_all">全選</string>

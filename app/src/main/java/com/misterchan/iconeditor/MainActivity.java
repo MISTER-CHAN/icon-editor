@@ -1207,7 +1207,6 @@ public class MainActivity extends AppCompatActivity {
         } else {
             resizeImage(layer, width, height, transform, null, 0, 0);
         }
-        drawBitmapOntoView(true, true);
     };
 
     private final RunnableRunnable runnableRunningRunner = (target, wait) -> target.run();
@@ -4328,18 +4327,17 @@ public class MainActivity extends AppCompatActivity {
                         final Layer bl = f.getBackgroundLayer();
                         final Bitmap bm = Bitmap.createBitmap(bl.bitmap, selection.left, selection.top, width, height);
                         resizeImage(bl, width, height,
-                                ImageSizeManager.Transform.CROP, bm,
+                                ImageSizeManager.ScaleType.CROP, bm,
                                 selection.left, selection.top);
                         bm.recycle();
                     }
                 } else {
                     final Bitmap bm = Bitmap.createBitmap(bitmap, selection.left, selection.top, width, height);
                     resizeImage(layer, width, height,
-                            ImageSizeManager.Transform.CROP, bm,
+                            ImageSizeManager.ScaleType.CROP, bm,
                             selection.left, selection.top);
                     bm.recycle();
                 }
-                drawBitmapOntoView(true, true);
             }
             case R.id.i_cut -> {
                 if (transformer == null) {
@@ -5408,16 +5406,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void resizeImage(Layer layer, int width, int height,
-                             ImageSizeManager.Transform transform, @Nullable Bitmap newImage,
+                             ImageSizeManager.ScaleType scaleType, @Nullable Bitmap newImage,
                              int offsetX, int offsetY) {
         final Bitmap bm = Bitmap.createBitmap(width, height,
                 layer.bitmap.getConfig(), layer.bitmap.hasAlpha(), layer.bitmap.getColorSpace());
         final Canvas cv = new Canvas(bm);
-        if (transform != null) {
+        if (scaleType != null) {
             if (newImage == null) {
                 newImage = layer.bitmap;
             }
-            switch (transform) {
+            switch (scaleType) {
                 case STRETCH -> cv.drawBitmap(newImage,
                         new Rect(0, 0, layer.bitmap.getWidth(), layer.bitmap.getHeight()),
                         new RectF(0.0f, 0.0f, width, height),
@@ -5452,47 +5450,70 @@ public class MainActivity extends AppCompatActivity {
                 tbSoftBrush.setEnabled(false);
                 tbSoftBrush.setChecked(true);
             }
+
+            drawBitmapOntoView(true, true);
+            drawChessboardOntoView();
+            drawGridOntoView();
+            drawSelectionOntoView();
+
+            clearStatus(); // Prevent from displaying old size
         }
-
-        drawChessboardOntoView();
-        drawGridOntoView();
-        drawSelectionOntoView();
-
-        clearStatus(); // Prevent from displaying old size
     }
 
     private void rotate(float degrees) {
-        if (transformer == null) {
-            if (!hasSelection) {
-                selectAll();
-            }
-            final int left = selection.left, top = selection.top, width = selection.width(), height = selection.height();
-            final Bitmap bm = Bitmap.createBitmap(bitmap, left, top, width, height);
+        if (!hasSelection && (degrees == 90.0f || degrees == 270.0f)) {
+            final int width = bitmap.getWidth(), height = bitmap.getHeight();
+            final Bitmap bm = Bitmap.createBitmap(height, width, bitmap.getConfig(), bitmap.hasAlpha(), bitmap.getColorSpace());
+            canvas = new Canvas(bm);
             final Matrix matrix = new Matrix();
-            matrix.setRotate(degrees, width / 2.0f, height / 2.0f);
-            matrix.postTranslate(left, top);
-            canvas.drawRect(selection, eraser);
-            canvas.drawBitmap(bm, matrix, PAINT_BITMAP_OVER);
-            bm.recycle();
+            final float pivot = switch ((int) degrees) {
+                case 90 -> height / 2.0f;
+                case 270 -> width / 2.0f;
+                default -> 0.0f;
+            };
+            matrix.setRotate(degrees, pivot, pivot);
+            canvas.drawBitmap(bitmap, matrix, PAINT_BITMAP);
+            bitmap.recycle();
+            bitmap = bm;
+            layer.bitmap = bm;
             addToHistory();
+            calculateBackgroundSizeOnView();
+            drawBitmapOntoView(true, true);
+            drawChessboardOntoView();
+            drawGridOntoView();
         } else {
-            final int w = transformer.getWidth(), h = transformer.getHeight();
-            transformer.rotate(degrees, false, false);
-            final int w_ = transformer.getWidth(), h_ = transformer.getHeight();
-            selection.left += w - w_ >> 1;
-            selection.top += h - h_ >> 1;
-            selection.right = selection.left + w_;
-            selection.bottom = selection.top + h_;
-            drawSelectionOntoView();
+            if (transformer == null) {
+                if (!hasSelection) {
+                    selectAll();
+                }
+                final int left = selection.left, top = selection.top, width = selection.width(), height = selection.height();
+                final Bitmap bm = Bitmap.createBitmap(bitmap, left, top, width, height);
+                final Matrix matrix = new Matrix();
+                matrix.setRotate(degrees, width / 2.0f, height / 2.0f);
+                matrix.postTranslate(left, top);
+                canvas.drawRect(selection, eraser);
+                canvas.drawBitmap(bm, matrix, PAINT_BITMAP_OVER);
+                bm.recycle();
+                addToHistory();
+            } else {
+                final int w = transformer.getWidth(), h = transformer.getHeight();
+                transformer.rotate(degrees, false, false);
+                final int w_ = transformer.getWidth(), h_ = transformer.getHeight();
+                selection.left += w - w_ >> 1;
+                selection.top += h - h_ >> 1;
+                selection.right = selection.left + w_;
+                selection.bottom = selection.top + h_;
+                drawSelectionOntoView();
+            }
+            final Matrix matrix = new Matrix();
+            matrix.setRotate(degrees, selection.exactCenterX(), selection.exactCenterY());
+            final RectF rf = new RectF(selection);
+            matrix.mapRect(rf);
+            final Rect r = new Rect();
+            rf.roundOut(r);
+            r.union(selection);
+            drawBitmapOntoView(r, true);
         }
-        final Matrix matrix = new Matrix();
-        matrix.setRotate(degrees, selection.exactCenterX(), selection.exactCenterY());
-        final RectF rf = new RectF(selection);
-        matrix.mapRect(rf);
-        final Rect r = new Rect();
-        rf.roundOut(r);
-        r.union(selection);
-        drawBitmapOntoView(r, true);
     }
 
     private void runOrStart(final Runnable target) {

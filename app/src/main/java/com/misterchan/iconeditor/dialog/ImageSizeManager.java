@@ -15,19 +15,18 @@ import com.misterchan.iconeditor.R;
 
 public class ImageSizeManager {
 
-    public enum Transform {
+    public enum ScaleType {
         STRETCH, STRETCH_FILTER, CROP;
     }
 
     public interface OnApplyListener {
-        void onApply(int width, int height, Transform transform);
+        void onApply(int width, int height, ScaleType transform);
     }
 
     private final AlertDialog.Builder builder;
     private CheckBox cbFilter;
     private final double ratio;
     private final int defaultWidth, defaultHeight;
-    private final OnApplyListener listener;
     private RadioButton rbStretch;
     private TextInputEditText tietWidth, tietHeight;
 
@@ -39,7 +38,6 @@ public class ImageSizeManager {
         defaultWidth = bitmap.getWidth();
         defaultHeight = bitmap.getHeight();
         ratio = (double) defaultWidth / (double) defaultHeight;
-        this.listener = listener;
 
         builder = new MaterialAlertDialogBuilder(context)
                 .setIcon(R.drawable.ic_photo_size_select_large)
@@ -54,10 +52,10 @@ public class ImageSizeManager {
                 if (!(width > 0 && height > 0)) {
                     return;
                 }
-                final Transform transform = rbStretch.isChecked()
-                        ? cbFilter.isChecked() ? Transform.STRETCH_FILTER : Transform.STRETCH
-                        : Transform.CROP;
-                this.listener.onApply(width, height, transform);
+                final ScaleType scaleType = rbStretch.isChecked()
+                        ? cbFilter.isChecked() ? ScaleType.STRETCH_FILTER : ScaleType.STRETCH
+                        : ScaleType.CROP;
+                listener.onApply(width, height, scaleType);
             } catch (NumberFormatException e) {
             }
         });

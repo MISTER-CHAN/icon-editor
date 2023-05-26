@@ -257,8 +257,9 @@
     <string name="save">Save</string>
     <string name="save_as">Save as</string>
     <string name="scale">Scale</string>
-    <string name="scale_to_white">Scale to White</string>
     <string name="scale_to_black">Scale to Black</string>
+    <string name="scale_to_white">Scale to White</string>
+    <string name="scale_type">Scale Type</string>
     <string name="seed">Seed</string>
     <string name="select">Select</string>
     <string name="select_all">Select All</string>

@@ -167,16 +167,16 @@ public class BitmapUtils {
             dst.getPixels(dstPixels, 0, w, rect.left, rect.top, w, h);
         }
 //      final long a = System.currentTimeMillis();
-        final Queue<Point> pointsToSet = new LinkedList<>();
-        final boolean[] havePointsBeenSet = new boolean[area];
-        pointsToSet.offer(new Point(x, y));
+        final Queue<Point> queue = new LinkedList<>();
+        final boolean[] visited = new boolean[area];
+        queue.offer(new Point(x, y));
         Point point;
-        while ((point = pointsToSet.poll()) != null) {
+        while ((point = queue.poll()) != null) {
             final int i = (point.y - rect.top) * w + (point.x - rect.left);
-            if (havePointsBeenSet[i]) {
+            if (visited[i]) {
                 continue;
             }
-            havePointsBeenSet[i] = true;
+            visited[i] = true;
             final int px = srcPixels[i];
             boolean match;
             int newColor;
@@ -197,15 +197,14 @@ public class BitmapUtils {
                 if (src != dst) {
                     dstPixels[i] = newColor;
                 }
-                final int xn = point.x - 1, xp = point.x + 1, yn = point.y - 1, yp = point.y + 1; // n - negative, p - positive
-                if (rect.left <= xn && !havePointsBeenSet[i - 1])
-                    pointsToSet.offer(new Point(xn, point.y));
-                if (xp < rect.right && !havePointsBeenSet[i + 1])
-                    pointsToSet.offer(new Point(xp, point.y));
-                if (rect.top <= yn && !havePointsBeenSet[i - w])
-                    pointsToSet.offer(new Point(point.x, yn));
-                if (yp < rect.bottom && !havePointsBeenSet[i + w])
-                    pointsToSet.offer(new Point(point.x, yp));
+                if (rect.left <= point.x - 1 && !visited[i - 1])
+                    queue.offer(new Point(point.x - 1, point.y));
+                if (rect.top <= point.y - 1 && !visited[i - w])
+                    queue.offer(new Point(point.x, point.y - 1));
+                if (point.x + 1 < rect.right && !visited[i + 1])
+                    queue.offer(new Point(point.x + 1, point.y));
+                if (point.y + 1 < rect.bottom && !visited[i + w])
+                    queue.offer(new Point(point.x, point.y + 1));
             }
         }
 //      final long b = System.currentTimeMillis();

@@ -231,6 +231,7 @@
     <string name="scale">缩放</string>
     <string name="scale_to_black">压缩至黑色</string>
     <string name="scale_to_white">压缩至白色</string>
+    <string name="scale_type">缩放类型</string>
     <string name="seed">种子</string>
     <string name="select">选择</string>
     <string name="select_all">全选</string>
