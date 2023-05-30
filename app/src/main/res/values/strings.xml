@@ -190,6 +190,7 @@
     <string name="merge_as_new">Merge as New</string>
     <string name="merge_down">Merge down</string>
     <string name="merge_visible">Merge Visible</string>
+    <string name="mesh">Mesh</string>
     <string name="milliseconds" translatable="false">%d ms</string>
     <string name="min">Min</string>
     <string name="mister_chan" translatable="false">MISTER_CHAN</string>

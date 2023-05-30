@@ -1,11 +1,10 @@
 package com.misterchan.iconeditor;
 
 import android.graphics.Bitmap;
+import android.graphics.BlendMode;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Paint;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.RectF;
 
@@ -18,7 +17,7 @@ class Transformer {
 
     private final Paint paint = new Paint() {
         {
-            setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC));
+            setBlendMode(BlendMode.SRC);
         }
     };
 
@@ -120,5 +119,16 @@ class Transformer {
         bitmap.recycle();
         bitmap = bm;
         return r;
+    }
+
+    public void transformMesh(float[] verts, boolean filter, boolean antiAlias) {
+        final Bitmap bm = Bitmap.createBitmap(bitmap);
+        bitmap.eraseColor(Color.TRANSPARENT);
+        final Canvas canvas = new Canvas(bitmap);
+        final int count = (verts.length - 8) / 10;
+        paint.setAntiAlias(antiAlias);
+        paint.setFilterBitmap(filter);
+        canvas.drawBitmapMesh(bm, count + 1, count + 1, verts, 0, null, 0, paint);
+        bm.recycle();
     }
 }

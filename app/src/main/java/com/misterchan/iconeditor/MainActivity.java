@@ -2091,6 +2091,51 @@ public class MainActivity extends AppCompatActivity {
     };
 
     /**
+     * Callback to call on touch image view with mesh transformer
+     */
+    @SuppressLint("ClickableViewAccessibility")
+    private final View.OnTouchListener onTouchIVWithMTListener = new View.OnTouchListener() {
+        @Size(18)
+        private final float[] verts = new float[18];
+
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN -> {
+                    if (selection.isEmpty()) {
+                        break;
+                    }
+                    if (transformer == null) {
+                        createTransformer();
+                    }
+                    final int w = selection.width(), h = selection.height();
+                    final float rx = toBitmapXExact(event.getX()) - selection.left, ry = toBitmapYExact(event.getY()) - selection.top;
+                    verts[2] = verts[8] = verts[14] = rx;
+                    verts[7] = verts[9] = verts[11] = ry;
+                    verts[4] = verts[10] = verts[16] = w;
+                    verts[13] = verts[15] = verts[17] = h;
+                }
+                case MotionEvent.ACTION_MOVE -> {
+                    if (transformer == null) {
+                        break;
+                    }
+                    final float rx = toBitmapXExact(event.getX()) - selection.left, ry = toBitmapYExact(event.getY()) - selection.top;
+                    verts[2] = verts[8] = verts[14] = rx;
+                    verts[7] = verts[9] = verts[11] = ry;
+                }
+                case MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    if (transformer == null) {
+                        break;
+                    }
+                    transformer.transformMesh(verts, cbTransformerFilter.isChecked(), antiAlias);
+                    drawBitmapOntoView(selection, true);
+                }
+            }
+            return true;
+        }
+    };
+
+    /**
      * Callback to call on touch image view with poly transformer
      */
     @SuppressLint("ClickableViewAccessibility")
@@ -2170,14 +2215,16 @@ public class MainActivity extends AppCompatActivity {
                     bmDst = null;
                     pointCount = 0;
                     ivSelection.setImageMatrix(null);
-                    final RectF r = transformer.transform(bmMatrix, cbTransformerFilter.isChecked(), antiAlias);
-                    if (r != null) {
+                    final RectF rect = transformer.transform(bmMatrix, cbTransformerFilter.isChecked(), antiAlias);
+                    if (rect != null) {
+                        final Rect r = new Rect(selection);
                         final int w_ = transformer.getWidth(), h_ = transformer.getHeight();
-                        selection.left += r.left;
-                        selection.top += r.top;
+                        selection.left += rect.left;
+                        selection.top += rect.top;
                         selection.right = selection.left + w_;
                         selection.bottom = selection.top + h_;
-                        drawBitmapOntoView(true);
+                        r.union(selection);
+                        drawBitmapOntoView(r, true);
                     }
                     drawSelectionOntoView();
                     clearStatus();
@@ -2231,11 +2278,13 @@ public class MainActivity extends AppCompatActivity {
                     transformer.rotate(ivSelection.getRotation(), cbTransformerFilter.isChecked(), antiAlias);
                     ivSelection.setRotation(0.0f);
                     final int w_ = transformer.getWidth(), h_ = transformer.getHeight();
+                    final Rect r = new Rect(selection);
                     selection.left += w - w_ >> 1;
                     selection.top += h - h_ >> 1;
                     selection.right = selection.left + w_;
                     selection.bottom = selection.top + h_;
-                    drawBitmapOntoView(selection, true);
+                    r.union(selection);
+                    drawBitmapOntoView(r, true);
                     drawSelectionOntoView();
                     clearStatus();
                 }
@@ -4162,6 +4211,7 @@ public class MainActivity extends AppCompatActivity {
                 case R.id.b_transformer_scale -> onTouchIVWithSTListener;
                 case R.id.b_transformer_rotation -> onTouchIVWithRTListener;
                 case R.id.b_transformer_poly -> onTouchIVWithPTListener;
+                case R.id.b_transformer_mesh -> onTouchIVWithMTListener;
                 default -> null;
             });
         });
@@ -5867,6 +5917,10 @@ public class MainActivity extends AppCompatActivity {
         return (int) ((x - translationX) / scale);
     }
 
+    private float toBitmapXExact(float x) {
+        return ((x - translationX) / scale) - layer.left;
+    }
+
     /**
      * @return The y coordinate on bitmap.
      */
@@ -5876,6 +5930,10 @@ public class MainActivity extends AppCompatActivity {
 
     private int toBitmapYAbs(float y) {
         return (int) ((y - translationY) / scale);
+    }
+
+    private float toBitmapYExact(float y) {
+        return ((y - translationY) / scale) - layer.top;
     }
 
     private int toUnscaled(float scaled) {

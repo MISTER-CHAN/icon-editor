@@ -41,6 +41,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/poly" />
+
+        <Button
+            android:id="@+id/b_transformer_mesh"
+            style="@style/Widget.App.Button.OutlinedButton.Dense"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/mesh" />
     </com.google.android.material.button.MaterialButtonToggleGroup>
 
     <CheckBox
