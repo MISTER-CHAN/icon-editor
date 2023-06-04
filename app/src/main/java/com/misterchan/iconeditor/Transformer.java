@@ -8,11 +8,9 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
 
-class Transformer {
+class Transformer implements FloatingLayer {
 
     private Bitmap bitmap;
-    private double aspectRatio;
-    private float centerX, centerY;
     private final Rect rect;
 
     private final Paint paint = new Paint() {
@@ -26,50 +24,19 @@ class Transformer {
         this.rect = rect;
     }
 
+    @Override
     public Bitmap getBitmap() {
         return bitmap;
     }
 
-    public void calculateAspectRatio() {
-        aspectRatio = (double) rect.width() / (double) rect.height();
+    @Override
+    public int getLeft() {
+        return rect.left;
     }
 
-    public void calculateByLocation() {
-        calculateAspectRatio();
-        calculateCenter();
-    }
-
-    public void calculateCenter() {
-        centerX = rect.exactCenterX();
-        centerY = rect.exactCenterY();
-    }
-
-    public double getAspectRatio() {
-        return aspectRatio;
-    }
-
-    public float getCenterX() {
-        return centerX;
-    }
-
-    public float getCenterY() {
-        return centerY;
-    }
-
-    public int getHeight() {
-        return bitmap.getHeight();
-    }
-
-    public int getWidth() {
-        return bitmap.getWidth();
-    }
-
-    public Layer makeLayer() {
-        Layer layer = new Layer();
-        layer.bitmap = bitmap;
-        layer.left = rect.left;
-        layer.top = rect.top;
-        return layer;
+    @Override
+    public int getTop() {
+        return rect.top;
     }
 
     public void recycle() {

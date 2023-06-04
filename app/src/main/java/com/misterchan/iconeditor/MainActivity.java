@@ -543,7 +543,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-            return onSoftStrokesActionItemClicked(mode, item);
+            return onSoftStrokesActionItemClick(mode, item);
         }
 
         @Override
@@ -593,7 +593,7 @@ public class MainActivity extends AppCompatActivity {
         public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
             switch (item.getItemId()) {
                 default -> {
-                    return onTextActionItemClicked(mode, item);
+                    return onTextActionItemClick(mode, item);
                 }
                 case R.id.i_align_left -> setAlign(item, Paint.Align.LEFT);
                 case R.id.i_align_center -> setAlign(item, Paint.Align.CENTER);
@@ -637,7 +637,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-            return onTransformerActionItemClicked(mode, item);
+            return onTransformerActionItemClick(mode, item);
         }
 
         @Override
@@ -668,7 +668,7 @@ public class MainActivity extends AppCompatActivity {
         frame.layerAdapter.notifyItemChanged(frame.selectedLayerIndex);
     };
 
-    private final View.OnClickListener onClickAddSwatchViewListener = v ->
+    private final View.OnClickListener onAddSwatchButtonClickListener = v ->
             ArgbColorPicker.make(MainActivity.this,
                             R.string.add,
                             (oldColor, newColor) -> {
@@ -678,7 +678,7 @@ public class MainActivity extends AppCompatActivity {
                             paint.getColorLong())
                     .show();
 
-    private final View.OnClickListener onClickBackgroundColorListener = v ->
+    private final View.OnClickListener onBackgroundColorClickListener = v ->
             ArgbColorPicker.make(MainActivity.this,
                             R.string.background_color,
                             (oldColor, newColor) -> {
@@ -693,12 +693,12 @@ public class MainActivity extends AppCompatActivity {
                             R.string.swap)
                     .show();
 
-    private final View.OnClickListener onClickCloneStampSrcButtonListener = v -> {
+    private final View.OnClickListener onCloneStampSrcButtonClickListener = v -> {
         cloneStampSrc = null;
         eraseBitmapAndInvalidateView(previewBitmap, ivPreview);
     };
 
-    private final View.OnClickListener onClickForegroundColorListener = v ->
+    private final View.OnClickListener onForegroundColorClickListener = v ->
             ArgbColorPicker.make(MainActivity.this,
                             R.string.foreground_color,
                             (oldColor, newColor) -> {
@@ -828,10 +828,10 @@ public class MainActivity extends AppCompatActivity {
         clearStatus();
     };
 
-    private final DialogInterface.OnClickListener onClickImagePreviewNBListener =
+    private final DialogInterface.OnClickListener onImagePreviewNBClickListener =
             (dialog, which) -> onCancelImagePreviewListener.onCancel(dialog);
 
-    private final DialogInterface.OnClickListener onClickImagePreviewPBListener = (dialog, which) -> {
+    private final DialogInterface.OnClickListener onImagePreviewPBClickListener = (dialog, which) -> {
         drawImagePreviewIntoImage();
         addToHistory();
         clearStatus();
@@ -980,9 +980,9 @@ public class MainActivity extends AppCompatActivity {
         tvStatus.setText(getString(R.string.state_threshold, threshold));
     };
 
-    private final DialogInterface.OnClickListener onApplyThresholdListener = onClickImagePreviewNBListener;
+    private final DialogInterface.OnClickListener onApplyThresholdListener = onImagePreviewNBClickListener;
 
-    private final View.OnClickListener onClickToleranceButtonListener = v -> {
+    private final View.OnClickListener onToleranceButtonClickListener = v -> {
         createImagePreview();
         new SliderDialog(this).setTitle(R.string.tolerance).setValueFrom(0x00).setValueTo(0xFF).setValue(threshold)
                 .setStepSize(1.0f)
@@ -1105,8 +1105,6 @@ public class MainActivity extends AppCompatActivity {
             translationY = project.translationY;
             scale = project.scale;
 
-            hasSelection = false;
-
             selectFrame(project.selectedFrameIndex);
         }
 
@@ -1202,10 +1200,10 @@ public class MainActivity extends AppCompatActivity {
     private final ImageSizeManager.OnApplyListener onApplyImageSizeListener = (width, height, transform) -> {
         if (layer == frame.getBackgroundLayer()) {
             for (final Frame f : project.frames) {
-                resizeImage(f.getBackgroundLayer(), width, height, transform, null, 0, 0);
+                resizeImage(f, f.getBackgroundLayer(), width, height, transform, null, 0, 0);
             }
         } else {
-            resizeImage(layer, width, height, transform, null, 0, 0);
+            resizeImage(frame, layer, width, height, transform, null, 0, 0);
         }
     };
 
@@ -1330,8 +1328,49 @@ public class MainActivity extends AppCompatActivity {
 
     private Shape shape = rect;
 
+    private abstract class OnMultiTouchListener implements View.OnTouchListener {
+        private boolean multiTouch = false;
+
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            if (event.getPointerCount() == 1 && !multiTouch) {
+                onSingleTouch(v, event);
+            } else {
+                switch (event.getActionMasked()) {
+                    case MotionEvent.ACTION_MOVE -> {
+                        if (lastMerged == null) {
+                            break;
+                        }
+                        onIVTouchWithZoomToolListener.onTouch(v, event);
+                    }
+                    case MotionEvent.ACTION_POINTER_DOWN -> {
+                        multiTouch = true;
+                        undoOrRedo(layer.history.getCurrent());
+                        if (lastMerged == null) {
+                            mergeLayersEntire();
+                        }
+                        onIVTouchWithZoomToolListener.onTouch(v, event);
+                    }
+                    case MotionEvent.ACTION_POINTER_UP -> {
+                        onIVTouchWithZoomToolListener.onTouch(v, event);
+                    }
+                }
+            }
+            if (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL) {
+                multiTouch = false;
+            }
+            return true;
+        }
+
+        public abstract void onSingleTouch(View v, MotionEvent event);
+
+        public boolean isMultiTouch() {
+            return multiTouch;
+        }
+    }
+
     @SuppressLint("ClickableViewAccessibility")
-    private final View.OnTouchListener onTouchIVWithBucketListener = (v, event) -> {
+    private final View.OnTouchListener onIVTouchWithBucketListener = (v, event) -> {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN -> {
                 final float x = event.getX(), y = event.getY();
@@ -1363,12 +1402,12 @@ public class MainActivity extends AppCompatActivity {
     };
 
     @SuppressLint({"ClickableViewAccessibility", "SetTextI18n"})
-    private final View.OnTouchListener onTouchIVWithCloneStampListener = new View.OnTouchListener() {
+    private final View.OnTouchListener onIVTouchWithCloneStampListener = new OnMultiTouchListener() {
         private int lastBX, lastBY;
         private int dx, dy;
 
         @Override
-        public boolean onTouch(View v, MotionEvent event) {
+        public void onSingleTouch(View v, MotionEvent event) {
             final float x = event.getX(), y = event.getY();
             final int bx = toBitmapX(x), by = toBitmapY(y);
             switch (event.getAction()) {
@@ -1425,16 +1464,15 @@ public class MainActivity extends AppCompatActivity {
                     }
                     break;
             }
-            return true;
         }
     };
 
     @SuppressLint({"ClickableViewAccessibility"})
-    private final View.OnTouchListener onTouchIVWithEraserListener = new View.OnTouchListener() {
+    private final View.OnTouchListener onIVTouchWithEraserListener = new OnMultiTouchListener() {
         private int lastBX, lastBY;
 
         @Override
-        public boolean onTouch(View v, MotionEvent event) {
+        public void onSingleTouch(View v, MotionEvent event) {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN: {
                     final float x = event.getX(), y = event.getY();
@@ -1458,12 +1496,11 @@ public class MainActivity extends AppCompatActivity {
                     clearStatus();
                     break;
             }
-            return true;
         }
     };
 
     @SuppressLint({"ClickableViewAccessibility"})
-    private final View.OnTouchListener onTouchIVWithImpreciseEyedropperListener = (v, event) -> {
+    private final View.OnTouchListener onIVTouchWithImpreciseEyedropperListener = (v, event) -> {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN, MotionEvent.ACTION_MOVE -> {
                 final float x = event.getX(), y = event.getY();
@@ -1483,7 +1520,7 @@ public class MainActivity extends AppCompatActivity {
     };
 
     @SuppressLint({"ClickableViewAccessibility"})
-    private final View.OnTouchListener onTouchIVWithPreciseEyedropperListener = (v, event) -> {
+    private final View.OnTouchListener onIVTouchWithPreciseEyedropperListener = (v, event) -> {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN, MotionEvent.ACTION_MOVE -> {
                 final float x = event.getX(), y = event.getY();
@@ -1501,15 +1538,15 @@ public class MainActivity extends AppCompatActivity {
         return true;
     };
 
-    private View.OnTouchListener onTouchIVWithEyedropperListener;
+    private View.OnTouchListener onIVTouchWithEyedropperListener;
 
     @SuppressLint({"ClickableViewAccessibility", "SetTextI18n"})
-    private final View.OnTouchListener onTouchIVWithGradientListener = new View.OnTouchListener() {
+    private final View.OnTouchListener onIVTouchWithGradientListener = new OnMultiTouchListener() {
         @ColorLong
         private long color0;
 
         @Override
-        public boolean onTouch(View v, MotionEvent event) {
+        public void onSingleTouch(View v, MotionEvent event) {
             final float x = event.getX(), y = event.getY();
             final int bx = toBitmapX(x), by = toBitmapY(y);
             final Bitmap src = refBm != null ? refBm : bitmap;
@@ -1558,12 +1595,11 @@ public class MainActivity extends AppCompatActivity {
                     paint.setShader(null);
                     break;
             }
-            return true;
         }
     };
 
     @SuppressLint("ClickableViewAccessibility")
-    private final View.OnTouchListener onTouchIVWithImpreciseMagicEraserListener = new View.OnTouchListener() {
+    private final View.OnTouchListener onIVTouchWithImpreciseMagicEraserListener = new View.OnTouchListener() {
         private float lastX, lastY;
 
         @Override
@@ -1625,7 +1661,7 @@ public class MainActivity extends AppCompatActivity {
     };
 
     @SuppressLint("ClickableViewAccessibility")
-    private final View.OnTouchListener onTouchIVWithPreciseMagicEraserListener = (v, event) -> {
+    private final View.OnTouchListener onIVTouchWithPreciseMagicEraserListener = (v, event) -> {
         switch (event.getPointerCount()) {
             case 1 -> {
                 switch (event.getAction()) {
@@ -1699,14 +1735,14 @@ public class MainActivity extends AppCompatActivity {
         return true;
     };
 
-    private View.OnTouchListener onTouchIVWithMagicEraserListener = onTouchIVWithImpreciseMagicEraserListener;
+    private View.OnTouchListener onIVTouchWithMagicEraserListener = onIVTouchWithImpreciseMagicEraserListener;
 
     @SuppressLint({"ClickableViewAccessibility"})
-    private final View.OnTouchListener onTouchIVWithMagicPaintListener = new View.OnTouchListener() {
+    private final View.OnTouchListener onIVTouchWithMagicPaintListener = new OnMultiTouchListener() {
         private int lastBX, lastBY;
 
         @Override
-        public boolean onTouch(View v, MotionEvent event) {
+        public void onSingleTouch(View v, MotionEvent event) {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN: {
                     final float x = event.getX(), y = event.getY();
@@ -1759,17 +1795,16 @@ public class MainActivity extends AppCompatActivity {
                     clearStatus();
                     break;
             }
-            return true;
         }
     };
 
     @SuppressLint({"ClickableViewAccessibility"})
-    private final View.OnTouchListener onTouchIVWithMarqueeListener = new View.OnTouchListener() {
+    private final View.OnTouchListener onIVTouchWithMarqueeListener = new OnMultiTouchListener() {
         private boolean hasDraggedBound = false;
         private int startX, startY, stopX, stopY;
 
         @Override
-        public boolean onTouch(View v, MotionEvent event) {
+        public void onSingleTouch(View v, MotionEvent event) {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN -> {
                     final float x = event.getX(), y = event.getY();
@@ -1836,64 +1871,65 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
             }
-            return true;
         }
     };
 
     @SuppressLint("ClickableViewAccessibility")
-    private final View.OnTouchListener onTouchIVWithPatcherListener = (v, event) -> {
-        if (!hasSelection) {
-            return true;
-        }
-        final float radius = strokeWidth / 2.0f + blurRadius;
-        if (selection.left + radius * 2.0f >= selection.right || selection.top + radius * 2.0f >= selection.bottom) {
-            return true;
-        }
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                createImagePreview();
-
-            case MotionEvent.ACTION_MOVE: {
-                final float x = event.getX(), y = event.getY();
-                final int bx = toBitmapX(x), by = toBitmapY(y);
-                final int w = selection.width(), h = selection.height();
-                final Bitmap bm = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
-                final Canvas cv = new Canvas(bm);
-                final int wh = w >> 1, hh = h >> 1; // h - Half
-                cv.drawBitmap(bitmap,
-                        new Rect(bx - wh, by - hh, bx + w - wh, by + h - hh),
-                        new Rect(0, 0, w, h),
-                        PAINT_SRC);
-                final Bitmap rect = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
-                new Canvas(rect).drawRect(radius, radius, w - radius, h - radius, paint);
-                cv.drawBitmap(rect, 0.0f, 0.0f, patcher);
-                rect.recycle();
-                imagePreview.reset();
-                imagePreview.drawBitmap(bm);
-                bm.recycle();
-                drawBitmapOntoView(imagePreview.getEntire(), selection);
-                tvStatus.setText(getString(R.string.coordinates, bx, by));
-                break;
+    private final View.OnTouchListener onIVTouchWithPatcherListener = new OnMultiTouchListener() {
+        @Override
+        public void onSingleTouch(View v, MotionEvent event) {
+            if (!hasSelection) {
+                return;
             }
-            case MotionEvent.ACTION_UP:
-            case MotionEvent.ACTION_CANCEL:
-                drawImagePreviewIntoImage();
-                imagePreview.recycle();
-                imagePreview = null;
-                addToHistory();
-                clearStatus();
-                break;
+            final float radius = strokeWidth / 2.0f + blurRadius;
+            if (selection.left + radius * 2.0f >= selection.right || selection.top + radius * 2.0f >= selection.bottom) {
+                return;
+            }
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    createImagePreview();
+
+                case MotionEvent.ACTION_MOVE: {
+                    final float x = event.getX(), y = event.getY();
+                    final int bx = toBitmapX(x), by = toBitmapY(y);
+                    final int w = selection.width(), h = selection.height();
+                    final Bitmap bm = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+                    final Canvas cv = new Canvas(bm);
+                    final int wh = w >> 1, hh = h >> 1; // h - Half
+                    cv.drawBitmap(bitmap,
+                            new Rect(bx - wh, by - hh, bx + w - wh, by + h - hh),
+                            new Rect(0, 0, w, h),
+                            PAINT_SRC);
+                    final Bitmap rect = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+                    new Canvas(rect).drawRect(radius, radius, w - radius, h - radius, paint);
+                    cv.drawBitmap(rect, 0.0f, 0.0f, patcher);
+                    rect.recycle();
+                    imagePreview.reset();
+                    imagePreview.drawBitmap(bm);
+                    bm.recycle();
+                    drawBitmapOntoView(imagePreview.getEntire(), selection);
+                    tvStatus.setText(getString(R.string.coordinates, bx, by));
+                    break;
+                }
+                case MotionEvent.ACTION_UP:
+                case MotionEvent.ACTION_CANCEL:
+                    drawImagePreviewIntoImage();
+                    imagePreview.recycle();
+                    imagePreview = null;
+                    addToHistory();
+                    clearStatus();
+                    break;
+            }
         }
-        return true;
     };
 
     @SuppressLint({"ClickableViewAccessibility"})
-    private final View.OnTouchListener onTouchIVWithPathListener = new View.OnTouchListener() {
+    private final View.OnTouchListener onIVTouchWithPathListener = new OnMultiTouchListener() {
         private Path path, previewPath;
 
-        @SuppressLint("NonConstantResourceId")
         @Override
-        public boolean onTouch(View v, MotionEvent event) {
+        @SuppressLint("NonConstantResourceId")
+        public void onSingleTouch(View v, MotionEvent event) {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN -> {
                     final float x = event.getX(), y = event.getY();
@@ -1933,17 +1969,16 @@ public class MainActivity extends AppCompatActivity {
                     previewPath = null;
                 }
             }
-            return true;
         }
     };
 
     @SuppressLint({"ClickableViewAccessibility"})
-    private final View.OnTouchListener onTouchIVWithPencilListener = new View.OnTouchListener() {
+    private final View.OnTouchListener onIVTouchWithPencilListener = new OnMultiTouchListener() {
         private int lastBX, lastBY;
         private Paint pencil;
 
         @Override
-        public boolean onTouch(View v, MotionEvent event) {
+        public void onSingleTouch(View v, MotionEvent event) {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN: {
                     final float x = event.getX(), y = event.getY();
@@ -1970,12 +2005,11 @@ public class MainActivity extends AppCompatActivity {
                     clearStatus();
                     break;
             }
-            return true;
         }
     };
 
     @SuppressLint("ClickableViewAccessibility")
-    private final View.OnTouchListener onTouchIVWithRulerListener = (v, event) -> {
+    private final View.OnTouchListener onIVTouchWithRulerListener = (v, event) -> {
         final float x = event.getX(), y = event.getY();
         final float halfScale = scale / 2.0f;
         final int bx = toBitmapX(x + halfScale), by = toBitmapY(y + halfScale);
@@ -2009,45 +2043,47 @@ public class MainActivity extends AppCompatActivity {
     };
 
     @SuppressLint({"ClickableViewAccessibility", "SetTextI18n"})
-    private final View.OnTouchListener onTouchIVWithShapeListener = (v, event) -> {
-        final float x = event.getX(), y = event.getY();
-        final int bx = toBitmapX(x), by = toBitmapY(y);
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN: {
-                paint.setStrokeWidth(toScaled((int) paint.getStrokeWidth()));
-                if (isShapeStopped) {
-                    isShapeStopped = false;
-                    drawPointOntoView(bx, by);
-                    shapeStartX = bx;
-                    shapeStartY = by;
-                    tvStatus.setText(getString(R.string.coordinates, bx, by));
+    private final View.OnTouchListener onIVTouchWithShapeListener = new OnMultiTouchListener() {
+        @Override
+        public void onSingleTouch(View v, MotionEvent event) {
+            final float x = event.getX(), y = event.getY();
+            final int bx = toBitmapX(x), by = toBitmapY(y);
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN: {
+                    paint.setStrokeWidth(toScaled((int) paint.getStrokeWidth()));
+                    if (isShapeStopped) {
+                        isShapeStopped = false;
+                        drawPointOntoView(bx, by);
+                        shapeStartX = bx;
+                        shapeStartY = by;
+                        tvStatus.setText(getString(R.string.coordinates, bx, by));
+                        break;
+                    }
+                }
+                case MotionEvent.ACTION_MOVE: {
+                    final String result = drawShapeOntoView(shapeStartX, shapeStartY, bx, by);
+                    tvStatus.setText(getString(R.string.state_start_stop_, shapeStartX, shapeStartY, bx, by)
+                            + result);
                     break;
                 }
+                case MotionEvent.ACTION_CANCEL:
+                case MotionEvent.ACTION_UP:
+                    paint.setStrokeWidth(strokeWidth);
+                    if (bx != shapeStartX || by != shapeStartY) {
+                        drawShapeIntoImage(shapeStartX, shapeStartY, bx, by);
+                        isShapeStopped = true;
+                        shape.drawBitmapOntoView(shapeStartX, shapeStartY, bx, by);
+                        eraseBitmapAndInvalidateView(previewBitmap, ivPreview);
+                        addToHistory();
+                        clearStatus();
+                    }
+                    break;
             }
-            case MotionEvent.ACTION_MOVE: {
-                final String result = drawShapeOntoView(shapeStartX, shapeStartY, bx, by);
-                tvStatus.setText(getString(R.string.state_start_stop_, shapeStartX, shapeStartY, bx, by)
-                        + result);
-                break;
-            }
-            case MotionEvent.ACTION_CANCEL:
-            case MotionEvent.ACTION_UP:
-                paint.setStrokeWidth(strokeWidth);
-                if (bx != shapeStartX || by != shapeStartY) {
-                    drawShapeIntoImage(shapeStartX, shapeStartY, bx, by);
-                    isShapeStopped = true;
-                    shape.drawBitmapOntoView(shapeStartX, shapeStartY, bx, by);
-                    eraseBitmapAndInvalidateView(previewBitmap, ivPreview);
-                    addToHistory();
-                    clearStatus();
-                }
-                break;
         }
-        return true;
     };
 
     @SuppressLint("ClickableViewAccessibility")
-    private final View.OnTouchListener onTouchIVWithTextListener = new View.OnTouchListener() {
+    private final View.OnTouchListener onIVTouchWithTextListener = new View.OnTouchListener() {
         private float dx, dy;
 
         @Override
@@ -2066,6 +2102,7 @@ public class MainActivity extends AppCompatActivity {
                         textX = toUnscaled(x - dx);
                         textY = toUnscaled(y - dy);
                         drawTextOntoView();
+                        tvStatus.setText(getString(R.string.coordinates, textX, textY));
                     }
                 }
 
@@ -2094,7 +2131,7 @@ public class MainActivity extends AppCompatActivity {
      * Callback to call on touch image view with mesh transformer
      */
     @SuppressLint("ClickableViewAccessibility")
-    private final View.OnTouchListener onTouchIVWithMTListener = new View.OnTouchListener() {
+    private final View.OnTouchListener onIVTouchWithMTListener = new View.OnTouchListener() {
         @Size(18)
         private final float[] verts = new float[18];
 
@@ -2139,7 +2176,7 @@ public class MainActivity extends AppCompatActivity {
      * Callback to call on touch image view with poly transformer
      */
     @SuppressLint("ClickableViewAccessibility")
-    private final View.OnTouchListener onTouchIVWithPTListener = new View.OnTouchListener() {
+    private final View.OnTouchListener onIVTouchWithPTListener = new View.OnTouchListener() {
         private float[] src, dst, bmSrc, bmDst;
         private int pointCount = 0;
         private Matrix matrix;
@@ -2238,7 +2275,7 @@ public class MainActivity extends AppCompatActivity {
      * Callback to call on touch image view with rotation transformer
      */
     @SuppressLint({"ClickableViewAccessibility"})
-    private final View.OnTouchListener onTouchIVWithRTListener = new View.OnTouchListener() {
+    private final View.OnTouchListener onIVTouchWithRTListener = new View.OnTouchListener() {
         private double lastTheta;
 
         @Override
@@ -2294,7 +2331,7 @@ public class MainActivity extends AppCompatActivity {
     };
 
     @SuppressLint("ClickableViewAccessibility")
-    private final View.OnTouchListener onTouchIVWithSoftBrushOffListener = new View.OnTouchListener() {
+    private final View.OnTouchListener onIVTouchWithSoftBrushOffListener = new View.OnTouchListener() {
         private float dx, dy;
 
         @Override
@@ -2324,7 +2361,8 @@ public class MainActivity extends AppCompatActivity {
     };
 
     @SuppressLint({"ClickableViewAccessibility"})
-    private final View.OnTouchListener onTouchIVWithSoftBrushOnListener = new View.OnTouchListener() {
+    private final View.OnTouchListener onIVTouchWithSoftBrushOnListener = new View.OnTouchListener() {
+        private boolean multiTouch;
         private float lastX, lastY;
         private float lastTLX = Float.NaN, lastTLY, lastRX, lastRY, lastBX, lastBY;
         private float maxRad;
@@ -2332,109 +2370,136 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public boolean onTouch(View v, MotionEvent event) {
-            switch (event.getAction()) {
-                case MotionEvent.ACTION_DOWN -> {
-                    velocityTracker = VelocityTracker.obtain();
-                    velocityTracker.addMovement(event);
-                    final float x = event.getX(), y = event.getY();
-                    final float rad = strokeWidth / 2.0f + blurRadius;
-                    if (hasSelection) {
-                        if (!isWritingSoftStrokes) {
-                            isWritingSoftStrokes = true;
-                            softStrokesActionMode = startSupportActionMode(onSoftStrokesActionModeCallback);
-                            softStrokesActionMode.setTitle(R.string.soft_brush);
+            if (event.getPointerCount() == 1) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN -> {
+                        multiTouch = false;
+                        velocityTracker = VelocityTracker.obtain();
+                        velocityTracker.addMovement(event);
+                        final float x = event.getX(), y = event.getY();
+                        final float rad = strokeWidth / 2.0f + blurRadius;
+                        if (hasSelection) {
+                            if (!isWritingSoftStrokes) {
+                                isWritingSoftStrokes = true;
+                                softStrokesActionMode = startSupportActionMode(onSoftStrokesActionModeCallback);
+                                softStrokesActionMode.setTitle(R.string.soft_brush);
+                            }
+                            final float scale = Math.max(
+                                    (float) viewWidth / (float) selection.width(),
+                                    (float) viewHeight / (float) selection.height());
+                            maxRad = rad * scale;
+                        } else {
+                            maxRad = toScaled(rad);
                         }
-                        final float scale = Math.max(
-                                (float) viewWidth / (float) selection.width(),
-                                (float) viewHeight / (float) selection.height());
-                        maxRad = rad * scale;
-                    } else {
-                        maxRad = toScaled(rad);
+                        clearStatus();
+                        lastX = x;
+                        lastY = y;
                     }
-                    clearStatus();
-                    lastX = x;
-                    lastY = y;
+                    case MotionEvent.ACTION_MOVE -> {
+                        if (!multiTouch) break;
+
+                        velocityTracker.addMovement(event);
+                        velocityTracker.computeCurrentVelocity(1);
+                        final float x = event.getX(), y = event.getY();
+                        final float vel = (float) Math.hypot(velocityTracker.getXVelocity(), velocityTracker.getYVelocity());
+                        final float rad = Math.min(maxRad / vel / softness, maxRad);
+
+                        if (Float.isNaN(lastTLX) /* || ... || Float.isNaN(lastBY) */) {
+                            lastTLX = lastX - rad;
+                            lastTLY = lastY - rad;
+                            lastRX = lastX + rad;
+                            lastRY = lastY;
+                            lastBX = lastX;
+                            lastBY = lastY + rad;
+                        }
+                        final float
+                                tlx = x - rad, tly = y - rad,
+                                rx = x + rad, ry = y,
+                                bx = x, by = y + rad;
+                        final float // Destination coordinates
+                                dltlx = hasSelection ? lastTLX : toBitmapX(lastTLX),
+                                dltly = hasSelection ? lastTLY : toBitmapY(lastTLY),
+                                dlrx = hasSelection ? lastRX : toBitmapX(lastRX),
+                                dlry = hasSelection ? lastRY : toBitmapY(lastRY),
+                                dlbx = hasSelection ? lastBX : toBitmapX(lastBX),
+                                dlby = hasSelection ? lastBY : toBitmapY(lastBY),
+                                dtlx = hasSelection ? tlx : toBitmapX(tlx),
+                                dtly = hasSelection ? tly : toBitmapY(tly),
+                                drx = hasSelection ? rx : toBitmapX(rx),
+                                dry = hasSelection ? ry : toBitmapY(ry),
+                                dbx = hasSelection ? bx : toBitmapX(bx),
+                                dby = hasSelection ? by : toBitmapY(by);
+
+                        final Path pathT = new Path();
+                        pathT.moveTo(dltlx, dltly);
+                        pathT.lineTo(dlrx, dlry);
+                        pathT.lineTo(drx, dry);
+                        pathT.lineTo(dtlx, dtly);
+                        pathT.close();
+                        final Path pathBR = new Path();
+                        pathBR.moveTo(dlrx, dlry);
+                        pathBR.lineTo(dlbx, dlby);
+                        pathBR.lineTo(dbx, dby);
+                        pathBR.lineTo(drx, dry);
+                        pathBR.close();
+                        final Path pathL = new Path();
+                        pathL.moveTo(dlbx, dlby);
+                        pathL.lineTo(dltlx, dltly);
+                        pathL.lineTo(dtlx, dtly);
+                        pathL.lineTo(dbx, dby);
+                        pathL.close();
+                        final Path path = new Path();
+                        path.op(pathT, Path.Op.UNION);
+                        path.op(pathBR, Path.Op.UNION);
+                        path.op(pathL, Path.Op.UNION);
+
+                        if (hasSelection) {
+                            previewCanvas.drawPath(path, paint);
+                            ivPreview.invalidate();
+                        } else {
+                            canvas.drawPath(path, paint);
+                            drawBitmapOntoView(toBitmapX(Math.min(lastTLX, tlx)), toBitmapY(Math.min(lastTLY, tly)),
+                                    toBitmapX(Math.max(lastRX, rx)), toBitmapY(Math.max(lastBY, by)),
+                                    rad);
+                        }
+
+                        lastX = x;
+                        lastY = y;
+                        lastTLX = tlx;
+                        lastTLY = tly;
+                        lastRX = rx;
+                        lastRY = ry;
+                        lastBX = bx;
+                        lastBY = by;
+                    }
+                    case MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                        if (!multiTouch) break;
+
+                        velocityTracker.recycle();
+                        lastTLX = /* lastTLY = ... = lastRY = */ Float.NaN;
+                        if (!hasSelection) {
+                            addToHistory();
+                        }
+                    }
                 }
-                case MotionEvent.ACTION_MOVE -> {
-                    velocityTracker.addMovement(event);
-                    velocityTracker.computeCurrentVelocity(1);
-                    final float x = event.getX(), y = event.getY();
-                    final float vel = (float) Math.hypot(velocityTracker.getXVelocity(), velocityTracker.getYVelocity());
-                    final float rad = Math.min(maxRad / vel / softness, maxRad);
-
-                    if (Float.isNaN(lastTLX) /* || ... || Float.isNaN(lastBY) */) {
-                        lastTLX = lastX - rad;
-                        lastTLY = lastY - rad;
-                        lastRX = lastX + rad;
-                        lastRY = lastY;
-                        lastBX = lastX;
-                        lastBY = lastY + rad;
+            } else {
+                switch (event.getActionMasked()) {
+                    case MotionEvent.ACTION_MOVE -> {
+                        if (lastMerged == null) {
+                            break;
+                        }
+                        onIVTouchWithZoomToolListener.onTouch(v, event);
                     }
-                    final float
-                            tlx = x - rad, tly = y - rad,
-                            rx = x + rad, ry = y,
-                            bx = x, by = y + rad;
-                    final float // Destination coordinates
-                            dltlx = hasSelection ? lastTLX : toBitmapX(lastTLX),
-                            dltly = hasSelection ? lastTLY : toBitmapY(lastTLY),
-                            dlrx = hasSelection ? lastRX : toBitmapX(lastRX),
-                            dlry = hasSelection ? lastRY : toBitmapY(lastRY),
-                            dlbx = hasSelection ? lastBX : toBitmapX(lastBX),
-                            dlby = hasSelection ? lastBY : toBitmapY(lastBY),
-                            dtlx = hasSelection ? tlx : toBitmapX(tlx),
-                            dtly = hasSelection ? tly : toBitmapY(tly),
-                            drx = hasSelection ? rx : toBitmapX(rx),
-                            dry = hasSelection ? ry : toBitmapY(ry),
-                            dbx = hasSelection ? bx : toBitmapX(bx),
-                            dby = hasSelection ? by : toBitmapY(by);
-
-                    final Path pathT = new Path();
-                    pathT.moveTo(dltlx, dltly);
-                    pathT.lineTo(dlrx, dlry);
-                    pathT.lineTo(drx, dry);
-                    pathT.lineTo(dtlx, dtly);
-                    pathT.close();
-                    final Path pathBR = new Path();
-                    pathBR.moveTo(dlrx, dlry);
-                    pathBR.lineTo(dlbx, dlby);
-                    pathBR.lineTo(dbx, dby);
-                    pathBR.lineTo(drx, dry);
-                    pathBR.close();
-                    final Path pathL = new Path();
-                    pathL.moveTo(dlbx, dlby);
-                    pathL.lineTo(dltlx, dltly);
-                    pathL.lineTo(dtlx, dtly);
-                    pathL.lineTo(dbx, dby);
-                    pathL.close();
-                    final Path path = new Path();
-                    path.op(pathT, Path.Op.UNION);
-                    path.op(pathBR, Path.Op.UNION);
-                    path.op(pathL, Path.Op.UNION);
-
-                    if (hasSelection) {
-                        previewCanvas.drawPath(path, paint);
-                        ivPreview.invalidate();
-                    } else {
-                        canvas.drawPath(path, paint);
-                        drawBitmapOntoView(toBitmapX(Math.min(lastTLX, tlx)), toBitmapY(Math.min(lastTLY, tly)),
-                                toBitmapX(Math.max(lastRX, rx)), toBitmapY(Math.max(lastBY, by)),
-                                rad);
-                    }
-
-                    lastX = x;
-                    lastY = y;
-                    lastTLX = tlx;
-                    lastTLY = tly;
-                    lastRX = rx;
-                    lastRY = ry;
-                    lastBX = bx;
-                    lastBY = by;
-                }
-                case MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                    velocityTracker.recycle();
-                    lastTLX = /* lastTLY = ... = lastRY = */ Float.NaN;
-                    if (!hasSelection) {
-                        addToHistory();
+                    case MotionEvent.ACTION_POINTER_DOWN -> {
+                        multiTouch = true;
+                        undoOrRedo(layer.history.getCurrent());
+                        if (lastMerged == null) {
+                            mergeLayersEntire();
+                        }
+                        if (velocityTracker != null) {
+                            velocityTracker.recycle();
+                        }
+                        onIVTouchWithZoomToolListener.onTouch(v, event);
                     }
                 }
             }
@@ -2442,14 +2507,16 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    private View.OnTouchListener onTouchIVWithSoftBrushListener = onTouchIVWithSoftBrushOnListener;
+    private View.OnTouchListener onIVTouchWithSoftBrushListener = onIVTouchWithSoftBrushOnListener;
 
     /**
      * Callback to call on touch image view with scale transformer
      */
     @SuppressLint({"ClickableViewAccessibility"})
-    private final View.OnTouchListener onTouchIVWithSTListener = new View.OnTouchListener() {
+    private final View.OnTouchListener onIVTouchWithSTListener = new View.OnTouchListener() {
         private boolean hasDraggedBound = false;
+        private float aspectRatio;
+        private float centerX, centerY;
         private float dlpbLeft, dlpbTop, dlpbRight, dlpbBottom; // Distances from last point to bound
 
         @Override
@@ -2472,7 +2539,9 @@ public class MainActivity extends AppCompatActivity {
                             if (marqueeBoundBeingDragged == null) {
                                 if (checkDraggingMarqueeBound(x, y) != null) {
                                     if (cbTransformerLar.isChecked()) {
-                                        transformer.calculateByLocation();
+                                        aspectRatio = (float) selection.width() / (float) selection.height();
+                                        centerX = selection.exactCenterX();
+                                        centerY = selection.exactCenterY();
                                     }
                                     tvStatus.setText(getString(R.string.state_selected_bound,
                                             getString(marqueeBoundBeingDragged.name)));
@@ -2533,9 +2602,9 @@ public class MainActivity extends AppCompatActivity {
                                 if (Math.abs(dpbDiffL) + Math.abs(dpbDiffR) >= Math.abs(dpbDiffT) + Math.abs(dpbDiffB)) {
                                     selection.left -= toUnscaled(dpbDiffL);
                                     selection.right += toUnscaled(dpbDiffR);
-                                    final double width = selection.width(), height = width / transformer.getAspectRatio();
-                                    selection.top = (int) (transformer.getCenterY() - height / 2.0);
-                                    selection.bottom = (int) (transformer.getCenterY() + height / 2.0);
+                                    final float width = selection.width(), height = width / aspectRatio;
+                                    selection.top = (int) (centerY - height / 2.0f);
+                                    selection.bottom = (int) (centerY + height / 2.0f);
                                     marqTOnView = toViewY(selection.top);
                                     marqBOnView = toViewY(selection.bottom);
                                     dlpbTop = Math.min(y0 - marqTOnView, y1 - marqTOnView);
@@ -2543,9 +2612,9 @@ public class MainActivity extends AppCompatActivity {
                                 } else {
                                     selection.top -= toUnscaled(dpbDiffT);
                                     selection.bottom += toUnscaled(dpbDiffB);
-                                    final double height = selection.height(), width = height * transformer.getAspectRatio();
-                                    selection.left = (int) (transformer.getCenterX() - width / 2.0);
-                                    selection.right = (int) (transformer.getCenterX() + width / 2.0);
+                                    final float height = selection.height(), width = height * aspectRatio;
+                                    selection.left = (int) (centerX - width / 2.0f);
+                                    selection.right = (int) (centerX + width / 2.0f);
                                     marqLOnView = toViewX(selection.left);
                                     marqROnView = toViewX(selection.right);
                                     dlpbLeft = Math.min(x0 - marqLOnView, x1 - marqLOnView);
@@ -2573,7 +2642,9 @@ public class MainActivity extends AppCompatActivity {
                             dlpbRight = Math.min(viewSelection.right - x0, viewSelection.right - x1);
                             dlpbBottom = Math.min(viewSelection.bottom - y0, viewSelection.bottom - y1);
                             if (cbTransformerLar.isChecked()) {
-                                transformer.calculateByLocation();
+                                aspectRatio = (float) selection.width() / (float) selection.height();
+                                centerX = selection.exactCenterX();
+                                centerY = selection.exactCenterY();
                             }
                             tvStatus.setText(getString(R.string.state_size,
                                     selection.width(), selection.height()));
@@ -2590,13 +2661,30 @@ public class MainActivity extends AppCompatActivity {
             }
             return true;
         }
+
+        private boolean stretchByDraggedMarqueeBound(float viewX, float viewY) {
+            final boolean hasDragged = dragMarqueeBound(viewX, viewY);
+            if (cbTransformerLar.isChecked()) {
+                if (marqueeBoundBeingDragged == Position.LEFT || marqueeBoundBeingDragged == Position.RIGHT) {
+                    final float halfHeight = selection.width() / aspectRatio / 2.0f;
+                    selection.top = (int) (centerY - halfHeight);
+                    selection.bottom = (int) (centerY + halfHeight);
+                } else if (marqueeBoundBeingDragged == Position.TOP || marqueeBoundBeingDragged == Position.BOTTOM) {
+                    final float halfWidth = selection.height() * aspectRatio / 2.0f;
+                    selection.left = (int) (centerX - halfWidth);
+                    selection.right = (int) (centerX + halfWidth);
+                }
+            }
+            drawSelectionOntoView(true);
+            return hasDragged;
+        }
     };
 
     /**
      * Callback to call on touch image view with translation transformer
      */
     @SuppressLint({"ClickableViewAccessibility"})
-    private final View.OnTouchListener onTouchIVWithTTListener = new View.OnTouchListener() {
+    private final View.OnTouchListener onIVTouchWithTTListener = new View.OnTouchListener() {
         private float dx, dy;
 
         @Override
@@ -2648,10 +2736,10 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    private View.OnTouchListener onTouchIVWithTransformerListener = onTouchIVWithTTListener;
+    private View.OnTouchListener onIVTouchWithTransformerListener = onIVTouchWithTTListener;
 
     @SuppressLint({"ClickableViewAccessibility"})
-    private final View.OnTouchListener onTouchIVWithZoomToolListener = new View.OnTouchListener() {
+    private final View.OnTouchListener onIVTouchWithZoomToolListener = new View.OnTouchListener() {
         private float dx, dy;
         private float lastPivotX, lastPivotY;
         private double lastDiagonal;
@@ -2727,21 +2815,21 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    private View.OnTouchListener onTouchIVListener = onTouchIVWithPencilListener;
+    private View.OnTouchListener onTouchIVListener = onIVTouchWithPencilListener;
 
     @SuppressLint("NonConstantResourceId")
     private final MaterialButtonToggleGroup.OnButtonCheckedListener onToolButtonCheckedListener = (group, checkedId, isChecked) -> {
         switch (checkedId) {
             case R.id.b_bucket_fill -> {
                 if (isChecked) {
-                    onToolChanged(onTouchIVWithBucketListener);
+                    onToolChanged(onIVTouchWithBucketListener);
                     threshold = 0x0;
                     svOptionsBucketFill.setVisibility(View.VISIBLE);
                 }
             }
             case R.id.b_clone_stamp -> {
                 if (isChecked) {
-                    onToolChanged(onTouchIVWithCloneStampListener);
+                    onToolChanged(onIVTouchWithCloneStampListener);
                     cbCloneStampAntiAlias.setChecked(antiAlias);
                     tietCloneStampBlurRadius.setText(String.valueOf(blurRadius));
                     tietCloneStampStrokeWidth.setText(String.valueOf(strokeWidth));
@@ -2753,17 +2841,17 @@ public class MainActivity extends AppCompatActivity {
             }
             case R.id.b_eraser -> {
                 if (isChecked) {
-                    onToolChanged(onTouchIVWithEraserListener, svOptionsEraser);
+                    onToolChanged(onIVTouchWithEraserListener, svOptionsEraser);
                 }
             }
             case R.id.b_eyedropper -> {
                 if (isChecked) {
-                    onToolChanged(onTouchIVWithEyedropperListener, svOptionsEyedropper);
+                    onToolChanged(onIVTouchWithEyedropperListener, svOptionsEyedropper);
                 }
             }
             case R.id.b_gradient -> {
                 if (isChecked) {
-                    onToolChanged(onTouchIVWithGradientListener);
+                    onToolChanged(onIVTouchWithGradientListener);
                     cbGradientAntiAlias.setChecked(antiAlias);
                     tietGradientBlurRadius.setText(String.valueOf(blurRadius));
                     tietGradientStrokeWidth.setText(String.valueOf(strokeWidth));
@@ -2772,7 +2860,7 @@ public class MainActivity extends AppCompatActivity {
             }
             case R.id.b_magic_eraser -> {
                 if (isChecked) {
-                    onToolChanged(onTouchIVWithMagicEraserListener);
+                    onToolChanged(onIVTouchWithMagicEraserListener);
                     updateReference();
                     paint.setAntiAlias(false);
                     paint.setMaskFilter(null);
@@ -2787,7 +2875,7 @@ public class MainActivity extends AppCompatActivity {
             }
             case R.id.b_magic_paint -> {
                 if (isChecked) {
-                    onToolChanged(onTouchIVWithMagicPaintListener);
+                    onToolChanged(onIVTouchWithMagicPaintListener);
                     updateReference();
                     threshold = 0xFF;
                     cbMagicPaintAntiAlias.setChecked(antiAlias);
@@ -2798,7 +2886,7 @@ public class MainActivity extends AppCompatActivity {
             }
             case R.id.b_patcher -> {
                 if (isChecked) {
-                    onToolChanged(onTouchIVWithPatcherListener);
+                    onToolChanged(onIVTouchWithPatcherListener);
                     cbPatcherAntiAlias.setChecked(antiAlias);
                     tietPatcherBlurRadius.setText(String.valueOf(blurRadius));
                     tietPatcherStrokeWidth.setText(String.valueOf(strokeWidth));
@@ -2807,7 +2895,7 @@ public class MainActivity extends AppCompatActivity {
             }
             case R.id.b_path -> {
                 if (isChecked) {
-                    onToolChanged(onTouchIVWithPathListener);
+                    onToolChanged(onIVTouchWithPathListener);
                     cbPathAntiAlias.setChecked(antiAlias);
                     cbPathFill.setChecked(isPaintStyleFill());
                     tietPathBlurRadius.setText(String.valueOf(blurRadius));
@@ -2817,7 +2905,7 @@ public class MainActivity extends AppCompatActivity {
             }
             case R.id.b_pencil -> {
                 if (isChecked) {
-                    onToolChanged(onTouchIVWithPencilListener);
+                    onToolChanged(onIVTouchWithPencilListener);
                     cbPencilAntiAlias.setChecked(antiAlias);
                     tietPencilBlurRadius.setText(String.valueOf(blurRadius));
                     tietPencilStrokeWidth.setText(String.valueOf(strokeWidth));
@@ -2826,19 +2914,19 @@ public class MainActivity extends AppCompatActivity {
             }
             case R.id.b_ruler -> {
                 if (isChecked) {
-                    onToolChanged(onTouchIVWithRulerListener);
+                    onToolChanged(onIVTouchWithRulerListener);
                 } else {
                     ruler.enabled = false;
                 }
             }
             case R.id.b_selector -> {
                 if (isChecked) {
-                    onToolChanged(onTouchIVWithMarqueeListener);
+                    onToolChanged(onIVTouchWithMarqueeListener);
                 }
             }
             case R.id.b_shape -> {
                 if (isChecked) {
-                    onToolChanged(onTouchIVWithShapeListener);
+                    onToolChanged(onIVTouchWithShapeListener);
                     cbShapeFill.setChecked(isPaintStyleFill());
                     tietShapeStrokeWidth.setText(String.valueOf(paint.getStrokeWidth()));
                     svOptionsShape.setVisibility(View.VISIBLE);
@@ -2846,7 +2934,7 @@ public class MainActivity extends AppCompatActivity {
             }
             case R.id.b_soft_brush -> {
                 if (isChecked) {
-                    onToolChanged(onTouchIVWithSoftBrushListener);
+                    onToolChanged(onIVTouchWithSoftBrushListener);
                     paint.setAntiAlias(true);
                     tietSoftBrushBlurRadius.setText(String.valueOf(blurRadius));
                     tietSoftBrushStrokeWidth.setText(String.valueOf(strokeWidth));
@@ -2858,7 +2946,7 @@ public class MainActivity extends AppCompatActivity {
             }
             case R.id.b_text -> {
                 if (isChecked) {
-                    onToolChanged(onTouchIVWithTextListener);
+                    onToolChanged(onIVTouchWithTextListener);
                     cbTextFill.setChecked(isPaintStyleFill());
                 } else {
                     drawTextIntoImage(false);
@@ -2866,7 +2954,7 @@ public class MainActivity extends AppCompatActivity {
             }
             case R.id.b_transformer -> {
                 if (isChecked) {
-                    onToolChanged(onTouchIVWithTransformerListener);
+                    onToolChanged(onIVTouchWithTransformerListener);
                     svOptionsTransformer.setVisibility(View.VISIBLE);
                     selector.setColor(Color.BLUE);
                     drawSelectionOntoView();
@@ -2883,7 +2971,7 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("ClickableViewAccessibility")
     private final MaterialButtonToggleGroup.OnButtonCheckedListener onZoomToolButtonCheckedListener = (group, checkedId, isChecked) -> {
         if (isChecked) {
-            flImageView.setOnTouchListener(onTouchIVWithZoomToolListener);
+            flImageView.setOnTouchListener(onIVTouchWithZoomToolListener);
         } else {
             flImageView.setOnTouchListener(onTouchIVListener);
         }
@@ -2891,10 +2979,10 @@ public class MainActivity extends AppCompatActivity {
 
     @SuppressLint("ClickableViewAccessibility")
     private final CompoundButton.OnCheckedChangeListener onSoftBrushTBCheckedChangeListener = (buttonView, isChecked) -> {
-        onTouchIVWithSoftBrushListener = isChecked ? onTouchIVWithSoftBrushOnListener : onTouchIVWithSoftBrushOffListener;
-        onTouchIVListener = onTouchIVWithSoftBrushListener;
+        onIVTouchWithSoftBrushListener = isChecked ? onIVTouchWithSoftBrushOnListener : onIVTouchWithSoftBrushOffListener;
+        onTouchIVListener = onIVTouchWithSoftBrushListener;
         if (btgZoom.getCheckedButtonId() != R.id.b_zoom) {
-            flImageView.setOnTouchListener(onTouchIVWithSoftBrushListener);
+            flImageView.setOnTouchListener(onIVTouchWithSoftBrushListener);
         }
         if (!isChecked && isWritingSoftStrokes) {
             drawSoftStrokesIntoSelection();
@@ -3344,11 +3432,7 @@ public class MainActivity extends AppCompatActivity {
         final Bitmap background = frame.getBackgroundLayer().bitmap;
         final Rect vs = new Rect(0, 0, background.getWidth(), background.getHeight());
 
-        Layer extraLayer = null;
-        if (transformer != null) {
-            extraLayer = transformer.makeLayer();
-        }
-        final Bitmap merged = Layers.mergeLayers(frame.layerTree, vs, layer, bitmap, extraLayer);
+        final Bitmap merged = Layers.mergeLayers(frame.layerTree, vs, layer, bitmap, transformer);
         recycleBitmap(lastMerged);
         lastMerged = merged;
     };
@@ -3403,11 +3487,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        Layer extraLayer = null;
-        if (transformer != null) {
-            extraLayer = transformer.makeLayer();
-        }
-        final Bitmap merged = Layers.mergeLayers(frame.layerTree, vs, layer, bitmap, extraLayer);
+        final Bitmap merged = Layers.mergeLayers(frame.layerTree, vs, layer, bitmap, transformer);
         recycleBitmap(lastMerged);
         lastMerged = null;
         final float translLeft = toViewXRel(left), translTop = toViewYRel(top);
@@ -3433,11 +3513,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        Layer extraLayer = null;
-        if (transformer != null) {
-            extraLayer = transformer.makeLayer();
-        }
-        final Bitmap merged = Layers.mergeLayers(frame.layerTree, vs, layer, bitmap, extraLayer);
+        final Bitmap merged = Layers.mergeLayers(frame.layerTree, vs, layer, bitmap, transformer);
         recycleBitmap(lastMerged);
         lastMerged = null;
         final Rect relative = new Rect(0, 0, vs.width(), vs.height());
@@ -4127,10 +4203,10 @@ public class MainActivity extends AppCompatActivity {
 
         btgTools.addOnButtonCheckedListener(onToolButtonCheckedListener);
         btgZoom.addOnButtonCheckedListener(onZoomToolButtonCheckedListener);
-        findViewById(R.id.b_bucket_fill_tolerance).setOnClickListener(onClickToleranceButtonListener);
-        findViewById(R.id.b_clone_stamp_src).setOnClickListener(onClickCloneStampSrcButtonListener);
-        findViewById(R.id.b_magic_paint_tolerance).setOnClickListener(onClickToleranceButtonListener);
-        findViewById(R.id.b_swatches_add).setOnClickListener(onClickAddSwatchViewListener);
+        findViewById(R.id.b_bucket_fill_tolerance).setOnClickListener(onToleranceButtonClickListener);
+        findViewById(R.id.b_clone_stamp_src).setOnClickListener(onCloneStampSrcButtonClickListener);
+        findViewById(R.id.b_magic_paint_tolerance).setOnClickListener(onToleranceButtonClickListener);
+        findViewById(R.id.b_swatches_add).setOnClickListener(onAddSwatchButtonClickListener);
         findViewById(R.id.b_text_draw).setOnClickListener(v -> drawTextIntoImage());
         cbCloneStampAntiAlias.setOnCheckedChangeListener(onAntiAliasCBCheckedChangeListener);
         ((CompoundButton) findViewById(R.id.cb_eraser_anti_alias)).setOnCheckedChangeListener((buttonView, isChecked) -> eraser.setAntiAlias(isChecked));
@@ -4144,7 +4220,7 @@ public class MainActivity extends AppCompatActivity {
         cbPencilAntiAlias.setOnCheckedChangeListener(onAntiAliasCBCheckedChangeListener);
         cbShapeFill.setOnCheckedChangeListener(onFillCBCheckedChangeListener);
         cbTransformerFilter.setChecked(true);
-        flImageView.setOnTouchListener(onTouchIVWithPencilListener);
+        flImageView.setOnTouchListener(onIVTouchWithPencilListener);
         ivRulerH.setOnTouchListener(onTouchRulerHListener);
         ivRulerV.setOnTouchListener(onTouchRulerVListener);
         rvSwatches.setItemAnimator(new DefaultItemAnimator());
@@ -4167,8 +4243,8 @@ public class MainActivity extends AppCompatActivity {
         tietSoftBrushBlurRadius.addTextChangedListener(onBlurRadiusETTextChangedListener);
         tietText.addTextChangedListener((AfterTextChangedListener) s -> drawTextOntoView());
         tietTextSize.addTextChangedListener(onTextSizeETTextChangedListener);
-        vBackgroundColor.setOnClickListener(onClickBackgroundColorListener);
-        vForegroundColor.setOnClickListener(onClickForegroundColorListener);
+        vBackgroundColor.setOnClickListener(onBackgroundColorClickListener);
+        vForegroundColor.setOnClickListener(onForegroundColorClickListener);
 
         if (!isLandscape) {
             topAppBar.setOnMenuItemClickListener(onOptionsItemSelectedListener);
@@ -4207,11 +4283,11 @@ public class MainActivity extends AppCompatActivity {
 
         ((MaterialButtonToggleGroup) findViewById(R.id.btg_transformer)).addOnButtonCheckedListener((OnButtonCheckedListener) (group, checkedId) -> {
             onTransformerChange(switch (checkedId) {
-                case R.id.b_transformer_translation -> onTouchIVWithTTListener;
-                case R.id.b_transformer_scale -> onTouchIVWithSTListener;
-                case R.id.b_transformer_rotation -> onTouchIVWithRTListener;
-                case R.id.b_transformer_poly -> onTouchIVWithPTListener;
-                case R.id.b_transformer_mesh -> onTouchIVWithMTListener;
+                case R.id.b_transformer_translation -> onIVTouchWithTTListener;
+                case R.id.b_transformer_scale -> onIVTouchWithSTListener;
+                case R.id.b_transformer_rotation -> onIVTouchWithRTListener;
+                case R.id.b_transformer_poly -> onIVTouchWithPTListener;
+                case R.id.b_transformer_mesh -> onIVTouchWithMTListener;
                 default -> null;
             });
         });
@@ -4225,12 +4301,12 @@ public class MainActivity extends AppCompatActivity {
         ((CompoundButton) findViewById(R.id.cb_magic_eraser_style)).setOnCheckedChangeListener((buttonView, isChecked) -> {
             btgMagicEraserSides.setVisibility(isChecked ? View.GONE : View.VISIBLE);
             cbMagErAccEnabled.setVisibility(isChecked ? View.VISIBLE : View.GONE);
-            onTouchIVWithMagicEraserListener = isChecked
-                    ? onTouchIVWithPreciseMagicEraserListener
-                    : onTouchIVWithImpreciseMagicEraserListener;
-            onTouchIVListener = onTouchIVWithMagicEraserListener;
+            onIVTouchWithMagicEraserListener = isChecked
+                    ? onIVTouchWithPreciseMagicEraserListener
+                    : onIVTouchWithImpreciseMagicEraserListener;
+            onTouchIVListener = onIVTouchWithMagicEraserListener;
             if (btgZoom.getCheckedButtonId() != R.id.b_zoom) {
-                flImageView.setOnTouchListener(onTouchIVWithMagicEraserListener);
+                flImageView.setOnTouchListener(onIVTouchWithMagicEraserListener);
             }
             if (!isChecked) {
                 magErB = null;
@@ -4376,14 +4452,14 @@ public class MainActivity extends AppCompatActivity {
                     for (final Frame f : project.frames) {
                         final Layer bl = f.getBackgroundLayer();
                         final Bitmap bm = Bitmap.createBitmap(bl.bitmap, selection.left, selection.top, width, height);
-                        resizeImage(bl, width, height,
+                        resizeImage(f, bl, width, height,
                                 ImageSizeManager.ScaleType.CROP, bm,
                                 selection.left, selection.top);
                         bm.recycle();
                     }
                 } else {
                     final Bitmap bm = Bitmap.createBitmap(bitmap, selection.left, selection.top, width, height);
-                    resizeImage(layer, width, height,
+                    resizeImage(frame, layer, width, height,
                             ImageSizeManager.ScaleType.CROP, bm,
                             selection.left, selection.top);
                     bm.recycle();
@@ -4501,7 +4577,7 @@ public class MainActivity extends AppCompatActivity {
                 createImagePreview();
                 new LightingDialog(this)
                         .setOnLightingChangeListener(onFilterLightingChangedListener)
-                        .setOnPositiveButtonClickListener(onClickImagePreviewPBListener)
+                        .setOnPositiveButtonClickListener(onImagePreviewPBClickListener)
                         .setOnCancelListener(onCancelImagePreviewListener)
                         .show();
                 clearStatus();
@@ -4511,7 +4587,7 @@ public class MainActivity extends AppCompatActivity {
                 createImagePreview();
                 new ColorBalanceDialog(this)
                         .setOnColorBalanceChangeListener(onFilterLightingChangedListener)
-                        .setOnPositiveButtonClickListener(onClickImagePreviewPBListener)
+                        .setOnPositiveButtonClickListener(onImagePreviewPBClickListener)
                         .setOnCancelListener(onCancelImagePreviewListener)
                         .show();
                 clearStatus();
@@ -4521,7 +4597,7 @@ public class MainActivity extends AppCompatActivity {
                 createImagePreview();
                 new ColorMatrixManager(this,
                         onFilterColorMatrixChangedListener,
-                        onClickImagePreviewPBListener,
+                        onImagePreviewPBClickListener,
                         onCancelImagePreviewListener)
                         .show();
                 clearStatus();
@@ -4533,7 +4609,7 @@ public class MainActivity extends AppCompatActivity {
                         .setIcon(item.getIcon()).setTitle(R.string.contrast)
                         .setValueFrom(-1.0f).setValueTo(10.0f).setValue(1.0f)
                         .setOnChangeListener(onFilterContrastSliderChangeListener)
-                        .setOnApplyListener(onClickImagePreviewPBListener)
+                        .setOnApplyListener(onImagePreviewPBClickListener)
                         .setOnCancelListener(onCancelImagePreviewListener)
                         .show();
                 clearStatus();
@@ -4544,7 +4620,7 @@ public class MainActivity extends AppCompatActivity {
                 new CurvesDialog(this)
                         .setSource(imagePreview.getPixels())
                         .setOnCurvesChangeListener(onFilterCurvesChangedListener)
-                        .setOnPositiveButtonClickListener(onClickImagePreviewPBListener)
+                        .setOnPositiveButtonClickListener(onImagePreviewPBClickListener)
                         .setOnCancelListener(onCancelImagePreviewListener)
                         .show();
                 clearStatus();
@@ -4554,7 +4630,7 @@ public class MainActivity extends AppCompatActivity {
                 createImagePreview();
                 new HsvDialog(this)
                         .setOnHsvChangeListener(onFilterHsvChangedListener)
-                        .setOnPositiveButtonClickListener(onClickImagePreviewPBListener)
+                        .setOnPositiveButtonClickListener(onImagePreviewPBClickListener)
                         .setOnCancelListener(onCancelImagePreviewListener)
                         .show();
                 clearStatus();
@@ -4564,7 +4640,7 @@ public class MainActivity extends AppCompatActivity {
                 createImagePreview();
                 new SliderDialog(this).setTitle(R.string.hue).setValueFrom(0.0f).setValueTo(360.0f).setValue(0.0f)
                         .setOnChangeListener(onFilterHToASliderChangeListener)
-                        .setOnApplyListener(onClickImagePreviewPBListener)
+                        .setOnApplyListener(onImagePreviewPBClickListener)
                         .setOnCancelListener(onCancelImagePreviewListener)
                         .show();
                 onFilterHToASliderChangeListener.onChange(null, 0, true);
@@ -4574,7 +4650,7 @@ public class MainActivity extends AppCompatActivity {
                 createImagePreview();
                 new LevelsDialog(this)
                         .setOnLevelsChangeListener(onFilterLevelsChangedListener)
-                        .setOnPositiveButtonClickListener(onClickImagePreviewPBListener)
+                        .setOnPositiveButtonClickListener(onImagePreviewPBClickListener)
                         .setOnCancelListener(onCancelImagePreviewListener)
                         .show()
                         .drawHistogram(imagePreview.getPixels());
@@ -4588,7 +4664,7 @@ public class MainActivity extends AppCompatActivity {
                         .setValueFrom(-0xFF).setValueTo(0xFF).setValue(0)
                         .setStepSize(1.0f)
                         .setOnChangeListener(onFilterLightnessSliderChangeListener)
-                        .setOnApplyListener(onClickImagePreviewPBListener)
+                        .setOnApplyListener(onImagePreviewPBClickListener)
                         .setOnCancelListener(onCancelImagePreviewListener)
                         .show();
                 clearStatus();
@@ -4598,7 +4674,7 @@ public class MainActivity extends AppCompatActivity {
                 createImagePreview();
                 new SliderDialog(this).setTitle(R.string.saturation).setValueFrom(-1.0f).setValueTo(10.0f).setValue(1.0f)
                         .setOnChangeListener(onFilterSaturationSliderChangeListener)
-                        .setOnApplyListener(onClickImagePreviewPBListener)
+                        .setOnApplyListener(onImagePreviewPBClickListener)
                         .setOnCancelListener(onCancelImagePreviewListener)
                         .show();
                 clearStatus();
@@ -4611,7 +4687,7 @@ public class MainActivity extends AppCompatActivity {
                         .setValueFrom(0x00).setValueTo(0xFF).setValue(0x80)
                         .setStepSize(1.0f)
                         .setOnChangeListener(onFilterThresholdSliderChangeListener)
-                        .setOnApplyListener(onClickImagePreviewPBListener)
+                        .setOnApplyListener(onImagePreviewPBClickListener)
                         .setOnCancelListener(onCancelImagePreviewListener)
                         .show();
                 onFilterThresholdSliderChangeListener.onChange(null, 0x80, true);
@@ -4636,7 +4712,7 @@ public class MainActivity extends AppCompatActivity {
                 createImagePreview();
                 new NoiseGenerator(this)
                         .setOnPropChangedListener(onNoisePropChangedListener)
-                        .setOnConfirmListener(onClickImagePreviewPBListener)
+                        .setOnConfirmListener(onImagePreviewPBClickListener)
                         .setOnCancelListener(onCancelImagePreviewListener)
                         .show();
                 clearStatus();
@@ -4748,7 +4824,7 @@ public class MainActivity extends AppCompatActivity {
                 createImagePreview();
                 new MatrixManager(this,
                         onMatrixChangedListener,
-                        onClickImagePreviewPBListener,
+                        onImagePreviewPBClickListener,
                         dialog -> {
                             drawBitmapOntoView(true);
                             imagePreview.recycle();
@@ -5193,7 +5269,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @SuppressLint("NonConstantResourceId")
-    private boolean onSoftStrokesActionItemClicked(ActionMode mode, MenuItem item) {
+    private boolean onSoftStrokesActionItemClick(ActionMode mode, MenuItem item) {
         switch (item.getItemId()) {
             default -> {
                 return false;
@@ -5204,7 +5280,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @SuppressLint({"NonConstantResourceId", "WrongConstant"})
-    private boolean onTextActionItemClicked(ActionMode mode, MenuItem item) {
+    private boolean onTextActionItemClick(ActionMode mode, MenuItem item) {
         switch (item.getItemId()) {
             default -> {
                 return false;
@@ -5270,7 +5346,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @SuppressLint("NonConstantResourceId")
-    private boolean onTransformerActionItemClicked(ActionMode mode, MenuItem item) {
+    private boolean onTransformerActionItemClick(ActionMode mode, MenuItem item) {
         switch (item.getItemId()) {
             default -> {
                 return false;
@@ -5287,9 +5363,9 @@ public class MainActivity extends AppCompatActivity {
 
     @SuppressLint("ClickableViewAccessibility")
     private void onTransformerChange(View.OnTouchListener l) {
-        cbTransformerFilter.setVisibility(l != onTouchIVWithTTListener ? View.VISIBLE : View.GONE);
-        cbTransformerLar.setVisibility(l == onTouchIVWithSTListener ? View.VISIBLE : View.GONE);
-        onTouchIVWithTransformerListener = l;
+        cbTransformerFilter.setVisibility(l != onIVTouchWithTTListener ? View.VISIBLE : View.GONE);
+        cbTransformerLar.setVisibility(l == onIVTouchWithSTListener ? View.VISIBLE : View.GONE);
+        onIVTouchWithTransformerListener = l;
         onTouchIVListener = l;
         if (btgZoom.getCheckedButtonId() != R.id.b_zoom) {
             flImageView.setOnTouchListener(l);
@@ -5455,7 +5531,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void resizeImage(Layer layer, int width, int height,
+    private void resizeImage(Frame frame, Layer layer, int width, int height,
                              ImageSizeManager.ScaleType scaleType, @Nullable Bitmap newImage,
                              int offsetX, int offsetY) {
         final Bitmap bm = Bitmap.createBitmap(width, height,
@@ -5478,7 +5554,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         if (layer == frame.getBackgroundLayer()) {
-            for (int i = frame.layers.size() - 1; i >= 0; --i) {
+            for (int i = 0; i < frame.layers.size() - 1; ++i) {
                 frame.layers.get(i).moveBy(-offsetX, -offsetY);
             }
         } else {
@@ -5799,12 +5875,12 @@ public class MainActivity extends AppCompatActivity {
 
     @SuppressLint("ClickableViewAccessibility")
     void setArgbColorType() {
-        onTouchIVWithEyedropperListener = Settings.INST.argbColorType()
-                ? onTouchIVWithPreciseEyedropperListener : onTouchIVWithImpreciseEyedropperListener;
+        onIVTouchWithEyedropperListener = Settings.INST.argbColorType()
+                ? onIVTouchWithPreciseEyedropperListener : onIVTouchWithImpreciseEyedropperListener;
         if (btgTools != null && btgTools.getCheckedButtonId() == R.id.b_eyedropper) {
-            onTouchIVListener = onTouchIVWithEyedropperListener;
+            onTouchIVListener = onIVTouchWithEyedropperListener;
             if (btgZoom.getCheckedButtonId() != R.id.b_zoom) {
-                flImageView.setOnTouchListener(onTouchIVWithEyedropperListener);
+                flImageView.setOnTouchListener(onIVTouchWithEyedropperListener);
             }
         }
     }
@@ -5876,23 +5952,6 @@ public class MainActivity extends AppCompatActivity {
             selection.bottom = fromY + 1;
         }
         drawSelectionOntoView();
-    }
-
-    private boolean stretchByDraggedMarqueeBound(float viewX, float viewY) {
-        final boolean hasDragged = dragMarqueeBound(viewX, viewY);
-        if (cbTransformerLar.isChecked()) {
-            if (marqueeBoundBeingDragged == Position.LEFT || marqueeBoundBeingDragged == Position.RIGHT) {
-                final double halfHeight = selection.width() / transformer.getAspectRatio() / 2.0;
-                selection.top = (int) (transformer.getCenterY() - halfHeight);
-                selection.bottom = (int) (transformer.getCenterY() + halfHeight);
-            } else if (marqueeBoundBeingDragged == Position.TOP || marqueeBoundBeingDragged == Position.BOTTOM) {
-                final double halfWidth = selection.height() * transformer.getAspectRatio() / 2.0;
-                selection.left = (int) (transformer.getCenterX() - halfWidth);
-                selection.right = (int) (transformer.getCenterX() + halfWidth);
-            }
-        }
-        drawSelectionOntoView(true);
-        return hasDragged;
     }
 
     private void swapColor() {

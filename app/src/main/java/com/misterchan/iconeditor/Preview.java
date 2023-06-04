@@ -35,7 +35,7 @@ class Preview {
 
     private Bitmap bitmap;
     private Bitmap bm;
-    private Bitmap src;
+    private final Bitmap src;
     private Canvas canvas;
     private Canvas cv;
     private final Rect rect;
