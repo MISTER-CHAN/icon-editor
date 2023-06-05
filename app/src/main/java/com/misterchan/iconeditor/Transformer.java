@@ -11,18 +11,13 @@ import android.graphics.RectF;
 class Transformer implements FloatingLayer {
 
     private Bitmap bitmap;
-    private final Rect rect;
+    private Rect rect;
 
     private final Paint paint = new Paint() {
         {
             setBlendMode(BlendMode.SRC);
         }
     };
-
-    public Transformer(Bitmap bitmap, Rect rect) {
-        this.bitmap = bitmap;
-        this.rect = rect;
-    }
 
     @Override
     public Bitmap getBitmap() {
@@ -37,6 +32,10 @@ class Transformer implements FloatingLayer {
     @Override
     public int getTop() {
         return rect.top;
+    }
+
+    public boolean isRecycled() {
+        return bitmap == null;
     }
 
     public void recycle() {
@@ -56,6 +55,14 @@ class Transformer implements FloatingLayer {
         final Matrix matrix = new Matrix();
         matrix.setScale(sx, sy);
         transform(matrix, filter, antiAlias);
+    }
+
+    public void setBitmap(Bitmap bitmap, Rect rect) {
+        if (this.bitmap != null) {
+            this.bitmap.recycle();
+        }
+        this.bitmap = bitmap;
+        this.rect = rect;
     }
 
     public void stretch(int width, int height, boolean filter, boolean antiAlias) {

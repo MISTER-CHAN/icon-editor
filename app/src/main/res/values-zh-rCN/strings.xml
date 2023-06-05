@@ -270,7 +270,7 @@
     <string name="state_selected_bound">选定边界：%s</string>
     <string name="state_size">尺寸：%d × %d</string>
     <string name="state_start_stop">始：(%d, %d)，止：(%d, %d)</string>
-    <string name="state_start_stop_">始：(%d, %d)，止：(%d, %d)，</string>
+    <string name="state_start_stop_">始：(%d, %d)，止：(%d, %d)，%s</string>
     <string name="state_threshold">阈值：%d</string>
     <string name="stretch">拉伸</string>
     <string name="strike_thru">消除线</string>

@@ -304,7 +304,7 @@
     <string name="state_selected_bound">Selected bound: %s</string>
     <string name="state_size">Size: %d × %d</string>
     <string name="state_start_stop">Start: (%d, %d), Stop: (%d, %d)</string>
-    <string name="state_start_stop_">Start: (%d, %d), Stop: (%d, %d), </string>
+    <string name="state_start_stop_">Start: (%d, %d), Stop: (%d, %d), %s</string>
     <string name="state_threshold">Threshold: %d</string>
     <string name="stretch">Stretch</string>
     <string name="strike_thru">Strikethrough</string>

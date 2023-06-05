@@ -318,6 +318,7 @@ public class MainActivity extends AppCompatActivity {
     private CheckBox cbTransformerLar;
     private ColorAdapter colorAdapter;
     private final DirectorySelector dirSelector = new DirectorySelector(this);
+    private final DrawingPrimitivePreview dpPreview = new DrawingPrimitivePreview();
     private float backgroundScaledW, backgroundScaledH;
     private float blurRadius = 0.0f, blurRadiusEraser = 0.0f;
     private float scale;
@@ -370,7 +371,7 @@ public class MainActivity extends AppCompatActivity {
     private Point magErB, magErF; // Magic eraser background and foreground
     private final PointF magErBD = new PointF(0.0f, 0.0f), magErFD = new PointF(0.0f, 0.0f); // Distance
     private Position marqueeBoundBeingDragged = null;
-    private Preview imagePreview;
+    private FilterPreview imagePreview;
     private Project project;
     private final Rect selection = new Rect();
     private RecyclerView rvFrameList;
@@ -399,7 +400,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView tvStatus;
     private Thread thread = new Thread();
     private ToggleButton tbSoftBrush;
-    private Transformer transformer;
+    private final Transformer transformer = new Transformer();
     private Uri fileToBeOpened;
     private View vBackgroundColor;
     private View vContent;
@@ -642,7 +643,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onDestroyActionMode(ActionMode mode) {
-            if (transformer != null) {
+            if (!transformer.isRecycled()) {
                 undoOrRedo(layer.history.getCurrent());
             }
         }
@@ -862,7 +863,7 @@ public class MainActivity extends AppCompatActivity {
             if (properties.noisiness() == 0.0f) {
                 imagePreview.clearFilters();
             } else {
-                switch (properties.whatToDraw()) {
+                switch (properties.drawingPrimitive()) {
                     case PIXEL -> {
                         if (properties.noisiness() == 1.0f && properties.noRepeats()) {
                             imagePreview.drawColor(paint.getColor(), BlendMode.SRC);
@@ -983,7 +984,7 @@ public class MainActivity extends AppCompatActivity {
     private final DialogInterface.OnClickListener onApplyThresholdListener = onImagePreviewNBClickListener;
 
     private final View.OnClickListener onToleranceButtonClickListener = v -> {
-        createImagePreview();
+        createFilterPreview();
         new SliderDialog(this).setTitle(R.string.tolerance).setValueFrom(0x00).setValueTo(0xFF).setValue(threshold)
                 .setStepSize(1.0f)
                 .setOnChangeListener(onChangeThresholdListener)
@@ -1231,98 +1232,64 @@ public class MainActivity extends AppCompatActivity {
 
     private final Shape circle = new Shape() {
         @Override
-        public void drawBitmapOntoView(int x0, int y0, int x1, int y1) {
-            final int radius = (int) Math.ceil(Math.hypot(x1 - x0, y1 - y0));
-            MainActivity.this.drawBitmapOntoView(x0 - radius, y0 - radius, x1 + radius, y1 + radius,
-                    strokeWidth / 2.0f + blurRadius);
-        }
-
-        @Override
-        public void drawShapeIntoImage(int x0, int y0, int x1, int y1) {
-            canvas.drawCircle(x0 + 0.5f, y0 + 0.5f,
-                    (int) Math.hypot(x1 - x0, y1 - y0),
-                    paint);
-        }
-
-        @Override
-        public String drawShapeOntoView(int x0, int y0, int x1, int y1) {
+        public String drawShapeOntoCanvas(Canvas canvas, int x0, int y0, int x1, int y1) {
             final int radius = (int) Math.hypot(x1 - x0, y1 - y0);
-            previewCanvas.drawCircle(
-                    toViewX(x0 + 0.5f), toViewY(y0 + 0.5f),
-                    toScaled(radius),
-                    paint);
-            return getString(R.string.state_radius, radius + 0.5f);
+            canvas.drawCircle(x0 + 0.5f, y0 + 0.5f, radius, paint);
+            return canvas == dpPreview.getCanvas()
+                    ? getString(R.string.state_radius, radius + 0.5f) : null;
+        }
+
+        @Override
+        public Rect mapRect(int x0, int y0, int x1, int y1) {
+            final int radius = (int) Math.ceil(Math.hypot(x1 - x0, y1 - y0));
+            return MainActivity.this.mapRect(x0 - radius, y0 - radius, x1 + radius, y1 + radius,
+                    strokeWidth / 2.0f + blurRadius);
         }
     };
 
     private final Shape line = new Shape() {
         @Override
-        public void drawBitmapOntoView(int x0, int y0, int x1, int y1) {
-            MainActivity.this.drawBitmapOntoView(x0, y0, x1, y1, strokeWidth / 2.0f + blurRadius);
+        public String drawShapeOntoCanvas(Canvas canvas, int x0, int y0, int x1, int y1) {
+            drawLineOntoCanvas(canvas, x0, y0, x1, y1, paint);
+            return canvas == dpPreview.getCanvas()
+                    ? getString(R.string.state_length, Math.hypot(x1 - x0, y1 - y0) + 1) : null;
         }
 
         @Override
-        public void drawShapeIntoImage(int x0, int y0, int x1, int y1) {
-            if (x0 <= x1) ++x1;
-            else ++x0;
-            if (y0 <= y1) ++y1;
-            else ++y0;
-            canvas.drawLine(x0, y0, x1, y1, paint);
-        }
-
-        @Override
-        public String drawShapeOntoView(int x0, int y0, int x1, int y1) {
-            previewCanvas.drawLine(
-                    toViewX(x0 + 0.5f), toViewY(y0 + 0.5f),
-                    toViewX(x1 + 0.5f), toViewY(y1 + 0.5f),
-                    paint);
-            return getString(R.string.state_length, Math.hypot(x1 - x0, y1 - y0) + 1);
+        public Rect mapRect(int x0, int y0, int x1, int y1) {
+            return MainActivity.this.mapRect(x0, y0, x1, y1, strokeWidth / 2.0f + blurRadius);
         }
     };
 
     private final Shape oval = new Shape() {
         @Override
-        public void drawBitmapOntoView(int x0, int y0, int x1, int y1) {
-            MainActivity.this.drawBitmapOntoView(x0, y0, x1, y1, strokeWidth / 2.0f + blurRadius);
-        }
-
-        @Override
-        public void drawShapeIntoImage(int x0, int y0, int x1, int y1) {
+        public String drawShapeOntoCanvas(Canvas canvas, int x0, int y0, int x1, int y1) {
             final float left = Math.min(x0, x1) + 0.5f, top = Math.min(y0, y1) + 0.5f,
                     right = Math.max(x0, x1) + 0.5f, bottom = Math.max(y0, y1) + 0.5f;
             canvas.drawOval(left, top, right, bottom, paint);
+            return canvas == dpPreview.getCanvas()
+                    ? getString(R.string.state_axes, Math.abs(x1 - x0) + 1, Math.abs(y1 - y0) + 1) : null;
         }
 
         @Override
-        public String drawShapeOntoView(int x0, int y0, int x1, int y1) {
-            previewCanvas.drawOval(
-                    toViewX(x0 + 0.5f), toViewY(y0 + 0.5f),
-                    toViewX(x1 + 0.5f), toViewY(y1 + 0.5f),
-                    paint);
-            return getString(R.string.state_axes, Math.abs(x1 - x0) + 1, Math.abs(y1 - y0) + 1);
+        public Rect mapRect(int x0, int y0, int x1, int y1) {
+            return MainActivity.this.mapRect(x0, y0, x1, y1, strokeWidth / 2.0f + blurRadius);
         }
     };
 
     private final Shape rect = new Shape() {
         @Override
-        public void drawBitmapOntoView(int x0, int y0, int x1, int y1) {
-            MainActivity.this.drawBitmapOntoView(x0, y0, x1, y1, strokeWidth / 2.0f + blurRadius);
-        }
-
-        @Override
-        public void drawShapeIntoImage(int x0, int y0, int x1, int y1) {
+        public String drawShapeOntoCanvas(Canvas canvas, int x0, int y0, int x1, int y1) {
             final float left = Math.min(x0, x1), top = Math.min(y0, y1),
                     right = Math.max(x0, x1) + 0.5f, bottom = Math.max(y0, y1) + 0.5f;
             canvas.drawRect(left, top, right, bottom, paint);
+            return canvas == dpPreview.getCanvas()
+                    ? getString(R.string.state_size, Math.abs(x1 - x0) + 1, Math.abs(y1 - y0) + 1) : null;
         }
 
         @Override
-        public String drawShapeOntoView(int x0, int y0, int x1, int y1) {
-            previewCanvas.drawRect(
-                    toViewX(x0 + 0.5f), toViewY(y0 + 0.5f),
-                    toViewX(x1 + 0.5f), toViewY(y1 + 0.5f),
-                    paint);
-            return getString(R.string.state_size, Math.abs(x1 - x0) + 1, Math.abs(y1 - y0) + 1);
+        public Rect mapRect(int x0, int y0, int x1, int y1) {
+            return MainActivity.this.mapRect(x0, y0, x1, y1, strokeWidth / 2.0f + blurRadius);
         }
     };
 
@@ -1483,7 +1450,7 @@ public class MainActivity extends AppCompatActivity {
                 case MotionEvent.ACTION_MOVE: {
                     final float x = event.getX(), y = event.getY();
                     final int bx = toBitmapX(x), by = toBitmapY(y);
-                    drawLineIntoImage(lastBX, lastBY, bx, by, eraser);
+                    drawLineOntoCanvas(canvas, lastBX, lastBY, bx, by, eraser);
                     drawBitmapOntoView(lastBX, lastBY, bx, by, eraserStrokeHalfWidth + blurRadiusEraser);
                     tvStatus.setText(getString(R.string.coordinates, bx, by));
                     lastBX = bx;
@@ -1544,6 +1511,7 @@ public class MainActivity extends AppCompatActivity {
     private final View.OnTouchListener onIVTouchWithGradientListener = new OnMultiTouchListener() {
         @ColorLong
         private long color0;
+        private Rect lastRect;
 
         @Override
         public void onSingleTouch(View v, MotionEvent event) {
@@ -1552,10 +1520,10 @@ public class MainActivity extends AppCompatActivity {
             final Bitmap src = refBm != null ? refBm : bitmap;
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN: {
-                    paint.setStrokeWidth(toScaled((int) paint.getStrokeWidth()));
                     if (isShapeStopped) {
                         isShapeStopped = false;
-                        drawPointOntoView(bx, by);
+                        dpPreview.getCanvas().drawPoint(bx, by, paint);
+                        lastRect = new Rect();
                         shapeStartX = bx;
                         shapeStartY = by;
                         color0 = src.getColor(satX(src, bx), satY(src, by)).pack();
@@ -1564,31 +1532,30 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
                 case MotionEvent.ACTION_MOVE: {
-                    final float startVX = toViewX(shapeStartX + 0.5f), startVY = toViewY(shapeStartY + 0.5f),
-                            stopX = toViewX(bx + 0.5f), stopY = toViewY(by + 0.5f);
-                    paint.setShader(new LinearGradient(startVX, startVY, stopX, stopY,
+                    paint.setShader(new LinearGradient(shapeStartX, shapeStartY, bx, by,
                             color0,
                             src.getColor(satX(src, bx), satY(src, by)).pack(),
                             Shader.TileMode.CLAMP));
-                    eraseBitmap(previewBitmap);
-                    previewCanvas.drawLine(startVX, startVY, stopX, stopY, paint);
-                    ivPreview.invalidate();
+                    dpPreview.erase();
+                    drawLineOntoCanvas(dpPreview.getCanvas(), shapeStartX, shapeStartY, bx, by, paint);
+                    final Rect rect = mapRect(shapeStartX, shapeStartY, bx, by, strokeWidth / 2.0f + blurRadius);
+                    lastRect.union(rect);
+                    drawBitmapOntoView(lastRect);
+                    lastRect = rect;
                     tvStatus.setText(getString(R.string.state_start_stop,
                             shapeStartX, shapeStartY, bx, by));
                     break;
                 }
                 case MotionEvent.ACTION_CANCEL:
                 case MotionEvent.ACTION_UP:
-                    paint.setStrokeWidth(strokeWidth);
                     if (bx != shapeStartX || by != shapeStartY) {
-                        paint.setShader(new LinearGradient(shapeStartX, shapeStartY, bx, by,
-                                color0,
-                                src.getColor(satX(src, bx), satY(src, by)).pack(),
-                                Shader.TileMode.CLAMP));
-                        drawLineIntoImage(shapeStartX, shapeStartY, bx, by, paint);
                         isShapeStopped = true;
-                        drawBitmapOntoView(shapeStartX, shapeStartY, bx, by, strokeWidth / 2.0f + blurRadius);
-                        eraseBitmapAndInvalidateView(previewBitmap, ivPreview);
+                        drawLineOntoCanvas(canvas, shapeStartX, shapeStartY, bx, by, paint);
+                        final Rect rect = mapRect(shapeStartX, shapeStartY, bx, by, strokeWidth / 2.0f + blurRadius);
+                        lastRect.union(rect);
+                        dpPreview.erase();
+                        drawBitmapOntoView(lastRect, true);
+                        lastRect = null;
                         addToHistory();
                         clearStatus();
                     }
@@ -1799,12 +1766,12 @@ public class MainActivity extends AppCompatActivity {
     };
 
     @SuppressLint({"ClickableViewAccessibility"})
-    private final View.OnTouchListener onIVTouchWithMarqueeListener = new OnMultiTouchListener() {
+    private final View.OnTouchListener onIVTouchWithMarqueeListener = new View.OnTouchListener() {
         private boolean hasDraggedBound = false;
         private int startX, startY, stopX, stopY;
 
         @Override
-        public void onSingleTouch(View v, MotionEvent event) {
+        public boolean onTouch(View v, MotionEvent event) {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN -> {
                     final float x = event.getX(), y = event.getY();
@@ -1871,6 +1838,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
             }
+            return true;
         }
     };
 
@@ -1887,7 +1855,7 @@ public class MainActivity extends AppCompatActivity {
             }
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
-                    createImagePreview();
+                    createFilterPreview();
 
                 case MotionEvent.ACTION_MOVE: {
                     final float x = event.getX(), y = event.getY();
@@ -1992,7 +1960,7 @@ public class MainActivity extends AppCompatActivity {
                 case MotionEvent.ACTION_MOVE: {
                     final float x = event.getX(), y = event.getY();
                     final int bx = toBitmapX(x), by = toBitmapY(y);
-                    drawLineIntoImage(lastBX, lastBY, bx, by, pencil);
+                    drawLineOntoCanvas(canvas, lastBX, lastBY, bx, by, pencil);
                     drawBitmapOntoView(lastBX, lastBY, bx, by, strokeWidth / 2.0f + blurRadius);
                     tvStatus.setText(getString(R.string.coordinates, bx, by));
                     lastBX = bx;
@@ -2044,16 +2012,18 @@ public class MainActivity extends AppCompatActivity {
 
     @SuppressLint({"ClickableViewAccessibility", "SetTextI18n"})
     private final View.OnTouchListener onIVTouchWithShapeListener = new OnMultiTouchListener() {
+        private Rect lastRect;
+
         @Override
         public void onSingleTouch(View v, MotionEvent event) {
             final float x = event.getX(), y = event.getY();
             final int bx = toBitmapX(x), by = toBitmapY(y);
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN: {
-                    paint.setStrokeWidth(toScaled((int) paint.getStrokeWidth()));
                     if (isShapeStopped) {
                         isShapeStopped = false;
-                        drawPointOntoView(bx, by);
+                        dpPreview.getCanvas().drawPoint(bx, by, paint);
+                        lastRect = new Rect();
                         shapeStartX = bx;
                         shapeStartY = by;
                         tvStatus.setText(getString(R.string.coordinates, bx, by));
@@ -2061,19 +2031,25 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
                 case MotionEvent.ACTION_MOVE: {
-                    final String result = drawShapeOntoView(shapeStartX, shapeStartY, bx, by);
-                    tvStatus.setText(getString(R.string.state_start_stop_, shapeStartX, shapeStartY, bx, by)
-                            + result);
+                    dpPreview.erase();
+                    final String result = shape.drawShapeOntoCanvas(dpPreview.getCanvas(), shapeStartX, shapeStartY, bx, by);
+                    final Rect rect = shape.mapRect(shapeStartX, shapeStartY, bx, by);
+                    lastRect.union(rect);
+                    drawBitmapOntoView(lastRect);
+                    lastRect = rect;
+                    tvStatus.setText(getString(R.string.state_start_stop_, shapeStartX, shapeStartY, bx, by, result));
                     break;
                 }
                 case MotionEvent.ACTION_CANCEL:
                 case MotionEvent.ACTION_UP:
-                    paint.setStrokeWidth(strokeWidth);
                     if (bx != shapeStartX || by != shapeStartY) {
-                        drawShapeIntoImage(shapeStartX, shapeStartY, bx, by);
                         isShapeStopped = true;
-                        shape.drawBitmapOntoView(shapeStartX, shapeStartY, bx, by);
-                        eraseBitmapAndInvalidateView(previewBitmap, ivPreview);
+                        shape.drawShapeOntoCanvas(canvas, shapeStartX, shapeStartY, bx, by);
+                        final Rect rect = shape.mapRect(shapeStartX, shapeStartY, bx, by);
+                        lastRect.union(rect);
+                        dpPreview.erase();
+                        drawBitmapOntoView(lastRect, true);
+                        lastRect = null;
                         addToHistory();
                         clearStatus();
                     }
@@ -2142,7 +2118,7 @@ public class MainActivity extends AppCompatActivity {
                     if (selection.isEmpty()) {
                         break;
                     }
-                    if (transformer == null) {
+                    if (transformer.isRecycled()) {
                         createTransformer();
                     }
                     final int w = selection.width(), h = selection.height();
@@ -2153,7 +2129,7 @@ public class MainActivity extends AppCompatActivity {
                     verts[13] = verts[15] = verts[17] = h;
                 }
                 case MotionEvent.ACTION_MOVE -> {
-                    if (transformer == null) {
+                    if (transformer.isRecycled()) {
                         break;
                     }
                     final float rx = toBitmapXExact(event.getX()) - selection.left, ry = toBitmapYExact(event.getY()) - selection.top;
@@ -2161,7 +2137,7 @@ public class MainActivity extends AppCompatActivity {
                     verts[7] = verts[9] = verts[11] = ry;
                 }
                 case MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                    if (transformer == null) {
+                    if (transformer.isRecycled()) {
                         break;
                     }
                     transformer.transformMesh(verts, cbTransformerFilter.isChecked(), antiAlias);
@@ -2191,7 +2167,7 @@ public class MainActivity extends AppCompatActivity {
                     if (selection.isEmpty()) {
                         break;
                     }
-                    if (transformer == null) {
+                    if (transformer.isRecycled()) {
                         createTransformer();
                     }
                     src = new float[8];
@@ -2208,7 +2184,7 @@ public class MainActivity extends AppCompatActivity {
                     clearStatus();
                 }
                 case MotionEvent.ACTION_POINTER_DOWN -> {
-                    if (transformer == null) {
+                    if (transformer.isRecycled()) {
                         break;
                     }
                     final int pointerCount = event.getPointerCount();
@@ -2224,7 +2200,7 @@ public class MainActivity extends AppCompatActivity {
                     bmSrc[index * 2 + 1] = toBitmapY(y) - selection.top;
                 }
                 case MotionEvent.ACTION_MOVE -> {
-                    if (transformer == null) {
+                    if (transformer.isRecycled()) {
                         break;
                     }
                     pointCount = Math.min(event.getPointerCount(), 4);
@@ -2240,7 +2216,7 @@ public class MainActivity extends AppCompatActivity {
                     drawSelectionOntoView(false);
                 }
                 case MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                    if (transformer == null) {
+                    if (transformer.isRecycled()) {
                         break;
                     }
                     matrix = null;
@@ -2289,7 +2265,7 @@ public class MainActivity extends AppCompatActivity {
                         break;
                     }
                     final float x = event.getX(), y = event.getY();
-                    if (transformer == null) {
+                    if (transformer.isRecycled()) {
                         createTransformer();
                     }
                     ivSelection.setPivotX(toViewX(selection.exactCenterX()));
@@ -2298,7 +2274,7 @@ public class MainActivity extends AppCompatActivity {
                     clearStatus();
                 }
                 case MotionEvent.ACTION_MOVE -> {
-                    if (transformer == null) {
+                    if (transformer.isRecycled()) {
                         break;
                     }
                     final float x = event.getX(), y = event.getY();
@@ -2308,7 +2284,7 @@ public class MainActivity extends AppCompatActivity {
                     tvStatus.setText(getString(R.string.degrees_, degrees));
                 }
                 case MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                    if (transformer == null) {
+                    if (transformer.isRecycled()) {
                         break;
                     }
                     final int w = transformer.getWidth(), h = transformer.getHeight();
@@ -2396,7 +2372,7 @@ public class MainActivity extends AppCompatActivity {
                         lastY = y;
                     }
                     case MotionEvent.ACTION_MOVE -> {
-                        if (!multiTouch) break;
+                        if (multiTouch) break;
 
                         velocityTracker.addMovement(event);
                         velocityTracker.computeCurrentVelocity(1);
@@ -2473,7 +2449,7 @@ public class MainActivity extends AppCompatActivity {
                         lastBY = by;
                     }
                     case MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                        if (!multiTouch) break;
+                        if (multiTouch) break;
 
                         velocityTracker.recycle();
                         lastTLX = /* lastTLY = ... = lastRY = */ Float.NaN;
@@ -2482,7 +2458,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
                 }
-            } else {
+            } else if (!hasSelection) {
                 switch (event.getActionMasked()) {
                     case MotionEvent.ACTION_MOVE -> {
                         if (lastMerged == null) {
@@ -2532,7 +2508,7 @@ public class MainActivity extends AppCompatActivity {
                                 break;
                             }
                             final float x = event.getX(), y = event.getY();
-                            if (transformer == null) {
+                            if (transformer.isRecycled()) {
                                 createTransformer();
                             }
                             drawSelectionOntoView(false);
@@ -2553,7 +2529,7 @@ public class MainActivity extends AppCompatActivity {
                             }
                         }
                         case MotionEvent.ACTION_MOVE -> {
-                            if (transformer == null) {
+                            if (transformer.isRecycled()) {
                                 break;
                             }
                             final float x = event.getX(), y = event.getY();
@@ -2564,7 +2540,7 @@ public class MainActivity extends AppCompatActivity {
                             }
                         }
                         case MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                            if (transformer == null) {
+                            if (transformer.isRecycled()) {
                                 break;
                             }
                             if (marqueeBoundBeingDragged != null && hasDraggedBound) {
@@ -2693,7 +2669,7 @@ public class MainActivity extends AppCompatActivity {
                 case MotionEvent.ACTION_DOWN -> {
                     final float x = event.getX(), y = event.getY();
                     if (hasSelection) {
-                        if (transformer == null) {
+                        if (transformer.isRecycled()) {
                             createTransformer();
                         }
                         drawSelectionOntoView(false);
@@ -2710,7 +2686,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 case MotionEvent.ACTION_MOVE -> {
                     final float x = event.getX(), y = event.getY();
-                    if (transformer != null) {
+                    if (!transformer.isRecycled()) {
                         selection.offsetTo(toBitmapX(x - dx), toBitmapY(y - dy));
                         drawSelectionOntoView(true);
                         tvStatus.setText(getString(R.string.state_left_top,
@@ -2726,7 +2702,7 @@ public class MainActivity extends AppCompatActivity {
                     drawBitmapOntoView();
                 }
                 case MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                    if (transformer != null) {
+                    if (!transformer.isRecycled()) {
                         drawSelectionOntoView(false);
                     }
                     drawBitmapOntoView(true);
@@ -2856,6 +2832,7 @@ public class MainActivity extends AppCompatActivity {
                     tietGradientBlurRadius.setText(String.valueOf(blurRadius));
                     tietGradientStrokeWidth.setText(String.valueOf(strokeWidth));
                     svOptionsGradient.setVisibility(View.VISIBLE);
+                    dpPreview.setBitmap(bitmap.getWidth(), bitmap.getHeight());
                 }
             }
             case R.id.b_magic_eraser -> {
@@ -2930,6 +2907,7 @@ public class MainActivity extends AppCompatActivity {
                     cbShapeFill.setChecked(isPaintStyleFill());
                     tietShapeStrokeWidth.setText(String.valueOf(paint.getStrokeWidth()));
                     svOptionsShape.setVisibility(View.VISIBLE);
+                    dpPreview.setBitmap(bitmap.getWidth(), bitmap.getHeight());
                 }
             }
             case R.id.b_soft_brush -> {
@@ -2948,6 +2926,7 @@ public class MainActivity extends AppCompatActivity {
                 if (isChecked) {
                     onToolChanged(onIVTouchWithTextListener);
                     cbTextFill.setChecked(isPaintStyleFill());
+                    dpPreview.setBitmap(bitmap.getWidth(), bitmap.getHeight());
                 } else {
                     drawTextIntoImage(false);
                 }
@@ -3243,14 +3222,14 @@ public class MainActivity extends AppCompatActivity {
         addLayer(project, frame, bm, position, level, left, top, true, getString(R.string.layer), true);
     }
 
-    private void createImagePreview() {
+    private void createFilterPreview() {
         if (imagePreview != null) {
             imagePreview.recycle();
         }
         if (!hasSelection) {
             selectAll();
         }
-        imagePreview = new Preview(bitmap, selection);
+        imagePreview = new FilterPreview(bitmap, selection);
     }
 
     private void createTransformer() {
@@ -3260,7 +3239,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void createTransformer(Bitmap bitmap) {
-        transformer = new Transformer(bitmap, selection);
+        transformer.setBitmap(bitmap, selection);
         transformerActionMode = startSupportActionMode(onTransformerActionModeCallback);
         transformerActionMode.setTitle(R.string.transform);
     }
@@ -3336,7 +3315,7 @@ public class MainActivity extends AppCompatActivity {
         }
         drawChessboardOntoView();
         drawGridOntoView();
-        if (transformer != null) {
+        if (!transformer.isRecycled()) {
 
         } else if (isEditingText) {
             drawTextOntoView();
@@ -3432,10 +3411,18 @@ public class MainActivity extends AppCompatActivity {
         final Bitmap background = frame.getBackgroundLayer().bitmap;
         final Rect vs = new Rect(0, 0, background.getWidth(), background.getHeight());
 
-        final Bitmap merged = Layers.mergeLayers(frame.layerTree, vs, layer, bitmap, transformer);
+        final Bitmap merged = Layers.mergeLayers(frame.layerTree, vs, layer, bitmap, getCurrentFloatingLayer());
         recycleBitmap(lastMerged);
         lastMerged = merged;
     };
+
+    private Rect mapRect(int x0, int y0, int x1, int y1, float radius) {
+        final boolean x = x0 <= x1, y = y0 <= y1;
+        final int rad = (int) Math.ceil(radius);
+        final int left = layer.left + (x ? x0 : x1) - rad, top = layer.top + (y ? y0 : y1) - rad,
+                right = layer.left + (x ? x1 : x0) + rad + 1, bottom = layer.top + (y ? y1 : y0) + rad + 1;
+        return new Rect(left, top, right, bottom);
+    }
 
     private void mergeLayersEntire() {
         runOrStart(mergeLayersEntireRunner, true);
@@ -3487,7 +3474,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        final Bitmap merged = Layers.mergeLayers(frame.layerTree, vs, layer, bitmap, transformer);
+        final Bitmap merged = Layers.mergeLayers(frame.layerTree, vs, layer, bitmap, getCurrentFloatingLayer());
         recycleBitmap(lastMerged);
         lastMerged = null;
         final float translLeft = toViewXRel(left), translTop = toViewYRel(top);
@@ -3513,7 +3500,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        final Bitmap merged = Layers.mergeLayers(frame.layerTree, vs, layer, bitmap, transformer);
+        final Bitmap merged = Layers.mergeLayers(frame.layerTree, vs, layer, bitmap, getCurrentFloatingLayer());
         recycleBitmap(lastMerged);
         lastMerged = null;
         final Rect relative = new Rect(0, 0, vs.width(), vs.height());
@@ -3704,7 +3691,7 @@ public class MainActivity extends AppCompatActivity {
         ivRulerV.invalidate();
     }
 
-    private void drawLineIntoImage(int startX, int startY, int stopX, int stopY, Paint paint) {
+    private void drawLineOntoCanvas(Canvas canvas, int startX, int startY, int stopX, int stopY, Paint paint) {
         if (startX <= stopX) ++stopX;
         else ++startX;
         if (startY <= stopY) ++stopY;
@@ -3777,17 +3764,6 @@ public class MainActivity extends AppCompatActivity {
         ivSelection.invalidate();
     }
 
-    private void drawShapeIntoImage(int x0, int y0, int x1, int y1) {
-        shape.drawShapeIntoImage(x0, y0, x1, y1);
-    }
-
-    private String drawShapeOntoView(int x0, int y0, int x1, int y1) {
-        eraseBitmap(previewBitmap);
-        final String result = shape.drawShapeOntoView(x0, y0, x1, y1);
-        ivPreview.invalidate();
-        return result;
-    }
-
     private void drawSoftStrokesIntoSelection() {
         if (!isWritingSoftStrokes || !hasSelection) {
             return;
@@ -3835,9 +3811,8 @@ public class MainActivity extends AppCompatActivity {
             textActionMode.finish();
             textActionMode = null;
         }
-        paint.setTextSize(textSize);
         canvas.drawText(tietText.getText().toString(), textX, textY, paint);
-        drawBitmapOntoView(true, true);
+        drawBitmapOntoView(true);
         eraseBitmapAndInvalidateView(previewBitmap, ivPreview);
         hideSoftInputFromWindow();
         if (hideOptions) {
@@ -3852,10 +3827,11 @@ public class MainActivity extends AppCompatActivity {
         }
         eraseBitmap(previewBitmap);
         final float x = toViewX(textX), y = toViewY(textY);
-        paint.setTextSize(toScaled(textSize));
         final Paint.FontMetrics fontMetrics = paint.getFontMetrics();
-        final float centerVertical = y + fontMetrics.ascent / 2.0f;
-        previewCanvas.drawText(tietText.getText().toString(), x, y, paint);
+        final float centerVertical = y + toScaled(fontMetrics.ascent) / 2.0f;
+        dpPreview.erase();
+        dpPreview.getCanvas().drawText(tietText.getText().toString(), textX, textY, paint);
+        drawBitmapOntoView();
         previewCanvas.drawLine(x, 0.0f, x, viewHeight, PAINT_CELL_GRID);
         previewCanvas.drawLine(0.0f, y, viewWidth, y, PAINT_TEXT_LINE);
         previewCanvas.drawLine(0.0f, centerVertical, viewWidth, centerVertical, PAINT_CELL_GRID);
@@ -3863,7 +3839,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void drawTransformerIntoImage() {
-        if (transformer == null || !hasSelection) {
+        if (transformer.isRecycled() || !hasSelection) {
             return;
         }
         canvas.drawBitmap(transformer.getBitmap(), selection.left, selection.top, PAINT_SRC_OVER);
@@ -3955,6 +3931,16 @@ public class MainActivity extends AppCompatActivity {
             project.translationX = (viewWidth >> 1) - width * scaleH / 2.0f;
             project.translationY = 0.0f;
         }
+    }
+
+    private FloatingLayer getCurrentFloatingLayer() {
+        FloatingLayer floatingLayer = null;
+        if (!transformer.isRecycled()) {
+            floatingLayer = transformer;
+        } else if (!dpPreview.isRecycled()) {
+            floatingLayer = dpPreview;
+        }
+        return floatingLayer;
     }
 
     private Rect getVisibleSubset() {
@@ -4402,7 +4388,7 @@ public class MainActivity extends AppCompatActivity {
             case R.id.i_cell_grid ->
                     new CellGridManager(this, layer.cellGrid, onApplyCellGridListener).show();
             case R.id.i_clone -> {
-                if (transformer == null) {
+                if (transformer.isRecycled()) {
                     drawFloatingLayersIntoImage();
                     final Bitmap bm = hasSelection
                             ? Bitmap.createBitmap(bitmap, selection.left, selection.top, selection.width(), selection.height())
@@ -4424,14 +4410,14 @@ public class MainActivity extends AppCompatActivity {
             }
             case R.id.i_clone_as_new -> {
                 final Bitmap bm = hasSelection ?
-                        transformer == null ?
+                        transformer.isRecycled() ?
                                 Bitmap.createBitmap(bitmap, selection.left, selection.top, selection.width(), selection.height()) :
                                 Bitmap.createBitmap(transformer.getBitmap()) :
                         Bitmap.createBitmap(bitmap);
                 addProject(bm, tlProjectList.getSelectedTabPosition() + 1, getString(R.string.copy_noun));
             }
             case R.id.i_copy -> {
-                if (transformer == null) {
+                if (transformer.isRecycled()) {
                     if (clipboard != null) {
                         clipboard.recycle();
                     }
@@ -4466,7 +4452,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
             case R.id.i_cut -> {
-                if (transformer == null) {
+                if (transformer.isRecycled()) {
                     if (clipboard != null) {
                         clipboard.recycle();
                     }
@@ -4490,7 +4476,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
             case R.id.i_delete -> {
-                if (transformer == null) {
+                if (transformer.isRecycled()) {
                     if (hasSelection) {
                         canvas.drawRect(selection.left, selection.top, selection.right, selection.bottom, eraser);
                     } else {
@@ -4518,7 +4504,7 @@ public class MainActivity extends AppCompatActivity {
                 clearStatus();
             }
             case R.id.i_draw_color -> {
-                if (transformer == null) {
+                if (transformer.isRecycled()) {
                     if (hasSelection) {
                         canvas.drawRect(selection.left, selection.top, selection.right, selection.bottom, paint);
                     } else {
@@ -4574,7 +4560,7 @@ public class MainActivity extends AppCompatActivity {
             case R.id.i_file_save_as -> saveAs();
             case R.id.i_filter_channel_lighting -> {
                 drawFloatingLayersIntoImage();
-                createImagePreview();
+                createFilterPreview();
                 new LightingDialog(this)
                         .setOnLightingChangeListener(onFilterLightingChangedListener)
                         .setOnPositiveButtonClickListener(onImagePreviewPBClickListener)
@@ -4584,7 +4570,7 @@ public class MainActivity extends AppCompatActivity {
             }
             case R.id.i_filter_color_balance -> {
                 drawFloatingLayersIntoImage();
-                createImagePreview();
+                createFilterPreview();
                 new ColorBalanceDialog(this)
                         .setOnColorBalanceChangeListener(onFilterLightingChangedListener)
                         .setOnPositiveButtonClickListener(onImagePreviewPBClickListener)
@@ -4594,7 +4580,7 @@ public class MainActivity extends AppCompatActivity {
             }
             case R.id.i_filter_color_matrix -> {
                 drawFloatingLayersIntoImage();
-                createImagePreview();
+                createFilterPreview();
                 new ColorMatrixManager(this,
                         onFilterColorMatrixChangedListener,
                         onImagePreviewPBClickListener,
@@ -4604,7 +4590,7 @@ public class MainActivity extends AppCompatActivity {
             }
             case R.id.i_filter_contrast -> {
                 drawFloatingLayersIntoImage();
-                createImagePreview();
+                createFilterPreview();
                 new SliderDialog(this)
                         .setIcon(item.getIcon()).setTitle(R.string.contrast)
                         .setValueFrom(-1.0f).setValueTo(10.0f).setValue(1.0f)
@@ -4616,7 +4602,7 @@ public class MainActivity extends AppCompatActivity {
             }
             case R.id.i_filter_curves -> {
                 drawFloatingLayersIntoImage();
-                createImagePreview();
+                createFilterPreview();
                 new CurvesDialog(this)
                         .setSource(imagePreview.getPixels())
                         .setOnCurvesChangeListener(onFilterCurvesChangedListener)
@@ -4627,7 +4613,7 @@ public class MainActivity extends AppCompatActivity {
             }
             case R.id.i_filter_hsv -> {
                 drawFloatingLayersIntoImage();
-                createImagePreview();
+                createFilterPreview();
                 new HsvDialog(this)
                         .setOnHsvChangeListener(onFilterHsvChangedListener)
                         .setOnPositiveButtonClickListener(onImagePreviewPBClickListener)
@@ -4637,7 +4623,7 @@ public class MainActivity extends AppCompatActivity {
             }
             case R.id.i_filter_hue_to_alpha -> {
                 drawFloatingLayersIntoImage();
-                createImagePreview();
+                createFilterPreview();
                 new SliderDialog(this).setTitle(R.string.hue).setValueFrom(0.0f).setValueTo(360.0f).setValue(0.0f)
                         .setOnChangeListener(onFilterHToASliderChangeListener)
                         .setOnApplyListener(onImagePreviewPBClickListener)
@@ -4647,7 +4633,7 @@ public class MainActivity extends AppCompatActivity {
             }
             case R.id.i_filter_levels -> {
                 drawFloatingLayersIntoImage();
-                createImagePreview();
+                createFilterPreview();
                 new LevelsDialog(this)
                         .setOnLevelsChangeListener(onFilterLevelsChangedListener)
                         .setOnPositiveButtonClickListener(onImagePreviewPBClickListener)
@@ -4658,7 +4644,7 @@ public class MainActivity extends AppCompatActivity {
             }
             case R.id.i_filter_lightness -> {
                 drawFloatingLayersIntoImage();
-                createImagePreview();
+                createFilterPreview();
                 new SliderDialog(this)
                         .setIcon(item.getIcon()).setTitle(R.string.lightness)
                         .setValueFrom(-0xFF).setValueTo(0xFF).setValue(0)
@@ -4671,7 +4657,7 @@ public class MainActivity extends AppCompatActivity {
             }
             case R.id.i_filter_saturation -> {
                 drawFloatingLayersIntoImage();
-                createImagePreview();
+                createFilterPreview();
                 new SliderDialog(this).setTitle(R.string.saturation).setValueFrom(-1.0f).setValueTo(10.0f).setValue(1.0f)
                         .setOnChangeListener(onFilterSaturationSliderChangeListener)
                         .setOnApplyListener(onImagePreviewPBClickListener)
@@ -4681,7 +4667,7 @@ public class MainActivity extends AppCompatActivity {
             }
             case R.id.i_filter_threshold -> {
                 drawFloatingLayersIntoImage();
-                createImagePreview();
+                createFilterPreview();
                 new SliderDialog(this)
                         .setIcon(item.getIcon()).setTitle(R.string.threshold)
                         .setValueFrom(0x00).setValueTo(0xFF).setValue(0x80)
@@ -4709,7 +4695,7 @@ public class MainActivity extends AppCompatActivity {
             }
             case R.id.i_generate_noise -> {
                 drawFloatingLayersIntoImage();
-                createImagePreview();
+                createFilterPreview();
                 new NoiseGenerator(this)
                         .setOnPropChangedListener(onNoisePropChangedListener)
                         .setOnConfirmListener(onImagePreviewPBClickListener)
@@ -4821,7 +4807,7 @@ public class MainActivity extends AppCompatActivity {
             }
             case R.id.i_transform -> {
                 drawFloatingLayersIntoImage();
-                createImagePreview();
+                createFilterPreview();
                 new MatrixManager(this,
                         onMatrixChangedListener,
                         onImagePreviewPBClickListener,
@@ -4835,7 +4821,7 @@ public class MainActivity extends AppCompatActivity {
                 clearStatus();
             }
             case R.id.i_undo -> {
-                if (transformer != null) {
+                if (!transformer.isRecycled()) {
                     undoOrRedo(layer.history.getCurrent());
                 } else if (!isShapeStopped) {
                     isShapeStopped = true;
@@ -5079,7 +5065,7 @@ public class MainActivity extends AppCompatActivity {
                     ssdLayerList.dismiss();
                 }
                 drawFloatingLayersIntoImage();
-                createImagePreview();
+                createFilterPreview();
                 new ColorRangeDialog(this)
                         .setOnColorRangeChangeListener(onColorRangeChangedListener)
                         .setOnPositiveButtonClickListener(onConfirmLayerDuplicatingByColorRangeListener)
@@ -5255,6 +5241,10 @@ public class MainActivity extends AppCompatActivity {
         hideToolOptions();
         isShapeStopped = true;
         eraseBitmapAndInvalidateView(previewBitmap, ivPreview);
+        if (!dpPreview.isRecycled()) {
+            dpPreview.recycle();
+            drawBitmapOntoView(true);
+        }
         paint.setAntiAlias(antiAlias);
         setBlurRadius(paint, blurRadius);
         paint.setStyle(style);
@@ -5520,11 +5510,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void recycleTransformer() {
-        if (transformer == null) {
+        if (transformer.isRecycled()) {
             return;
         }
         transformer.recycle();
-        transformer = null;
         if (transformerActionMode != null) {
             transformerActionMode.finish();
             transformerActionMode = null;
@@ -5608,7 +5597,7 @@ public class MainActivity extends AppCompatActivity {
             drawChessboardOntoView();
             drawGridOntoView();
         } else {
-            if (transformer == null) {
+            if (transformer.isRecycled()) {
                 if (!hasSelection) {
                     selectAll();
                 }
@@ -5768,7 +5757,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void scale(float sx, float sy) {
-        if (transformer == null) {
+        if (transformer.isRecycled()) {
             if (!hasSelection) {
                 selectAll();
             }

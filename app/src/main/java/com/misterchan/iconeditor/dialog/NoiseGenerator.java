@@ -23,7 +23,7 @@ public class NoiseGenerator {
 
     private static final int SB_MAX = 100;
 
-    public enum WhatToDraw {
+    public enum DrawingPrimitive {
         PIXEL, POINT, REF
     }
 
@@ -33,9 +33,13 @@ public class NoiseGenerator {
 
     public static class Properties {
         private boolean noRepeats = false;
+        private DrawingPrimitive drawingPrimitive = DrawingPrimitive.PIXEL;
         private float noisiness = 0.0f;
         private Long seed = null;
-        private WhatToDraw whatToDraw = WhatToDraw.PIXEL;
+
+        public DrawingPrimitive drawingPrimitive() {
+            return drawingPrimitive;
+        }
 
         public boolean noRepeats() {
             return noRepeats;
@@ -47,10 +51,6 @@ public class NoiseGenerator {
 
         public Long seed() {
             return seed;
-        }
-
-        public WhatToDraw whatToDraw() {
-            return whatToDraw;
         }
     }
 
@@ -99,10 +99,10 @@ public class NoiseGenerator {
         sNoisiness.setValueTo(SB_MAX);
 
         btgWhatToDraw.addOnButtonCheckedListener((OnButtonCheckedListener) (group, checkedId) -> {
-            properties.whatToDraw = switch (checkedId) {
-                case R.id.b_pixel -> WhatToDraw.PIXEL;
-                case R.id.b_point -> WhatToDraw.POINT;
-                case R.id.b_ref -> WhatToDraw.REF;
+            properties.drawingPrimitive = switch (checkedId) {
+                case R.id.b_pixel -> DrawingPrimitive.PIXEL;
+                case R.id.b_point -> DrawingPrimitive.POINT;
+                case R.id.b_ref -> DrawingPrimitive.REF;
                 default -> null;
             };
             update(true);
