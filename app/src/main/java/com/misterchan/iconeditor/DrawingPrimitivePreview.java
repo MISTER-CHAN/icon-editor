@@ -1,15 +1,30 @@
 package com.misterchan.iconeditor;
 
 import android.graphics.Bitmap;
+import android.graphics.BlendMode;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Rect;
 
 class DrawingPrimitivePreview implements FloatingLayer {
+    private static final Paint PAINT_CLEAR = new Paint() {
+        {
+            setAntiAlias(false);
+            setBlendMode(BlendMode.CLEAR);
+            setFilterBitmap(false);
+        }
+    };
+
     private Bitmap bitmap;
     private Canvas canvas;
 
     public void erase() {
         bitmap.eraseColor(Color.TRANSPARENT);
+    }
+
+    public void erase(Rect rect) {
+        canvas.drawRect(rect, PAINT_CLEAR);
     }
 
     @Override

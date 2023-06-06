@@ -91,14 +91,14 @@ public class NoiseGenerator {
         window.setAttributes(lp);
 
         final CheckBox cbNoRepeats = dialog.findViewById(R.id.cb_no_repeats);
-        final MaterialButtonToggleGroup btgWhatToDraw = dialog.findViewById(R.id.btg_what_to_draw);
+        final MaterialButtonToggleGroup btgDrawingPrimitive = dialog.findViewById(R.id.btg_drawing_primitive);
         final Slider sNoisiness = dialog.findViewById(R.id.s_noisiness);
         final TextInputEditText tietSeed = dialog.findViewById(R.id.tiet_seed);
 
         sNoisiness.setLabelFormatter(value -> value + "%");
         sNoisiness.setValueTo(SB_MAX);
 
-        btgWhatToDraw.addOnButtonCheckedListener((OnButtonCheckedListener) (group, checkedId) -> {
+        btgDrawingPrimitive.addOnButtonCheckedListener((OnButtonCheckedListener) (group, checkedId) -> {
             properties.drawingPrimitive = switch (checkedId) {
                 case R.id.b_pixel -> DrawingPrimitive.PIXEL;
                 case R.id.b_point -> DrawingPrimitive.POINT;

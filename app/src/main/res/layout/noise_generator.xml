@@ -15,7 +15,7 @@
         app:tickVisible="false" />
 
     <com.google.android.material.button.MaterialButtonToggleGroup
-        android:id="@+id/btg_what_to_draw"
+        android:id="@+id/btg_drawing_primitive"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="2dp"
