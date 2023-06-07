@@ -123,6 +123,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -608,6 +609,10 @@ public class MainActivity extends AppCompatActivity {
             if (isEditingText) {
                 isEditingText = false;
                 paint.setTextSize(textSize);
+                if (!dpPreview.isRecycled()) {
+                    dpPreview.erase();
+                    drawBitmapOntoView(true);
+                }
                 eraseBitmapAndInvalidateView(previewBitmap, ivPreview);
                 hideSoftInputFromWindow();
                 llOptionsText.setVisibility(View.INVISIBLE);
@@ -1312,6 +1317,10 @@ public class MainActivity extends AppCompatActivity {
                     }
                     case MotionEvent.ACTION_POINTER_DOWN -> {
                         multiTouch = true;
+                        if (!isShapeStopped) {
+                            isShapeStopped = true;
+                            dpPreview.erase();
+                        }
                         if (dpPreview.isRecycled()) {
                             undoOrRedo(layer.history.getCurrent());
                         }
@@ -2816,7 +2825,6 @@ public class MainActivity extends AppCompatActivity {
                     svOptionsCloneStamp.setVisibility(View.VISIBLE);
                 } else {
                     cloneStampSrc = null;
-                    eraseBitmapAndInvalidateView(previewBitmap, ivPreview);
                 }
             }
             case R.id.b_eraser -> {
@@ -3324,7 +3332,7 @@ public class MainActivity extends AppCompatActivity {
         } else if (isEditingText) {
             drawTextOntoView();
         } else if (!isShapeStopped) {
-            drawPointOntoView(shapeStartX, shapeStartY);
+            dpPreview.getCanvas().drawPoint(shapeStartX + 0.5f, shapeStartY + 0.5f, paint);
         } else if (cloneStampSrc != null) {
             drawCrossOntoView(cloneStampSrc.x, cloneStampSrc.y);
         } else if (ruler.enabled) {
@@ -3816,6 +3824,7 @@ public class MainActivity extends AppCompatActivity {
             textActionMode = null;
         }
         canvas.drawText(tietText.getText().toString(), textX, textY, paint);
+        dpPreview.erase();
         drawBitmapOntoView(true);
         eraseBitmapAndInvalidateView(previewBitmap, ivPreview);
         hideSoftInputFromWindow();
@@ -4825,20 +4834,12 @@ public class MainActivity extends AppCompatActivity {
                 clearStatus();
             }
             case R.id.i_undo -> {
-                if (!transformer.isRecycled()) {
-                    undoOrRedo(layer.history.getCurrent());
-                } else if (!isShapeStopped) {
+                if (!isShapeStopped) {
                     isShapeStopped = true;
-                    eraseBitmapAndInvalidateView(previewBitmap, ivPreview);
-                } else if (isEditingText) {
-                    isEditingText = false;
-                    paint.setTextSize(textSize);
-                    eraseBitmapAndInvalidateView(previewBitmap, ivPreview);
-                    hideSoftInputFromWindow();
-                    llOptionsText.setVisibility(View.INVISIBLE);
-                } else if (isWritingSoftStrokes) {
-                    isWritingSoftStrokes = false;
-                    eraseBitmapAndInvalidateView(previewBitmap, ivPreview);
+                    if (!dpPreview.isRecycled()) {
+                        dpPreview.erase();
+                        drawBitmapOntoView(true);
+                    }
                 } else if (layer.history.canUndo()) {
                     undoOrRedo(layer.history.undo());
                 }
@@ -4887,8 +4888,7 @@ public class MainActivity extends AppCompatActivity {
                 final Frame dst = addFrame(project, null, pos, src.delay, false);
                 for (int i = 0; i < src.layers.size(); ++i) {
                     final Layer l = src.layers.get(i);
-                    addLayer(project, dst, Bitmap.createBitmap(l.bitmap), i,
-                            l.getLevel(), l.left, l.top, l.visible, l.name, false);
+                    addLayer(dst, new Layer(l), i, false);
                 }
                 rvFrameList.post(() -> {
                     project.frameAdapter.notifyFrameSelectedChanged(unselectedPos, false);
@@ -5060,9 +5060,9 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     cv.drawBitmap(bitmap, 0.0f, 0.0f, PAINT_SRC);
                 }
-                addLayer(project, frame, bm, frame.selectedLayerIndex,
-                        layer.getLevel(), layer.left, layer.top,
-                        layer.visible, getString(R.string.copy_noun), true);
+                addLayer(frame,
+                        new Layer(layer, bm, getString(R.string.copy_noun)),
+                        frame.selectedLayerIndex, true);
             }
             case R.id.i_layer_duplicate_by_color_range -> {
                 if (ssdLayerList != null) {
@@ -5244,11 +5244,11 @@ public class MainActivity extends AppCompatActivity {
         flImageView.setOnTouchListener(onTouchIVListener);
         hideToolOptions();
         isShapeStopped = true;
-        eraseBitmapAndInvalidateView(previewBitmap, ivPreview);
         if (!dpPreview.isRecycled()) {
             dpPreview.recycle();
             drawBitmapOntoView(true);
         }
+        eraseBitmapAndInvalidateView(previewBitmap, ivPreview);
         paint.setAntiAlias(antiAlias);
         setBlurRadius(paint, blurRadius);
         paint.setStyle(style);
@@ -5848,6 +5848,9 @@ public class MainActivity extends AppCompatActivity {
             miHasAlpha.setChecked(bitmap.hasAlpha());
         }
 
+        if (!dpPreview.isRecycled()) {
+            dpPreview.erase();
+        }
         drawBitmapOntoView(true, true);
         drawChessboardOntoView();
         drawGridOntoView();
@@ -6060,6 +6063,9 @@ public class MainActivity extends AppCompatActivity {
             drawCrossOntoView(magErF.x, magErF.y, false);
         } else {
             eraseBitmapAndInvalidateView(previewBitmap, ivPreview);
+            if (!dpPreview.isRecycled()) {
+                dpPreview.erase();
+            }
         }
 
         drawBitmapOntoView(true, true);

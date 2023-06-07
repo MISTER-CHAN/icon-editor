@@ -6,6 +6,7 @@ import android.graphics.Paint;
 import androidx.annotation.IntRange;
 import androidx.annotation.Size;
 
+import java.util.Arrays;
 import java.util.Deque;
 import java.util.LinkedList;
 
@@ -34,12 +35,33 @@ public class Layer {
 
     public int[][] curves;
 
-    public final Paint paint = new Paint() {
-        {
-            setAntiAlias(false);
-            setFilterBitmap(false);
-        }
-    };
+    public final Paint paint;
+
+    public Layer() {
+        paint = new Paint();
+        paint.setAntiAlias(false);
+        paint.setFilterBitmap(false);
+    }
+
+    public Layer(Layer layer) {
+        this(layer, Bitmap.createBitmap(layer.bitmap), layer.name);
+    }
+
+    public Layer(Layer layer, Bitmap bitmap, String name) {
+        passBelow = layer.passBelow;
+        reference = layer.reference;
+        visible = layer.visible;
+        this.bitmap = bitmap;
+        filter = layer.filter;
+        level = layer.level;
+        left = layer.left;
+        top = layer.top;
+        this.name = name;
+        if (layer.colorMatrix != null) colorMatrix = Arrays.copyOf(layer.colorMatrix, 20);
+        if (layer.deltaHsv != null) deltaHsv = Arrays.copyOf(layer.deltaHsv, 3);
+        if (layer.curves != null) curves = Arrays.copyOf(layer.curves, 5);
+        paint = new Paint(layer.paint);
+    }
 
     public int getLevel() {
         return level;

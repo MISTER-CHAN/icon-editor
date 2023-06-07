@@ -20,6 +20,7 @@ class DrawingPrimitivePreview implements FloatingLayer {
     private Canvas canvas;
 
     public void erase() {
+        if (bitmap == null) return;
         bitmap.eraseColor(Color.TRANSPARENT);
     }
 
