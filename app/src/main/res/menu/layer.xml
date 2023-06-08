@@ -247,7 +247,7 @@
                     <item
                         android:id="@+id/i_layer_change_into_clipping_mask"
                         android:icon="@drawable/ic_void"
-                        android:title="@string/fast_change_into_clipping_mask" />
+                        android:title="@string/fast_create_clipping_mask_normal_blending" />
                     <item
                         android:id="@+id/i_layer_create_clipping_mask"
                         android:icon="@drawable/ic_void"
