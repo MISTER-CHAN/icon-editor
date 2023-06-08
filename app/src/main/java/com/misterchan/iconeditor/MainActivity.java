@@ -1305,37 +1305,42 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public boolean onTouch(View v, MotionEvent event) {
-            if (event.getPointerCount() == 1 && !multiTouch) {
-                onSingleTouch(v, event);
-            } else {
-                switch (event.getActionMasked()) {
-                    case MotionEvent.ACTION_MOVE -> {
-                        if (lastMerged == null) {
-                            break;
-                        }
-                        onIVTouchWithZoomToolListener.onTouch(v, event);
+            switch (event.getPointerCount()) {
+                case 1 -> {
+                    if (!multiTouch) {
+                        onSingleTouch(v, event);
                     }
-                    case MotionEvent.ACTION_POINTER_DOWN -> {
-                        multiTouch = true;
-                        if (!isShapeStopped) {
-                            isShapeStopped = true;
-                            dpPreview.erase();
-                        }
-                        if (dpPreview.isRecycled()) {
-                            undoOrRedo(layer.history.getCurrent());
-                        }
-                        if (lastMerged == null) {
-                            mergeLayersEntire();
-                        }
-                        onIVTouchWithZoomToolListener.onTouch(v, event);
-                    }
-                    case MotionEvent.ACTION_POINTER_UP -> {
-                        onIVTouchWithZoomToolListener.onTouch(v, event);
+                    if (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL) {
+                        multiTouch = false;
                     }
                 }
-            }
-            if (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL) {
-                multiTouch = false;
+                case 2 -> {
+                    switch (event.getActionMasked()) {
+                        case MotionEvent.ACTION_MOVE -> {
+                            if (lastMerged == null) {
+                                break;
+                            }
+                            onIVTouchWithZoomToolListener.onTouch(v, event);
+                        }
+                        case MotionEvent.ACTION_POINTER_DOWN -> {
+                            multiTouch = true;
+                            if (!isShapeStopped) {
+                                isShapeStopped = true;
+                                dpPreview.erase();
+                            }
+                            if (dpPreview.isRecycled()) {
+                                undoOrRedo(layer.history.getCurrent());
+                            }
+                            if (lastMerged == null) {
+                                mergeLayersEntire();
+                            }
+                            onIVTouchWithZoomToolListener.onTouch(v, event);
+                        }
+                        case MotionEvent.ACTION_POINTER_UP -> {
+                            onIVTouchWithZoomToolListener.onTouch(v, event);
+                        }
+                    }
+                }
             }
             return true;
         }
@@ -2359,136 +2364,140 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public boolean onTouch(View v, MotionEvent event) {
-            if (event.getPointerCount() == 1) {
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN -> {
-                        multiTouch = false;
-                        velocityTracker = VelocityTracker.obtain();
-                        velocityTracker.addMovement(event);
-                        final float x = event.getX(), y = event.getY();
-                        final float rad = strokeWidth / 2.0f + blurRadius;
-                        if (hasSelection) {
-                            if (!isWritingSoftStrokes) {
-                                isWritingSoftStrokes = true;
-                                softStrokesActionMode = startSupportActionMode(onSoftStrokesActionModeCallback);
-                                softStrokesActionMode.setTitle(R.string.soft_brush);
+            switch (event.getPointerCount()) {
+                case 1 -> {
+                    switch (event.getAction()) {
+                        case MotionEvent.ACTION_DOWN -> {
+                            multiTouch = false;
+                            velocityTracker = VelocityTracker.obtain();
+                            velocityTracker.addMovement(event);
+                            final float x = event.getX(), y = event.getY();
+                            final float rad = strokeWidth / 2.0f + blurRadius;
+                            if (hasSelection) {
+                                if (!isWritingSoftStrokes) {
+                                    isWritingSoftStrokes = true;
+                                    softStrokesActionMode = startSupportActionMode(onSoftStrokesActionModeCallback);
+                                    softStrokesActionMode.setTitle(R.string.soft_brush);
+                                }
+                                final float scale = Math.max(
+                                        (float) viewWidth / (float) selection.width(),
+                                        (float) viewHeight / (float) selection.height());
+                                maxRad = rad * scale;
+                            } else {
+                                maxRad = toScaled(rad);
                             }
-                            final float scale = Math.max(
-                                    (float) viewWidth / (float) selection.width(),
-                                    (float) viewHeight / (float) selection.height());
-                            maxRad = rad * scale;
-                        } else {
-                            maxRad = toScaled(rad);
+                            clearStatus();
+                            lastX = x;
+                            lastY = y;
                         }
-                        clearStatus();
-                        lastX = x;
-                        lastY = y;
-                    }
-                    case MotionEvent.ACTION_MOVE -> {
-                        if (multiTouch) break;
+                        case MotionEvent.ACTION_MOVE -> {
+                            if (multiTouch) break;
 
-                        velocityTracker.addMovement(event);
-                        velocityTracker.computeCurrentVelocity(1);
-                        final float x = event.getX(), y = event.getY();
-                        final float vel = (float) Math.hypot(velocityTracker.getXVelocity(), velocityTracker.getYVelocity());
-                        final float rad = Math.min(maxRad / vel / softness, maxRad);
+                            velocityTracker.addMovement(event);
+                            velocityTracker.computeCurrentVelocity(1);
+                            final float x = event.getX(), y = event.getY();
+                            final float vel = (float) Math.hypot(velocityTracker.getXVelocity(), velocityTracker.getYVelocity());
+                            final float rad = Math.min(maxRad / vel / softness, maxRad);
 
-                        if (Float.isNaN(lastTLX) /* || ... || Float.isNaN(lastBY) */) {
-                            lastTLX = lastX - rad;
-                            lastTLY = lastY - rad;
-                            lastRX = lastX + rad;
-                            lastRY = lastY;
-                            lastBX = lastX;
-                            lastBY = lastY + rad;
+                            if (Float.isNaN(lastTLX) /* || ... || Float.isNaN(lastBY) */) {
+                                lastTLX = lastX - rad;
+                                lastTLY = lastY - rad;
+                                lastRX = lastX + rad;
+                                lastRY = lastY;
+                                lastBX = lastX;
+                                lastBY = lastY + rad;
+                            }
+                            final float
+                                    tlx = x - rad, tly = y - rad,
+                                    rx = x + rad, ry = y,
+                                    bx = x, by = y + rad;
+                            final float // Destination coordinates
+                                    dltlx = hasSelection ? lastTLX : toBitmapX(lastTLX),
+                                    dltly = hasSelection ? lastTLY : toBitmapY(lastTLY),
+                                    dlrx = hasSelection ? lastRX : toBitmapX(lastRX),
+                                    dlry = hasSelection ? lastRY : toBitmapY(lastRY),
+                                    dlbx = hasSelection ? lastBX : toBitmapX(lastBX),
+                                    dlby = hasSelection ? lastBY : toBitmapY(lastBY),
+                                    dtlx = hasSelection ? tlx : toBitmapX(tlx),
+                                    dtly = hasSelection ? tly : toBitmapY(tly),
+                                    drx = hasSelection ? rx : toBitmapX(rx),
+                                    dry = hasSelection ? ry : toBitmapY(ry),
+                                    dbx = hasSelection ? bx : toBitmapX(bx),
+                                    dby = hasSelection ? by : toBitmapY(by);
+
+                            final Path pathT = new Path();
+                            pathT.moveTo(dltlx, dltly);
+                            pathT.lineTo(dlrx, dlry);
+                            pathT.lineTo(drx, dry);
+                            pathT.lineTo(dtlx, dtly);
+                            pathT.close();
+                            final Path pathBR = new Path();
+                            pathBR.moveTo(dlrx, dlry);
+                            pathBR.lineTo(dlbx, dlby);
+                            pathBR.lineTo(dbx, dby);
+                            pathBR.lineTo(drx, dry);
+                            pathBR.close();
+                            final Path pathL = new Path();
+                            pathL.moveTo(dlbx, dlby);
+                            pathL.lineTo(dltlx, dltly);
+                            pathL.lineTo(dtlx, dtly);
+                            pathL.lineTo(dbx, dby);
+                            pathL.close();
+                            final Path path = new Path();
+                            path.op(pathT, Path.Op.UNION);
+                            path.op(pathBR, Path.Op.UNION);
+                            path.op(pathL, Path.Op.UNION);
+
+                            if (hasSelection) {
+                                previewCanvas.drawPath(path, paint);
+                                ivPreview.invalidate();
+                            } else {
+                                canvas.drawPath(path, paint);
+                                drawBitmapOntoView(toBitmapX(Math.min(lastTLX, tlx)), toBitmapY(Math.min(lastTLY, tly)),
+                                        toBitmapX(Math.max(lastRX, rx)), toBitmapY(Math.max(lastBY, by)),
+                                        rad);
+                            }
+
+                            lastX = x;
+                            lastY = y;
+                            lastTLX = tlx;
+                            lastTLY = tly;
+                            lastRX = rx;
+                            lastRY = ry;
+                            lastBX = bx;
+                            lastBY = by;
                         }
-                        final float
-                                tlx = x - rad, tly = y - rad,
-                                rx = x + rad, ry = y,
-                                bx = x, by = y + rad;
-                        final float // Destination coordinates
-                                dltlx = hasSelection ? lastTLX : toBitmapX(lastTLX),
-                                dltly = hasSelection ? lastTLY : toBitmapY(lastTLY),
-                                dlrx = hasSelection ? lastRX : toBitmapX(lastRX),
-                                dlry = hasSelection ? lastRY : toBitmapY(lastRY),
-                                dlbx = hasSelection ? lastBX : toBitmapX(lastBX),
-                                dlby = hasSelection ? lastBY : toBitmapY(lastBY),
-                                dtlx = hasSelection ? tlx : toBitmapX(tlx),
-                                dtly = hasSelection ? tly : toBitmapY(tly),
-                                drx = hasSelection ? rx : toBitmapX(rx),
-                                dry = hasSelection ? ry : toBitmapY(ry),
-                                dbx = hasSelection ? bx : toBitmapX(bx),
-                                dby = hasSelection ? by : toBitmapY(by);
+                        case MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                            if (multiTouch) break;
 
-                        final Path pathT = new Path();
-                        pathT.moveTo(dltlx, dltly);
-                        pathT.lineTo(dlrx, dlry);
-                        pathT.lineTo(drx, dry);
-                        pathT.lineTo(dtlx, dtly);
-                        pathT.close();
-                        final Path pathBR = new Path();
-                        pathBR.moveTo(dlrx, dlry);
-                        pathBR.lineTo(dlbx, dlby);
-                        pathBR.lineTo(dbx, dby);
-                        pathBR.lineTo(drx, dry);
-                        pathBR.close();
-                        final Path pathL = new Path();
-                        pathL.moveTo(dlbx, dlby);
-                        pathL.lineTo(dltlx, dltly);
-                        pathL.lineTo(dtlx, dtly);
-                        pathL.lineTo(dbx, dby);
-                        pathL.close();
-                        final Path path = new Path();
-                        path.op(pathT, Path.Op.UNION);
-                        path.op(pathBR, Path.Op.UNION);
-                        path.op(pathL, Path.Op.UNION);
-
-                        if (hasSelection) {
-                            previewCanvas.drawPath(path, paint);
-                            ivPreview.invalidate();
-                        } else {
-                            canvas.drawPath(path, paint);
-                            drawBitmapOntoView(toBitmapX(Math.min(lastTLX, tlx)), toBitmapY(Math.min(lastTLY, tly)),
-                                    toBitmapX(Math.max(lastRX, rx)), toBitmapY(Math.max(lastBY, by)),
-                                    rad);
-                        }
-
-                        lastX = x;
-                        lastY = y;
-                        lastTLX = tlx;
-                        lastTLY = tly;
-                        lastRX = rx;
-                        lastRY = ry;
-                        lastBX = bx;
-                        lastBY = by;
-                    }
-                    case MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                        if (multiTouch) break;
-
-                        velocityTracker.recycle();
-                        lastTLX = /* lastTLY = ... = lastRY = */ Float.NaN;
-                        if (!hasSelection) {
-                            addToHistory();
+                            velocityTracker.recycle();
+                            lastTLX = /* lastTLY = ... = lastRY = */ Float.NaN;
+                            if (!hasSelection) {
+                                addToHistory();
+                            }
                         }
                     }
                 }
-            } else if (!hasSelection) {
-                switch (event.getActionMasked()) {
-                    case MotionEvent.ACTION_MOVE -> {
-                        if (lastMerged == null) {
-                            break;
+                case 2 -> {
+                    if (hasSelection) break;
+                    switch (event.getActionMasked()) {
+                        case MotionEvent.ACTION_MOVE -> {
+                            if (lastMerged == null) {
+                                break;
+                            }
+                            onIVTouchWithZoomToolListener.onTouch(v, event);
                         }
-                        onIVTouchWithZoomToolListener.onTouch(v, event);
-                    }
-                    case MotionEvent.ACTION_POINTER_DOWN -> {
-                        multiTouch = true;
-                        undoOrRedo(layer.history.getCurrent());
-                        if (lastMerged == null) {
-                            mergeLayersEntire();
+                        case MotionEvent.ACTION_POINTER_DOWN -> {
+                            multiTouch = true;
+                            undoOrRedo(layer.history.getCurrent());
+                            if (lastMerged == null) {
+                                mergeLayersEntire();
+                            }
+                            if (velocityTracker != null) {
+                                velocityTracker.recycle();
+                            }
+                            onIVTouchWithZoomToolListener.onTouch(v, event);
                         }
-                        if (velocityTracker != null) {
-                            velocityTracker.recycle();
-                        }
-                        onIVTouchWithZoomToolListener.onTouch(v, event);
                     }
                 }
             }
