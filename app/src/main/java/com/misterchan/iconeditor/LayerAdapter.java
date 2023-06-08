@@ -1,7 +1,6 @@
 package com.misterchan.iconeditor;
 
 import android.content.Context;
-import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.graphics.Typeface;
 import android.util.TypedValue;
@@ -18,7 +17,6 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.content.res.AppCompatResources;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.view.OneShotPreDrawListener;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -105,7 +103,7 @@ class LayerAdapter extends ItemMovableAdapter<LayerAdapter.ViewHolder> {
         holder.tvName.setTypeface(Typeface.defaultFromStyle(selected ? Typeface.BOLD : Typeface.NORMAL));
     }
 
-    public void notifyLevelChanged() {
+    public void notifyLayerTreeChanged() {
         if (recyclerView == null) {
             return;
         }

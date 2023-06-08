@@ -35,6 +35,7 @@
     <string name="clear_destination">清除目标</string>
     <string name="clear_guides">清除参考线</string>
     <string name="clip">剪辑</string>
+    <string name="clip_to_layers_below">剪贴至底下图层</string>
     <string name="clone">克隆</string>
     <string name="clone_as_new">克隆为新图像</string>
     <string name="cloner">克隆笔</string>
@@ -97,6 +98,7 @@
     <string name="fast">快速</string>
     <string name="fast_add_filter_layer">快速添加滤镜图层</string>
     <string name="fast_add_layer_mask">快速添加图层蒙版</string>
+    <string name="fast_change_into_clipping_mask">快速变为剪贴蒙版</string>
     <string name="fast_create_clipping_mask">快速创建剪贴蒙版</string>
     <string name="fast_create_group">快速创建组</string>
     <string name="file">文件</string>

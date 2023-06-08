@@ -245,6 +245,10 @@
                         android:icon="@drawable/ic_void"
                         android:title="@string/fast_add_layer_mask" />
                     <item
+                        android:id="@+id/i_layer_change_into_clipping_mask"
+                        android:icon="@drawable/ic_void"
+                        android:title="@string/fast_change_into_clipping_mask" />
+                    <item
                         android:id="@+id/i_layer_create_clipping_mask"
                         android:icon="@drawable/ic_void"
                         android:title="@string/fast_create_clipping_mask" />
@@ -265,6 +269,11 @@
             android:checkable="true"
             android:icon="@drawable/ic_void"
             android:title="@string/reference" />
+        <item
+            android:id="@+id/i_layer_clipping"
+            android:checkable="true"
+            android:icon="@drawable/ic_content_cut"
+            android:title="@string/clip_to_layers_below" />
         <item
             android:id="@+id/i_layer_pass_below"
             android:checkable="true"

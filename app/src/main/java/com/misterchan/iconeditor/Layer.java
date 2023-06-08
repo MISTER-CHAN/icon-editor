@@ -15,6 +15,7 @@ public class Layer {
         COLOR_MATRIX, CURVES, HSV
     }
 
+    public boolean clipping = false;
     public boolean passBelow = false;
     public boolean reference = false;
     public boolean visible = true;

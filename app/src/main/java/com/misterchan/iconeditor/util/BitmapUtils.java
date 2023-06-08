@@ -275,6 +275,13 @@ public class BitmapUtils {
         }
     }
 
+    public static int[] getPixels(final Bitmap bitmap, Rect rect) {
+        final int w = rect.width(), h = rect.height();
+        final int[] pixels = new int[w * h];
+        bitmap.getPixels(pixels, 0, w, rect.left, rect.top, w, h);
+        return pixels;
+    }
+
     public static void mergeAlpha(final Bitmap src, final Bitmap dst) {
         final int w = Math.min(src.getWidth(), dst.getWidth()), h = Math.min(src.getHeight(), dst.getHeight()), area = w * h;
         final int[] srcPixels = new int[area], dstPixels = new int[area];

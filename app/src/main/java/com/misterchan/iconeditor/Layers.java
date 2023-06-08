@@ -44,6 +44,16 @@ public class Layers {
         }
     }
 
+    public static void clip(final Bitmap srcBm, final Rect srcRect, final int[] dst) {
+        final int w = srcBm.getWidth(), h = srcBm.getHeight();
+        final int[] src = new int[w * h];
+        srcBm.getPixels(src, 0, w, srcRect.left, srcRect.top, w, h);
+        for (int i = 0; i < src.length; ++i) {
+            src[i] = dst[i] & Color.BLACK | Color.rgb(src[i]);
+        }
+        srcBm.setPixels(src, 0, w, srcRect.left, srcRect.top, w, h);
+    }
+
     public static LayerTree computeLayerTree(List<Layer> layers) {
         final List<Integer> indexes = new ArrayList<>();
         for (int i = layers.size() - 1; i >= 0; --i) {
@@ -162,6 +172,7 @@ public class Layers {
                     continue;
                 }
                 final LayerTree children = node.children;
+                int[] pixels = null;
                 if (children == null) {
                     final int bmW = layer.bitmap.getWidth(), bmH = layer.bitmap.getHeight();
                     // Rectangle src and dst are intersection between background layer subset and current layer
@@ -189,6 +200,9 @@ public class Layers {
                     }
 
                     final Paint paint = node != backgroundNode || node.isRoot || base != null ? layer.paint : PAINT_SRC;
+                    if (layer.clipping) {
+                        pixels = BitmapUtils.getPixels(bitmap, dst);
+                    }
                     if (layer == specifiedLayer) {
                         if (extraDst != null) {
                             final Bitmap bmExtra = Bitmap.createBitmap(intW, intH, Bitmap.Config.ARGB_8888); // Intersection bitmap
@@ -207,8 +221,14 @@ public class Layers {
                         canvas.drawBitmap(layer.bitmap, src, dst, paint);
                     }
                     addFilters(bitmap, dst, layer);
+                    if (layer.clipping) {
+                        clip(bitmap, dst, pixels);
+                    }
                 } else {
                     final Bitmap mergedChildren;
+                    if (layer.clipping) {
+                        pixels = BitmapUtils.getPixels(bitmap, rect);
+                    }
                     if (!layer.passBelow) {
                         mergedChildren = mergeLayers(children, rect, null, null,
                                 specifiedLayer, bmOfSpecifiedLayer, extraLayer);
@@ -217,6 +237,9 @@ public class Layers {
                         mergedChildren = mergeLayers(children, rect, bitmap, layer.paint,
                                 specifiedLayer, bmOfSpecifiedLayer, extraLayer);
                         BitmapUtils.fillInBlank(mergedChildren, bitmap);
+                    }
+                    if (layer.clipping) {
+                        clip(bitmap, rect, pixels);
                     }
                     mergedChildren.recycle();
                 }
