@@ -98,7 +98,7 @@
     <string name="fast">快速</string>
     <string name="fast_add_filter_layer">快速新增濾鏡圖層</string>
     <string name="fast_add_layer_mask">快速新增圖層遮罩</string>
-    <string name="fast_change_into_clipping_mask">快速變爲剪裁遮罩</string>
+    <string name="fast_change_into_clipping_mask">快速改成剪裁遮罩</string>
     <string name="fast_create_clipping_mask">快速建立剪裁遮罩</string>
     <string name="fast_create_group">快速建立組</string>
     <string name="file">檔案</string>
