@@ -107,8 +107,8 @@
     <string name="fast">Fast</string>
     <string name="fast_add_filter_layer">Fast Add a Filter Layer</string>
     <string name="fast_add_layer_mask">Fast Add a Layer Mask</string>
-    <string name="fast_create_clipping_mask_normal_blending">Fast Create Clipping Mask (Normal Blending)</string>
     <string name="fast_create_clipping_mask">Fast Create Clipping Mask</string>
+    <string name="fast_create_clipping_mask_normal_blending">Fast Create Clipping Mask (Normal Blending)</string>
     <string name="fast_create_group">Fast Create a Group</string>
     <string name="file">File</string>
     <string name="file_name">File name</string>

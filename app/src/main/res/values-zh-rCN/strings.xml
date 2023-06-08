@@ -98,8 +98,8 @@
     <string name="fast">快速</string>
     <string name="fast_add_filter_layer">快速添加滤镜图层</string>
     <string name="fast_add_layer_mask">快速添加图层蒙版</string>
-    <string name="fast_create_clipping_mask_normal_blending">快速创建剪贴蒙版（正常混合）</string>
     <string name="fast_create_clipping_mask">快速创建剪贴蒙版</string>
+    <string name="fast_create_clipping_mask_normal_blending">快速创建剪贴蒙版（正常混合）</string>
     <string name="fast_create_group">快速创建组</string>
     <string name="file">文件</string>
     <string name="file_name">文件名</string>
