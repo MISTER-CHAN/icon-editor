@@ -10,7 +10,7 @@
         android:layout_height="wrap_content">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/tiet_pencil_stroke_width"
+            android:id="@+id/tiet_stroke_width"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:backgroundTint="@color/transparent"
@@ -25,7 +25,7 @@
         android:layout_height="wrap_content">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/tiet_pencil_blur_radius"
+            android:id="@+id/tiet_blur_radius"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:backgroundTint="@color/transparent"
@@ -35,14 +35,14 @@
     </com.google.android.material.textfield.TextInputLayout>
 
     <CheckBox
-        android:id="@+id/cb_pencil_anti_alias"
+        android:id="@+id/cb_anti_alias"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/anti_alias" />
 
     <CheckBox
-        android:id="@+id/cb_pencil_with_eraser"
+        android:id="@+id/cb_attaching_eraser"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/with_eraser" />
+        android:text="@string/attaching_eraser" />
 </LinearLayout>

@@ -11,7 +11,7 @@
         android:layout_height="wrap_content">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/tiet_shape_stroke_width"
+            android:id="@+id/tiet_stroke_width"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:backgroundTint="@color/transparent"
@@ -21,7 +21,7 @@
     </com.google.android.material.textfield.TextInputLayout>
 
     <CheckBox
-        android:id="@+id/cb_shape_fill"
+        android:id="@+id/cb_fill"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:checked="true"

@@ -10,7 +10,7 @@ android {
         minSdk 30
         targetSdk 33
         versionCode 1
-        versionName '23.6.8'
+        versionName '23.6.9'
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -24,6 +24,9 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_19
         targetCompatibility JavaVersion.VERSION_19
+    }
+    buildFeatures {
+        viewBinding true
     }
     namespace 'com.misterchan.iconeditor'
 }

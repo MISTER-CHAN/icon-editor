@@ -10,7 +10,7 @@
         android:layout_height="wrap_content">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/tiet_magic_paint_stroke_width"
+            android:id="@+id/tiet_stroke_width"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:backgroundTint="@color/transparent"
@@ -25,7 +25,7 @@
         android:layout_height="wrap_content">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/tiet_magic_paint_blur_radius"
+            android:id="@+id/tiet_blur_radius"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:backgroundTint="@color/transparent"
@@ -35,19 +35,19 @@
     </com.google.android.material.textfield.TextInputLayout>
 
     <CheckBox
-        android:id="@+id/cb_magic_paint_anti_alias"
+        android:id="@+id/cb_anti_alias"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/anti_alias" />
 
     <CheckBox
-        android:id="@+id/cb_magic_paint_clear"
+        android:id="@+id/cb_clear"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/clear_destination" />
 
     <Button
-        android:id="@+id/b_magic_paint_tolerance"
+        android:id="@+id/b_tolerance"
         style="@style/Widget_App_View"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

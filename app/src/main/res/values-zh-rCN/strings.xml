@@ -12,6 +12,7 @@
     <string name="around_g">绕 G 轴</string>
     <string name="around_b">绕 B 轴</string>
     <string name="asynchronously_draw_image_and_ui">异步绘画图像与用户界面</string>
+    <string name="attaching_eraser">附胶擦</string>
     <string name="author">作者</string>
     <string name="automatic">自动</string>
     <string name="background">背景</string>
@@ -308,7 +309,6 @@
     <string name="when_resizing">当重设尺寸时</string>
     <string name="white_balance">白平衡</string>
     <string name="width">宽度</string>
-    <string name="with_eraser">带胶擦</string>
     <string name="writing">书写</string>
     <string name="zoom">缩放</string>
 

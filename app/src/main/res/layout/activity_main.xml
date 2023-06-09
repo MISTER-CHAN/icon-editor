@@ -7,10 +7,12 @@
     android:orientation="vertical"
     tools:context=".MainActivity">
 
-    <include layout="@layout/top_app_bar" />
+    <include
+        android:id="@+id/top_app_bar"
+        layout="@layout/top_app_bar" />
 
     <com.google.android.material.tabs.TabLayout
-        android:id="@+id/tl"
+        android:id="@+id/tl_project_list"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:tabGravity="start"
@@ -24,6 +26,7 @@
         android:maxLines="1" />
 
     <include
+        android:id="@+id/canvas"
         layout="@layout/canvas"
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -53,7 +56,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
-                    <include layout="@layout/options_bucket_fill" />
+                    <include
+                        android:id="@+id/options_bucket_fill"
+                        layout="@layout/options_bucket_fill" />
                 </HorizontalScrollView>
 
                 <HorizontalScrollView
@@ -62,7 +67,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
-                    <include layout="@layout/options_clone_stamp" />
+                    <include
+                        android:id="@+id/options_clone_stamp"
+                        layout="@layout/options_clone_stamp" />
                 </HorizontalScrollView>
 
                 <HorizontalScrollView
@@ -71,7 +78,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
-                    <include layout="@layout/options_eraser" />
+                    <include
+                        android:id="@+id/options_eraser"
+                        layout="@layout/options_eraser" />
                 </HorizontalScrollView>
 
                 <HorizontalScrollView
@@ -80,7 +89,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
-                    <include layout="@layout/options_eyedropper" />
+                    <include
+                        android:id="@+id/options_eyedropper"
+                        layout="@layout/options_eyedropper" />
                 </HorizontalScrollView>
 
                 <HorizontalScrollView
@@ -89,7 +100,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
-                    <include layout="@layout/options_gradient" />
+                    <include
+                        android:id="@+id/options_gradient"
+                        layout="@layout/options_gradient" />
                 </HorizontalScrollView>
 
                 <HorizontalScrollView
@@ -98,7 +111,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
-                    <include layout="@layout/options_magic_eraser" />
+                    <include
+                        android:id="@+id/options_magic_eraser"
+                        layout="@layout/options_magic_eraser" />
                 </HorizontalScrollView>
 
                 <HorizontalScrollView
@@ -107,7 +122,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
-                    <include layout="@layout/options_magic_paint" />
+                    <include
+                        android:id="@+id/options_magic_paint"
+                        layout="@layout/options_magic_paint" />
                 </HorizontalScrollView>
 
                 <HorizontalScrollView
@@ -116,7 +133,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
-                    <include layout="@layout/options_patcher" />
+                    <include
+                        android:id="@+id/options_patcher"
+                        layout="@layout/options_patcher" />
                 </HorizontalScrollView>
 
                 <HorizontalScrollView
@@ -125,7 +144,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
-                    <include layout="@layout/options_path" />
+                    <include
+                        android:id="@+id/options_path"
+                        layout="@layout/options_path" />
                 </HorizontalScrollView>
 
                 <HorizontalScrollView
@@ -134,7 +155,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
-                    <include layout="@layout/options_pencil" />
+                    <include
+                        android:id="@+id/options_pencil"
+                        layout="@layout/options_pencil" />
                 </HorizontalScrollView>
 
                 <HorizontalScrollView
@@ -143,7 +166,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
-                    <include layout="@layout/options_shape" />
+                    <include
+                        android:id="@+id/options_shape"
+                        layout="@layout/options_shape" />
                 </HorizontalScrollView>
 
                 <HorizontalScrollView
@@ -152,7 +177,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
-                    <include layout="@layout/options_soft_brush" />
+                    <include
+                        android:id="@+id/options_soft_brush"
+                        layout="@layout/options_soft_brush" />
                 </HorizontalScrollView>
 
                 <LinearLayout
@@ -162,7 +189,9 @@
                     android:layout_height="wrap_content"
                     android:visibility="invisible">
 
-                    <include layout="@layout/options_text" />
+                    <include
+                        android:id="@+id/options_text"
+                        layout="@layout/options_text" />
                 </LinearLayout>
 
                 <HorizontalScrollView
@@ -171,7 +200,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
-                    <include layout="@layout/options_transformer" />
+                    <include
+                        android:id="@+id/options_transformer"
+                        layout="@layout/options_transformer" />
                 </HorizontalScrollView>
             </FrameLayout>
         </LinearLayout>
@@ -205,7 +236,9 @@
                 android:requiresFadingEdge="horizontal"
                 android:scrollbars="none">
 
-                <include layout="@layout/tools" />
+                <include
+                    android:id="@+id/tools"
+                    layout="@layout/tools" />
             </HorizontalScrollView>
         </LinearLayout>
 

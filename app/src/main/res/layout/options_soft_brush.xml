@@ -10,7 +10,7 @@
         android:layout_height="wrap_content">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/tiet_soft_brush_stroke_width"
+            android:id="@+id/tiet_stroke_width"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:backgroundTint="@color/transparent"
@@ -25,7 +25,7 @@
         android:layout_height="wrap_content">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/tiet_soft_brush_blur_radius"
+            android:id="@+id/tiet_blur_radius"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:backgroundTint="@color/transparent"
@@ -40,7 +40,7 @@
         android:layout_height="wrap_content">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/tiet_soft_brush_softness"
+            android:id="@+id/tiet_softness"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:backgroundTint="@color/transparent"

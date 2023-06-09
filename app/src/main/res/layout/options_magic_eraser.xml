@@ -11,7 +11,7 @@
         android:layout_height="wrap_content">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/tiet_magic_eraser_stroke_width"
+            android:id="@+id/tiet_stroke_width"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:backgroundTint="@color/transparent"
@@ -21,7 +21,7 @@
     </com.google.android.material.textfield.TextInputLayout>
 
     <CheckBox
-        android:id="@+id/cb_magic_eraser_style"
+        android:id="@+id/cb_style"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/precise" />
@@ -31,23 +31,23 @@
         android:layout_height="wrap_content">
 
         <com.google.android.material.button.MaterialButtonToggleGroup
-            android:id="@+id/btg_magic_eraser_sides"
+            android:id="@+id/btg_sides"
             style="@style/Widget_App_ButtonToggleGroup_ToolOptions"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:checkedButton="@id/b_magic_eraser_left"
+            app:checkedButton="@id/b_left"
             app:selectionRequired="true"
             app:singleSelection="true">
 
             <Button
-                android:id="@+id/b_magic_eraser_left"
+                android:id="@+id/b_left"
                 style="@style/Widget.App.Button.OutlinedButton.Dense"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/left" />
 
             <Button
-                android:id="@+id/b_magic_eraser_right"
+                android:id="@+id/b_right"
                 style="@style/Widget.App.Button.OutlinedButton.Dense"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -55,7 +55,7 @@
         </com.google.android.material.button.MaterialButtonToggleGroup>
 
         <CheckBox
-            android:id="@+id/cb_magic_eraser_acc_enabled"
+            android:id="@+id/cb_acc_enabled"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/enabled"

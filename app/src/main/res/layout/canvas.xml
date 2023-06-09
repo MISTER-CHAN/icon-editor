@@ -14,7 +14,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
-        android:id="@+id/iv_ruler_horizontal"
+        android:id="@+id/iv_ruler_h"
         android:layout_width="0dp"
         android:layout_height="22dp"
         android:background="?android:attr/colorBackground"
@@ -25,7 +25,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
-        android:id="@+id/iv_ruler_vertical"
+        android:id="@+id/iv_ruler_v"
         android:layout_width="22dp"
         android:layout_height="0dp"
         android:background="?android:attr/colorBackground"
@@ -41,8 +41,8 @@
         android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/iv_ruler_vertical"
-        app:layout_constraintTop_toBottomOf="@+id/iv_ruler_horizontal">
+        app:layout_constraintStart_toEndOf="@+id/iv_ruler_v"
+        app:layout_constraintTop_toBottomOf="@+id/iv_ruler_h">
 
         <ImageView
             android:id="@+id/iv_chessboard"

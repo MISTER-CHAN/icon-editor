@@ -16,6 +16,7 @@
     <string name="around_g">Around G</string>
     <string name="around_b">Around B</string>
     <string name="asynchronously_draw_image_and_ui">Asynchronously draw image and U.I.</string>
+    <string name="attaching_eraser">Attaching Eraser</string>
     <string name="author">Author</string>
     <string name="automatic">Automatic</string>
     <string name="b" translatable="false">B</string>
@@ -344,7 +345,6 @@
     <string name="when_resizing">When\nResizing</string>
     <string name="white_balance">White Balance</string>
     <string name="width">Width</string>
-    <string name="with_eraser">With Eraser</string>
     <string name="writing">Writing</string>
     <string name="x" translatable="false">X</string>
     <string name="x_" translatable="false">x</string>

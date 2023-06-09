@@ -6,23 +6,23 @@
     android:layout_height="wrap_content">
 
     <com.google.android.material.button.MaterialButtonToggleGroup
-        android:id="@+id/btg_eyedropper_src"
+        android:id="@+id/btg_src"
         style="@style/Widget_App_ButtonToggleGroup_ToolOptions"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:checkedButton="@id/b_eyedropper_current_layer"
+        app:checkedButton="@id/b_current_layer"
         app:selectionRequired="true"
         app:singleSelection="true">
 
         <Button
-            android:id="@+id/b_eyedropper_current_layer"
+            android:id="@+id/b_current_layer"
             style="@style/Widget.App.Button.OutlinedButton.Dense"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/current_layer" />
 
         <Button
-            android:id="@+id/b_eyedropper_all_layers"
+            android:id="@+id/b_all_layers"
             style="@style/Widget.App.Button.OutlinedButton.Dense"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

@@ -5,19 +5,19 @@
     android:layout_height="wrap_content">
 
     <CheckBox
-        android:id="@+id/cb_bucket_fill_contiguous"
+        android:id="@+id/cb_contiguous"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/contiguous" />
 
     <CheckBox
-        android:id="@+id/cb_bucket_fill_ignore_alpha"
+        android:id="@+id/cb_ignore_alpha"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/ignore_alpha" />
 
     <Button
-        android:id="@+id/b_bucket_fill_tolerance"
+        android:id="@+id/b_tolerance"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="2dp"

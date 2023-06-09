@@ -10,40 +10,40 @@
         style="@style/Widget_App_ButtonToggleGroup_ToolOptions"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:checkedButton="@id/b_transformer_translation"
+        app:checkedButton="@id/b_translation"
         app:selectionRequired="true"
         app:singleSelection="true">
 
         <Button
-            android:id="@+id/b_transformer_translation"
+            android:id="@+id/b_translation"
             style="@style/Widget.App.Button.OutlinedButton.Dense"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/translate" />
 
         <Button
-            android:id="@+id/b_transformer_scale"
+            android:id="@+id/b_scale"
             style="@style/Widget.App.Button.OutlinedButton.Dense"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/scale" />
 
         <Button
-            android:id="@+id/b_transformer_rotation"
+            android:id="@+id/b_rotation"
             style="@style/Widget.App.Button.OutlinedButton.Dense"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/rotate" />
 
         <Button
-            android:id="@+id/b_transformer_poly"
+            android:id="@+id/b_poly"
             style="@style/Widget.App.Button.OutlinedButton.Dense"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/poly" />
 
         <Button
-            android:id="@+id/b_transformer_mesh"
+            android:id="@+id/b_mesh"
             style="@style/Widget.App.Button.OutlinedButton.Dense"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -51,14 +51,14 @@
     </com.google.android.material.button.MaterialButtonToggleGroup>
 
     <CheckBox
-        android:id="@+id/cb_transformer_filter"
+        android:id="@+id/cb_filter"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/filter_verb"
         android:visibility="gone" />
 
     <CheckBox
-        android:id="@+id/cb_transformer_lar"
+        android:id="@+id/cb_lar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/lock_aspect_ratio"
