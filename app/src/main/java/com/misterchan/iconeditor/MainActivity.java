@@ -2362,7 +2362,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public boolean onTouch(View v, MotionEvent event) {
             final int pointerCount = event.getPointerCount(), action = event.getAction();
-            if (pointerCount == 1 && !multiTouch) {
+            if (pointerCount == 1 && hasSelection || !multiTouch) {
                 switch (action) {
                     case MotionEvent.ACTION_DOWN -> {
                         velocityTracker = VelocityTracker.obtain();
@@ -2469,8 +2469,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
                 }
-            } else if (pointerCount <= 2) {
-                if (hasSelection) return true;
+            } else if (!hasSelection && pointerCount <= 2) {
                 switch (action & MotionEvent.ACTION_MASK) {
                     case MotionEvent.ACTION_MOVE -> {
                         if (lastMerged == null) {
@@ -2487,6 +2486,7 @@ public class MainActivity extends AppCompatActivity {
                         if (velocityTracker != null) {
                             velocityTracker.recycle();
                             velocityTracker = null;
+                            lastTLX = /* lastTLY = ... = lastRY = */ Float.NaN;
                         }
                         onIVTouchWithZoomToolListener.onTouch(v, event);
                     }
@@ -2495,7 +2495,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
             }
-            if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL) {
+            if (!hasSelection && (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL)) {
                 multiTouch = false;
             }
             return true;
