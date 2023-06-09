@@ -2362,7 +2362,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public boolean onTouch(View v, MotionEvent event) {
             final int pointerCount = event.getPointerCount(), action = event.getAction();
-            if (pointerCount == 1 && hasSelection || !multiTouch) {
+            if (pointerCount == 1 && (hasSelection || !multiTouch)) {
                 switch (action) {
                     case MotionEvent.ACTION_DOWN -> {
                         velocityTracker = VelocityTracker.obtain();
