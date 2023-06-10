@@ -17,6 +17,7 @@ import androidx.annotation.NonNull;
 import androidx.core.view.OneShotPreDrawListener;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.misterchan.iconeditor.databinding.ItemFrameBinding;
 import com.misterchan.iconeditor.listener.OnCBCheckedListener;
 
 import java.util.List;
@@ -24,23 +25,14 @@ import java.util.List;
 class FrameAdapter extends ItemMovableAdapter<FrameAdapter.ViewHolder> {
 
     protected static class ViewHolder extends RecyclerView.ViewHolder {
-        private final FrameLayout flThumbnail;
-        private final ImageView ivThumbnail;
-        private final RadioButton rb;
-        private final TextView tvThumbnail;
-        private final View itemView;
+        private final ItemFrameBinding binding;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            this.itemView = itemView;
-            flThumbnail = itemView.findViewById(R.id.fl_thumbnail);
-            ivThumbnail = itemView.findViewById(R.id.iv_thumbnail);
-            tvThumbnail = itemView.findViewById(R.id.tv_thumbnail);
-            rb = itemView.findViewById(R.id.rb);
+            binding = ItemFrameBinding.bind(itemView);
         }
     }
 
-    public boolean isOnVisibleChangedListenerEnabled = false;
     private final Context context;
     private final Project project;
     private final int dim64Dip;
@@ -73,9 +65,9 @@ class FrameAdapter extends ItemMovableAdapter<FrameAdapter.ViewHolder> {
         if (holder == null) {
             return;
         }
-        holder.rb.setOnCheckedChangeListener(null);
-        holder.rb.setChecked(selected);
-        holder.rb.setOnCheckedChangeListener((OnCBCheckedListener) buttonView ->
+        holder.binding.rb.setOnCheckedChangeListener(null);
+        holder.binding.rb.setChecked(selected);
+        holder.binding.rb.setOnCheckedChangeListener((OnCBCheckedListener) buttonView ->
                 onItemSelectedListener.onItemSelected(holder.itemView, position));
     }
 
@@ -97,21 +89,21 @@ class FrameAdapter extends ItemMovableAdapter<FrameAdapter.ViewHolder> {
                 onItemReselectedListener.onItemSelected(v, position);
             }
         });
-        OneShotPreDrawListener.add(holder.flThumbnail, () -> {
+        OneShotPreDrawListener.add(holder.binding.flThumbnail, () -> {
             final Bitmap background = frame.getBackgroundLayer().bitmap;
-            final LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) holder.flThumbnail.getLayoutParams();
+            final LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) holder.binding.flThumbnail.getLayoutParams();
             final int w = background.getWidth(), h = background.getHeight();
             lp.width = w >= h ? dim64Dip : dim64Dip * w / h;
             lp.height = w >= h ? dim64Dip * h / w : dim64Dip;
-            holder.flThumbnail.setLayoutParams(lp);
+            holder.binding.flThumbnail.setLayoutParams(lp);
         });
-        holder.ivThumbnail.setImageBitmap(frame.getBackgroundLayer().bitmap);
-        holder.rb.setOnCheckedChangeListener(null);
-        holder.rb.setChecked(selected);
-        holder.rb.setOnCheckedChangeListener((OnCBCheckedListener) buttonView ->
+        holder.binding.ivThumbnail.setImageBitmap(frame.getBackgroundLayer().bitmap);
+        holder.binding.rb.setOnCheckedChangeListener(null);
+        holder.binding.rb.setChecked(selected);
+        holder.binding.rb.setOnCheckedChangeListener((OnCBCheckedListener) buttonView ->
                 onItemSelectedListener.onItemSelected(holder.itemView, position));
-        holder.rb.setText(context.getString(R.string.milliseconds, frame.delay));
-        holder.tvThumbnail.setText(String.valueOf(position));
+        holder.binding.rb.setText(context.getString(R.string.milliseconds, frame.delay));
+        holder.binding.tvThumbnail.setText(String.valueOf(position));
     }
 
     @NonNull

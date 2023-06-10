@@ -54,6 +54,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.ColorLong;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.Size;
 import androidx.annotation.StringRes;
@@ -4104,14 +4105,7 @@ public class MainActivity extends AppCompatActivity {
         activityMain.vForegroundColor.setOnClickListener(onForegroundColorClickListener);
 
         if (!isLandscape) {
-            activityMain.topAppBar.toolBar.setOnMenuItemClickListener(onOptionsItemSelectedListener);
-            final Menu menu = activityMain.topAppBar.toolBar.getMenu();
-            MenuCompat.setGroupDividerEnabled(menu, true);
-
-            miFrameList = menu.findItem(R.id.i_frame_list);
-            miHasAlpha = menu.findItem(R.id.i_image_has_alpha);
-
-            Settings.INST.update(preferences, Settings.KEY_FL);
+            setSupportActionBar(activityMain.topAppBar.toolBar);
         }
 
         activityMain.tools.bEyedropper.setOnLongClickListener(v -> {
@@ -4245,481 +4239,20 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main, menu);
+        MenuCompat.setGroupDividerEnabled(menu, true);
+        miFrameList = menu.findItem(R.id.i_frame_list);
+        miHasAlpha = menu.findItem(R.id.i_image_has_alpha);
+        Settings.INST.update(PreferenceManager.getDefaultSharedPreferences(this), Settings.KEY_FL);
+        return true;
+    }
+
+    @Override
     protected void onDestroy() {
         recycleAllBitmaps();
         super.onDestroy();
     }
-
-    @SuppressLint({"NonConstantResourceId"})
-    private final Toolbar.OnMenuItemClickListener onOptionsItemSelectedListener = item -> {
-        switch (item.getItemId()) {
-            default -> {
-                return false;
-            }
-            case R.id.i_cell_grid ->
-                    new CellGridManager(this, layer.cellGrid, onCellGridApplyListener).show();
-            case R.id.i_clone -> {
-                if (transformer.isRecycled()) {
-                    drawFloatingLayersIntoImage();
-                    final Bitmap bm = hasSelection
-                            ? Bitmap.createBitmap(bitmap, selection.left, selection.top, selection.width(), selection.height())
-                            : Bitmap.createBitmap(bitmap);
-                    createTransformer(bm);
-                    activityMain.tools.btgTools.check(R.id.b_transformer);
-                    drawSelectionOntoView();
-                } else {
-                    canvas.drawBitmap(transformer.getBitmap(),
-                            selection.left, selection.top,
-                            PAINT_SRC_OVER);
-                    addToHistory();
-                }
-                if (hasSelection) {
-                    drawBitmapOntoView(selection, true);
-                } else {
-                    drawBitmapOntoView(true);
-                }
-            }
-            case R.id.i_clone_as_new -> {
-                final Bitmap bm = hasSelection ?
-                        transformer.isRecycled() ?
-                                Bitmap.createBitmap(bitmap, selection.left, selection.top, selection.width(), selection.height()) :
-                                Bitmap.createBitmap(transformer.getBitmap()) :
-                        Bitmap.createBitmap(bitmap);
-                addProject(bm, activityMain.tlProjectList.getSelectedTabPosition() + 1, getString(R.string.copy_noun));
-            }
-            case R.id.i_copy -> {
-                if (transformer.isRecycled()) {
-                    if (clipboard != null) {
-                        clipboard.recycle();
-                    }
-                    clipboard = hasSelection
-                            ? Bitmap.createBitmap(bitmap, selection.left, selection.top, selection.width(), selection.height())
-                            : Bitmap.createBitmap(bitmap);
-                } else {
-                    clipboard = Bitmap.createBitmap(transformer.getBitmap());
-                }
-            }
-            case R.id.i_crop -> {
-                if (!hasSelection) {
-                    break;
-                }
-                drawFloatingLayersIntoImage();
-                final int width = selection.width(), height = selection.height();
-                if (layer == frame.getBackgroundLayer()) {
-                    for (final Frame f : project.frames) {
-                        final Layer bl = f.getBackgroundLayer();
-                        final Bitmap bm = Bitmap.createBitmap(bl.bitmap, selection.left, selection.top, width, height);
-                        resizeImage(f, bl, width, height,
-                                ImageSizeManager.ScaleType.CROP, bm,
-                                selection.left, selection.top);
-                        bm.recycle();
-                    }
-                } else {
-                    final Bitmap bm = Bitmap.createBitmap(bitmap, selection.left, selection.top, width, height);
-                    resizeImage(frame, layer, width, height,
-                            ImageSizeManager.ScaleType.CROP, bm,
-                            selection.left, selection.top);
-                    bm.recycle();
-                }
-            }
-            case R.id.i_cut -> {
-                if (transformer.isRecycled()) {
-                    if (clipboard != null) {
-                        clipboard.recycle();
-                    }
-                    if (hasSelection) {
-                        clipboard = Bitmap.createBitmap(bitmap, selection.left, selection.top,
-                                selection.width(), selection.height());
-                        canvas.drawRect(selection.left, selection.top, selection.right, selection.bottom, eraser);
-                    } else {
-                        clipboard = Bitmap.createBitmap(bitmap);
-                        canvas.drawColor(eraser.getColorLong(), BlendMode.SRC);
-                    }
-                    addToHistory();
-                } else {
-                    clipboard = Bitmap.createBitmap(transformer.getBitmap());
-                    recycleTransformer();
-                }
-                if (hasSelection) {
-                    drawBitmapOntoView(selection, true);
-                } else {
-                    drawBitmapOntoView(true);
-                }
-            }
-            case R.id.i_delete -> {
-                if (transformer.isRecycled()) {
-                    if (hasSelection) {
-                        canvas.drawRect(selection.left, selection.top, selection.right, selection.bottom, eraser);
-                    } else {
-                        canvas.drawColor(eraser.getColorLong(), BlendMode.SRC);
-                    }
-                    addToHistory();
-                } else {
-                    recycleTransformer();
-                }
-                if (hasSelection) {
-                    drawBitmapOntoView(selection, true);
-                } else {
-                    drawBitmapOntoView(true);
-                }
-                clearStatus();
-            }
-            case R.id.i_deselect -> {
-                drawFloatingLayersIntoImage();
-                hasSelection = false;
-                if (activityMain.tools.btgTools.getCheckedButtonId() == R.id.b_soft_brush) {
-                    activityMain.optionsSoftBrush.tbSoftBrush.setEnabled(false);
-                    activityMain.optionsSoftBrush.tbSoftBrush.setChecked(true);
-                }
-                eraseBitmapAndInvalidateView(selectionBitmap, activityMain.canvas.ivSelection);
-                clearStatus();
-            }
-            case R.id.i_draw_color -> {
-                if (transformer.isRecycled()) {
-                    if (hasSelection) {
-                        canvas.drawRect(selection.left, selection.top, selection.right, selection.bottom, paint);
-                    } else {
-                        canvas.drawColor(paint.getColorLong());
-                    }
-                    addToHistory();
-                } else {
-                    transformer.getBitmap().eraseColor(paint.getColorLong());
-                }
-                if (hasSelection) {
-                    drawBitmapOntoView(selection, true);
-                } else {
-                    drawBitmapOntoView(true);
-                }
-                clearStatus();
-            }
-            case R.id.i_file_close -> closeProject(activityMain.tlProjectList.getSelectedTabPosition());
-            case R.id.i_file_export -> export(new Project());
-            case R.id.i_file_new -> {
-                new NewImageDialog(this)
-                        .setOnFinishSettingListener(onNewImagePropertiesApplyListener)
-                        .show();
-            }
-            case R.id.i_file_open -> pickMedia();
-            case R.id.i_file_open_from_clipboard -> {
-                final ClipboardManager clipboardManager = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-                if (!clipboardManager.hasPrimaryClip()) {
-                    break;
-                }
-
-                final ClipData clipData = clipboardManager.getPrimaryClip();
-                if (clipData == null || clipData.getItemCount() < 1) {
-                    break;
-                }
-
-                openFile(clipData.getItemAt(0).getUri());
-            }
-            case R.id.i_file_refer_to_clipboard -> {
-                final String filePath = project.filePath;
-                if (filePath == null) {
-                    Snackbar.make(vContent, R.string.please_save_first, Snackbar.LENGTH_SHORT)
-                            .setAction(R.string.save, v -> save())
-                            .show();
-                    break;
-                }
-                ((ClipboardManager) getSystemService(CLIPBOARD_SERVICE))
-                        .setPrimaryClip(ClipData.newUri(getContentResolver(), "Image",
-                                FileProvider.getUriForFile(this,
-                                        getApplicationContext().getPackageName() + ".provider",
-                                        new File(filePath))));
-            }
-            case R.id.i_file_save, R.id.i_save -> save();
-            case R.id.i_file_save_as -> saveAs();
-            case R.id.i_filter_channel_lighting -> {
-                drawFloatingLayersIntoImage();
-                createFilterPreview();
-                new LightingDialog(this)
-                        .setOnLightingChangeListener(onFilterLightingChangedListener)
-                        .setOnPositiveButtonClickListener(onImagePreviewPBClickListener)
-                        .setOnCancelListener(onImagePreviewCancelListener)
-                        .show();
-                clearStatus();
-            }
-            case R.id.i_filter_color_balance -> {
-                drawFloatingLayersIntoImage();
-                createFilterPreview();
-                new ColorBalanceDialog(this)
-                        .setOnColorBalanceChangeListener(onFilterLightingChangedListener)
-                        .setOnPositiveButtonClickListener(onImagePreviewPBClickListener)
-                        .setOnCancelListener(onImagePreviewCancelListener)
-                        .show();
-                clearStatus();
-            }
-            case R.id.i_filter_color_matrix -> {
-                drawFloatingLayersIntoImage();
-                createFilterPreview();
-                new ColorMatrixManager(this,
-                        onFilterColorMatrixChangedListener,
-                        onImagePreviewPBClickListener,
-                        onImagePreviewCancelListener)
-                        .show();
-                clearStatus();
-            }
-            case R.id.i_filter_contrast -> {
-                drawFloatingLayersIntoImage();
-                createFilterPreview();
-                new SliderDialog(this)
-                        .setIcon(item.getIcon()).setTitle(R.string.contrast)
-                        .setValueFrom(-1.0f).setValueTo(10.0f).setValue(1.0f)
-                        .setOnChangeListener(onFilterContrastSliderChangeListener)
-                        .setOnApplyListener(onImagePreviewPBClickListener)
-                        .setOnCancelListener(onImagePreviewCancelListener)
-                        .show();
-                clearStatus();
-            }
-            case R.id.i_filter_curves -> {
-                drawFloatingLayersIntoImage();
-                createFilterPreview();
-                new CurvesDialog(this)
-                        .setSource(filterPreview.getPixels())
-                        .setOnCurvesChangeListener(onFilterCurvesChangedListener)
-                        .setOnPositiveButtonClickListener(onImagePreviewPBClickListener)
-                        .setOnCancelListener(onImagePreviewCancelListener)
-                        .show();
-                clearStatus();
-            }
-            case R.id.i_filter_hsv -> {
-                drawFloatingLayersIntoImage();
-                createFilterPreview();
-                new HsvDialog(this)
-                        .setOnHsvChangeListener(onFilterHsvChangedListener)
-                        .setOnPositiveButtonClickListener(onImagePreviewPBClickListener)
-                        .setOnCancelListener(onImagePreviewCancelListener)
-                        .show();
-                clearStatus();
-            }
-            case R.id.i_filter_hue_to_alpha -> {
-                drawFloatingLayersIntoImage();
-                createFilterPreview();
-                new SliderDialog(this).setTitle(R.string.hue).setValueFrom(0.0f).setValueTo(360.0f).setValue(0.0f)
-                        .setOnChangeListener(onFilterHToASliderChangeListener)
-                        .setOnApplyListener(onImagePreviewPBClickListener)
-                        .setOnCancelListener(onImagePreviewCancelListener)
-                        .show();
-                onFilterHToASliderChangeListener.onChange(null, 0, true);
-            }
-            case R.id.i_filter_levels -> {
-                drawFloatingLayersIntoImage();
-                createFilterPreview();
-                new LevelsDialog(this)
-                        .setOnLevelsChangeListener(onFilterLevelsChangedListener)
-                        .setOnPositiveButtonClickListener(onImagePreviewPBClickListener)
-                        .setOnCancelListener(onImagePreviewCancelListener)
-                        .show()
-                        .drawHistogram(filterPreview.getPixels());
-                clearStatus();
-            }
-            case R.id.i_filter_lightness -> {
-                drawFloatingLayersIntoImage();
-                createFilterPreview();
-                new SliderDialog(this)
-                        .setIcon(item.getIcon()).setTitle(R.string.lightness)
-                        .setValueFrom(-0xFF).setValueTo(0xFF).setValue(0)
-                        .setStepSize(1.0f)
-                        .setOnChangeListener(onFilterLightnessSliderChangeListener)
-                        .setOnApplyListener(onImagePreviewPBClickListener)
-                        .setOnCancelListener(onImagePreviewCancelListener)
-                        .show();
-                clearStatus();
-            }
-            case R.id.i_filter_saturation -> {
-                drawFloatingLayersIntoImage();
-                createFilterPreview();
-                new SliderDialog(this).setTitle(R.string.saturation).setValueFrom(-1.0f).setValueTo(10.0f).setValue(1.0f)
-                        .setOnChangeListener(onFilterSaturationSliderChangeListener)
-                        .setOnApplyListener(onImagePreviewPBClickListener)
-                        .setOnCancelListener(onImagePreviewCancelListener)
-                        .show();
-                clearStatus();
-            }
-            case R.id.i_filter_threshold -> {
-                drawFloatingLayersIntoImage();
-                createFilterPreview();
-                new SliderDialog(this)
-                        .setIcon(item.getIcon()).setTitle(R.string.threshold)
-                        .setValueFrom(0x00).setValueTo(0xFF).setValue(0x80)
-                        .setStepSize(1.0f)
-                        .setOnChangeListener(onFilterThresholdSliderChangeListener)
-                        .setOnApplyListener(onImagePreviewPBClickListener)
-                        .setOnCancelListener(onImagePreviewCancelListener)
-                        .show();
-                onFilterThresholdSliderChangeListener.onChange(null, 0x80, true);
-                clearStatus();
-            }
-            case R.id.i_flip_horizontally -> scale(-1.0f, 1.0f);
-            case R.id.i_flip_vertically -> scale(1.0f, -1.0f);
-            case R.id.i_frame_list -> {
-                project.frameAdapter.notifyDataSetChanged();
-
-                bsdFrameList = new BottomSheetDialog(this);
-                bsdFrameList.setTitle(R.string.frames);
-                bsdFrameList.setContentView(frameList.getRoot());
-                bsdFrameList.setOnDismissListener(d -> {
-                    ((ViewGroup) frameList.getRoot().getParent()).removeAllViews();
-                    bsdFrameList = null;
-                });
-                bsdFrameList.show();
-            }
-            case R.id.i_generate_noise -> {
-                drawFloatingLayersIntoImage();
-                createFilterPreview();
-                new NoiseGenerator(this)
-                        .setOnPropChangedListener(onNoisePropChangedListener)
-                        .setOnConfirmListener(onImagePreviewPBClickListener)
-                        .setOnCancelListener(onImagePreviewCancelListener)
-                        .show();
-                clearStatus();
-            }
-            case R.id.i_guides_clear -> {
-                layer.guides.clear();
-                drawGridOntoView();
-            }
-            case R.id.i_guides_new -> {
-                final Guide guide = new Guide();
-                layer.guides.offerFirst(guide); // Add at the front for faster removal if necessary later
-                new GuideEditor(this, guide, bitmap.getWidth(), bitmap.getHeight(),
-                        g -> drawGridOntoView(),
-                        dialog -> {
-                            layer.guides.remove(guide);
-                            drawGridOntoView();
-                        })
-                        .show();
-                drawGridOntoView();
-            }
-            case R.id.i_image_color_space -> {
-            }
-            case R.id.i_image_config -> {
-            }
-            case R.id.i_image_has_alpha -> {
-                final boolean checked = !item.isChecked();
-                item.setChecked(checked);
-                bitmap.setHasAlpha(checked);
-                drawBitmapOntoView(true);
-            }
-            case R.id.i_information -> {
-                final StringBuilder message = new StringBuilder()
-                        .append(getString(R.string.config)).append('\n').append(bitmap.getConfig()).append("\n\n")
-                        .append(getString(R.string.has_alpha)).append('\n').append(bitmap.hasAlpha()).append("\n\n")
-                        .append(getString(R.string.color_space)).append('\n').append(bitmap.getColorSpace());
-                new MaterialAlertDialogBuilder(this)
-                        .setTitle(R.string.information)
-                        .setMessage(message)
-                        .setPositiveButton(R.string.ok, null)
-                        .show();
-            }
-            case R.id.i_layer_list -> {
-                frame.layerAdapter.notifyDataSetChanged();
-                layerList.rvLayerList.post(frame.layerAdapter::notifyLayerTreeChanged);
-
-                ssdLayerList = new SideSheetDialog(this);
-                ssdLayerList.setTitle(R.string.layers);
-                ssdLayerList.setContentView(layerList.getRoot());
-                ssdLayerList.setOnDismissListener(d -> {
-                    ((ViewGroup) layerList.getRoot().getParent()).removeAllViews();
-                    ssdLayerList = null;
-                });
-                ssdLayerList.show();
-
-                ssdLayerList.findViewById(R.id.b_new).setOnClickListener(v ->
-                        onLayerOptionsItemSelected(null, R.id.i_layer_new));
-                ssdLayerList.findViewById(R.id.b_duplicate).setOnClickListener(v ->
-                        onLayerOptionsItemSelected(null, R.id.i_layer_duplicate));
-                ssdLayerList.findViewById(R.id.b_delete).setOnClickListener(v ->
-                        onLayerOptionsItemSelected(null, R.id.i_layer_delete));
-            }
-            case R.id.i_paste -> {
-                if (clipboard == null) {
-                    break;
-                }
-                drawFloatingLayersIntoImage();
-
-                boolean si = !hasSelection; // Is selection invisible
-                if (hasSelection) {
-                    final Rect vs = getVisibleSubset();
-                    si = !Rect.intersects(selection, vs);
-                }
-                if (si) {
-                    hasSelection = true;
-                    selection.left = translationX >= 0.0f ? 0 : toUnscaled(-translationX) + 1;
-                    selection.top = translationY >= 0.0f ? 0 : toUnscaled(-translationY) + 1;
-                }
-                selection.right = selection.left + clipboard.getWidth();
-                selection.bottom = selection.top + clipboard.getHeight();
-                createTransformer(Bitmap.createBitmap(clipboard));
-                activityMain.tools.btgTools.check(R.id.b_transformer);
-                drawBitmapOntoView(selection);
-                drawSelectionOntoView();
-            }
-            case R.id.i_redo -> {
-                if (layer.history.canRedo()) {
-                    undoOrRedo(layer.history.redo());
-                }
-            }
-            case R.id.i_rotate_90 -> rotate(90.0f);
-            case R.id.i_rotate_180 -> rotate(180.0f);
-            case R.id.i_rotate_270 -> rotate(270.0f);
-            case R.id.i_select_all -> {
-                selectAll();
-                hasSelection = true;
-                if (activityMain.tools.btgTools.getCheckedButtonId() == R.id.b_soft_brush) {
-                    activityMain.optionsSoftBrush.tbSoftBrush.setEnabled(true);
-                }
-                drawSelectionOntoView();
-                clearStatus();
-            }
-            case R.id.i_settings -> startActivity(new Intent(this, SettingsActivity.class));
-            case R.id.i_size -> {
-                drawFloatingLayersIntoImage();
-                new ImageSizeManager(this, bitmap, onImageSizeApplyListener).show();
-            }
-            case R.id.i_transform -> {
-                drawFloatingLayersIntoImage();
-                createFilterPreview();
-                new MatrixManager(this,
-                        onMatrixChangedListener,
-                        onImagePreviewPBClickListener,
-                        dialog -> {
-                            drawBitmapOntoView(true);
-                            filterPreview.recycle();
-                            filterPreview = null;
-                            clearStatus();
-                        })
-                        .show();
-                clearStatus();
-            }
-            case R.id.i_undo -> {
-                if (!isShapeStopped) {
-                    isShapeStopped = true;
-                    if (!dpPreview.isRecycled()) {
-                        dpPreview.erase();
-                        drawBitmapOntoView(true);
-                    }
-                } else if (layer.history.canUndo()) {
-                    undoOrRedo(layer.history.undo());
-                }
-            }
-            case R.id.i_view_actual_pixels -> {
-                translationX = project.translationX = 0.0f;
-                translationY = project.translationY = 0.0f;
-                scale = project.scale = 1.0f;
-                calculateBackgroundSizeOnView();
-                drawAfterTransformingView(false);
-            }
-            case R.id.i_view_fit_on_screen -> {
-                fitOnScreen();
-                translationX = project.translationX;
-                translationY = project.translationY;
-                scale = project.scale;
-                calculateBackgroundSizeOnView();
-                drawAfterTransformingView(false);
-            }
-        }
-        return true;
-    };
 
     @SuppressLint("NonConstantResourceId")
     private boolean onFrameOptionsItemSelected(MenuItem item) {
@@ -5093,6 +4626,481 @@ public class MainActivity extends AppCompatActivity {
         }
         return true;
     }
+
+    @Override
+    @SuppressLint("NonConstantResourceId")
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()) {
+            default -> {
+                return false;
+            }
+            case R.id.i_cell_grid ->
+                    new CellGridManager(this, layer.cellGrid, onCellGridApplyListener).show();
+            case R.id.i_clone -> {
+                if (transformer.isRecycled()) {
+                    drawFloatingLayersIntoImage();
+                    final Bitmap bm = hasSelection
+                            ? Bitmap.createBitmap(bitmap, selection.left, selection.top, selection.width(), selection.height())
+                            : Bitmap.createBitmap(bitmap);
+                    createTransformer(bm);
+                    activityMain.tools.btgTools.check(R.id.b_transformer);
+                    drawSelectionOntoView();
+                } else {
+                    canvas.drawBitmap(transformer.getBitmap(),
+                            selection.left, selection.top,
+                            PAINT_SRC_OVER);
+                    addToHistory();
+                }
+                if (hasSelection) {
+                    drawBitmapOntoView(selection, true);
+                } else {
+                    drawBitmapOntoView(true);
+                }
+            }
+            case R.id.i_clone_as_new -> {
+                final Bitmap bm = hasSelection ?
+                        transformer.isRecycled() ?
+                                Bitmap.createBitmap(bitmap, selection.left, selection.top, selection.width(), selection.height()) :
+                                Bitmap.createBitmap(transformer.getBitmap()) :
+                        Bitmap.createBitmap(bitmap);
+                addProject(bm, activityMain.tlProjectList.getSelectedTabPosition() + 1, getString(R.string.copy_noun));
+            }
+            case R.id.i_copy -> {
+                if (transformer.isRecycled()) {
+                    if (clipboard != null) {
+                        clipboard.recycle();
+                    }
+                    clipboard = hasSelection
+                            ? Bitmap.createBitmap(bitmap, selection.left, selection.top, selection.width(), selection.height())
+                            : Bitmap.createBitmap(bitmap);
+                } else {
+                    clipboard = Bitmap.createBitmap(transformer.getBitmap());
+                }
+            }
+            case R.id.i_crop -> {
+                if (!hasSelection) {
+                    break;
+                }
+                drawFloatingLayersIntoImage();
+                final int width = selection.width(), height = selection.height();
+                if (layer == frame.getBackgroundLayer()) {
+                    for (final Frame f : project.frames) {
+                        final Layer bl = f.getBackgroundLayer();
+                        final Bitmap bm = Bitmap.createBitmap(bl.bitmap, selection.left, selection.top, width, height);
+                        resizeImage(f, bl, width, height,
+                                ImageSizeManager.ScaleType.CROP, bm,
+                                selection.left, selection.top);
+                        bm.recycle();
+                    }
+                } else {
+                    final Bitmap bm = Bitmap.createBitmap(bitmap, selection.left, selection.top, width, height);
+                    resizeImage(frame, layer, width, height,
+                            ImageSizeManager.ScaleType.CROP, bm,
+                            selection.left, selection.top);
+                    bm.recycle();
+                }
+            }
+            case R.id.i_cut -> {
+                if (transformer.isRecycled()) {
+                    if (clipboard != null) {
+                        clipboard.recycle();
+                    }
+                    if (hasSelection) {
+                        clipboard = Bitmap.createBitmap(bitmap, selection.left, selection.top,
+                                selection.width(), selection.height());
+                        canvas.drawRect(selection.left, selection.top, selection.right, selection.bottom, eraser);
+                    } else {
+                        clipboard = Bitmap.createBitmap(bitmap);
+                        canvas.drawColor(eraser.getColorLong(), BlendMode.SRC);
+                    }
+                    addToHistory();
+                } else {
+                    clipboard = Bitmap.createBitmap(transformer.getBitmap());
+                    recycleTransformer();
+                }
+                if (hasSelection) {
+                    drawBitmapOntoView(selection, true);
+                } else {
+                    drawBitmapOntoView(true);
+                }
+            }
+            case R.id.i_delete -> {
+                if (transformer.isRecycled()) {
+                    if (hasSelection) {
+                        canvas.drawRect(selection.left, selection.top, selection.right, selection.bottom, eraser);
+                    } else {
+                        canvas.drawColor(eraser.getColorLong(), BlendMode.SRC);
+                    }
+                    addToHistory();
+                } else {
+                    recycleTransformer();
+                }
+                if (hasSelection) {
+                    drawBitmapOntoView(selection, true);
+                } else {
+                    drawBitmapOntoView(true);
+                }
+                clearStatus();
+            }
+            case R.id.i_deselect -> {
+                drawFloatingLayersIntoImage();
+                hasSelection = false;
+                if (activityMain.tools.btgTools.getCheckedButtonId() == R.id.b_soft_brush) {
+                    activityMain.optionsSoftBrush.tbSoftBrush.setEnabled(false);
+                    activityMain.optionsSoftBrush.tbSoftBrush.setChecked(true);
+                }
+                eraseBitmapAndInvalidateView(selectionBitmap, activityMain.canvas.ivSelection);
+                clearStatus();
+            }
+            case R.id.i_draw_color -> {
+                if (transformer.isRecycled()) {
+                    if (hasSelection) {
+                        canvas.drawRect(selection.left, selection.top, selection.right, selection.bottom, paint);
+                    } else {
+                        canvas.drawColor(paint.getColorLong());
+                    }
+                    addToHistory();
+                } else {
+                    transformer.getBitmap().eraseColor(paint.getColorLong());
+                }
+                if (hasSelection) {
+                    drawBitmapOntoView(selection, true);
+                } else {
+                    drawBitmapOntoView(true);
+                }
+                clearStatus();
+            }
+            case R.id.i_file_close ->
+                    closeProject(activityMain.tlProjectList.getSelectedTabPosition());
+            case R.id.i_file_export -> export(new Project());
+            case R.id.i_file_new -> {
+                new NewImageDialog(this)
+                        .setOnFinishSettingListener(onNewImagePropertiesApplyListener)
+                        .show();
+            }
+            case R.id.i_file_open -> pickMedia();
+            case R.id.i_file_open_from_clipboard -> {
+                final ClipboardManager clipboardManager = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+                if (!clipboardManager.hasPrimaryClip()) {
+                    break;
+                }
+
+                final ClipData clipData = clipboardManager.getPrimaryClip();
+                if (clipData == null || clipData.getItemCount() < 1) {
+                    break;
+                }
+
+                openFile(clipData.getItemAt(0).getUri());
+            }
+            case R.id.i_file_refer_to_clipboard -> {
+                final String filePath = project.filePath;
+                if (filePath == null) {
+                    Snackbar.make(vContent, R.string.please_save_first, Snackbar.LENGTH_SHORT)
+                            .setAction(R.string.save, v -> save())
+                            .show();
+                    break;
+                }
+                ((ClipboardManager) getSystemService(CLIPBOARD_SERVICE))
+                        .setPrimaryClip(ClipData.newUri(getContentResolver(), "Image",
+                                FileProvider.getUriForFile(this,
+                                        getApplicationContext().getPackageName() + ".provider",
+                                        new File(filePath))));
+            }
+            case R.id.i_file_save, R.id.i_save -> save();
+            case R.id.i_file_save_as -> saveAs();
+            case R.id.i_filter_channel_lighting -> {
+                drawFloatingLayersIntoImage();
+                createFilterPreview();
+                new LightingDialog(this)
+                        .setOnLightingChangeListener(onFilterLightingChangedListener)
+                        .setOnPositiveButtonClickListener(onImagePreviewPBClickListener)
+                        .setOnCancelListener(onImagePreviewCancelListener)
+                        .show();
+                clearStatus();
+            }
+            case R.id.i_filter_color_balance -> {
+                drawFloatingLayersIntoImage();
+                createFilterPreview();
+                new ColorBalanceDialog(this)
+                        .setOnColorBalanceChangeListener(onFilterLightingChangedListener)
+                        .setOnPositiveButtonClickListener(onImagePreviewPBClickListener)
+                        .setOnCancelListener(onImagePreviewCancelListener)
+                        .show();
+                clearStatus();
+            }
+            case R.id.i_filter_color_matrix -> {
+                drawFloatingLayersIntoImage();
+                createFilterPreview();
+                new ColorMatrixManager(this,
+                        onFilterColorMatrixChangedListener,
+                        onImagePreviewPBClickListener,
+                        onImagePreviewCancelListener)
+                        .show();
+                clearStatus();
+            }
+            case R.id.i_filter_contrast -> {
+                drawFloatingLayersIntoImage();
+                createFilterPreview();
+                new SliderDialog(this)
+                        .setIcon(item.getIcon()).setTitle(R.string.contrast)
+                        .setValueFrom(-1.0f).setValueTo(10.0f).setValue(1.0f)
+                        .setOnChangeListener(onFilterContrastSliderChangeListener)
+                        .setOnApplyListener(onImagePreviewPBClickListener)
+                        .setOnCancelListener(onImagePreviewCancelListener)
+                        .show();
+                clearStatus();
+            }
+            case R.id.i_filter_curves -> {
+                drawFloatingLayersIntoImage();
+                createFilterPreview();
+                new CurvesDialog(this)
+                        .setSource(filterPreview.getPixels())
+                        .setOnCurvesChangeListener(onFilterCurvesChangedListener)
+                        .setOnPositiveButtonClickListener(onImagePreviewPBClickListener)
+                        .setOnCancelListener(onImagePreviewCancelListener)
+                        .show();
+                clearStatus();
+            }
+            case R.id.i_filter_hsv -> {
+                drawFloatingLayersIntoImage();
+                createFilterPreview();
+                new HsvDialog(this)
+                        .setOnHsvChangeListener(onFilterHsvChangedListener)
+                        .setOnPositiveButtonClickListener(onImagePreviewPBClickListener)
+                        .setOnCancelListener(onImagePreviewCancelListener)
+                        .show();
+                clearStatus();
+            }
+            case R.id.i_filter_hue_to_alpha -> {
+                drawFloatingLayersIntoImage();
+                createFilterPreview();
+                new SliderDialog(this).setTitle(R.string.hue).setValueFrom(0.0f).setValueTo(360.0f).setValue(0.0f)
+                        .setOnChangeListener(onFilterHToASliderChangeListener)
+                        .setOnApplyListener(onImagePreviewPBClickListener)
+                        .setOnCancelListener(onImagePreviewCancelListener)
+                        .show();
+                onFilterHToASliderChangeListener.onChange(null, 0, true);
+            }
+            case R.id.i_filter_levels -> {
+                drawFloatingLayersIntoImage();
+                createFilterPreview();
+                new LevelsDialog(this)
+                        .setOnLevelsChangeListener(onFilterLevelsChangedListener)
+                        .setOnPositiveButtonClickListener(onImagePreviewPBClickListener)
+                        .setOnCancelListener(onImagePreviewCancelListener)
+                        .show()
+                        .drawHistogram(filterPreview.getPixels());
+                clearStatus();
+            }
+            case R.id.i_filter_lightness -> {
+                drawFloatingLayersIntoImage();
+                createFilterPreview();
+                new SliderDialog(this)
+                        .setIcon(item.getIcon()).setTitle(R.string.lightness)
+                        .setValueFrom(-0xFF).setValueTo(0xFF).setValue(0)
+                        .setStepSize(1.0f)
+                        .setOnChangeListener(onFilterLightnessSliderChangeListener)
+                        .setOnApplyListener(onImagePreviewPBClickListener)
+                        .setOnCancelListener(onImagePreviewCancelListener)
+                        .show();
+                clearStatus();
+            }
+            case R.id.i_filter_saturation -> {
+                drawFloatingLayersIntoImage();
+                createFilterPreview();
+                new SliderDialog(this).setTitle(R.string.saturation).setValueFrom(-1.0f).setValueTo(10.0f).setValue(1.0f)
+                        .setOnChangeListener(onFilterSaturationSliderChangeListener)
+                        .setOnApplyListener(onImagePreviewPBClickListener)
+                        .setOnCancelListener(onImagePreviewCancelListener)
+                        .show();
+                clearStatus();
+            }
+            case R.id.i_filter_threshold -> {
+                drawFloatingLayersIntoImage();
+                createFilterPreview();
+                new SliderDialog(this)
+                        .setIcon(item.getIcon()).setTitle(R.string.threshold)
+                        .setValueFrom(0x00).setValueTo(0xFF).setValue(0x80)
+                        .setStepSize(1.0f)
+                        .setOnChangeListener(onFilterThresholdSliderChangeListener)
+                        .setOnApplyListener(onImagePreviewPBClickListener)
+                        .setOnCancelListener(onImagePreviewCancelListener)
+                        .show();
+                onFilterThresholdSliderChangeListener.onChange(null, 0x80, true);
+                clearStatus();
+            }
+            case R.id.i_flip_horizontally -> scale(-1.0f, 1.0f);
+            case R.id.i_flip_vertically -> scale(1.0f, -1.0f);
+            case R.id.i_frame_list -> {
+                project.frameAdapter.notifyDataSetChanged();
+
+                bsdFrameList = new BottomSheetDialog(this);
+                bsdFrameList.setTitle(R.string.frames);
+                bsdFrameList.setContentView(frameList.getRoot());
+                bsdFrameList.setOnDismissListener(dialog -> {
+                    ((ViewGroup) frameList.getRoot().getParent()).removeAllViews();
+                    bsdFrameList = null;
+                });
+                bsdFrameList.show();
+            }
+            case R.id.i_generate_noise -> {
+                drawFloatingLayersIntoImage();
+                createFilterPreview();
+                new NoiseGenerator(this)
+                        .setOnPropChangedListener(onNoisePropChangedListener)
+                        .setOnConfirmListener(onImagePreviewPBClickListener)
+                        .setOnCancelListener(onImagePreviewCancelListener)
+                        .show();
+                clearStatus();
+            }
+            case R.id.i_guides_clear -> {
+                layer.guides.clear();
+                drawGridOntoView();
+            }
+            case R.id.i_guides_new -> {
+                final Guide guide = new Guide();
+                layer.guides.offerFirst(guide); // Add at the front for faster removal if necessary later
+                new GuideEditor(this, guide, bitmap.getWidth(), bitmap.getHeight(),
+                        g -> drawGridOntoView(),
+                        dialog -> {
+                            layer.guides.remove(guide);
+                            drawGridOntoView();
+                        })
+                        .show();
+                drawGridOntoView();
+            }
+            case R.id.i_image_color_space -> {
+            }
+            case R.id.i_image_config -> {
+            }
+            case R.id.i_image_has_alpha -> {
+                final boolean checked = !item.isChecked();
+                item.setChecked(checked);
+                bitmap.setHasAlpha(checked);
+                drawBitmapOntoView(true);
+            }
+            case R.id.i_information -> {
+                final StringBuilder message = new StringBuilder()
+                        .append(getString(R.string.config)).append('\n').append(bitmap.getConfig()).append("\n\n")
+                        .append(getString(R.string.has_alpha)).append('\n').append(bitmap.hasAlpha()).append("\n\n")
+                        .append(getString(R.string.color_space)).append('\n').append(bitmap.getColorSpace());
+                new MaterialAlertDialogBuilder(this)
+                        .setTitle(R.string.information)
+                        .setMessage(message)
+                        .setPositiveButton(R.string.ok, null)
+                        .show();
+            }
+            case R.id.i_layer_list -> {
+                frame.layerAdapter.notifyDataSetChanged();
+                layerList.rvLayerList.post(frame.layerAdapter::notifyLayerTreeChanged);
+
+                ssdLayerList = new SideSheetDialog(this);
+                ssdLayerList.setTitle(R.string.layers);
+                ssdLayerList.setContentView(layerList.getRoot());
+                ssdLayerList.setOnDismissListener(dialog -> {
+                    ((ViewGroup) layerList.getRoot().getParent()).removeAllViews();
+                    ssdLayerList = null;
+                });
+                ssdLayerList.show();
+
+                ssdLayerList.findViewById(R.id.b_new).setOnClickListener(v ->
+                        onLayerOptionsItemSelected(null, R.id.i_layer_new));
+                ssdLayerList.findViewById(R.id.b_duplicate).setOnClickListener(v ->
+                        onLayerOptionsItemSelected(null, R.id.i_layer_duplicate));
+                ssdLayerList.findViewById(R.id.b_delete).setOnClickListener(v ->
+                        onLayerOptionsItemSelected(null, R.id.i_layer_delete));
+            }
+            case R.id.i_paste -> {
+                if (clipboard == null) {
+                    break;
+                }
+                drawFloatingLayersIntoImage();
+
+                boolean si = !hasSelection; // Is selection invisible
+                if (hasSelection) {
+                    final Rect vs = getVisibleSubset();
+                    si = !Rect.intersects(selection, vs);
+                }
+                if (si) {
+                    hasSelection = true;
+                    selection.left = translationX >= 0.0f ? 0 : toUnscaled(-translationX) + 1;
+                    selection.top = translationY >= 0.0f ? 0 : toUnscaled(-translationY) + 1;
+                }
+                selection.right = selection.left + clipboard.getWidth();
+                selection.bottom = selection.top + clipboard.getHeight();
+                createTransformer(Bitmap.createBitmap(clipboard));
+                activityMain.tools.btgTools.check(R.id.b_transformer);
+                drawBitmapOntoView(selection);
+                drawSelectionOntoView();
+            }
+            case R.id.i_redo -> {
+                if (layer.history.canRedo()) {
+                    undoOrRedo(layer.history.redo());
+                }
+            }
+            case R.id.i_rotate_90 -> rotate(90.0f);
+            case R.id.i_rotate_180 -> rotate(180.0f);
+            case R.id.i_rotate_270 -> rotate(270.0f);
+            case R.id.i_select_all -> {
+                selectAll();
+                hasSelection = true;
+                if (activityMain.tools.btgTools.getCheckedButtonId() == R.id.b_soft_brush) {
+                    activityMain.optionsSoftBrush.tbSoftBrush.setEnabled(true);
+                }
+                drawSelectionOntoView();
+                clearStatus();
+            }
+            case R.id.i_settings -> startActivity(new Intent(this, SettingsActivity.class));
+            case R.id.i_size -> {
+                drawFloatingLayersIntoImage();
+                new ImageSizeManager(this, bitmap, onImageSizeApplyListener).show();
+            }
+            case R.id.i_transform -> {
+                drawFloatingLayersIntoImage();
+                createFilterPreview();
+                new MatrixManager(this,
+                        onMatrixChangedListener,
+                        onImagePreviewPBClickListener,
+                        dialog -> {
+                            drawBitmapOntoView(true);
+                            filterPreview.recycle();
+                            filterPreview = null;
+                            clearStatus();
+                        })
+                        .show();
+                clearStatus();
+            }
+            case R.id.i_undo -> {
+                if (!isShapeStopped) {
+                    isShapeStopped = true;
+                    if (!dpPreview.isRecycled()) {
+                        dpPreview.erase();
+                        drawBitmapOntoView(true);
+                    }
+                } else if (layer.history.canUndo()) {
+                    undoOrRedo(layer.history.undo());
+                }
+            }
+            case R.id.i_view_actual_pixels -> {
+                translationX = project.translationX = 0.0f;
+                translationY = project.translationY = 0.0f;
+                scale = project.scale = 1.0f;
+                calculateBackgroundSizeOnView();
+                drawAfterTransformingView(false);
+            }
+            case R.id.i_view_fit_on_screen -> {
+                fitOnScreen();
+                translationX = project.translationX;
+                translationY = project.translationY;
+                scale = project.scale;
+                calculateBackgroundSizeOnView();
+                drawAfterTransformingView(false);
+            }
+        }
+        return true;
+    }
+
+    ;
 
     @Override
     protected void onResume() {
@@ -5713,7 +5721,7 @@ public class MainActivity extends AppCompatActivity {
 
         updateReference();
 
-        if (getResources().getConfiguration().orientation != Configuration.ORIENTATION_LANDSCAPE) {
+        if (activityMain.topAppBar != null) {
             miHasAlpha.setChecked(bitmap.hasAlpha());
         }
 
@@ -5762,9 +5770,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     void setFrameListMenuItemVisible(boolean visible) {
-        miFrameList.setVisible(visible);
-        activityMain.topAppBar.toolBar.setTitle(!visible || getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE
-                ? R.string.app_name : R.string.app_name_abbrev);
+        if (activityMain.topAppBar != null) {
+            miFrameList.setVisible(visible);
+            activityMain.topAppBar.toolBar.setTitle(visible ? R.string.app_name_abbrev : R.string.app_name);
+        }
     }
 
     private void setQuality(Project project, DirectorySelector.OnApplyFileNameCallback callback) {
@@ -5922,7 +5931,9 @@ public class MainActivity extends AppCompatActivity {
 
         recycleTransformer();
 
-        miHasAlpha.setChecked(this.bitmap.hasAlpha());
+        if (activityMain.topAppBar != null) {
+            miHasAlpha.setChecked(this.bitmap.hasAlpha());
+        }
 
         optimizeSelection();
         isShapeStopped = true;

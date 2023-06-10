@@ -7,19 +7,15 @@ import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
 import android.widget.CompoundButton;
-import android.widget.FrameLayout;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RadioButton;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.core.view.OneShotPreDrawListener;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.misterchan.iconeditor.databinding.ItemLayerBinding;
 import com.misterchan.iconeditor.listener.OnCBCheckedListener;
 
 import java.util.List;
@@ -27,27 +23,11 @@ import java.util.List;
 class LayerAdapter extends ItemMovableAdapter<LayerAdapter.ViewHolder> {
 
     protected static class ViewHolder extends RecyclerView.ViewHolder {
-        private final CheckBox cbVisible;
-        private final FrameLayout flThumbnail;
-        private final ImageView ivThumbnail;
-        private final LinearLayout llRoot, llParentBg, llFgLeaf;
-        private final RadioButton rb;
-        private final TextView tvName;
-        private final View itemView;
-        private final View vLowerLevel;
+        private final ItemLayerBinding binding;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            this.itemView = itemView;
-            cbVisible = itemView.findViewById(R.id.cb_visible);
-            flThumbnail = itemView.findViewById(R.id.fl_thumbnail);
-            ivThumbnail = itemView.findViewById(R.id.iv_thumbnail);
-            rb = itemView.findViewById(R.id.rb);
-            tvName = itemView.findViewById(R.id.tv_name);
-            llFgLeaf = itemView.findViewById(R.id.ll_fg_leaf);
-            vLowerLevel = itemView.findViewById(R.id.v_lower_level);
-            llParentBg = itemView.findViewById(R.id.ll_parent_bg);
-            llRoot = itemView.findViewById(R.id.ll_root);
+            binding = ItemLayerBinding.bind(itemView);
         }
     }
 
@@ -95,12 +75,12 @@ class LayerAdapter extends ItemMovableAdapter<LayerAdapter.ViewHolder> {
         if (holder == null) {
             return;
         }
-        holder.rb.setOnCheckedChangeListener(null);
-        holder.rb.setChecked(selected);
-        holder.rb.setOnCheckedChangeListener((OnCBCheckedListener) buttonView ->
+        holder.binding.rb.setOnCheckedChangeListener(null);
+        holder.binding.rb.setChecked(selected);
+        holder.binding.rb.setOnCheckedChangeListener((OnCBCheckedListener) buttonView ->
                 onItemSelectedListener.onItemSelected(holder.itemView, position));
-        holder.tvName.setTextColor(selected ? colorPrimary : textColorPrimary);
-        holder.tvName.setTypeface(Typeface.defaultFromStyle(selected ? Typeface.BOLD : Typeface.NORMAL));
+        holder.binding.tvName.setTextColor(selected ? colorPrimary : textColorPrimary);
+        holder.binding.tvName.setTypeface(Typeface.defaultFromStyle(selected ? Typeface.BOLD : Typeface.NORMAL));
     }
 
     public void notifyLayerTreeChanged() {
@@ -116,15 +96,15 @@ class LayerAdapter extends ItemMovableAdapter<LayerAdapter.ViewHolder> {
                 return;
             }
 
-            holder.vLowerLevel.setVisibility(layer.getLevel() > 0 ? View.VISIBLE : View.GONE);
-            holder.llRoot.removeAllViews();
-            holder.llParentBg.removeAllViews();
-            holder.llFgLeaf.removeAllViews();
+            holder.binding.vLowerLevel.setVisibility(layer.getLevel() > 0 ? View.VISIBLE : View.GONE);
+            holder.binding.llRoot.removeAllViews();
+            holder.binding.llParentBg.removeAllViews();
+            holder.binding.llFgLeaf.removeAllViews();
             if (lastLayer == null) {
                 for (int l = 0; l < layer.getLevel() - 1; ++l) {
                     final View v = LayoutInflater.from(context).inflate(R.layout.bracket, null);
                     v.setBackground(AppCompatResources.getDrawable(context, R.drawable.np_bracket_open));
-                    holder.llRoot.addView(v);
+                    holder.binding.llRoot.addView(v);
                 }
             } else {
                 final int levelDiff = layer.getLevel() - lastLayer.getLevel();
@@ -132,13 +112,13 @@ class LayerAdapter extends ItemMovableAdapter<LayerAdapter.ViewHolder> {
                     for (int l = 0; l < (lastLayer.getLevel() > 0 ? levelDiff : levelDiff - 1); ++l) {
                         final View v = LayoutInflater.from(context).inflate(R.layout.bracket, null);
                         v.setBackground(AppCompatResources.getDrawable(context, R.drawable.np_bracket_open));
-                        lastHolder.llParentBg.addView(v);
+                        lastHolder.binding.llParentBg.addView(v);
                     }
                 } else if (levelDiff < 0) {
                     for (int l = 0; l < (layer.getLevel() > 0 ? -levelDiff : -levelDiff - 1); ++l) {
                         final View v = LayoutInflater.from(context).inflate(R.layout.bracket, null);
                         v.setBackground(AppCompatResources.getDrawable(context, R.drawable.np_bracket_close));
-                        lastHolder.llFgLeaf.addView(v);
+                        lastHolder.binding.llFgLeaf.addView(v);
                     }
                 }
             }
@@ -149,7 +129,7 @@ class LayerAdapter extends ItemMovableAdapter<LayerAdapter.ViewHolder> {
             for (int l = 0; l < lastLayer.getLevel() - 1; ++l) {
                 final View v = LayoutInflater.from(context).inflate(R.layout.bracket, null);
                 v.setBackground(AppCompatResources.getDrawable(context, R.drawable.np_bracket_close));
-                lastHolder.llFgLeaf.addView(v);
+                lastHolder.binding.llFgLeaf.addView(v);
             }
         }
     }
@@ -172,29 +152,29 @@ class LayerAdapter extends ItemMovableAdapter<LayerAdapter.ViewHolder> {
                 onItemReselectedListener.onItemSelected(v, position);
             }
         });
-        holder.cbVisible.setOnCheckedChangeListener(null);
-        holder.cbVisible.setChecked(layer.visible);
-        holder.cbVisible.setOnCheckedChangeListener((buttonView, isChecked) -> {
+        holder.binding.cbVisible.setOnCheckedChangeListener(null);
+        holder.binding.cbVisible.setChecked(layer.visible);
+        holder.binding.cbVisible.setOnCheckedChangeListener((buttonView, isChecked) -> {
             layer.visible = isChecked;
             if (isOnVisibleChangedListenerEnabled) {
                 ovcbccListener.onCheckedChanged(buttonView, isChecked);
             }
         });
-        OneShotPreDrawListener.add(holder.flThumbnail, () -> {
-            final LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) holder.flThumbnail.getLayoutParams();
+        OneShotPreDrawListener.add(holder.binding.flThumbnail, () -> {
+            final LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) holder.binding.flThumbnail.getLayoutParams();
             final int w = layer.bitmap.getWidth(), h = layer.bitmap.getHeight();
             lp.width = w >= h ? dim64Dip : dim64Dip * w / h;
             lp.height = w >= h ? dim64Dip * h / w : dim64Dip;
-            holder.flThumbnail.setLayoutParams(lp);
+            holder.binding.flThumbnail.setLayoutParams(lp);
         });
-        holder.ivThumbnail.setImageBitmap(layer.bitmap);
-        holder.rb.setOnCheckedChangeListener(null);
-        holder.rb.setChecked(selected);
-        holder.rb.setOnCheckedChangeListener((OnCBCheckedListener) buttonView ->
+        holder.binding.ivThumbnail.setImageBitmap(layer.bitmap);
+        holder.binding.rb.setOnCheckedChangeListener(null);
+        holder.binding.rb.setChecked(selected);
+        holder.binding.rb.setOnCheckedChangeListener((OnCBCheckedListener) buttonView ->
                 onItemSelectedListener.onItemSelected(holder.itemView, position));
-        holder.tvName.setText(layer.name);
-        holder.tvName.setTextColor(selected ? colorPrimary : textColorPrimary);
-        holder.tvName.setTypeface(Typeface.defaultFromStyle(selected ? Typeface.BOLD : Typeface.NORMAL));
+        holder.binding.tvName.setText(layer.name);
+        holder.binding.tvName.setTextColor(selected ? colorPrimary : textColorPrimary);
+        holder.binding.tvName.setTypeface(Typeface.defaultFromStyle(selected ? Typeface.BOLD : Typeface.NORMAL));
     }
 
     @NonNull
@@ -216,7 +196,7 @@ class LayerAdapter extends ItemMovableAdapter<LayerAdapter.ViewHolder> {
     }
 
     /**
-     * @param listener the callback to call on checked state of {@link ViewHolder#cbVisible} change
+     * @param listener the callback to call on checked state of {@link ItemLayerBinding#cbVisible} change
      */
     public void setOnLayerVisibleChangedListener(CompoundButton.OnCheckedChangeListener listener) {
         ovcbccListener = listener;
