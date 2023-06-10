@@ -4309,7 +4309,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main, menu);
-        MenuCompat.setGroupDividerEnabled(menu, true);
+        menu.setGroupDividerEnabled(true);
         miFrameList = menu.findItem(R.id.i_frame_list);
         miHasAlpha = menu.findItem(R.id.i_image_has_alpha);
         Settings.INST.update(PreferenceManager.getDefaultSharedPreferences(this), Settings.KEY_FL);
