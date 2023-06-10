@@ -2887,13 +2887,7 @@ public class MainActivity extends AppCompatActivity {
                     activityMain.svOptionsTransformer.setVisibility(View.VISIBLE);
                     selector.setColor(Color.BLUE);
                     if (hasSelection && activityMain.optionsTransformer.btgTransformer.getCheckedButtonId() == R.id.b_mesh) {
-                        try {
-                            final int w = Integer.parseUnsignedInt(activityMain.optionsTransformer.tietMeshWidth.getText().toString()),
-                                    h = Integer.parseUnsignedInt(activityMain.optionsTransformer.tietMeshHeight.getText().toString());
-                            transformer.rect = selection;
-                            transformer.createMesh(w, h);
-                        } catch (NumberFormatException e) {
-                        }
+                        createTransformerMesh();
                     }
                     drawSelectionOntoView();
                 } else {
@@ -2914,13 +2908,7 @@ public class MainActivity extends AppCompatActivity {
         activityMain.optionsTransformer.llMesh.setVisibility(checkedId == R.id.b_mesh ? View.VISIBLE : View.GONE);
         if (hasSelection) {
             if (checkedId == R.id.b_mesh) {
-                try {
-                    final int w = Integer.parseUnsignedInt(activityMain.optionsTransformer.tietMeshWidth.getText().toString()),
-                            h = Integer.parseUnsignedInt(activityMain.optionsTransformer.tietMeshHeight.getText().toString());
-                    transformer.rect = selection;
-                    transformer.createMesh(w, h);
-                } catch (NumberFormatException e) {
-                }
+                createTransformerMesh();
             } else {
                 transformer.apply();
                 transformer.mesh = null;
@@ -3236,6 +3224,16 @@ public class MainActivity extends AppCompatActivity {
         transformer.setBitmap(bitmap, selection);
         transformerActionMode = startSupportActionMode(onTransformerActionModeCallback);
         transformerActionMode.setTitle(R.string.transform);
+    }
+
+    private void createTransformerMesh() {
+        try {
+            final int w = Integer.parseUnsignedInt(activityMain.optionsTransformer.tietMeshWidth.getText().toString()),
+                    h = Integer.parseUnsignedInt(activityMain.optionsTransformer.tietMeshHeight.getText().toString());
+            transformer.rect = selection;
+            transformer.createMesh(w, h);
+        } catch (NumberFormatException e) {
+        }
     }
 
     private void deleteFrame(int position) {
@@ -4266,14 +4264,7 @@ public class MainActivity extends AppCompatActivity {
                 if (!transformer.isRecycled()) {
                     transformer.apply();
                 }
-                try {
-                    final int w = Integer.parseUnsignedInt(activityMain.optionsTransformer.tietMeshWidth.getText().toString()),
-                            h = Integer.parseUnsignedInt(activityMain.optionsTransformer.tietMeshHeight.getText().toString());
-                    transformer.rect = selection;
-                    transformer.createMesh(w, h);
-                    drawSelectionOntoView();
-                } catch (NumberFormatException e) {
-                }
+                createTransformerMesh();
             };
             activityMain.optionsTransformer.tietMeshWidth.addTextChangedListener(tw);
             activityMain.optionsTransformer.tietMeshHeight.addTextChangedListener(tw);
@@ -4822,9 +4813,16 @@ public class MainActivity extends AppCompatActivity {
             case R.id.i_deselect -> {
                 drawFloatingLayersIntoImage();
                 hasSelection = false;
-                if (activityMain.tools.btgTools.getCheckedButtonId() == R.id.b_soft_brush) {
-                    activityMain.optionsSoftBrush.tbSoftBrush.setEnabled(false);
-                    activityMain.optionsSoftBrush.tbSoftBrush.setChecked(true);
+                switch (activityMain.tools.btgTools.getCheckedButtonId()) {
+                    case R.id.b_soft_brush -> {
+                        activityMain.optionsSoftBrush.tbSoftBrush.setEnabled(false);
+                        activityMain.optionsSoftBrush.tbSoftBrush.setChecked(true);
+                    }
+                    case R.id.b_transformer -> {
+                        if (activityMain.optionsTransformer.btgTransformer.getCheckedButtonId() == R.id.b_mesh) {
+                            transformer.mesh = null;
+                        }
+                    }
                 }
                 eraseBitmapAndInvalidateView(selectionBitmap, activityMain.canvas.ivSelection);
                 clearStatus();
@@ -5121,8 +5119,14 @@ public class MainActivity extends AppCompatActivity {
             case R.id.i_select_all -> {
                 selectAll();
                 hasSelection = true;
-                if (activityMain.tools.btgTools.getCheckedButtonId() == R.id.b_soft_brush) {
-                    activityMain.optionsSoftBrush.tbSoftBrush.setEnabled(true);
+                switch (activityMain.tools.btgTools.getCheckedButtonId()) {
+                    case R.id.b_soft_brush ->
+                            activityMain.optionsSoftBrush.tbSoftBrush.setEnabled(true);
+                    case R.id.b_transformer -> {
+                        if (activityMain.optionsTransformer.btgTransformer.getCheckedButtonId() == R.id.b_mesh) {
+                            createTransformerMesh();
+                        }
+                    }
                 }
                 drawSelectionOntoView();
                 clearStatus();
@@ -5759,6 +5763,7 @@ public class MainActivity extends AppCompatActivity {
         layerList.rvLayerList.post(frame.layerAdapter::notifyLayerTreeChanged);
     }
 
+    @SuppressLint("NonConstantResourceId")
     private void selectLayer(int position) {
         drawFloatingLayersIntoImage();
 
@@ -5775,6 +5780,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         recycleTransformer();
+        transformer.mesh = null;
         optimizeSelection();
 
         switch (activityMain.tools.btgTools.getCheckedButtonId()) {
@@ -5785,6 +5791,11 @@ public class MainActivity extends AppCompatActivity {
                 activityMain.optionsSoftBrush.tbSoftBrush.setEnabled(hasSelection);
                 if (!hasSelection) {
                     activityMain.optionsSoftBrush.tbSoftBrush.setChecked(true);
+                }
+            }
+            case R.id.b_transformer -> {
+                if (activityMain.optionsTransformer.btgTransformer.getCheckedButtonId() == R.id.b_mesh && hasSelection) {
+                    createTransformerMesh();
                 }
             }
         }
@@ -6000,6 +6011,10 @@ public class MainActivity extends AppCompatActivity {
         calculateBackgroundSizeOnView();
 
         recycleTransformer();
+        if (activityMain.tools.btgTools.getCheckedButtonId() == R.id.b_transformer
+                && activityMain.optionsTransformer.btgTransformer.getCheckedButtonId() == R.id.b_mesh) {
+            createTransformerMesh();
+        }
 
         if (activityMain.topAppBar != null) {
             miHasAlpha.setChecked(this.bitmap.hasAlpha());
