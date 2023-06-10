@@ -33,6 +33,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Looper;
 import android.os.MessageQueue;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -61,7 +62,6 @@ import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.view.ActionMode;
-import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.FileProvider;
 import androidx.core.view.MenuCompat;
 import androidx.core.view.OneShotPreDrawListener;
@@ -337,7 +337,7 @@ public class MainActivity extends AppCompatActivity {
     private Paint.Style style = Paint.Style.FILL_AND_STROKE;
     private Thread thread = new Thread();
     private final Transformer transformer = new Transformer();
-    private Uri fileToBeOpened;
+    private Uri fileToOpen;
     private View vContent;
 
     private final Paint bitmapPaint = new Paint() {
@@ -2055,39 +2055,39 @@ public class MainActivity extends AppCompatActivity {
      */
     @SuppressLint("ClickableViewAccessibility")
     private final View.OnTouchListener onIVTouchWithMTListener = new View.OnTouchListener() {
-        @Size(18)
-        private final float[] verts = new float[18];
+        private int lastVertIndex;
 
         @Override
         public boolean onTouch(View v, MotionEvent event) {
+            if (!hasSelection) {
+                return true;
+            }
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN -> {
-                    if (selection.isEmpty()) {
+                    if (selection.isEmpty() || transformer.mesh == null) {
                         break;
                     }
                     if (transformer.isRecycled()) {
                         createTransformer();
                     }
-                    final int w = selection.width(), h = selection.height();
                     final float rx = toBitmapXExact(event.getX()) - selection.left, ry = toBitmapYExact(event.getY()) - selection.top;
-                    verts[2] = verts[8] = verts[14] = rx;
-                    verts[7] = verts[9] = verts[11] = ry;
-                    verts[4] = verts[10] = verts[16] = w;
-                    verts[13] = verts[15] = verts[17] = h;
+                    lastVertIndex = Math.round(ry / selection.height() * transformer.mesh.height) * (transformer.mesh.width + 1)
+                            + Math.round(rx / selection.width() * transformer.mesh.width);
                 }
                 case MotionEvent.ACTION_MOVE -> {
-                    if (transformer.isRecycled()) {
+                    if (transformer.isRecycled() || transformer.mesh == null) {
                         break;
                     }
                     final float rx = toBitmapXExact(event.getX()) - selection.left, ry = toBitmapYExact(event.getY()) - selection.top;
-                    verts[2] = verts[8] = verts[14] = rx;
-                    verts[7] = verts[9] = verts[11] = ry;
+                    transformer.mesh.verts[lastVertIndex * 2] = rx;
+                    transformer.mesh.verts[lastVertIndex * 2 + 1] = ry;
+                    drawSelectionOntoView();
                 }
                 case MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                    if (transformer.isRecycled()) {
+                    if (transformer.isRecycled() || transformer.mesh == null) {
                         break;
                     }
-                    transformer.transformMesh(verts, activityMain.optionsTransformer.cbFilter.isChecked(), antiAlias);
+                    transformer.transformMesh(activityMain.optionsTransformer.cbFilter.isChecked(), antiAlias);
                     drawBitmapOntoView(selection, true);
                 }
             }
@@ -2742,7 +2742,7 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    private View.OnTouchListener onTouchIVListener = onIVTouchWithPencilListener;
+    private View.OnTouchListener onIVTouchListener = onIVTouchWithPencilListener;
 
     @SuppressLint("NonConstantResourceId")
     private final MaterialButtonToggleGroup.OnButtonCheckedListener onToolButtonCheckedListener = (group, checkedId, isChecked) -> {
@@ -2886,9 +2886,19 @@ public class MainActivity extends AppCompatActivity {
                     onToolChanged(onIVTouchWithTransformerListener);
                     activityMain.svOptionsTransformer.setVisibility(View.VISIBLE);
                     selector.setColor(Color.BLUE);
+                    if (hasSelection && activityMain.optionsTransformer.btgTransformer.getCheckedButtonId() == R.id.b_mesh) {
+                        try {
+                            final int w = Integer.parseUnsignedInt(activityMain.optionsTransformer.tietMeshWidth.getText().toString()),
+                                    h = Integer.parseUnsignedInt(activityMain.optionsTransformer.tietMeshHeight.getText().toString());
+                            transformer.rect = selection;
+                            transformer.createMesh(w, h);
+                        } catch (NumberFormatException e) {
+                        }
+                    }
                     drawSelectionOntoView();
                 } else {
                     drawTransformerIntoImage();
+                    transformer.mesh = null;
                     marqueeBoundBeingDragged = null;
                     selector.setColor(Color.DKGRAY);
                     drawSelectionOntoView();
@@ -2897,19 +2907,53 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    @SuppressLint("NonConstantResourceId")
+    private final MaterialButtonToggleGroup.OnButtonCheckedListener onTransformerButtonCheckedListener = (OnButtonCheckedListener) (group, checkedId) -> {
+        activityMain.optionsTransformer.cbFilter.setVisibility(checkedId != R.id.b_translation ? View.VISIBLE : View.GONE);
+        activityMain.optionsTransformer.cbLar.setVisibility(checkedId == R.id.b_scale ? View.VISIBLE : View.GONE);
+        activityMain.optionsTransformer.llMesh.setVisibility(checkedId == R.id.b_mesh ? View.VISIBLE : View.GONE);
+        if (hasSelection) {
+            if (checkedId == R.id.b_mesh) {
+                try {
+                    final int w = Integer.parseUnsignedInt(activityMain.optionsTransformer.tietMeshWidth.getText().toString()),
+                            h = Integer.parseUnsignedInt(activityMain.optionsTransformer.tietMeshHeight.getText().toString());
+                    transformer.rect = selection;
+                    transformer.createMesh(w, h);
+                } catch (NumberFormatException e) {
+                }
+            } else {
+                transformer.apply();
+                transformer.mesh = null;
+            }
+            drawSelectionOntoView();
+        }
+        onIVTouchWithTransformerListener = switch (checkedId) {
+            case R.id.b_translation -> onIVTouchWithTTListener;
+            case R.id.b_scale -> onIVTouchWithSTListener;
+            case R.id.b_rotation -> onIVTouchWithRTListener;
+            case R.id.b_poly -> onIVTouchWithPTListener;
+            case R.id.b_mesh -> onIVTouchWithMTListener;
+            default -> null;
+        };
+        onIVTouchListener = onIVTouchWithTransformerListener;
+        if (activityMain.btgZoom.getCheckedButtonId() != R.id.b_zoom) {
+            activityMain.canvas.flIv.setOnTouchListener(onIVTouchWithTransformerListener);
+        }
+    };
+
     @SuppressLint("ClickableViewAccessibility")
     private final MaterialButtonToggleGroup.OnButtonCheckedListener onZoomToolButtonCheckedListener = (group, checkedId, isChecked) -> {
         if (isChecked) {
             activityMain.canvas.flIv.setOnTouchListener(onIVTouchWithZoomToolListener);
         } else {
-            activityMain.canvas.flIv.setOnTouchListener(onTouchIVListener);
+            activityMain.canvas.flIv.setOnTouchListener(onIVTouchListener);
         }
     };
 
     @SuppressLint("ClickableViewAccessibility")
     private final CompoundButton.OnCheckedChangeListener onSoftBrushTBCheckedChangeListener = (buttonView, isChecked) -> {
         onIVTouchWithSoftBrushListener = isChecked ? onIVTouchWithSoftBrushOnListener : onIVTouchWithSoftBrushOffListener;
-        onTouchIVListener = onIVTouchWithSoftBrushListener;
+        onIVTouchListener = onIVTouchWithSoftBrushListener;
         if (activityMain.btgZoom.getCheckedButtonId() != R.id.b_zoom) {
             activityMain.canvas.flIv.setOnTouchListener(onIVTouchWithSoftBrushListener);
         }
@@ -3710,6 +3754,26 @@ public class MainActivity extends AppCompatActivity {
                     selectionCanvas.drawText(String.valueOf(layer.top + bitmap.getHeight() - selection.bottom), centerHorizontal, (viewImBottom + bottom) / 2.0f, marginPaint);
                 }
             }
+            if (transformer.mesh != null) {
+                final Transformer.Mesh mesh = transformer.mesh;
+                for (int i = 0, r = 0; r <= mesh.height; ++r) {
+                    for (int c = 0; c <= mesh.width; ++c, i += 2) {
+                        final float x = toViewX(selection.left + mesh.verts[i]), y = toViewY(selection.top + mesh.verts[i + 1]);
+                        if (c < mesh.width) {
+                            selectionCanvas.drawLine(x, y,
+                                    toViewX(selection.left + mesh.verts[(r * (mesh.width + 1) + (c + 1)) * 2]),
+                                    toViewY(selection.top + mesh.verts[(r * (mesh.width + 1) + (c + 1)) * 2 + 1]),
+                                    selector);
+                        }
+                        if (r < mesh.height) {
+                            selectionCanvas.drawLine(x, y,
+                                    toViewX(selection.left + mesh.verts[((r + 1) * (mesh.width + 1) + c) * 2]),
+                                    toViewY(selection.top + mesh.verts[((r + 1) * (mesh.width + 1) + c) * 2 + 1]),
+                                    selector);
+                        }
+                    }
+                }
+            }
         }
         activityMain.canvas.ivSelection.invalidate();
     }
@@ -3994,8 +4058,8 @@ public class MainActivity extends AppCompatActivity {
         activityMain.canvas.ivSelection.setImageBitmap(selectionBitmap);
 
         if (projects.isEmpty()) {
-            if (fileToBeOpened != null) {
-                openFile(fileToBeOpened);
+            if (fileToOpen != null) {
+                openFile(fileToOpen);
             } else {
                 addDefaultTab();
             }
@@ -4067,6 +4131,7 @@ public class MainActivity extends AppCompatActivity {
         activityMain.optionsMagicPaint.bTolerance.setOnClickListener(onToleranceButtonClickListener);
         activityMain.bSwatchesAdd.setOnClickListener(onAddSwatchButtonClickListener);
         activityMain.optionsText.bDraw.setOnClickListener(v -> drawTextIntoImage());
+        activityMain.optionsTransformer.btgTransformer.addOnButtonCheckedListener(onTransformerButtonCheckedListener);
         activityMain.optionsCloneStamp.cbAntiAlias.setOnCheckedChangeListener(onAntiAliasCBCheckedChangeListener);
         activityMain.optionsEraser.cbAntiAlias.setOnCheckedChangeListener((buttonView, isChecked) -> eraser.setAntiAlias(isChecked));
         activityMain.optionsGradient.cbAntiAlias.setOnCheckedChangeListener(onAntiAliasCBCheckedChangeListener);
@@ -4132,17 +4197,6 @@ public class MainActivity extends AppCompatActivity {
             };
         });
 
-        activityMain.optionsTransformer.btgTransformer.addOnButtonCheckedListener((OnButtonCheckedListener) (group, checkedId) -> {
-            onTransformerChange(switch (checkedId) {
-                case R.id.b_translation -> onIVTouchWithTTListener;
-                case R.id.b_scale -> onIVTouchWithSTListener;
-                case R.id.b_rotation -> onIVTouchWithRTListener;
-                case R.id.b_poly -> onIVTouchWithPTListener;
-                case R.id.b_mesh -> onIVTouchWithMTListener;
-                default -> null;
-            });
-        });
-
         activityMain.optionsText.cbFill.setOnCheckedChangeListener((buttonView, isChecked) -> {
             style = isChecked ? Paint.Style.FILL_AND_STROKE : Paint.Style.STROKE;
             paint.setStyle(style);
@@ -4155,7 +4209,7 @@ public class MainActivity extends AppCompatActivity {
             onIVTouchWithMagicEraserListener = isChecked
                     ? onIVTouchWithPreciseMagicEraserListener
                     : onIVTouchWithImpreciseMagicEraserListener;
-            onTouchIVListener = onIVTouchWithMagicEraserListener;
+            onIVTouchListener = onIVTouchWithMagicEraserListener;
             if (activityMain.btgZoom.getCheckedButtonId() != R.id.b_zoom) {
                 activityMain.canvas.flIv.setOnTouchListener(onIVTouchWithMagicEraserListener);
             }
@@ -4204,15 +4258,38 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        {
+            final TextWatcher tw = (AfterTextChangedListener) s -> {
+                if (!hasSelection) {
+                    return;
+                }
+                if (!transformer.isRecycled()) {
+                    transformer.apply();
+                }
+                try {
+                    final int w = Integer.parseUnsignedInt(activityMain.optionsTransformer.tietMeshWidth.getText().toString()),
+                            h = Integer.parseUnsignedInt(activityMain.optionsTransformer.tietMeshHeight.getText().toString());
+                    transformer.rect = selection;
+                    transformer.createMesh(w, h);
+                    drawSelectionOntoView();
+                } catch (NumberFormatException e) {
+                }
+            };
+            activityMain.optionsTransformer.tietMeshWidth.addTextChangedListener(tw);
+            activityMain.optionsTransformer.tietMeshHeight.addTextChangedListener(tw);
+        }
+
         activityMain.optionsPencil.tietBlurRadius.setText(String.valueOf(0.0f));
         activityMain.optionsPencil.tietStrokeWidth.setText(String.valueOf(paint.getStrokeWidth()));
         activityMain.optionsEraser.tietBlurRadius.setText(String.valueOf(0.0f));
         activityMain.optionsEraser.tietStrokeWidth.setText(String.valueOf(eraser.getStrokeWidth()));
         activityMain.optionsSoftBrush.tietSoftness.setText(String.valueOf(softness));
         activityMain.optionsText.tietTextSize.setText(String.valueOf(paint.getTextSize()));
+        activityMain.optionsTransformer.tietMeshWidth.setText(String.valueOf(2));
+        activityMain.optionsTransformer.tietMeshHeight.setText(String.valueOf(2));
 
         chessboard = BitmapFactory.decodeResource(getResources(), R.mipmap.chessboard);
-        fileToBeOpened = getIntent().getData();
+        fileToOpen = getIntent().getData();
         projects = viewModel.getProjects();
 
         palette = viewModel.getPalette();
@@ -5117,7 +5194,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
         activityMain.btgZoom.uncheck(R.id.b_zoom);
-        this.onTouchIVListener = onTouchIVListener;
+        this.onIVTouchListener = onTouchIVListener;
         activityMain.canvas.flIv.setOnTouchListener(onTouchIVListener);
         hideToolOptions();
         isShapeStopped = true;
@@ -5234,13 +5311,6 @@ public class MainActivity extends AppCompatActivity {
 
     @SuppressLint("ClickableViewAccessibility")
     private void onTransformerChange(View.OnTouchListener l) {
-        activityMain.optionsTransformer.cbFilter.setVisibility(l != onIVTouchWithTTListener ? View.VISIBLE : View.GONE);
-        activityMain.optionsTransformer.cbLar.setVisibility(l == onIVTouchWithSTListener ? View.VISIBLE : View.GONE);
-        onIVTouchWithTransformerListener = l;
-        onTouchIVListener = l;
-        if (activityMain.btgZoom.getCheckedButtonId() != R.id.b_zoom) {
-            activityMain.canvas.flIv.setOnTouchListener(l);
-        }
     }
 
     private void openFile(Uri uri) {
@@ -5751,7 +5821,7 @@ public class MainActivity extends AppCompatActivity {
         onIVTouchWithEyedropperListener = Settings.INST.argbColorType()
                 ? onIVTouchWithPreciseEyedropperListener : onIVTouchWithImpreciseEyedropperListener;
         if (activityMain != null && activityMain.tools.btgTools.getCheckedButtonId() == R.id.b_eyedropper) {
-            onTouchIVListener = onIVTouchWithEyedropperListener;
+            onIVTouchListener = onIVTouchWithEyedropperListener;
             if (activityMain.btgZoom.getCheckedButtonId() != R.id.b_zoom) {
                 activityMain.canvas.flIv.setOnTouchListener(onIVTouchWithEyedropperListener);
             }

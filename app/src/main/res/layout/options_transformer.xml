@@ -63,4 +63,42 @@
         android:layout_height="wrap_content"
         android:text="@string/lock_aspect_ratio"
         android:visibility="gone" />
+
+    <LinearLayout
+        android:id="@+id/ll_mesh"
+        style="@style/Widget_App_LinearLayout_ToolOptions"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone">
+
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.App.TextInputLayout.Dense"
+            android:layout_width="96dp"
+            android:layout_height="wrap_content">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/tiet_mesh_width"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@color/transparent"
+                android:hint="@string/width"
+                android:inputType="number"
+                android:textAlignment="textEnd" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.App.TextInputLayout.Dense"
+            android:layout_width="96dp"
+            android:layout_height="wrap_content">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/tiet_mesh_height"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@color/transparent"
+                android:hint="@string/height"
+                android:inputType="number"
+                android:textAlignment="textEnd" />
+        </com.google.android.material.textfield.TextInputLayout>
+    </LinearLayout>
 </LinearLayout>

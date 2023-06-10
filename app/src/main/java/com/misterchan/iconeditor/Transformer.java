@@ -10,14 +10,54 @@ import android.graphics.RectF;
 
 class Transformer implements FloatingLayer {
 
+    private final Paint PAINT_SRC = new Paint() {
+        {
+            setAntiAlias(false);
+            setBlendMode(BlendMode.SRC);
+            setFilterBitmap(false);
+        }
+    };
+
+    public static class Mesh {
+        public final int width, height;
+        public final float[] verts;
+
+        public Mesh(int width, int height) {
+            this.width = width;
+            this.height = height;
+            verts = new float[(width + 1) * (height + 1) * 2];
+        }
+    }
+
     private Bitmap bitmap;
-    private Rect rect;
+    private Bitmap src;
+    private Canvas canvas;
+    public Mesh mesh;
+    public Rect rect;
 
     private final Paint paint = new Paint() {
         {
             setBlendMode(BlendMode.SRC);
         }
     };
+
+    public void apply() {
+        if (isRecycled()) {
+            return;
+        }
+        new Canvas(src).drawBitmap(bitmap, 0.0f, 0.0f, PAINT_SRC);
+    }
+
+    public void createMesh(int width, int height) {
+        mesh = new Mesh(width, height);
+        final float dx = (float) rect.width() / (float) width, dy = (float) rect.height() / (float) height;
+        for (int r = 0; r <= height; ++r) {
+            for (int c = 0; c <= width; ++c) {
+                mesh.verts[(r * (width + 1) + c) * 2] = c * dx;
+                mesh.verts[(r * (width + 1) + c) * 2 + 1] = r * dy;
+            }
+        }
+    }
 
     @Override
     public Bitmap getBitmap() {
@@ -35,14 +75,22 @@ class Transformer implements FloatingLayer {
     }
 
     public boolean isRecycled() {
-        return bitmap == null;
+        return src == null || bitmap == null;
     }
 
     public void recycle() {
+        if (src != null) {
+            src.recycle();
+            src = null;
+        }
         if (bitmap != null) {
             bitmap.recycle();
             bitmap = null;
         }
+    }
+
+    public void reset() {
+        canvas.drawBitmap(src, 0.0f, 0.0f, PAINT_SRC);
     }
 
     public void rotate(float degrees, boolean filter, boolean antiAlias) {
@@ -58,10 +106,12 @@ class Transformer implements FloatingLayer {
     }
 
     public void setBitmap(Bitmap bitmap, Rect rect) {
-        if (this.bitmap != null) {
-            this.bitmap.recycle();
-        }
-        this.bitmap = bitmap;
+        if (src != null) src.recycle();
+        if (this.bitmap != null) this.bitmap.recycle();
+        src = bitmap;
+        this.bitmap = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
+        canvas = new Canvas(this.bitmap);
+        canvas.drawBitmap(bitmap, 0.0f, 0.0f, PAINT_SRC);
         this.rect = rect;
     }
 
@@ -89,20 +139,16 @@ class Transformer implements FloatingLayer {
         cv.setMatrix(matrix);
         paint.setAntiAlias(antiAlias);
         paint.setFilterBitmap(filter);
-        cv.drawBitmap(bitmap, 0.0f, 0.0f, paint);
+        cv.drawBitmap(src, 0.0f, 0.0f, paint);
         bitmap.recycle();
         bitmap = bm;
         return r;
     }
 
-    public void transformMesh(float[] verts, boolean filter, boolean antiAlias) {
-        final Bitmap bm = Bitmap.createBitmap(bitmap);
+    public void transformMesh(boolean filter, boolean antiAlias) {
         bitmap.eraseColor(Color.TRANSPARENT);
-        final Canvas canvas = new Canvas(bitmap);
-        final int count = (verts.length - 8) / 10;
         paint.setAntiAlias(antiAlias);
         paint.setFilterBitmap(filter);
-        canvas.drawBitmapMesh(bm, count + 1, count + 1, verts, 0, null, 0, paint);
-        bm.recycle();
+        canvas.drawBitmapMesh(src, mesh.width, mesh.height, mesh.verts, 0, null, 0, paint);
     }
 }
