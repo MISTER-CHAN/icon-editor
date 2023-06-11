@@ -3859,6 +3859,10 @@ public class MainActivity extends AppCompatActivity {
         recycleTransformer();
         drawBitmapOntoView(selection);
         optimizeSelection();
+        if (activityMain.tools.btgTools.getCheckedButtonId() == R.id.b_transformer
+                && activityMain.optionsTransformer.btgTransformer.getCheckedButtonId() == R.id.b_mesh) {
+            createTransformerMesh();
+        }
         drawSelectionOntoView();
         addToHistory();
         clearStatus();
@@ -4178,6 +4182,23 @@ public class MainActivity extends AppCompatActivity {
             return true;
         });
 
+        activityMain.optionsMagicEraser.cbStyle.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            activityMain.optionsMagicEraser.btgSides.setVisibility(isChecked ? View.GONE : View.VISIBLE);
+            activityMain.optionsMagicEraser.cbAccEnabled.setVisibility(isChecked ? View.VISIBLE : View.GONE);
+            onIVTouchWithMagicEraserListener = isChecked
+                    ? onIVTouchWithPreciseMagicEraserListener
+                    : onIVTouchWithImpreciseMagicEraserListener;
+            onIVTouchListener = onIVTouchWithMagicEraserListener;
+            if (activityMain.btgZoom.getCheckedButtonId() != R.id.b_zoom) {
+                activityMain.canvas.flIv.setOnTouchListener(onIVTouchWithMagicEraserListener);
+            }
+            if (!isChecked) {
+                magErB = null;
+                magErF = null;
+                eraseBitmapAndInvalidateView(previewBitmap, activityMain.canvas.ivPreview);
+            }
+        });
+
         activityMain.tools.bRuler.setOnLongClickListener(v -> {
             v.setVisibility(View.GONE);
             activityMain.tools.bEyedropper.setVisibility(View.VISIBLE);
@@ -4201,20 +4222,9 @@ public class MainActivity extends AppCompatActivity {
             drawTextOntoView();
         });
 
-        activityMain.optionsMagicEraser.cbStyle.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            activityMain.optionsMagicEraser.btgSides.setVisibility(isChecked ? View.GONE : View.VISIBLE);
-            activityMain.optionsMagicEraser.cbAccEnabled.setVisibility(isChecked ? View.VISIBLE : View.GONE);
-            onIVTouchWithMagicEraserListener = isChecked
-                    ? onIVTouchWithPreciseMagicEraserListener
-                    : onIVTouchWithImpreciseMagicEraserListener;
-            onIVTouchListener = onIVTouchWithMagicEraserListener;
-            if (activityMain.btgZoom.getCheckedButtonId() != R.id.b_zoom) {
-                activityMain.canvas.flIv.setOnTouchListener(onIVTouchWithMagicEraserListener);
-            }
-            if (!isChecked) {
-                magErB = null;
-                magErF = null;
-                eraseBitmapAndInvalidateView(previewBitmap, activityMain.canvas.ivPreview);
+        activityMain.optionsTransformer.cbFilter.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (activityMain.optionsTransformer.btgTransformer.getCheckedButtonId() == R.id.b_mesh && !transformer.isRecycled()) {
+                transformer.transformMesh(isChecked, antiAlias);
             }
         });
 
@@ -5794,11 +5804,6 @@ public class MainActivity extends AppCompatActivity {
                     activityMain.optionsSoftBrush.tbSoftBrush.setChecked(true);
                 }
             }
-            case R.id.b_transformer -> {
-                if (activityMain.optionsTransformer.btgTransformer.getCheckedButtonId() == R.id.b_mesh && hasSelection) {
-                    createTransformerMesh();
-                }
-            }
         }
 
         updateReference();
@@ -6012,7 +6017,8 @@ public class MainActivity extends AppCompatActivity {
         calculateBackgroundSizeOnView();
 
         recycleTransformer();
-        if (activityMain.tools.btgTools.getCheckedButtonId() == R.id.b_transformer
+        if (hasSelection
+                && activityMain.tools.btgTools.getCheckedButtonId() == R.id.b_transformer
                 && activityMain.optionsTransformer.btgTransformer.getCheckedButtonId() == R.id.b_mesh) {
             createTransformerMesh();
         }
