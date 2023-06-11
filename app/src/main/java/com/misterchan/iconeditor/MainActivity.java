@@ -4125,6 +4125,7 @@ public class MainActivity extends AppCompatActivity {
         layerList = LayerListBinding.bind(layoutInflater.inflate(R.layout.layer_list, null));
         vContent = findViewById(android.R.id.content);
         final ViewModel viewModel = new ViewModelProvider(this).get(ViewModel.class);
+        inputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
 
         activityMain.tools.btgTools.addOnButtonCheckedListener(onToolButtonCheckedListener);
         activityMain.btgZoom.addOnButtonCheckedListener(onZoomToolButtonCheckedListener);
