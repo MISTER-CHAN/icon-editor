@@ -4224,8 +4224,9 @@ public class MainActivity extends AppCompatActivity {
         });
 
         activityMain.optionsTransformer.cbFilter.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            if (activityMain.optionsTransformer.btgTransformer.getCheckedButtonId() == R.id.b_mesh && !transformer.isRecycled()) {
+            if (activityMain.optionsTransformer.btgTransformer.getCheckedButtonId() == R.id.b_mesh && !transformer.isRecycled() && transformer.mesh != null) {
                 transformer.transformMesh(isChecked, antiAlias);
+                drawBitmapOntoView(selection, true);
             }
         });
 
