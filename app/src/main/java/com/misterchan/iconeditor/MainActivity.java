@@ -4265,6 +4265,7 @@ public class MainActivity extends AppCompatActivity {
                     transformer.apply();
                 }
                 createTransformerMesh();
+                drawSelectionOntoView();
             };
             activityMain.optionsTransformer.tietMeshWidth.addTextChangedListener(tw);
             activityMain.optionsTransformer.tietMeshHeight.addTextChangedListener(tw);
