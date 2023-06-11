@@ -72,7 +72,7 @@ public class CurvesDialog {
 
     private final Paint compPaint = new Paint();
 
-    private Paint[] paints = new Paint[]{new Paint(), new Paint(), new Paint(), compPaint, compPaint};
+    private final Paint[] paints = new Paint[]{new Paint(), new Paint(), new Paint(), compPaint, compPaint};
     private Paint paint;
 
     private final Paint eraser = new Paint() {
