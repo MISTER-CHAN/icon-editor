@@ -3,6 +3,7 @@ plugins {
 }
 
 android {
+    namespace 'com.misterchan.iconeditor'
     compileSdk 33
 
     defaultConfig {
@@ -28,7 +29,6 @@ android {
     buildFeatures {
         viewBinding true
     }
-    namespace 'com.misterchan.iconeditor'
 }
 
 dependencies {
