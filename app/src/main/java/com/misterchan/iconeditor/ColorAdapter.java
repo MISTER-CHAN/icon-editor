@@ -7,6 +7,8 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.misterchan.iconeditor.databinding.ItemColorBinding;
+
 import java.util.List;
 
 class ColorAdapter extends ItemMovableAdapter<ColorAdapter.ViewHolder> {
@@ -20,11 +22,11 @@ class ColorAdapter extends ItemMovableAdapter<ColorAdapter.ViewHolder> {
     }
 
     protected static class ViewHolder extends RecyclerView.ViewHolder {
-        private final View view;
+        private final ItemColorBinding binding;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            view = itemView.findViewById(R.id.v_color);
+            binding = ItemColorBinding.bind(itemView);
         }
     }
 
@@ -49,9 +51,9 @@ class ColorAdapter extends ItemMovableAdapter<ColorAdapter.ViewHolder> {
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         final Long color = colors.get(position);
-        holder.view.setBackgroundColor(Color.toArgb(color));
-        holder.view.setOnClickListener(v -> onItemClickListener.onItemClick(v, color));
-        holder.view.setOnLongClickListener(v -> onItemLongClickListener.onItemLongClick(v, color));
+        holder.binding.vColor.setBackgroundColor(Color.toArgb(color));
+        holder.binding.vColor.setOnClickListener(v -> onItemClickListener.onItemClick(v, color));
+        holder.binding.vColor.setOnLongClickListener(v -> onItemLongClickListener.onItemLongClick(v, color));
     }
 
     @NonNull
