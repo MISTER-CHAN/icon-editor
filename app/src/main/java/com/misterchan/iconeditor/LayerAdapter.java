@@ -15,6 +15,7 @@ import androidx.appcompat.content.res.AppCompatResources;
 import androidx.core.view.OneShotPreDrawListener;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.misterchan.iconeditor.databinding.ItemColorBinding;
 import com.misterchan.iconeditor.databinding.ItemLayerBinding;
 import com.misterchan.iconeditor.listener.OnCBCheckedListener;
 
@@ -25,9 +26,9 @@ class LayerAdapter extends ItemMovableAdapter<LayerAdapter.ViewHolder> {
     protected static class ViewHolder extends RecyclerView.ViewHolder {
         private final ItemLayerBinding binding;
 
-        public ViewHolder(@NonNull View itemView) {
-            super(itemView);
-            binding = ItemLayerBinding.bind(itemView);
+        public ViewHolder(@NonNull ItemLayerBinding binding) {
+            super(binding.getRoot());
+            this.binding = binding;
         }
     }
 
@@ -180,8 +181,8 @@ class LayerAdapter extends ItemMovableAdapter<LayerAdapter.ViewHolder> {
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        final View item = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_layer, parent, false);
-        return new ViewHolder(item);
+        final ItemLayerBinding binding = ItemLayerBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
+        return new LayerAdapter.ViewHolder(binding);
     }
 
     @Override

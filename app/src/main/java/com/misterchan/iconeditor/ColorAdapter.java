@@ -24,9 +24,9 @@ class ColorAdapter extends ItemMovableAdapter<ColorAdapter.ViewHolder> {
     protected static class ViewHolder extends RecyclerView.ViewHolder {
         private final ItemColorBinding binding;
 
-        public ViewHolder(@NonNull View itemView) {
-            super(itemView);
-            binding = ItemColorBinding.bind(itemView);
+        public ViewHolder(@NonNull ItemColorBinding binding) {
+            super(binding.getRoot());
+            this.binding = binding;
         }
     }
 
@@ -59,8 +59,8 @@ class ColorAdapter extends ItemMovableAdapter<ColorAdapter.ViewHolder> {
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        final View item = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_color, parent, false);
-        return new ViewHolder(item);
+        final ItemColorBinding binding = ItemColorBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
+        return new ViewHolder(binding);
     }
 
     public void setOnItemClickListener(OnItemClickListener listener) {

@@ -17,6 +17,7 @@ import androidx.annotation.NonNull;
 import androidx.core.view.OneShotPreDrawListener;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.misterchan.iconeditor.databinding.ItemColorBinding;
 import com.misterchan.iconeditor.databinding.ItemFrameBinding;
 import com.misterchan.iconeditor.listener.OnCBCheckedListener;
 
@@ -27,9 +28,9 @@ class FrameAdapter extends ItemMovableAdapter<FrameAdapter.ViewHolder> {
     protected static class ViewHolder extends RecyclerView.ViewHolder {
         private final ItemFrameBinding binding;
 
-        public ViewHolder(@NonNull View itemView) {
-            super(itemView);
-            binding = ItemFrameBinding.bind(itemView);
+        public ViewHolder(@NonNull ItemFrameBinding binding) {
+            super(binding.getRoot());
+            this.binding = binding;
         }
     }
 
@@ -109,8 +110,8 @@ class FrameAdapter extends ItemMovableAdapter<FrameAdapter.ViewHolder> {
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        final View item = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_frame, parent, false);
-        return new ViewHolder(item);
+        final ItemFrameBinding binding = ItemFrameBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
+        return new FrameAdapter.ViewHolder(binding);
     }
 
     @Override
