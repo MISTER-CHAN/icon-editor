@@ -53,14 +53,13 @@ public class BitmapUtils {
         }
     }
 
-    public static void addColorMatrixColorFilter(final Bitmap src, final int srcX, final int srcY,
-                                                 final Bitmap dst, final int dstX, final int dstY,
+    public static void addColorMatrixColorFilter(final Bitmap bitmap, final Rect rect,
                                                  @Size(20) final float[] colorMatrix) {
-        final int w = src.getWidth(), h = src.getHeight();
+        final int w = rect.width(), h = rect.height();
         final int[] pixels = new int[w * h];
-        src.getPixels(pixels, 0, w, srcX, srcY, w, h);
+        bitmap.getPixels(pixels, 0, w, rect.left, rect.top, w, h);
         addColorMatrixColorFilter(pixels, pixels, colorMatrix);
-        dst.setPixels(pixels, 0, w, dstX, dstY, w, h);
+        bitmap.setPixels(pixels, 0, w, rect.left, rect.top, w, h);
     }
 
     public static void addColorMatrixColorFilter(@ColorInt final int[] src, @ColorInt final int[] dst,
@@ -127,6 +126,16 @@ public class BitmapUtils {
             }
         }
         dst.setPixels(pixels, 0, w, rect.left, rect.top, w, h);
+    }
+
+    public static void clip(final Bitmap srcBm, final Rect srcRect, final int[] dst) {
+        final int w = srcBm.getWidth(), h = srcBm.getHeight();
+        final int[] src = new int[w * h];
+        srcBm.getPixels(src, 0, w, srcRect.left, srcRect.top, w, h);
+        for (int i = 0; i < src.length; ++i) {
+            src[i] = dst[i] & Color.BLACK | Color.rgb(src[i]);
+        }
+        srcBm.setPixels(src, 0, w, srcRect.left, srcRect.top, w, h);
     }
 
     private static Bitmap edgeDetection(final Bitmap bitmap) {

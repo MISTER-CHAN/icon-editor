@@ -1018,7 +1018,7 @@ public class MainActivity extends AppCompatActivity {
         final MenuItem miLayerReference = menu.findItem(R.id.i_layer_reference);
         final SubMenu smLayerBlendModes = menu.findItem(R.id.i_blend_mode).getSubMenu();
 
-        miLayerClipping.setChecked(layer.clipping);
+        miLayerClipping.setChecked(layer.clipToBelow);
         miLayerColorMatrix.setChecked(layer.filter == Layer.Filter.COLOR_MATRIX);
         miLayerCurves.setChecked(layer.filter == Layer.Filter.CURVES);
         miLayerFilterSet.setEnabled(layer.filter != null);
@@ -4459,7 +4459,7 @@ public class MainActivity extends AppCompatActivity {
                 drawBitmapOntoView(true);
             }
             case R.id.i_layer_clipping -> {
-                layer.clipping = !layer.clipping;
+                layer.clipToBelow = !layer.clipToBelow;
                 drawBitmapOntoView(true);
             }
             case R.id.i_layer_color_matrix -> {
@@ -4479,7 +4479,7 @@ public class MainActivity extends AppCompatActivity {
                 drawBitmapOntoView(true);
             }
             case R.id.i_layer_create_clipping_mask -> {
-                layer.clipping = true;
+                layer.clipToBelow = true;
                 Layers.levelDown(frame.layers, frame.selectedLayerIndex);
                 frame.computeLayerTree();
                 frame.layerAdapter.notifyLayerTreeChanged();

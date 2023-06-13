@@ -37,21 +37,10 @@ public class Layers {
             return;
         }
         switch (layer.filter) {
-            case COLOR_MATRIX -> BitmapUtils.addColorMatrixColorFilter(
-                    bitmap, 0, 0, bitmap, 0, 0, layer.colorMatrix);
+            case COLOR_MATRIX -> BitmapUtils.addColorMatrixColorFilter(bitmap, rect, layer.colorMatrix);
             case CURVES -> BitmapUtils.applyCurves(bitmap, rect, layer.curves);
             case HSV -> BitmapUtils.shiftHsv(bitmap, rect, layer.deltaHsv);
         }
-    }
-
-    public static void clip(final Bitmap srcBm, final Rect srcRect, final int[] dst) {
-        final int w = srcBm.getWidth(), h = srcBm.getHeight();
-        final int[] src = new int[w * h];
-        srcBm.getPixels(src, 0, w, srcRect.left, srcRect.top, w, h);
-        for (int i = 0; i < src.length; ++i) {
-            src[i] = dst[i] & Color.BLACK | Color.rgb(src[i]);
-        }
-        srcBm.setPixels(src, 0, w, srcRect.left, srcRect.top, w, h);
     }
 
     public static LayerTree computeLayerTree(List<Layer> layers) {
@@ -200,7 +189,7 @@ public class Layers {
                     }
 
                     final Paint paint = node != backgroundNode || node.isRoot || base != null ? layer.paint : PAINT_SRC;
-                    if (layer.clipping) {
+                    if (layer.clipToBelow) {
                         pixels = BitmapUtils.getPixels(bitmap, dst);
                     }
                     if (layer == specifiedLayer) {
@@ -221,12 +210,12 @@ public class Layers {
                         canvas.drawBitmap(layer.bitmap, src, dst, paint);
                     }
                     addFilters(bitmap, dst, layer);
-                    if (layer.clipping) {
-                        clip(bitmap, dst, pixels);
+                    if (layer.clipToBelow) {
+                        BitmapUtils.clip(bitmap, dst, pixels);
                     }
                 } else {
                     final Bitmap mergedChildren;
-                    if (layer.clipping) {
+                    if (layer.clipToBelow) {
                         pixels = BitmapUtils.getPixels(bitmap, rect);
                     }
                     if (!layer.passBelow) {
@@ -238,8 +227,8 @@ public class Layers {
                                 specifiedLayer, bmOfSpecifiedLayer, extraLayer);
                         BitmapUtils.fillInBlank(mergedChildren, bitmap);
                     }
-                    if (layer.clipping) {
-                        clip(bitmap, rect, pixels);
+                    if (layer.clipToBelow) {
+                        BitmapUtils.clip(bitmap, rect, pixels);
                     }
                     mergedChildren.recycle();
                 }
