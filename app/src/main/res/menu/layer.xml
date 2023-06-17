@@ -64,135 +64,119 @@
             android:icon="@drawable/ic_void"
             android:title="@string/blend_mode">
             <menu>
-                <group android:id="@+id/g_blend_mode_0_12">
+                <group
+                    android:id="@+id/g_blend_mode_0_12"
+                    android:checkableBehavior="single">
                     <item
                         android:id="@+id/i_layer_blend_mode_clear"
-                        android:checkable="true"
                         android:title="@string/clear" />
                     <item
                         android:id="@+id/i_layer_blend_mode_src"
-                        android:checkable="true"
                         android:title="@string/source" />
                     <item
                         android:id="@+id/i_layer_blend_mode_dst"
-                        android:checkable="true"
                         android:title="@string/destination" />
                     <item
                         android:id="@+id/i_layer_blend_mode_src_over"
-                        android:checkable="true"
-                        android:checked="true"
                         android:title="@string/source_over" />
                     <item
                         android:id="@+id/i_layer_blend_mode_dst_over"
-                        android:checkable="true"
                         android:title="@string/destination_over" />
                     <item
                         android:id="@+id/i_layer_blend_mode_src_in"
-                        android:checkable="true"
                         android:title="@string/source_in" />
                     <item
                         android:id="@+id/i_layer_blend_mode_dst_in"
-                        android:checkable="true"
                         android:title="@string/destination_in" />
                     <item
                         android:id="@+id/i_layer_blend_mode_src_out"
-                        android:checkable="true"
                         android:title="@string/source_out" />
                     <item
                         android:id="@+id/i_layer_blend_mode_dst_out"
-                        android:checkable="true"
                         android:title="@string/destination_out" />
                     <item
                         android:id="@+id/i_layer_blend_mode_src_atop"
-                        android:checkable="true"
                         android:title="@string/source_atop" />
                     <item
                         android:id="@+id/i_layer_blend_mode_dst_atop"
-                        android:checkable="true"
                         android:title="@string/destination_atop" />
                     <item
                         android:id="@+id/i_layer_blend_mode_xor"
-                        android:checkable="true"
                         android:title="@string/xor" />
                     <item
                         android:id="@+id/i_layer_blend_mode_plus"
-                        android:checkable="true"
                         android:title="@string/plus" />
                 </group>
-                <group android:id="@+id/g_blend_mode_13_15">
+                <group
+                    android:id="@+id/g_blend_mode_13_15"
+                    android:checkableBehavior="single">
                     <item
                         android:id="@+id/i_layer_blend_mode_modulate"
-                        android:checkable="true"
                         android:title="@string/modulate" />
                     <item
                         android:id="@+id/i_layer_blend_mode_screen"
-                        android:checkable="true"
                         android:title="@string/screen" />
                     <item
                         android:id="@+id/i_layer_blend_mode_overlay"
-                        android:checkable="true"
                         android:title="@string/overlay" />
                 </group>
-                <group android:id="@+id/g_blend_mode_16_17">
+                <group
+                    android:id="@+id/g_blend_mode_16_17"
+                    android:checkableBehavior="single">
                     <item
                         android:id="@+id/i_layer_blend_mode_darken"
-                        android:checkable="true"
                         android:title="@string/darken" />
                     <item
                         android:id="@+id/i_layer_blend_mode_lighten"
-                        android:checkable="true"
                         android:title="@string/lighten" />
                 </group>
-                <group android:id="@+id/g_blend_mode_18_19">
+                <group
+                    android:id="@+id/g_blend_mode_18_19"
+                    android:checkableBehavior="single">
                     <item
                         android:id="@+id/i_layer_blend_mode_color_dodge"
-                        android:checkable="true"
                         android:title="@string/color_dodge" />
                     <item
                         android:id="@+id/i_layer_blend_mode_color_burn"
-                        android:checkable="true"
                         android:title="@string/color_burn" />
                 </group>
-                <group android:id="@+id/g_blend_mode_20_21">
+                <group
+                    android:id="@+id/g_blend_mode_20_21"
+                    android:checkableBehavior="single">
                     <item
                         android:id="@+id/i_layer_blend_mode_hard_light"
-                        android:checkable="true"
                         android:title="@string/hard_light" />
                     <item
                         android:id="@+id/i_layer_blend_mode_soft_light"
-                        android:checkable="true"
                         android:title="@string/soft_light" />
                 </group>
-                <group android:id="@+id/g_blend_mode_22_24">
+                <group
+                    android:id="@+id/g_blend_mode_22_24"
+                    android:checkableBehavior="single">
                     <item
                         android:id="@+id/i_layer_blend_mode_difference"
-                        android:checkable="true"
                         android:title="@string/difference" />
                     <item
                         android:id="@+id/i_layer_blend_mode_exclusion"
-                        android:checkable="true"
                         android:title="@string/exclusion" />
                     <item
                         android:id="@+id/i_layer_blend_mode_multiply"
-                        android:checkable="true"
                         android:title="@string/multiply" />
                 </group>
-                <group android:id="@+id/g_blend_mode_25_28">
+                <group
+                    android:id="@+id/g_blend_mode_25_28"
+                    android:checkableBehavior="single">
                     <item
                         android:id="@+id/i_layer_blend_mode_hue"
-                        android:checkable="true"
                         android:title="@string/hue" />
                     <item
                         android:id="@+id/i_layer_blend_mode_saturation"
-                        android:checkable="true"
                         android:title="@string/saturation" />
                     <item
                         android:id="@+id/i_layer_blend_mode_color"
-                        android:checkable="true"
                         android:title="@string/color" />
                     <item
                         android:id="@+id/i_layer_blend_mode_luminosity"
-                        android:checkable="true"
                         android:title="@string/luminosity" />
                 </group>
             </menu>
@@ -202,18 +186,17 @@
             android:iconTint="?attr/colorOnSurfaceVariant"
             android:title="@string/filters">
             <menu>
-                <group android:id="@+id/g_layer_filters">
+                <group
+                    android:id="@+id/g_layer_filters"
+                    android:checkableBehavior="all">
                     <item
                         android:id="@+id/i_layer_curves"
-                        android:checkable="true"
                         android:title="@string/curves" />
                     <item
                         android:id="@+id/i_layer_hsv"
-                        android:checkable="true"
                         android:title="@string/hsv" />
                     <item
                         android:id="@+id/i_layer_color_matrix"
-                        android:checkable="true"
                         android:title="@string/channel_mixer" />
                 </group>
                 <group android:id="@+id/g_layer_filter_set">
@@ -244,10 +227,6 @@
                         android:id="@+id/i_layer_add_layer_mask"
                         android:icon="@drawable/ic_void"
                         android:title="@string/fast_add_layer_mask" />
-                    <item
-                        android:id="@+id/i_layer_change_into_clipping_mask"
-                        android:icon="@drawable/ic_void"
-                        android:title="@string/fast_create_clipping_mask_normal_blending" />
                     <item
                         android:id="@+id/i_layer_create_clipping_mask"
                         android:icon="@drawable/ic_void"

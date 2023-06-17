@@ -29,28 +29,26 @@
                     android:icon="@drawable/ic_void"
                     android:title="@string/monospace" />
             </group>
-            <group android:id="@+id/g_style">
+            <group
+                android:id="@+id/g_style"
+                android:checkableBehavior="all">
                 <item
                     android:id="@+id/i_typeface_bold"
-                    android:checkable="true"
                     android:icon="@drawable/ic_format_bold"
                     android:title="@string/bold"
                     app:iconTint="?attr/colorOnSurfaceVariant" />
                 <item
                     android:id="@+id/i_typeface_italic"
-                    android:checkable="true"
                     android:icon="@drawable/ic_format_italic"
                     android:title="@string/italic"
                     app:iconTint="?attr/colorOnSurfaceVariant" />
                 <item
                     android:id="@+id/i_underlined"
-                    android:checkable="true"
                     android:icon="@drawable/ic_format_underlined"
                     android:title="@string/underlined"
                     app:iconTint="?attr/colorOnSurfaceVariant" />
                 <item
                     android:id="@+id/i_strike_thru"
-                    android:checkable="true"
                     android:icon="@drawable/ic_format_strikethrough"
                     android:title="@string/strike_thru"
                     app:iconTint="?attr/colorOnSurfaceVariant" />
@@ -63,24 +61,23 @@
         app:iconTint="?attr/colorOnSurfaceVariant"
         app:showAsAction="always">
         <menu>
-            <item
-                android:id="@+id/i_align_left"
-                android:checkable="true"
-                android:icon="@drawable/ic_format_align_left"
-                android:title="@string/left"
-                app:iconTint="?attr/colorOnSurfaceVariant" />
-            <item
-                android:id="@+id/i_align_center"
-                android:checkable="true"
-                android:icon="@drawable/ic_format_align_center"
-                android:title="@string/center"
-                app:iconTint="?attr/colorOnSurfaceVariant" />
-            <item
-                android:id="@+id/i_align_right"
-                android:checkable="true"
-                android:icon="@drawable/ic_format_align_right"
-                android:title="@string/right"
-                app:iconTint="?attr/colorOnSurfaceVariant" />
+            <group android:checkableBehavior="single">
+                <item
+                    android:id="@+id/i_align_left"
+                    android:icon="@drawable/ic_format_align_left"
+                    android:title="@string/left"
+                    app:iconTint="?attr/colorOnSurfaceVariant" />
+                <item
+                    android:id="@+id/i_align_center"
+                    android:icon="@drawable/ic_format_align_center"
+                    android:title="@string/center"
+                    app:iconTint="?attr/colorOnSurfaceVariant" />
+                <item
+                    android:id="@+id/i_align_right"
+                    android:icon="@drawable/ic_format_align_right"
+                    android:title="@string/right"
+                    app:iconTint="?attr/colorOnSurfaceVariant" />
+            </group>
         </menu>
     </item>
     <item

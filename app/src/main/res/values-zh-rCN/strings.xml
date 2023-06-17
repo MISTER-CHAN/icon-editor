@@ -100,7 +100,6 @@
     <string name="fast_add_filter_layer">快速添加滤镜图层</string>
     <string name="fast_add_layer_mask">快速添加图层蒙版</string>
     <string name="fast_create_clipping_mask">快速创建剪贴蒙版</string>
-    <string name="fast_create_clipping_mask_normal_blending">快速创建剪贴蒙版（正常混合）</string>
     <string name="fast_create_group">快速创建组</string>
     <string name="file">文件</string>
     <string name="file_name">文件名</string>
@@ -148,10 +147,10 @@
     <string name="layer_name">图层名</string>
     <string name="layers">图层</string>
     <string name="left">左</string>
-    <string name="level">阶层</string>
-    <string name="level_down">降阶</string>
-    <string name="level_of_new_layer">新图层阶层</string>
-    <string name="level_up">升阶</string>
+    <string name="level">级别</string>
+    <string name="level_down">降级</string>
+    <string name="level_of_new_layer">新图层级别</string>
+    <string name="level_up">升级</string>
     <string name="levels">色阶</string>
     <string name="lightness">明度</string>
     <string name="line">直线</string>
@@ -239,7 +238,7 @@
     <string name="seed">种子</string>
     <string name="select">选择</string>
     <string name="select_all">全选</string>
-    <string name="selected_layers">选中图层阶层</string>
+    <string name="selected_layers">选中图层级别</string>
     <string name="send_to_back">置底</string>
     <string name="serif">白体</string>
     <string name="set">设置</string>
@@ -291,7 +290,7 @@
     <string name="tolerance">容差</string>
     <string name="tool_options">工具选项</string>
     <string name="top">顶</string>
-    <string name="top_level">顶阶</string>
+    <string name="top_level">顶级</string>
     <string name="transform">变换</string>
     <string name="transition">过渡</string>
     <string name="translate">平移</string>

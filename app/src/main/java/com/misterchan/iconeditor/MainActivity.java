@@ -489,8 +489,6 @@ public class MainActivity extends AppCompatActivity {
     };
 
     private final ActionMode.Callback onTextActionModeCallback = new ActionMode.Callback() {
-        private MenuItem miAlignLeft, miAlignCenter, miAlignRight;
-
         @Override
         public boolean onCreateActionMode(ActionMode mode, Menu menu) {
             getMenuInflater().inflate(R.menu.action_mode_text, menu);
@@ -500,19 +498,22 @@ public class MainActivity extends AppCompatActivity {
             final MenuItem miTypefaceItalic = menu.findItem(R.id.i_typeface_italic);
             final MenuItem miUnderlined = menu.findItem(R.id.i_underlined);
             final MenuItem miStrikeThru = menu.findItem(R.id.i_strike_thru);
-            miAlignLeft = menu.findItem(R.id.i_align_left);
-            miAlignCenter = menu.findItem(R.id.i_align_center);
-            miAlignRight = menu.findItem(R.id.i_align_right);
+            final MenuItem miAlignLeft = menu.findItem(R.id.i_align_left);
+            final MenuItem miAlignCenter = menu.findItem(R.id.i_align_center);
+            final MenuItem miAlignRight = menu.findItem(R.id.i_align_right);
             final Typeface typeface = paint.getTypeface();
-            final Paint.Align align = paint.getTextAlign();
 
             miTypefaceBold.setChecked(typeface != null && typeface.isBold());
             miTypefaceItalic.setChecked(typeface != null && typeface.isItalic());
             miUnderlined.setChecked(paint.isUnderlineText());
             miStrikeThru.setChecked(paint.isStrikeThruText());
-            miAlignLeft.setChecked(align == Paint.Align.LEFT);
-            miAlignCenter.setChecked(align == Paint.Align.CENTER);
-            miAlignRight.setChecked(align == Paint.Align.RIGHT);
+
+            (switch (paint.getTextAlign()) {
+                case LEFT -> miAlignLeft;
+                case CENTER -> miAlignCenter;
+                case RIGHT -> miAlignRight;
+            }).setChecked(true);
+
             return true;
         }
 
@@ -521,16 +522,52 @@ public class MainActivity extends AppCompatActivity {
             return false;
         }
 
-        @SuppressLint("NonConstantResourceId")
         @Override
+        @SuppressLint({"NonConstantResourceId", "WrongConstant"})
         public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
             switch (item.getItemId()) {
                 default -> {
-                    return onTextActionItemClick(mode, item);
+                    return false;
+                }
+                case R.id.i_typeface_default -> setTypeface(Typeface.DEFAULT);
+                case R.id.i_typeface_default_bold -> setTypeface(Typeface.DEFAULT_BOLD);
+                case R.id.i_typeface_sans_serif -> setTypeface(Typeface.SANS_SERIF);
+                case R.id.i_typeface_serif -> setTypeface(Typeface.SERIF);
+                case R.id.i_typeface_monospace -> setTypeface(Typeface.MONOSPACE);
+                case R.id.i_typeface_bold -> {
+                    final boolean checked = !item.isChecked();
+                    item.setChecked(checked);
+                    final Typeface typeface = paint.getTypeface() != null ? paint.getTypeface() : Typeface.DEFAULT;
+                    final int oldStyle = typeface.getStyle();
+                    final int newStyle = checked ? oldStyle | Typeface.BOLD : oldStyle & ~Typeface.BOLD;
+                    paint.setTypeface(Typeface.create(typeface, newStyle));
+                    drawTextOntoView();
+                }
+                case R.id.i_typeface_italic -> {
+                    final boolean checked = !item.isChecked();
+                    item.setChecked(checked);
+                    final Typeface typeface = paint.getTypeface() != null ? paint.getTypeface() : Typeface.DEFAULT;
+                    final int oldStyle = typeface.getStyle();
+                    final int style = checked ? oldStyle | Typeface.ITALIC : oldStyle & ~Typeface.ITALIC;
+                    paint.setTypeface(Typeface.create(typeface, style));
+                    drawTextOntoView();
+                }
+                case R.id.i_underlined -> {
+                    final boolean checked = !item.isChecked();
+                    item.setChecked(checked);
+                    paint.setUnderlineText(checked);
+                    drawTextOntoView();
+                }
+                case R.id.i_strike_thru -> {
+                    final boolean checked = !item.isChecked();
+                    item.setChecked(checked);
+                    paint.setStrikeThruText(checked);
+                    drawTextOntoView();
                 }
                 case R.id.i_align_left -> setAlign(item, Paint.Align.LEFT);
                 case R.id.i_align_center -> setAlign(item, Paint.Align.CENTER);
                 case R.id.i_align_right -> setAlign(item, Paint.Align.RIGHT);
+                case R.id.i_ok -> drawTextIntoImage();
             }
             return true;
         }
@@ -551,10 +588,14 @@ public class MainActivity extends AppCompatActivity {
         }
 
         private void setAlign(MenuItem item, Paint.Align align) {
-            miAlignLeft.setChecked(item == miAlignLeft);
-            miAlignCenter.setChecked(item == miAlignCenter);
-            miAlignRight.setChecked(item == miAlignRight);
+            item.setChecked(true);
             paint.setTextAlign(align);
+            drawTextOntoView();
+        }
+
+        private void setTypeface(Typeface typeface) {
+            paint.setTypeface(Typeface.create(typeface,
+                    paint.getTypeface() != null ? paint.getTypeface().getStyle() : Typeface.NORMAL));
             drawTextOntoView();
         }
     };
@@ -1027,10 +1068,7 @@ public class MainActivity extends AppCompatActivity {
         miLayerPassBelow.setChecked(layer.passBelow);
         miLayerReference.setChecked(layer.reference);
 
-        for (int i = 0; i < BlendModeValues.COUNT; ++i) {
-            final MenuItem mi = smLayerBlendModes.getItem(i);
-            mi.setChecked(BlendModeValues.valAt(i) == layer.paint.getBlendMode());
-        }
+        smLayerBlendModes.getItem(layer.paint.getBlendMode().ordinal()).setChecked(true);
     };
 
     private final TabLayout.OnTabSelectedListener onProjTabSelectedListener = new TabLayout.OnTabSelectedListener() {
@@ -4121,8 +4159,14 @@ public class MainActivity extends AppCompatActivity {
         final LayoutInflater layoutInflater = getLayoutInflater();
         activityMain = ActivityMainBinding.inflate(layoutInflater);
         setContentView(activityMain.getRoot());
+
         frameList = FrameListBinding.bind(layoutInflater.inflate(R.layout.frame_list, null));
+
         layerList = LayerListBinding.bind(layoutInflater.inflate(R.layout.layer_list, null));
+        layerList.bNew.setOnClickListener(v -> onLayerOptionsItemSelected(null, R.id.i_layer_new));
+        layerList.bDuplicate.setOnClickListener(v -> onLayerOptionsItemSelected(null, R.id.i_layer_duplicate));
+        layerList.bDelete.setOnClickListener(v -> onLayerOptionsItemSelected(null, R.id.i_layer_delete));
+
         vContent = findViewById(android.R.id.content);
         final ViewModel viewModel = new ViewModelProvider(this).get(ViewModel.class);
         inputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
@@ -4471,15 +4515,12 @@ public class MainActivity extends AppCompatActivity {
                 layer.filter = filter;
                 drawBitmapOntoView(true);
             }
-            case R.id.i_layer_change_into_clipping_mask -> {
-                layer.paint.setBlendMode(layer.passBelow ? BlendMode.SRC_OVER : BlendMode.SRC_ATOP);
-                Layers.levelDown(frame.layers, frame.selectedLayerIndex);
-                frame.computeLayerTree();
-                frame.layerAdapter.notifyLayerTreeChanged();
-                drawBitmapOntoView(true);
-            }
             case R.id.i_layer_create_clipping_mask -> {
-                layer.clipToBelow = true;
+                switch (layer.paint.getBlendMode()) {
+                    case SRC_OVER, SRC_ATOP ->
+                            layer.paint.setBlendMode(layer.passBelow ? BlendMode.SRC_OVER : BlendMode.SRC_ATOP);
+                    default -> layer.clipToBelow = true;
+                }
                 Layers.levelDown(frame.layers, frame.selectedLayerIndex);
                 frame.computeLayerTree();
                 frame.layerAdapter.notifyLayerTreeChanged();
@@ -5090,13 +5131,6 @@ public class MainActivity extends AppCompatActivity {
                     ssdLayerList = null;
                 });
                 ssdLayerList.show();
-
-                ssdLayerList.findViewById(R.id.b_new).setOnClickListener(v ->
-                        onLayerOptionsItemSelected(null, R.id.i_layer_new));
-                ssdLayerList.findViewById(R.id.b_duplicate).setOnClickListener(v ->
-                        onLayerOptionsItemSelected(null, R.id.i_layer_duplicate));
-                ssdLayerList.findViewById(R.id.b_delete).setOnClickListener(v ->
-                        onLayerOptionsItemSelected(null, R.id.i_layer_delete));
             }
             case R.id.i_paste -> {
                 if (clipboard == null) {
@@ -5244,72 +5278,6 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-    @SuppressLint({"NonConstantResourceId", "WrongConstant"})
-    private boolean onTextActionItemClick(ActionMode mode, MenuItem item) {
-        switch (item.getItemId()) {
-            default -> {
-                return false;
-            }
-            case R.id.i_typeface_default -> {
-                paint.setTypeface(Typeface.create(Typeface.DEFAULT,
-                        paint.getTypeface() != null ? paint.getTypeface().getStyle() : Typeface.NORMAL));
-                drawTextOntoView();
-            }
-            case R.id.i_typeface_default_bold -> {
-                paint.setTypeface(Typeface.create(Typeface.DEFAULT_BOLD,
-                        paint.getTypeface() != null ? paint.getTypeface().getStyle() : Typeface.NORMAL));
-                drawTextOntoView();
-            }
-            case R.id.i_typeface_sans_serif -> {
-                paint.setTypeface(Typeface.create(Typeface.SANS_SERIF,
-                        paint.getTypeface() != null ? paint.getTypeface().getStyle() : Typeface.NORMAL));
-                drawTextOntoView();
-            }
-            case R.id.i_typeface_serif -> {
-                paint.setTypeface(Typeface.create(Typeface.SERIF,
-                        paint.getTypeface() != null ? paint.getTypeface().getStyle() : Typeface.NORMAL));
-                drawTextOntoView();
-            }
-            case R.id.i_typeface_monospace -> {
-                paint.setTypeface(Typeface.create(Typeface.MONOSPACE,
-                        paint.getTypeface() != null ? paint.getTypeface().getStyle() : Typeface.NORMAL));
-                drawTextOntoView();
-            }
-            case R.id.i_typeface_bold -> {
-                final boolean checked = !item.isChecked();
-                item.setChecked(checked);
-                final Typeface typeface = paint.getTypeface() != null ? paint.getTypeface() : Typeface.DEFAULT;
-                final int oldStyle = typeface.getStyle();
-                final int newStyle = checked ? oldStyle | Typeface.BOLD : oldStyle & ~Typeface.BOLD;
-                paint.setTypeface(Typeface.create(typeface, newStyle));
-                drawTextOntoView();
-            }
-            case R.id.i_typeface_italic -> {
-                final boolean checked = !item.isChecked();
-                item.setChecked(checked);
-                final Typeface typeface = paint.getTypeface() != null ? paint.getTypeface() : Typeface.DEFAULT;
-                final int oldStyle = typeface.getStyle();
-                final int style = checked ? oldStyle | Typeface.ITALIC : oldStyle & ~Typeface.ITALIC;
-                paint.setTypeface(Typeface.create(typeface, style));
-                drawTextOntoView();
-            }
-            case R.id.i_underlined -> {
-                final boolean checked = !item.isChecked();
-                item.setChecked(checked);
-                paint.setUnderlineText(checked);
-                drawTextOntoView();
-            }
-            case R.id.i_strike_thru -> {
-                final boolean checked = !item.isChecked();
-                item.setChecked(checked);
-                paint.setStrikeThruText(checked);
-                drawTextOntoView();
-            }
-            case R.id.i_ok -> drawTextIntoImage();
-        }
-        return true;
-    }
-
     @SuppressLint("NonConstantResourceId")
     private boolean onTransformerActionItemClick(ActionMode mode, MenuItem item) {
         switch (item.getItemId()) {
@@ -5324,10 +5292,6 @@ public class MainActivity extends AppCompatActivity {
             case R.id.i_ok -> drawTransformerIntoImage();
         }
         return true;
-    }
-
-    @SuppressLint("ClickableViewAccessibility")
-    private void onTransformerChange(View.OnTouchListener l) {
     }
 
     private void openFile(Uri uri) {
