@@ -696,7 +696,7 @@ public class MainActivity extends AppCompatActivity {
 
     private final ColorMatrixManager.OnMatrixElementsChangedListener onFilterColorMatrixChangedListener = matrix -> runOrStart(() -> {
         filterPreview.addColorMatrixColorFilter(matrix);
-        drawImagePreviewOntoView(true);
+        drawFilterPreviewOntoView(true);
     }, true);
 
     private final ColorMatrixManager.OnMatrixElementsChangedListener onLayerColorMatrixChangedListener = matrix -> {
@@ -738,7 +738,7 @@ public class MainActivity extends AppCompatActivity {
                     dst[i] = Color.argb((int) (Math.max(a_, 0.0f) * 255.0f), Color.rgb(src[i]));
                 }
                 filterPreview.setPixels(dst, width, height);
-                drawImagePreviewOntoView(stopped);
+                drawFilterPreviewOntoView(stopped);
             }, stopped);
             activityMain.tvStatus.setText(getString(R.string.state_color_range,
                     cuboid[0], cuboid[3], cuboid[1] * 100.0f, cuboid[4] * 100.0f, cuboid[2] * 100.0f, cuboid[5] * 100.0f));
@@ -768,7 +768,7 @@ public class MainActivity extends AppCompatActivity {
         final int[] src = filterPreview.getPixels(), dst = new int[w * h];
         BitmapUtils.applyCurves(src, dst, curves);
         filterPreview.setPixels(dst, w, h);
-        drawImagePreviewOntoView(stopped);
+        drawFilterPreviewOntoView(stopped);
     }, stopped);
 
     private final HiddenImageMaker.OnMakeListener onHiddenImageMakeListener = bitmap -> {
@@ -788,7 +788,7 @@ public class MainActivity extends AppCompatActivity {
                 BitmapUtils.shiftHsv(src, dst, deltaHsv);
                 filterPreview.setPixels(dst, w, h);
             }
-            drawImagePreviewOntoView(stopped);
+            drawFilterPreviewOntoView(stopped);
         }, stopped);
         activityMain.tvStatus.setText(getString(R.string.state_hsv, deltaHsv[0], deltaHsv[1], deltaHsv[2]));
     };
@@ -810,7 +810,7 @@ public class MainActivity extends AppCompatActivity {
             (dialog, which) -> onImagePreviewCancelListener.onCancel(dialog);
 
     private final DialogInterface.OnClickListener onImagePreviewPBClickListener = (dialog, which) -> {
-        drawImagePreviewIntoImage();
+        drawFilterPreviewIntoImage();
         addToHistory();
         clearStatus();
     };
@@ -819,13 +819,13 @@ public class MainActivity extends AppCompatActivity {
         final float ratio = (outputHighlights - outputShadows) / (inputHighlights - inputShadows);
         runOrStart(() -> {
             filterPreview.addLightingColorFilter(ratio, -inputShadows * ratio + outputShadows);
-            drawImagePreviewOntoView(stopped);
+            drawFilterPreviewOntoView(stopped);
         }, stopped);
     };
 
     private final LightingDialog.OnLightingChangedListener onFilterLightingChangedListener = (lighting, stopped) -> runOrStart(() -> {
         filterPreview.addLightingColorFilter(lighting);
-        drawImagePreviewOntoView(stopped);
+        drawFilterPreviewOntoView(stopped);
     }, stopped);
 
     private final MatrixManager.OnMatrixElementsChangedListener onMatrixChangedListener = matrix -> runOrStart(() -> {
@@ -869,7 +869,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
             }
-            drawImagePreviewOntoView(stopped);
+            drawFilterPreviewOntoView(stopped);
         }, stopped);
         clearStatus();
     };
@@ -878,7 +878,7 @@ public class MainActivity extends AppCompatActivity {
         final float scale = value, shift = 0xFF / 2.0f * (1.0f - scale);
         runOrStart(() -> {
             filterPreview.addLightingColorFilter(scale, shift);
-            drawImagePreviewOntoView(stopped);
+            drawFilterPreviewOntoView(stopped);
         }, stopped);
         activityMain.tvStatus.setText(getString(R.string.state_contrast, scale));
     };
@@ -889,7 +889,7 @@ public class MainActivity extends AppCompatActivity {
             final int[] src = filterPreview.getPixels(), dst = new int[w * h];
             BitmapUtils.setAlphaByHue(src, dst, value);
             filterPreview.setPixels(dst, w, h);
-            drawImagePreviewOntoView(stopped);
+            drawFilterPreviewOntoView(stopped);
         }, stopped);
         activityMain.tvStatus.setText(getString(R.string.state_hue, value));
     };
@@ -897,7 +897,7 @@ public class MainActivity extends AppCompatActivity {
     private final OnSliderChangeListener onFilterLightnessSliderChangeListener = (slider, value, stopped) -> {
         runOrStart(() -> {
             filterPreview.addLightingColorFilter(1.0f, value);
-            drawImagePreviewOntoView(stopped);
+            drawFilterPreviewOntoView(stopped);
         }, stopped);
         activityMain.tvStatus.setText(getString(R.string.state_lightness, (int) value));
     };
@@ -907,7 +907,7 @@ public class MainActivity extends AppCompatActivity {
         colorMatrix.setSaturation(value);
         runOrStart(() -> {
             filterPreview.addColorMatrixColorFilter(colorMatrix.getArray());
-            drawImagePreviewOntoView(stopped);
+            drawFilterPreviewOntoView(stopped);
         }, stopped);
         activityMain.tvStatus.setText(getString(R.string.state_saturation, value));
     };
@@ -921,7 +921,7 @@ public class MainActivity extends AppCompatActivity {
                     0.213f * 0x100, 0.715f * 0x100, 0.072f * 0x100, 0.0f, f,
                     0.0f, 0.0f, 0.0f, 1.0f, 0.0f
             });
-            drawImagePreviewOntoView(stopped);
+            drawFilterPreviewOntoView(stopped);
         }, stopped);
         activityMain.tvStatus.setText(getString(R.string.state_threshold, (int) value));
     };
@@ -953,7 +953,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 filterPreview.setPixels(dst, 0, w, 0, 0, w, h);
             }
-            drawImagePreviewOntoView(stopped);
+            drawFilterPreviewOntoView(stopped);
         }, stopped);
         activityMain.tvStatus.setText(getString(R.string.state_threshold, threshold));
     };
@@ -1873,7 +1873,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 case MotionEvent.ACTION_UP:
                 case MotionEvent.ACTION_CANCEL:
-                    drawImagePreviewIntoImage();
+                    drawFilterPreviewIntoImage();
                     filterPreview.recycle();
                     filterPreview = null;
                     addToHistory();
@@ -3590,6 +3590,19 @@ public class MainActivity extends AppCompatActivity {
         activityMain.canvas.ivPreview.invalidate();
     }
 
+    private void drawFilterPreviewIntoImage() {
+        canvas.drawBitmap(filterPreview.getEntire(), 0.0f, 0.0f, PAINT_SRC);
+        drawBitmapOntoView(true);
+    }
+
+    private void drawFilterPreviewOntoView() {
+        drawFilterPreviewOntoView(false);
+    }
+
+    private void drawFilterPreviewOntoView(final boolean wait) {
+        drawBitmapOntoView(filterPreview.getEntire(), selection, wait);
+    }
+
     private void drawFloatingLayersIntoImage() {
         drawTransformerIntoImage();
         drawTextIntoImage();
@@ -3686,19 +3699,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
         activityMain.canvas.ivGrid.invalidate();
-    }
-
-    private void drawImagePreviewIntoImage() {
-        canvas.drawBitmap(filterPreview.getEntire(), 0.0f, 0.0f, PAINT_SRC);
-        drawBitmapOntoView(true);
-    }
-
-    private void drawImagePreviewOntoView() {
-        drawImagePreviewOntoView(false);
-    }
-
-    private void drawImagePreviewOntoView(final boolean wait) {
-        drawBitmapOntoView(filterPreview.getEntire(), selection, wait);
     }
 
     private void drawRuler() {
