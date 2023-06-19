@@ -31,7 +31,12 @@ class FilterPreview {
         }
     };
 
-    private static final Paint PAINT = new Paint();
+    private static final Paint PAINT = new Paint() {
+        {
+            setAntiAlias(false);
+            setFilterBitmap(false);
+        }
+    };
 
     private Bitmap bitmap;
     private Bitmap bm;

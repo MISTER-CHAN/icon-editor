@@ -1274,6 +1274,9 @@ public class MainActivity extends AppCompatActivity {
     private abstract class OnMultiTouchListener implements View.OnTouchListener {
         private boolean multiTouch = false;
 
+        public void onFinalPointerUp() {
+        }
+
         @Override
         public boolean onTouch(View v, MotionEvent event) {
             final int pointerCount = event.getPointerCount(), action = event.getAction();
@@ -1307,6 +1310,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
             if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL) {
+                onFinalPointerUp();
                 multiTouch = false;
             }
             return true;
@@ -1497,6 +1501,11 @@ public class MainActivity extends AppCompatActivity {
         private Rect lastRect;
 
         @Override
+        public void onFinalPointerUp() {
+            paint.setShader(null);
+        }
+
+        @Override
         public void onSingleTouch(View v, MotionEvent event) {
             final float x = event.getX(), y = event.getY();
             final int bx = toBitmapX(x), by = toBitmapY(y);
@@ -1543,7 +1552,6 @@ public class MainActivity extends AppCompatActivity {
                         addToHistory();
                         clearStatus();
                     }
-                    paint.setShader(null);
                     break;
             }
         }
@@ -2816,11 +2824,14 @@ public class MainActivity extends AppCompatActivity {
             case R.id.b_gradient -> {
                 if (isChecked) {
                     onToolChanged(onIVTouchWithGradientListener);
+                    paint.setBlendMode(BlendMode.SRC);
                     activityMain.optionsGradient.cbAntiAlias.setChecked(antiAlias);
                     activityMain.optionsGradient.tietBlurRadius.setText(String.valueOf(blurRadius));
                     activityMain.optionsGradient.tietStrokeWidth.setText(String.valueOf(strokeWidth));
                     activityMain.svOptionsGradient.setVisibility(View.VISIBLE);
                     dpPreview.setBitmap(bitmap.getWidth(), bitmap.getHeight());
+                } else {
+                    paint.setBlendMode(BlendMode.SRC_OVER);
                 }
             }
             case R.id.b_magic_eraser -> {
