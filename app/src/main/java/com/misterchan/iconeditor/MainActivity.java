@@ -1027,6 +1027,8 @@ public class MainActivity extends AppCompatActivity {
         popupMenu.setForceShowIcon(true);
         popupMenu.setOnMenuItemClickListener(this::onFrameOptionsItemSelected);
         popupMenu.show();
+
+        menu.findItem(R.id.i_frame_clip).setEnabled(project.frames.size() > 1);
     };
 
     @SuppressLint("NonConstantResourceId")
@@ -1049,26 +1051,17 @@ public class MainActivity extends AppCompatActivity {
         popupMenu.setOnMenuItemClickListener(this::onLayerOptionsItemSelected);
         popupMenu.show();
 
-        final MenuItem miLayerClipping = menu.findItem(R.id.i_layer_clipping);
-        final MenuItem miLayerColorMatrix = menu.findItem(R.id.i_layer_color_matrix);
-        final MenuItem miLayerCurves = menu.findItem(R.id.i_layer_curves);
-        final MenuItem miLayerFilterSet = menu.findItem(R.id.i_layer_filter_set);
-        final MenuItem miLayerHsv = menu.findItem(R.id.i_layer_hsv);
-        final MenuItem miLayerLevelUp = menu.findItem(R.id.i_layer_level_up);
-        final MenuItem miLayerPassBelow = menu.findItem(R.id.i_layer_pass_below);
-        final MenuItem miLayerReference = menu.findItem(R.id.i_layer_reference);
-        final SubMenu smLayerBlendModes = menu.findItem(R.id.i_blend_mode).getSubMenu();
+        menu.findItem(R.id.i_layer_clipping).setChecked(layer.clipToBelow);
+        menu.findItem(R.id.i_layer_color_matrix).setChecked(layer.filter == Layer.Filter.COLOR_MATRIX);
+        menu.findItem(R.id.i_layer_curves).setChecked(layer.filter == Layer.Filter.CURVES);
+        menu.findItem(R.id.i_layer_filter_set).setEnabled(layer.filter != null);
+        menu.findItem(R.id.i_layer_hsv).setChecked(layer.filter == Layer.Filter.HSV);
+        menu.findItem(R.id.i_layer_level_up).setEnabled(layer.getLevel() > 0);
+        menu.findItem(R.id.i_layer_pass_below).setChecked(layer.passBelow);
+        menu.findItem(R.id.i_layer_reference).setChecked(layer.reference);
 
-        miLayerClipping.setChecked(layer.clipToBelow);
-        miLayerColorMatrix.setChecked(layer.filter == Layer.Filter.COLOR_MATRIX);
-        miLayerCurves.setChecked(layer.filter == Layer.Filter.CURVES);
-        miLayerFilterSet.setEnabled(layer.filter != null);
-        miLayerHsv.setChecked(layer.filter == Layer.Filter.HSV);
-        miLayerLevelUp.setEnabled(layer.getLevel() > 0);
-        miLayerPassBelow.setChecked(layer.passBelow);
-        miLayerReference.setChecked(layer.reference);
-
-        smLayerBlendModes.getItem(layer.paint.getBlendMode().ordinal()).setChecked(true);
+        menu.findItem(R.id.i_blend_mode).getSubMenu()
+                .getItem(layer.paint.getBlendMode().ordinal()).setChecked(true);
     };
 
     private final TabLayout.OnTabSelectedListener onProjTabSelectedListener = new TabLayout.OnTabSelectedListener() {
@@ -3749,8 +3742,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void drawPointOntoView(int x, int y) {
-        eraseBitmap(previewBitmap);
         fillPaint.setColor(paint.getColorLong());
+        eraseBitmap(previewBitmap);
         final float left = toViewX(x), top = toViewY(y), right = left + scale, bottom = top + scale;
         previewCanvas.drawRect(left, top, right, bottom, fillPaint);
         activityMain.canvas.ivPreview.invalidate();
@@ -3887,13 +3880,13 @@ public class MainActivity extends AppCompatActivity {
         if (!isEditingText) {
             return;
         }
+        dpPreview.erase();
+        dpPreview.getCanvas().drawText(activityMain.optionsText.tietText.getText().toString(), textX, textY, paint);
+        drawBitmapOntoView();
         eraseBitmap(previewBitmap);
         final float x = toViewX(textX), y = toViewY(textY);
         final Paint.FontMetrics fontMetrics = paint.getFontMetrics();
         final float centerVertical = y + toScaled(fontMetrics.ascent) / 2.0f;
-        dpPreview.erase();
-        dpPreview.getCanvas().drawText(activityMain.optionsText.tietText.getText().toString(), textX, textY, paint);
-        drawBitmapOntoView();
         previewCanvas.drawLine(x, 0.0f, x, viewHeight, PAINT_CELL_GRID);
         previewCanvas.drawLine(0.0f, y, viewWidth, y, PAINT_TEXT_LINE);
         previewCanvas.drawLine(0.0f, centerVertical, viewWidth, centerVertical, PAINT_CELL_GRID);

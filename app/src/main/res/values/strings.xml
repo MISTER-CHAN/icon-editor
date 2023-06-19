@@ -166,9 +166,9 @@
     <string name="layers">Layers</string>
     <string name="left">Left</string>
     <string name="level">Level</string>
-    <string name="level_down">Level Down</string>
+    <string name="level_down">Level down</string>
     <string name="level_of_new_layer">Level of New Layer</string>
-    <string name="level_up">Level Up</string>
+    <string name="level_up">Level up</string>
     <string name="levels">Levels</string>
     <string name="lightness">Lightness</string>
     <string name="line">Line</string>
