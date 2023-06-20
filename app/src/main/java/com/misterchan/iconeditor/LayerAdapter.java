@@ -23,6 +23,10 @@ import java.util.List;
 
 class LayerAdapter extends ItemMovableAdapter<LayerAdapter.ViewHolder> {
 
+    public enum Payload {
+        NAME, SELECTED
+    }
+
     protected static class ViewHolder extends RecyclerView.ViewHolder {
         private final ItemLayerBinding binding;
 
@@ -66,22 +70,6 @@ class LayerAdapter extends ItemMovableAdapter<LayerAdapter.ViewHolder> {
     @Override
     public int getItemCount() {
         return frame.layers.size();
-    }
-
-    public void notifyLayerSelectedChanged(int position, boolean selected) {
-        if (recyclerView == null) {
-            return;
-        }
-        final ViewHolder holder = (ViewHolder) recyclerView.findViewHolderForAdapterPosition(position);
-        if (holder == null) {
-            return;
-        }
-        holder.binding.rb.setOnCheckedChangeListener(null);
-        holder.binding.rb.setChecked(selected);
-        holder.binding.rb.setOnCheckedChangeListener((OnCBCheckedListener) buttonView ->
-                onItemSelectedListener.onItemSelected(holder.itemView, position));
-        holder.binding.tvName.setTextColor(selected ? colorPrimary : textColorPrimary);
-        holder.binding.tvName.setTypeface(Typeface.defaultFromStyle(selected ? Typeface.BOLD : Typeface.NORMAL));
     }
 
     public void notifyLayerTreeChanged() {
@@ -142,9 +130,28 @@ class LayerAdapter extends ItemMovableAdapter<LayerAdapter.ViewHolder> {
     }
 
     @Override
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position, @NonNull List<Object> payloads) {
+        if (payloads.isEmpty()) {
+            onBindViewHolder(holder, position);
+            return;
+        }
+        for (final Object o : payloads) {
+            if (!(o instanceof final Payload payload)) {
+                continue;
+            }
+            switch (payload) {
+                case NAME -> {
+                    final Layer layer = frame.layers.get(position);
+                    holder.binding.tvName.setText(layer.name);
+                }
+                case SELECTED -> setLayerSelected(holder, position);
+            }
+        }
+    }
+
+    @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         final Layer layer = frame.layers.get(position);
-        final boolean selected = position == frame.selectedLayerIndex;
 
         holder.itemView.setOnClickListener(v -> {
             if (frame.selectedLayerIndex != position) {
@@ -169,13 +176,8 @@ class LayerAdapter extends ItemMovableAdapter<LayerAdapter.ViewHolder> {
             holder.binding.flThumbnail.setLayoutParams(lp);
         });
         holder.binding.ivThumbnail.setImageBitmap(layer.bitmap);
-        holder.binding.rb.setOnCheckedChangeListener(null);
-        holder.binding.rb.setChecked(selected);
-        holder.binding.rb.setOnCheckedChangeListener((OnCBCheckedListener) buttonView ->
-                onItemSelectedListener.onItemSelected(holder.itemView, position));
         holder.binding.tvName.setText(layer.name);
-        holder.binding.tvName.setTextColor(selected ? colorPrimary : textColorPrimary);
-        holder.binding.tvName.setTypeface(Typeface.defaultFromStyle(selected ? Typeface.BOLD : Typeface.NORMAL));
+        setLayerSelected(holder, position);
     }
 
     @NonNull
@@ -189,6 +191,16 @@ class LayerAdapter extends ItemMovableAdapter<LayerAdapter.ViewHolder> {
     public void onDetachedFromRecyclerView(@NonNull RecyclerView recyclerView) {
         super.onDetachedFromRecyclerView(recyclerView);
         this.recyclerView = null;
+    }
+
+    private void setLayerSelected(ViewHolder holder, int position) {
+        final boolean selected = position == frame.selectedLayerIndex;
+        holder.binding.rb.setOnCheckedChangeListener(null);
+        holder.binding.rb.setChecked(selected);
+        holder.binding.rb.setOnCheckedChangeListener((OnCBCheckedListener) buttonView ->
+                onItemSelectedListener.onItemSelected(holder.itemView, position));
+        holder.binding.tvName.setTextColor(selected ? colorPrimary : textColorPrimary);
+        holder.binding.tvName.setTypeface(Typeface.defaultFromStyle(selected ? Typeface.BOLD : Typeface.NORMAL));
     }
 
     public void setOnItemSelectedListener(OnItemSelectedListener onItemSelectedListener, OnItemSelectedListener onItemReselectedListener) {

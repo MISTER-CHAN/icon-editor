@@ -25,6 +25,10 @@ import java.util.List;
 
 class FrameAdapter extends ItemMovableAdapter<FrameAdapter.ViewHolder> {
 
+    public enum Payload {
+        DELAY, SELECTED
+    }
+
     protected static class ViewHolder extends RecyclerView.ViewHolder {
         private final ItemFrameBinding binding;
 
@@ -39,7 +43,6 @@ class FrameAdapter extends ItemMovableAdapter<FrameAdapter.ViewHolder> {
     private final int dim64Dip;
     private OnItemSelectedListener onItemSelectedListener;
     private OnItemSelectedListener onItemReselectedListener;
-    private RecyclerView recyclerView;
 
     {
         context = Settings.INST.mainActivity;
@@ -61,27 +64,29 @@ class FrameAdapter extends ItemMovableAdapter<FrameAdapter.ViewHolder> {
         return project.frames.size();
     }
 
-    public void notifyFrameSelectedChanged(int position, boolean selected) {
-        final ViewHolder holder = (ViewHolder) recyclerView.findViewHolderForAdapterPosition(position);
-        if (holder == null) {
+    @Override
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position, @NonNull List<Object> payloads) {
+        if (payloads.isEmpty()) {
+            onBindViewHolder(holder, position);
             return;
         }
-        holder.binding.rb.setOnCheckedChangeListener(null);
-        holder.binding.rb.setChecked(selected);
-        holder.binding.rb.setOnCheckedChangeListener((OnCBCheckedListener) buttonView ->
-                onItemSelectedListener.onItemSelected(holder.itemView, position));
-    }
-
-    @Override
-    public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
-        super.onAttachedToRecyclerView(recyclerView);
-        this.recyclerView = recyclerView;
+        for (final Object o : payloads) {
+            if (!(o instanceof final Payload payload)) {
+                continue;
+            }
+            switch (payload) {
+                case DELAY -> {
+                    final Frame frame = project.frames.get(position);
+                    holder.binding.rb.setText(context.getString(R.string.milliseconds, frame.delay));
+                }
+                case SELECTED -> setFrameSelected(holder, position);
+            }
+        }
     }
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         final Frame frame = project.frames.get(position);
-        final boolean selected = position == project.selectedFrameIndex;
 
         holder.itemView.setOnClickListener(v -> {
             if (project.selectedFrameIndex != position) {
@@ -99,12 +104,9 @@ class FrameAdapter extends ItemMovableAdapter<FrameAdapter.ViewHolder> {
             holder.binding.flThumbnail.setLayoutParams(lp);
         });
         holder.binding.ivThumbnail.setImageBitmap(frame.getBackgroundLayer().bitmap);
-        holder.binding.rb.setOnCheckedChangeListener(null);
-        holder.binding.rb.setChecked(selected);
-        holder.binding.rb.setOnCheckedChangeListener((OnCBCheckedListener) buttonView ->
-                onItemSelectedListener.onItemSelected(holder.itemView, position));
         holder.binding.rb.setText(context.getString(R.string.milliseconds, frame.delay));
         holder.binding.tvThumbnail.setText(String.valueOf(position));
+        setFrameSelected(holder, position);
     }
 
     @NonNull
@@ -114,10 +116,12 @@ class FrameAdapter extends ItemMovableAdapter<FrameAdapter.ViewHolder> {
         return new FrameAdapter.ViewHolder(binding);
     }
 
-    @Override
-    public void onDetachedFromRecyclerView(@NonNull RecyclerView recyclerView) {
-        super.onDetachedFromRecyclerView(recyclerView);
-        this.recyclerView = null;
+    private void setFrameSelected(ViewHolder holder, int position) {
+        final boolean selected = position == project.selectedFrameIndex;
+        holder.binding.rb.setOnCheckedChangeListener(null);
+        holder.binding.rb.setChecked(selected);
+        holder.binding.rb.setOnCheckedChangeListener((OnCBCheckedListener) buttonView ->
+                onItemSelectedListener.onItemSelected(holder.itemView, position));
     }
 
     public void setOnItemSelectedListener(OnItemSelectedListener onItemSelectedListener, OnItemSelectedListener onItemReselectedListener) {

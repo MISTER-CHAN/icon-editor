@@ -1,11 +1,12 @@
 package com.misterchan.iconeditor.listener;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.google.android.material.slider.Slider;
 
 public interface OnSliderChangeListener extends Slider.OnChangeListener, Slider.OnSliderTouchListener {
-    void onChange(@NonNull Slider slider, float value, boolean stopped);
+    void onChange(@Nullable Slider slider, float value, boolean stopped);
 
     @Override
     default void onStartTrackingTouch(@NonNull Slider slider) {

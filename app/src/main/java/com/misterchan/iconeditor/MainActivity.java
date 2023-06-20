@@ -123,15 +123,6 @@ import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final Bitmap.Config[] BITMAP_CONFIGS = {
-            null,
-            Bitmap.Config.ALPHA_8,
-            null,
-            Bitmap.Config.RGB_565,
-            Bitmap.Config.ARGB_4444,
-            Bitmap.Config.ARGB_8888,
-    };
-
     private static final Looper MAIN_LOOPER = Looper.getMainLooper();
 
     private static final Map<Integer, BlendMode> LAYER_BLEND_MODE_MENU_ITEMS_MAP = new HashMap<>() {
@@ -313,7 +304,6 @@ public class MainActivity extends AppCompatActivity {
     private FrameListBinding frameList;
     private InputMethodManager inputMethodManager;
     private int rulerHHeight, rulerVWidth;
-    private int selectedProjIndex = -1;
     private int shapeStartX, shapeStartY;
     private int textX, textY;
     private int threshold;
@@ -638,11 +628,11 @@ public class MainActivity extends AppCompatActivity {
     private final DialogInterface.OnClickListener onLayerNameApplyListener = (dialog, which) -> {
         final TextInputEditText tietFileName = ((AlertDialog) dialog).findViewById(R.id.tiet_file_name);
         final String name = tietFileName.getText().toString();
-        if (name.length() <= 0) {
+        if (name.length() == 0) {
             return;
         }
         layer.name = name;
-        frame.layerAdapter.notifyItemChanged(frame.selectedLayerIndex);
+        frame.layerAdapter.notifyItemChanged(frame.selectedLayerIndex, LayerAdapter.Payload.NAME);
     };
 
     private final View.OnClickListener onAddSwatchButtonClickListener = v ->
@@ -1013,8 +1003,8 @@ public class MainActivity extends AppCompatActivity {
         final int unselectedPos = project.selectedFrameIndex;
         selectFrame(position);
         frameList.rvFrameList.post(() -> {
-            project.frameAdapter.notifyFrameSelectedChanged(unselectedPos, false);
-            project.frameAdapter.notifyFrameSelectedChanged(position, true);
+            project.frameAdapter.notifyItemChanged(unselectedPos, FrameAdapter.Payload.SELECTED);
+            project.frameAdapter.notifyItemChanged(position, FrameAdapter.Payload.SELECTED);
         });
     };
 
@@ -1035,8 +1025,8 @@ public class MainActivity extends AppCompatActivity {
         final int unselectedPos = frame.selectedLayerIndex;
         selectLayer(position);
         layerList.rvLayerList.post(() -> {
-            frame.layerAdapter.notifyLayerSelectedChanged(unselectedPos, false);
-            frame.layerAdapter.notifyLayerSelectedChanged(position, true);
+            frame.layerAdapter.notifyItemChanged(unselectedPos, LayerAdapter.Payload.SELECTED);
+            frame.layerAdapter.notifyItemChanged(position, LayerAdapter.Payload.SELECTED);
             layerList.rvLayerList.post(frame.layerAdapter::notifyLayerTreeChanged);
         });
     };
@@ -2942,7 +2932,7 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    @SuppressLint("NonConstantResourceId")
+    @SuppressLint({"ClickableViewAccessibility", "NonConstantResourceId"})
     private final MaterialButtonToggleGroup.OnButtonCheckedListener onTransformerButtonCheckedListener = (OnButtonCheckedListener) (group, checkedId) -> {
         activityMain.optionsTransformer.cbFilter.setVisibility(checkedId != R.id.b_translation ? View.VISIBLE : View.GONE);
         activityMain.optionsTransformer.cbLar.setVisibility(checkedId == R.id.b_scale ? View.VISIBLE : View.GONE);
@@ -3019,7 +3009,7 @@ public class MainActivity extends AppCompatActivity {
             if (bsdFrameList != null) {
                 frameList.rvFrameList.post(() -> {
                     if (project.selectedFrameIndex > 0) {
-                        project.frameAdapter.notifyFrameSelectedChanged(project.selectedFrameIndex - 1, false);
+                        project.frameAdapter.notifyItemChanged(project.selectedFrameIndex - 1, FrameAdapter.Payload.SELECTED);
                     }
                     project.frameAdapter.notifyItemInserted(position);
                     project.frameAdapter.notifyItemRangeChanged(position + 1, project.frames.size() - position);
@@ -3060,7 +3050,7 @@ public class MainActivity extends AppCompatActivity {
             if (ssdLayerList != null) {
                 layerList.rvLayerList.post(() -> {
                     if (frame.selectedLayerIndex < frame.layers.size() - 1) {
-                        frame.layerAdapter.notifyLayerSelectedChanged(frame.selectedLayerIndex, false);
+                        frame.layerAdapter.notifyItemChanged(frame.selectedLayerIndex, LayerAdapter.Payload.SELECTED);
                     }
                     frame.layerAdapter.notifyItemInserted(position);
                     frame.layerAdapter.notifyItemRangeChanged(position + 1, frame.layers.size() - position);
@@ -4048,7 +4038,7 @@ public class MainActivity extends AppCompatActivity {
                                 final int index = palette.indexOf(oldColor);
                                 if (newColor != null) {
                                     palette.set(index, newColor);
-                                    colorAdapter.notifyItemChanged(index);
+                                    colorAdapter.notifyItemChanged(index, ColorAdapter.Payload.COLOR);
                                 } else {
                                     palette.remove(index);
                                     colorAdapter.notifyItemRemoved(index);
@@ -4398,7 +4388,8 @@ public class MainActivity extends AppCompatActivity {
                         .setIcon(item.getIcon()).setTitle(R.string.delay)
                         .setOnApplyListener(number -> {
                             frame.delay = number;
-                            frameList.rvFrameList.post(() -> project.frameAdapter.notifyItemChanged(project.selectedFrameIndex));
+                            frameList.rvFrameList.post(() ->
+                                    project.frameAdapter.notifyItemChanged(project.selectedFrameIndex, FrameAdapter.Payload.DELAY));
                         })
                         .show(frame.delay, "ms");
             }
@@ -4412,7 +4403,7 @@ public class MainActivity extends AppCompatActivity {
                     addLayer(dst, new Layer(l), i, false);
                 }
                 frameList.rvFrameList.post(() -> {
-                    project.frameAdapter.notifyFrameSelectedChanged(unselectedPos, false);
+                    project.frameAdapter.notifyItemChanged(unselectedPos, FrameAdapter.Payload.SELECTED);
                     project.frameAdapter.notifyItemInserted(pos);
                     project.frameAdapter.notifyItemRangeChanged(pos + 1, project.frames.size() - pos - 2);
                 });
@@ -4424,7 +4415,8 @@ public class MainActivity extends AppCompatActivity {
                         .setIcon(R.drawable.ic_access_time).setTitle(R.string.delay)
                         .setOnApplyListener(number -> {
                             project.frames.forEach(f -> f.delay = number);
-                            frameList.rvFrameList.post(() -> project.frameAdapter.notifyDataSetChanged());
+                            frameList.rvFrameList.post(() ->
+                                    project.frameAdapter.notifyItemRangeChanged(0, project.frames.size(), FrameAdapter.Payload.DELAY));
                         })
                         .show(frame.delay, "ms");
             }
@@ -5233,8 +5225,6 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-    ;
-
     @Override
     protected void onResume() {
         super.onResume();
@@ -5586,10 +5576,6 @@ public class MainActivity extends AppCompatActivity {
         if (y <= 0) return 0;
         final int h = bitmap.getHeight();
         return y >= h ? h - 1 : y;
-    }
-
-    private static float saturate(float v) {
-        return v <= 0.0f ? 0.0f : v >= 1.0f ? 1.0f : v;
     }
 
     private void save() {
