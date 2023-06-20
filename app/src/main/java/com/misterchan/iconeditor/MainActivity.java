@@ -38,7 +38,6 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
-import android.view.SubMenu;
 import android.view.VelocityTracker;
 import android.view.View;
 import android.view.ViewGroup;
@@ -3347,14 +3346,10 @@ public class MainActivity extends AppCompatActivity {
         } else {
             drawBitmapOntoView(true, false);
         }
-        drawChessboardOntoView();
-        drawGridOntoView();
         if (!transformer.isRecycled()) {
-
         } else if (isEditingText) {
-            drawTextOntoView();
+            drawTextGuideOntoView();
         } else if (!isShapeStopped) {
-            dpPreview.getCanvas().drawPoint(shapeStartX + 0.5f, shapeStartY + 0.5f, paint);
         } else if (cloneStampSrc != null) {
             drawCrossOntoView(cloneStampSrc.x, cloneStampSrc.y);
         } else if (ruler.enabled) {
@@ -3363,6 +3358,8 @@ public class MainActivity extends AppCompatActivity {
             drawCrossOntoView(magErB.x, magErB.y, true);
             drawCrossOntoView(magErF.x, magErF.y, false);
         }
+        drawChessboardOntoView();
+        drawGridOntoView();
         drawSelectionOntoView();
     }
 
@@ -3876,13 +3873,7 @@ public class MainActivity extends AppCompatActivity {
         addToHistory();
     }
 
-    private void drawTextOntoView() {
-        if (!isEditingText) {
-            return;
-        }
-        dpPreview.erase();
-        dpPreview.getCanvas().drawText(activityMain.optionsText.tietText.getText().toString(), textX, textY, paint);
-        drawBitmapOntoView();
+    private void drawTextGuideOntoView() {
         eraseBitmap(previewBitmap);
         final float x = toViewX(textX), y = toViewY(textY);
         final Paint.FontMetrics fontMetrics = paint.getFontMetrics();
@@ -3891,6 +3882,16 @@ public class MainActivity extends AppCompatActivity {
         previewCanvas.drawLine(0.0f, y, viewWidth, y, PAINT_TEXT_LINE);
         previewCanvas.drawLine(0.0f, centerVertical, viewWidth, centerVertical, PAINT_CELL_GRID);
         activityMain.canvas.ivPreview.invalidate();
+    }
+
+    private void drawTextOntoView() {
+        if (!isEditingText) {
+            return;
+        }
+        dpPreview.erase();
+        dpPreview.getCanvas().drawText(activityMain.optionsText.tietText.getText().toString(), textX, textY, paint);
+        drawBitmapOntoView();
+        drawTextGuideOntoView();
     }
 
     private void drawTransformerIntoImage() {
