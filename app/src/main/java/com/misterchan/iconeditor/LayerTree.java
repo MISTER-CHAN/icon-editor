@@ -5,9 +5,9 @@ package com.misterchan.iconeditor;
  * <code><nobr>
  * &nbsp; &nbsp;Level 0 &nbsp; &nbsp; &nbsp; &nbsp;Level 1 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Level 2<br />
  * &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ┌───────────────────────────┐<br />
- * &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ┌─┤Layer Mask of Clipping Mask│<br />
+ * &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ┌─┤Layer Mask of Clipped Layer│<br />
  * &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ┌─────────────┐ │ ├───────────────────────────┤<br />
- * &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ┌─┤Clipping Mask├─┴─┤ &nbsp; &nbsp; &nbsp; Clipping Mask &nbsp; &nbsp; &nbsp; │<br />
+ * &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ┌─┤Clipped Layer├─┴─┤ &nbsp; &nbsp; &nbsp; Clipped Layer &nbsp; &nbsp; &nbsp; │<br />
  * &nbsp; &nbsp;┌──────────┐ │ ├─────────────┤ &nbsp; └───────────────────────────┘<br />
  * &nbsp;┌─┤ Layer 2 &nbsp;│ │ │ Layer Mask &nbsp;│<br />
  * &nbsp;│ ├──────────┤ │ ├─────────────┤<br />
@@ -21,9 +21,9 @@ package com.misterchan.iconeditor;
  * <code>
  * &nbsp;Layer 2<br />
  * ┌───────────────────────────┐<br />
- * &nbsp;Layer Mask of Clipping Mask<br />
+ * &nbsp;Layer Mask of Clipped Layer<br />
  * &nbsp;↓<br />
- * &nbsp;Clipping Mask<br />
+ * &nbsp;Clipped Layer<br />
  * └─────────────┘<br />
  * &nbsp;↓<br />
  * &nbsp;Layer Mask<br />
@@ -40,7 +40,7 @@ package com.misterchan.iconeditor;
  * │└───────┘ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; │<br />
  * ├────────────────────────────────────────────────┤<br />
  * │ &nbsp; ┌─────────────┐ ┌───────────────────────────┐│<br />
- * │ ┌─│Clipping Mask│ │Layer Mask of Clipping Mask││<br />
+ * │ ┌─│Clipped Layer│ │Layer Mask of Clipped Layer││<br />
  * │ ↓ └─────────────┘ └───────────────────────────┘│<br />
  * ├────────────────────────────────────────────────┤<br />
  * │┌───────┐ ┌──────────┐ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;│<br />

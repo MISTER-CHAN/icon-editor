@@ -117,13 +117,12 @@ class Transformer implements FloatingLayer {
 
     public void stretch(int width, int height, boolean filter, boolean antiAlias) {
         final Matrix matrix = new Matrix();
-        matrix.setScale((float) width / (float) bitmap.getWidth(), (float) height / (float) bitmap.getHeight());
+        matrix.setScale((float) width / (float) src.getWidth(), (float) height / (float) src.getHeight());
         transform(matrix, filter, antiAlias);
     }
 
     public RectF transform(Matrix matrix, boolean filter, boolean antiAlias) {
-        final int w = bitmap.getWidth(), h = bitmap.getHeight();
-        final RectF r = new RectF(0.0f, 0.0f, w, h);
+        final RectF r = new RectF(0.0f, 0.0f, src.getWidth(), src.getHeight());
         matrix.mapRect(r);
         if (r.isEmpty()) {
             return null;

@@ -3571,7 +3571,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void drawFilterPreviewIntoImage() {
-        canvas.drawBitmap(filterPreview.getEntire(), 0.0f, 0.0f, PAINT_SRC);
+        canvas.drawBitmap(filterPreview.getEntire(), 0.0f, 0.0f, PAINT_BITMAP);
         drawBitmapOntoView(true);
     }
 

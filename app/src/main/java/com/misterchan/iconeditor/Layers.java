@@ -44,11 +44,11 @@ public class Layers {
     }
 
     public static LayerTree computeLayerTree(List<Layer> layers) {
-        final List<Integer> indexes = new ArrayList<>();
+        final List<Integer> indices = new ArrayList<>();
         for (int i = layers.size() - 1; i >= 0; --i) {
-            indexes.add(i);
+            indices.add(i);
         }
-        return computeLayerTree(layers, indexes);
+        return computeLayerTree(layers, indices);
     }
 
     /**
@@ -142,7 +142,7 @@ public class Layers {
      * @param specifiedLayer     The layer whose bitmap is going to be replaced
      * @param bmOfSpecifiedLayer The bitmap to replace with
      * @param extraLayer         The extra layer to draw over the special layer
-     * @throws RuntimeException if any bitmap to be drawn is recycled as this method is not thread-safe
+     * @throws RuntimeException if any bitmap being drawn is recycled as this method is not thread-safe
      */
     public static Bitmap mergeLayers(final LayerTree tree, final Rect rect,
                                      final Bitmap base, final Paint basePaint,
