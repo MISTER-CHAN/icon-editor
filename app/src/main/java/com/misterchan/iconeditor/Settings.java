@@ -11,16 +11,18 @@ public class Settings {
     static final String KEY_ACR = "acr"; // ARGB Color Int Component Radix
     static final String KEY_ACT = "act"; // ARGB Color Type
     static final String KEY_CFU = "cfu"; // Check for Updates
-    static final String KEY_FB = "fb"; // Filter Bitmap
+    private static final String KEY_FB = "fb"; // Filter Bitmap
     static final String KEY_FL = "fl"; // Frame List
     static final String KEY_HMS = "hms"; // History Max Size
     static final String KEY_LOC = "loc"; // Locale
-    static final String KEY_MT = "mt"; // Multithreaded
-    static final String KEY_NLL = "nll"; // New Layer Level
+    private static final String KEY_MT = "mt"; // Multithreaded
+    private static final String KEY_NLL = "nll"; // New Layer Level
+    static final String KEY_PIH = "pih"; // Pick in HSV
 
     private boolean argbColorType = false;
     private int historyMaxSize = 50;
     private boolean newLayerLevel = false;
+    private boolean pickInHsv = false;
     private int argbCompRadix = 16;
     public MainActivity mainActivity;
     private String argbCompFormat = FORMAT_02X;
@@ -48,6 +50,10 @@ public class Settings {
         return newLayerLevel;
     }
 
+    public boolean pickInHsv() {
+        return pickInHsv;
+    }
+
     public void update(SharedPreferences preferences) {
         update(preferences, KEY_ACR);
         update(preferences, KEY_ACT);
@@ -55,6 +61,7 @@ public class Settings {
         update(preferences, KEY_HMS);
         update(preferences, KEY_MT);
         update(preferences, KEY_NLL);
+        update(preferences, KEY_PIH);
     }
 
     public void update(SharedPreferences preferences, String key) {
@@ -72,7 +79,8 @@ public class Settings {
                 mainActivity.setArgbColorType();
             }
             case KEY_FB -> mainActivity.setFilterBitmap(preferences.getBoolean(KEY_FB, false));
-            case KEY_FL -> mainActivity.setFrameListMenuItemVisible(preferences.getBoolean(KEY_FL, false));
+            case KEY_FL ->
+                    mainActivity.setFrameListMenuItemVisible(preferences.getBoolean(KEY_FL, false));
             case KEY_HMS -> {
                 try {
                     historyMaxSize = Integer.parseUnsignedInt(preferences.getString(KEY_HMS, "50"));
@@ -82,6 +90,7 @@ public class Settings {
             }
             case KEY_MT -> mainActivity.setRunnableRunner(preferences.getBoolean(KEY_MT, true));
             case KEY_NLL -> newLayerLevel = "sel".equals(preferences.getString(KEY_NLL, "top"));
+            case KEY_PIH -> pickInHsv = preferences.getBoolean(KEY_PIH, false);
         }
     }
 }

@@ -18,7 +18,7 @@ public class ArgbColorIntPicker extends ArgbColorPicker {
     private int radix;
     private String format;
 
-    protected ArgbColorIntPicker(Context context, int titleId,
+    protected ArgbColorIntPicker(Context context, @StringRes int titleId,
                                  final ColorPicker.OnColorPickListener onColorPickListener,
                                  @ColorLong final Long oldColor, @StringRes int neutralFunction) {
         super(context, titleId, onColorPickListener, oldColor, neutralFunction);

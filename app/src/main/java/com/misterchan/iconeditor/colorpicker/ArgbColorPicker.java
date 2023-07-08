@@ -13,6 +13,8 @@ import com.misterchan.iconeditor.Color;
 import com.misterchan.iconeditor.R;
 import com.misterchan.iconeditor.Settings;
 
+import java.util.Set;
+
 public abstract class ArgbColorPicker extends ColorPicker {
 
     protected final Context context;
@@ -33,7 +35,7 @@ public abstract class ArgbColorPicker extends ColorPicker {
         vPreview = dialog.findViewById(R.id.v_color);
     }
 
-    protected ArgbColorPicker(Context context, int titleId,
+    protected ArgbColorPicker(Context context, @StringRes int titleId,
                               final OnColorPickListener onColorPickListener,
                               @ColorLong final Long oldColor, @StringRes int neutralFunction) {
         this.context = context;
@@ -65,12 +67,14 @@ public abstract class ArgbColorPicker extends ColorPicker {
         return make(context, titleId, onColorPickListener, oldColor, 0);
     }
 
-    public static ColorPicker make(Context context, int titleId,
+    public static ColorPicker make(Context context, @StringRes int titleId,
                                    final OnColorPickListener onColorPickListener,
                                    @ColorLong final Long oldColor, @StringRes int neutralFunction) {
-        return Settings.INST.argbColorType() ?
-                new ArgbColorLongPicker(context, titleId, onColorPickListener, oldColor, neutralFunction) :
-                new ArgbColorIntPicker(context, titleId, onColorPickListener, oldColor, neutralFunction);
+        return Settings.INST.pickInHsv() ?
+                new HsvColorPicker(context, titleId, onColorPickListener, oldColor, neutralFunction) :
+                Settings.INST.argbColorType() ?
+                        new ArgbColorLongPicker(context, titleId, onColorPickListener, oldColor, neutralFunction) :
+                        new ArgbColorIntPicker(context, titleId, onColorPickListener, oldColor, neutralFunction);
     }
 
     protected void showOtherColorPickers(AlertDialog dialog, OnColorPickListener l) {

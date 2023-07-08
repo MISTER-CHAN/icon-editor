@@ -49,6 +49,12 @@
             app:title="@string/component_numeral_system"
             app:useSimpleSummaryProvider="true" />
 
+        <SwitchPreferenceCompat
+            app:defaultValue="false"
+            app:key="pih"
+            app:singleLineTitle="false"
+            app:title="@string/pick_in_hsv" />
+
     </PreferenceCategory>
 
     <PreferenceCategory app:title="@string/performance">

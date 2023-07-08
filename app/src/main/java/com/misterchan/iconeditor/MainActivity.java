@@ -1,7 +1,5 @@
 package com.misterchan.iconeditor;
 
-import static com.misterchan.iconeditor.Layer.Filter.COLOR_MATRIX;
-
 import android.annotation.SuppressLint;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -688,11 +686,6 @@ public class MainActivity extends AppCompatActivity {
         drawFilterPreviewOntoView(true);
     }, true);
 
-    private final ColorMatrixManager.OnMatrixElementsChangedListener onLayerColorMatrixChangedListener = matrix -> {
-        layer.colorMatrix = matrix;
-        drawBitmapOntoView(true);
-    };
-
     private final ColorRangeDialog.OnChangedListener onColorRangeChangedListener = new ColorRangeDialog.OnChangedListener() {
         @Size(3)
         private final float[] hsv = new float[3];
@@ -812,6 +805,13 @@ public class MainActivity extends AppCompatActivity {
         }, stopped);
     };
 
+    private final LevelsDialog.OnLevelsChangedListener onLayerLevelsChangedListener = (inputShadows, inputHighlights, outputShadows, outputHighlights, stopped) -> {
+        final float ratio = (outputHighlights - outputShadows) / (inputHighlights - inputShadows);
+        layer.lighting[0] = layer.lighting[2] = layer.lighting[4] = ratio;
+        layer.lighting[1] = layer.lighting[3] = layer.lighting[5] = -inputShadows * ratio + outputShadows;
+        drawBitmapOntoView(stopped);
+    };
+
     private final LightingDialog.OnLightingChangedListener onFilterLightingChangedListener = (lighting, stopped) -> runOrStart(() -> {
         filterPreview.addLightingColorFilter(lighting);
         drawFilterPreviewOntoView(stopped);
@@ -872,6 +872,14 @@ public class MainActivity extends AppCompatActivity {
         activityMain.tvStatus.setText(getString(R.string.state_contrast, scale));
     };
 
+    private final OnSliderChangeListener onLayerContrastSliderChangeListener = (slider, value, stopped) -> {
+        final float scale = value, shift = 0xFF / 2.0f * (1.0f - scale);
+        layer.lighting[0] = layer.lighting[2] = layer.lighting[4] = scale;
+        layer.lighting[1] = layer.lighting[3] = layer.lighting[5] = shift;
+        drawBitmapOntoView(stopped);
+        activityMain.tvStatus.setText(getString(R.string.state_contrast, scale));
+    };
+
     private final OnSliderChangeListener onFilterHToASliderChangeListener = (slider, value, stopped) -> {
         runOrStart(() -> {
             final int w = filterPreview.getWidth(), h = filterPreview.getHeight();
@@ -891,6 +899,12 @@ public class MainActivity extends AppCompatActivity {
         activityMain.tvStatus.setText(getString(R.string.state_lightness, (int) value));
     };
 
+    private final OnSliderChangeListener onLayerLightnessSliderChangeListener = (slider, value, stopped) -> {
+        layer.lighting[1] = layer.lighting[3] = layer.lighting[5] = value;
+        drawBitmapOntoView(stopped);
+        activityMain.tvStatus.setText(getString(R.string.state_lightness, (int) value));
+    };
+
     private final OnSliderChangeListener onFilterSaturationSliderChangeListener = (slider, value, stopped) -> {
         final ColorMatrix colorMatrix = new ColorMatrix();
         colorMatrix.setSaturation(value);
@@ -898,6 +912,12 @@ public class MainActivity extends AppCompatActivity {
             filterPreview.addColorMatrixColorFilter(colorMatrix.getArray());
             drawFilterPreviewOntoView(stopped);
         }, stopped);
+        activityMain.tvStatus.setText(getString(R.string.state_saturation, value));
+    };
+
+    private final OnSliderChangeListener onLayerSaturationSliderChangeListener = (slider, value, stopped) -> {
+        layer.colorMatrix.setSaturation(value);
+        drawBitmapOntoView(stopped);
         activityMain.tvStatus.setText(getString(R.string.state_saturation, value));
     };
 
@@ -912,6 +932,13 @@ public class MainActivity extends AppCompatActivity {
             });
             drawFilterPreviewOntoView(stopped);
         }, stopped);
+        activityMain.tvStatus.setText(getString(R.string.state_threshold, (int) value));
+    };
+
+    private final OnSliderChangeListener onLayerThresholdSliderChangeListener = (slider, value, stopped) -> {
+        final float[] cm = layer.colorMatrix.getArray();
+        cm[4] = cm[9] = cm[14] = -0x100 * value;
+        drawBitmapOntoView(stopped);
         activityMain.tvStatus.setText(getString(R.string.state_threshold, (int) value));
     };
 
@@ -1041,10 +1068,17 @@ public class MainActivity extends AppCompatActivity {
         popupMenu.show();
 
         menu.findItem(R.id.i_layer_clipping).setChecked(layer.clipToBelow);
-        menu.findItem(R.id.i_layer_color_matrix).setChecked(layer.filter == Layer.Filter.COLOR_MATRIX);
-        menu.findItem(R.id.i_layer_curves).setChecked(layer.filter == Layer.Filter.CURVES);
+        menu.findItem(R.id.i_layer_filter_color_balance).setChecked(layer.filter == Layer.Filter.COLOR_BALANCE);
+        menu.findItem(R.id.i_layer_filter_color_matrix).setChecked(layer.filter == Layer.Filter.COLOR_MATRIX);
+        menu.findItem(R.id.i_layer_filter_contrast).setChecked(layer.filter == Layer.Filter.CONTRAST);
+        menu.findItem(R.id.i_layer_filter_curves).setChecked(layer.filter == Layer.Filter.CURVES);
+        menu.findItem(R.id.i_layer_filter_hsv).setChecked(layer.filter == Layer.Filter.HSV);
+        menu.findItem(R.id.i_layer_filter_levels).setChecked(layer.filter == Layer.Filter.LEVELS);
+        menu.findItem(R.id.i_layer_filter_lighting).setChecked(layer.filter == Layer.Filter.LIGHTING);
+        menu.findItem(R.id.i_layer_filter_lightness).setChecked(layer.filter == Layer.Filter.LIGHTNESS);
+        menu.findItem(R.id.i_layer_filter_saturation).setChecked(layer.filter == Layer.Filter.SATURATION);
+        menu.findItem(R.id.i_layer_filter_threshold).setChecked(layer.filter == Layer.Filter.THRESHOLD);
         menu.findItem(R.id.i_layer_filter_set).setEnabled(layer.filter != null);
-        menu.findItem(R.id.i_layer_hsv).setChecked(layer.filter == Layer.Filter.HSV);
         menu.findItem(R.id.i_layer_level_up).setEnabled(layer.getLevel() > 0);
         menu.findItem(R.id.i_layer_pass_below).setChecked(layer.passBelow);
         menu.findItem(R.id.i_layer_reference).setChecked(layer.reference);
@@ -4503,15 +4537,6 @@ public class MainActivity extends AppCompatActivity {
                 layer.clipToBelow = !layer.clipToBelow;
                 drawBitmapOntoView(true);
             }
-            case R.id.i_layer_color_matrix -> {
-                final boolean checked = !item.isChecked();
-                final Layer.Filter filter = checked ? COLOR_MATRIX : null;
-                if (checked && layer.colorMatrix == null) {
-                    layer.initColorMatrix();
-                }
-                layer.filter = filter;
-                drawBitmapOntoView(true);
-            }
             case R.id.i_layer_create_clipping_mask -> {
                 switch (layer.paint.getBlendMode()) {
                     case SRC_OVER, SRC_ATOP ->
@@ -4537,15 +4562,6 @@ public class MainActivity extends AppCompatActivity {
                     frame.layerAdapter.notifyItemRangeChanged(pos + 1, frame.layers.size() - pos - 1);
                     layerList.rvLayerList.post(frame.layerAdapter::notifyLayerTreeChanged);
                 });
-                drawBitmapOntoView(true);
-            }
-            case R.id.i_layer_curves -> {
-                final boolean checked = !item.isChecked();
-                final Layer.Filter filter = checked ? Layer.Filter.CURVES : null;
-                if (checked && layer.curves == null) {
-                    layer.initCurves();
-                }
-                layer.filter = filter;
                 drawBitmapOntoView(true);
             }
             case R.id.i_layer_delete -> closeLayer(frame.selectedLayerIndex);
@@ -4597,13 +4613,63 @@ public class MainActivity extends AppCompatActivity {
                         .setOnCancelListener(onImagePreviewCancelListener)
                         .show();
             }
-            case R.id.i_layer_hsv -> {
+            case R.id.i_layer_filter_color_balance -> {
                 final boolean checked = !item.isChecked();
-                final Layer.Filter filter = checked ? Layer.Filter.HSV : null;
-                if (checked && layer.deltaHsv == null) {
-                    layer.initDeltaHsv();
-                }
-                layer.filter = filter;
+                if (checked && layer.lighting == null) layer.initLighting();
+                layer.resetLighting();
+                layer.filter = checked ? Layer.Filter.COLOR_BALANCE : null;
+                drawBitmapOntoView(true);
+            }
+            case R.id.i_layer_filter_color_matrix -> {
+                final boolean checked = !item.isChecked();
+                if (checked && layer.colorMatrix == null) layer.initColorMatrix();
+                layer.filter = checked ? Layer.Filter.COLOR_MATRIX : null;
+                drawBitmapOntoView(true);
+            }
+            case R.id.i_layer_filter_contrast -> {
+                final boolean checked = !item.isChecked();
+                if (checked && layer.lighting == null) layer.initLighting();
+                layer.resetLighting();
+                layer.filter = checked ? Layer.Filter.CONTRAST : null;
+                drawBitmapOntoView(true);
+            }
+            case R.id.i_layer_filter_curves -> {
+                final boolean checked = !item.isChecked();
+                if (checked && layer.curves == null) layer.initCurves();
+                layer.filter = checked ? Layer.Filter.CURVES : null;
+                drawBitmapOntoView(true);
+            }
+            case R.id.i_layer_filter_hsv -> {
+                final boolean checked = !item.isChecked();
+                if (checked && layer.deltaHsv == null) layer.initDeltaHsv();
+                layer.filter = checked ? Layer.Filter.HSV : null;
+                drawBitmapOntoView(true);
+            }
+            case R.id.i_layer_filter_levels -> {
+                final boolean checked = !item.isChecked();
+                if (checked && layer.lighting == null) layer.initLighting();
+                layer.resetLighting();
+                layer.filter = checked ? Layer.Filter.LEVELS : null;
+                drawBitmapOntoView(true);
+            }
+            case R.id.i_layer_filter_lighting -> {
+                final boolean checked = !item.isChecked();
+                if (checked && layer.lighting == null) layer.initLighting();
+                layer.filter = checked ? Layer.Filter.LIGHTING : null;
+                drawBitmapOntoView(true);
+            }
+            case R.id.i_layer_filter_lightness -> {
+                final boolean checked = !item.isChecked();
+                if (checked && layer.lighting == null) layer.initLighting();
+                layer.resetLighting();
+                layer.filter = checked ? Layer.Filter.LIGHTNESS : null;
+                drawBitmapOntoView(true);
+            }
+            case R.id.i_layer_filter_saturation -> {
+                final boolean checked = !item.isChecked();
+                if (checked && layer.colorMatrix == null) layer.initColorMatrix();
+                layer.colorMatrix.reset();
+                layer.filter = checked ? Layer.Filter.SATURATION : null;
                 drawBitmapOntoView(true);
             }
             case R.id.i_layer_filter_set -> {
@@ -4614,12 +4680,23 @@ public class MainActivity extends AppCompatActivity {
                     ssdLayerList.dismiss();
                 }
                 switch (layer.filter) {
-                    case COLOR_MATRIX -> {
-                        new ColorMatrixManager(this,
-                                onLayerColorMatrixChangedListener,
-                                layer.colorMatrix)
+                    case COLOR_BALANCE -> {
+                        new ColorBalanceDialog(this, layer.lighting)
+                                .setOnColorBalanceChangeListener((lighting, stopped) -> drawBitmapOntoView(stopped))
+                                .setOnPositiveButtonClickListener(null)
                                 .show();
-                        clearStatus();
+                    }
+                    case COLOR_MATRIX -> {
+                        new ColorMatrixManager(this, matrix -> drawBitmapOntoView(true), layer.colorMatrix.getArray())
+                                .show();
+                    }
+                    case CONTRAST -> {
+                        new SliderDialog(this)
+                                .setIcon(R.drawable.ic_contrast).setTitle(R.string.contrast)
+                                .setValueFrom(-1.0f).setValueTo(10.0f).setValue(layer.lighting[0])
+                                .setOnChangeListener(onLayerContrastSliderChangeListener)
+                                .setOnApplyListener(null)
+                                .show();
                     }
                     case CURVES -> {
                         new CurvesDialog(this)
@@ -4628,18 +4705,62 @@ public class MainActivity extends AppCompatActivity {
                                 .setOnCurvesChangeListener((curves, stopped) -> drawBitmapOntoView(stopped))
                                 .setOnPositiveButtonClickListener(null)
                                 .show();
-                        clearStatus();
                     }
                     case HSV -> {
-                        new HsvDialog(this)
+                        new HsvDialog(this, layer.deltaHsv)
                                 .setOnHsvChangeListener(onLayerHsvChangedListener)
                                 .setOnPositiveButtonClickListener(null)
-                                .setDefaultDeltaHsv(layer.deltaHsv)
                                 .show();
                         activityMain.tvStatus.setText(getString(R.string.state_hsv,
                                 layer.deltaHsv[0], layer.deltaHsv[1], layer.deltaHsv[2]));
                     }
+                    case LEVELS -> {
+                    }
+                    case LIGHTING -> {
+                        new LightingDialog(this, layer.lighting)
+                                .setOnLightingChangeListener((lighting, stopped) -> drawBitmapOntoView(stopped))
+                                .setOnPositiveButtonClickListener(null)
+                                .show();
+                    }
+                    case LIGHTNESS -> {
+                        new SliderDialog(this)
+                                .setIcon(R.drawable.ic_brightness_5).setTitle(R.string.lightness)
+                                .setValueFrom(-0xFF).setValueTo(0xFF).setValue(layer.lighting[1]).setStepSize(1.0f)
+                                .setOnChangeListener(onLayerLightnessSliderChangeListener)
+                                .setOnApplyListener(null)
+                                .show();
+                    }
+                    case SATURATION -> {
+                        new SliderDialog(this).setTitle(R.string.saturation)
+                                .setValueFrom(-1.0f).setValueTo(10.0f)
+                                .setValue((layer.colorMatrix.getArray()[0] - 0.213f) / (1.0f - 0.213f))
+                                .setOnChangeListener(onLayerSaturationSliderChangeListener)
+                                .setOnApplyListener(null)
+                                .show();
+                    }
+                    case THRESHOLD -> {
+                        new SliderDialog(this)
+                                .setIcon(R.drawable.ic_filter_b_and_w).setTitle(R.string.threshold)
+                                .setValueFrom(0x00).setValueTo(0xFF).setValue(layer.colorMatrix.getArray()[4] / -0x100).setStepSize(1.0f)
+                                .setOnChangeListener(onLayerThresholdSliderChangeListener)
+                                .setOnApplyListener(null)
+                                .show();
+                    }
                 }
+                clearStatus();
+            }
+            case R.id.i_layer_filter_threshold -> {
+                final boolean checked = !item.isChecked();
+                if (checked && layer.colorMatrix == null) layer.initColorMatrix();
+                final float[] cm = layer.colorMatrix.getArray();
+                cm[0] = cm[5] = cm[10] = 0.213f * 0x100;
+                cm[1] = cm[6] = cm[11] = 0.715f * 0x100;
+                cm[2] = cm[7] = cm[12] = 0.072f * 0x100;
+                cm[3] = cm[8] = cm[13] = cm[15] = cm[16] = cm[17] = cm[19] = 0.0f;
+                cm[4] = cm[9] = cm[14] = -0x100 * 0x80;
+                cm[18] = 1.0f;
+                layer.filter = checked ? Layer.Filter.THRESHOLD : null;
+                drawBitmapOntoView(true);
             }
             case R.id.i_layer_level_down -> {
                 layer.levelDown();
@@ -4934,16 +5055,6 @@ public class MainActivity extends AppCompatActivity {
             }
             case R.id.i_file_save, R.id.i_save -> save();
             case R.id.i_file_save_as -> saveAs();
-            case R.id.i_filter_channel_lighting -> {
-                drawFloatingLayersIntoImage();
-                createFilterPreview();
-                new LightingDialog(this)
-                        .setOnLightingChangeListener(onFilterLightingChangedListener)
-                        .setOnPositiveButtonClickListener(onImagePreviewPBClickListener)
-                        .setOnCancelListener(onImagePreviewCancelListener)
-                        .show();
-                clearStatus();
-            }
             case R.id.i_filter_color_balance -> {
                 drawFloatingLayersIntoImage();
                 createFilterPreview();
@@ -5016,6 +5127,16 @@ public class MainActivity extends AppCompatActivity {
                         .setOnCancelListener(onImagePreviewCancelListener)
                         .show()
                         .drawHistogram(filterPreview.getPixels());
+                clearStatus();
+            }
+            case R.id.i_filter_lighting -> {
+                drawFloatingLayersIntoImage();
+                createFilterPreview();
+                new LightingDialog(this)
+                        .setOnLightingChangeListener(onFilterLightingChangedListener)
+                        .setOnPositiveButtonClickListener(onImagePreviewPBClickListener)
+                        .setOnCancelListener(onImagePreviewCancelListener)
+                        .show();
                 clearStatus();
             }
             case R.id.i_filter_lightness -> {

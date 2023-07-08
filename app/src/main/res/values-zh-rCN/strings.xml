@@ -200,6 +200,7 @@
     <string name="pencil">铅笔</string>
     <string name="pen_with_filter">滤光笔</string>
     <string name="performance">性能</string>
+    <string name="pick_in_hsv">以 HSV 拾取</string>
     <string name="pixel">像素</string>
     <string name="please_save_first">请先保存。</string>
     <string name="please_switch_orientation_to_vertical_to_get_all_functions">请切换至纵向以获取所有功能。</string>

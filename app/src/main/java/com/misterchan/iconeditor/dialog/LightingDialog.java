@@ -24,12 +24,18 @@ public class LightingDialog {
     private OnLightingChangedListener onLightingChangeListener;
 
     @Size(8)
-    private final float[] lighting = new float[]{1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f};
+    private final float[] lighting;
 
     public LightingDialog(Context context) {
+        this(context, null);
+    }
+
+    public LightingDialog(Context context, float[] defaultLighting) {
         builder = new MaterialAlertDialogBuilder(context)
                 .setTitle(R.string.channel_lighting)
                 .setView(R.layout.channel_lighting);
+
+        lighting = defaultLighting != null ? defaultLighting : new float[]{1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f};
     }
 
     private void setElement(Slider slider, float e, boolean stopped) {

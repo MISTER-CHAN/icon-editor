@@ -226,6 +226,7 @@
     <string name="pen_with_filter">Filter</string>
     <string name="percent" translatable="false">%</string>
     <string name="performance">Performance</string>
+    <string name="pick_in_hsv">Pick in HSV</string>
     <string name="pixel">Pixel</string>
     <string name="please_save_first">Please save first.</string>
     <string name="please_switch_orientation_to_vertical_to_get_all_functions">Please switch the orientation to vertical to get all functions.</string>

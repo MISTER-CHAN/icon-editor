@@ -24,7 +24,7 @@ public class ArgbColorLongPicker extends ArgbColorPicker {
     @Size(4)
     private final float[] argb = new float[4];
 
-    protected ArgbColorLongPicker(Context context, int titleId,
+    protected ArgbColorLongPicker(Context context, @StringRes int titleId,
                                   final ColorPicker.OnColorPickListener onColorPickListener,
                                   @ColorLong final Long oldColor, @StringRes int neutralFunction) {
         super(context, titleId, onColorPickListener, oldColor, neutralFunction);

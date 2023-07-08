@@ -18,16 +18,6 @@ import java.util.Random;
 
 public class BitmapUtils {
 
-    public static void addLightingColorFilter(final Bitmap src, final int srcX, final int srcY,
-                                              final Bitmap dst, final int dstX, final int dstY,
-                                              final float scale, final float shift) {
-        final int w = src.getWidth(), h = src.getHeight();
-        final int[] pixels = new int[w * h];
-        src.getPixels(pixels, 0, w, srcX, srcY, w, h);
-        addLightingColorFilter(pixels, pixels, scale, shift);
-        dst.setPixels(pixels, 0, w, dstX, dstY, w, h);
-    }
-
     public static void addLightingColorFilter(@ColorInt final int[] src, @ColorInt final int[] dst,
                                               final float scale, final float shift) {
         for (int i = 0; i < src.length; ++i) {
@@ -38,6 +28,15 @@ public class BitmapUtils {
             final int b_ = Color.sat((int) (b * scale + shift));
             dst[i] = a | Color.rgb(r_, g_, b_);
         }
+    }
+
+    public static void addLightingColorFilter(final Bitmap bitmap, final Rect rect,
+                                              @Size(8) final float[] lighting) {
+        final int w = rect.width(), h = rect.height();
+        final int[] pixels = new int[w * h];
+        bitmap.getPixels(pixels, 0, w, rect.left, rect.top, w, h);
+        addLightingColorFilter(pixels, pixels, lighting);
+        bitmap.setPixels(pixels, 0, w, rect.left, rect.top, w, h);
     }
 
     public static void addLightingColorFilter(@ColorInt final int[] src, @ColorInt final int[] dst,
@@ -282,6 +281,13 @@ public class BitmapUtils {
                         paint);
             }
         }
+    }
+
+    public static int[] getPixels(final Bitmap bitmap) {
+        final int w = bitmap.getWidth(), h = bitmap.getHeight();
+        final int[] pixels = new int[w * h];
+        bitmap.getPixels(pixels, 0, w, 0, 0, w, h);
+        return pixels;
     }
 
     public static int[] getPixels(final Bitmap bitmap, Rect rect) {

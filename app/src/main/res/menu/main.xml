@@ -257,7 +257,7 @@
                             android:title="@string/color_balance"
                             app:iconTint="?attr/colorOnSurfaceVariant" />
                         <item
-                            android:id="@+id/i_filter_channel_lighting"
+                            android:id="@+id/i_filter_lighting"
                             android:icon="@drawable/ic_void"
                             android:title="@string/channel_lighting" />
                         <item

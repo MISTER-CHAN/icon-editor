@@ -1,11 +1,13 @@
 package com.misterchan.iconeditor.colorpicker;
 
 import android.content.Context;
+import android.graphics.ColorSpace;
 import android.widget.GridLayout;
 
 import androidx.annotation.ColorLong;
 import androidx.annotation.IntRange;
 import androidx.annotation.Size;
+import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -14,6 +16,7 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.misterchan.iconeditor.Color;
 import com.misterchan.iconeditor.R;
+import com.misterchan.iconeditor.Settings;
 import com.misterchan.iconeditor.listener.AfterTextChangedListener;
 import com.misterchan.iconeditor.listener.OnSliderValueChangeListener;
 
@@ -26,13 +29,27 @@ public class HsvColorPicker extends ColorPicker {
     private final float[] hsv = new float[3];
 
     private HsvColorPicker(Context context, final OnColorPickListener onColorPickListener, @ColorLong final Long oldColor) {
+        this(context, R.string.convert_hsv_to_rgb, onColorPickListener, oldColor, 0);
+    }
+
+    HsvColorPicker(Context context, @StringRes int titleId,
+                   final OnColorPickListener onColorPickListener,
+                   @ColorLong final Long oldColor, @StringRes int neutralFunction) {
         dialogBuilder = new MaterialAlertDialogBuilder(context)
                 .setNegativeButton(R.string.cancel, null)
                 .setPositiveButton(R.string.ok, (dialog, which) -> onColorPickListener.onPick(oldColor, newColor))
-                .setTitle(R.string.convert_hsv_to_rgb)
+                .setTitle(titleId)
                 .setView(R.layout.color_picker);
 
-        this.oldColor = oldColor;
+        if (oldColor != null) {
+            this.oldColor = oldColor;
+            if (neutralFunction != 0) {
+                dialogBuilder.setNeutralButton(neutralFunction,
+                        (dialog, which) -> onColorPickListener.onPick(oldColor, null));
+            }
+        } else {
+            this.oldColor = Color.BLACK;
+        }
     }
 
     public static ColorPicker make(Context context, final OnColorPickListener onColorPickListener, @ColorLong final Long oldColor) {
@@ -40,9 +57,9 @@ public class HsvColorPicker extends ColorPicker {
     }
 
     private void onComponentChanged() {
-        final int color = Color.HSVToColor(hsv);
+        final int color = Color.BLACK | Color.HSVToColor(hsv);
         newColor = Color.pack(color);
-        vPreview.setBackgroundColor(Color.BLACK | color);
+        vPreview.setBackgroundColor(color);
     }
 
     private void onHueChanged(String s) {

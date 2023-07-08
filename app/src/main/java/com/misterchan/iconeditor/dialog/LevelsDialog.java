@@ -98,6 +98,14 @@ public class LevelsDialog {
         ivProgress.invalidate();
     }
 
+    public LevelsDialog set(float inputShadows, float inputHighlights, float outputShadows, float outputHighlights) {
+        this.inputShadows = (int) inputShadows;
+        this.inputHighlights = (int) inputHighlights;
+        this.outputShadows = (int) outputShadows;
+        this.outputHighlights = (int) outputHighlights;
+        return this;
+    }
+
     public LevelsDialog setOnCancelListener(DialogInterface.OnCancelListener listener) {
         builder.setOnCancelListener(listener);
         builder.setNegativeButton(R.string.cancel, (dialog, which) -> listener.onCancel(dialog));
@@ -127,6 +135,9 @@ public class LevelsDialog {
         ivProgress = dialog.findViewById(R.id.iv_progress);
         final RangeSlider rsInput = dialog.findViewById(R.id.rs_input);
         final RangeSlider rsOutput = dialog.findViewById(R.id.rs_output);
+
+        rsInput.setValues(inputShadows, inputHighlights);
+        rsOutput.setValues(outputShadows, outputHighlights);
 
         final OnCircularRSChangeListener inputOscl = new OnCircularRSChangeListener(false) {
             @Override

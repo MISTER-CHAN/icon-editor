@@ -37,7 +37,10 @@ public class Layers {
             return;
         }
         switch (layer.filter) {
-            case COLOR_MATRIX -> BitmapUtils.addColorMatrixColorFilter(bitmap, rect, layer.colorMatrix);
+            case COLOR_BALANCE, CONTRAST, LEVELS, LIGHTING, LIGHTNESS ->
+                    BitmapUtils.addLightingColorFilter(bitmap, rect, layer.lighting);
+            case COLOR_MATRIX, SATURATION, THRESHOLD ->
+                    BitmapUtils.addColorMatrixColorFilter(bitmap, rect, layer.colorMatrix.getArray());
             case CURVES -> BitmapUtils.applyCurves(bitmap, rect, layer.curves);
             case HSV -> BitmapUtils.shiftHsv(bitmap, rect, layer.deltaHsv);
         }

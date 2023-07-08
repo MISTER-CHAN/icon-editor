@@ -186,23 +186,75 @@
             android:iconTint="?attr/colorOnSurfaceVariant"
             android:title="@string/filters">
             <menu>
-                <group
-                    android:id="@+id/g_layer_filters"
-                    android:checkableBehavior="all">
-                    <item
-                        android:id="@+id/i_layer_curves"
-                        android:title="@string/curves" />
-                    <item
-                        android:id="@+id/i_layer_hsv"
-                        android:title="@string/hsv" />
-                    <item
-                        android:id="@+id/i_layer_color_matrix"
-                        android:title="@string/channel_mixer" />
-                </group>
                 <group android:id="@+id/g_layer_filter_set">
                     <item
                         android:id="@+id/i_layer_filter_set"
+                        android:icon="@drawable/ic_void"
+                        android:iconTint="?attr/colorOnSurfaceVariant"
                         android:title="@string/set" />
+                </group>
+                <group
+                    android:id="@+id/g_layer_filters_lighting"
+                    android:checkableBehavior="all">
+                    <item
+                        android:id="@+id/i_layer_filter_lightness"
+                        android:icon="@drawable/ic_brightness_5"
+                        android:iconTint="?attr/colorOnSurfaceVariant"
+                        android:title="@string/lightness" />
+                    <item
+                        android:id="@+id/i_layer_filter_contrast"
+                        android:icon="@drawable/ic_contrast"
+                        android:iconTint="?attr/colorOnSurfaceVariant"
+                        android:title="@string/contrast" />
+                    <item
+                        android:id="@+id/i_layer_filter_levels"
+                        android:icon="@drawable/ic_void"
+                        android:iconTint="?attr/colorOnSurfaceVariant"
+                        android:title="@string/levels"
+                        android:visible="false" />
+                    <item
+                        android:id="@+id/i_layer_filter_curves"
+                        android:icon="@drawable/ic_void"
+                        android:iconTint="?attr/colorOnSurfaceVariant"
+                        android:title="@string/curves" />
+                </group>
+                <group
+                    android:id="@+id/g_layer_filters_advanced"
+                    android:checkableBehavior="all">
+                    <item
+                        android:id="@+id/i_layer_filter_saturation"
+                        android:icon="@drawable/ic_void"
+                        android:iconTint="?attr/colorOnSurfaceVariant"
+                        android:title="@string/saturation" />
+                    <item
+                        android:id="@+id/i_layer_filter_hsv"
+                        android:icon="@drawable/ic_void"
+                        android:iconTint="?attr/colorOnSurfaceVariant"
+                        android:title="@string/hsv" />
+                    <item
+                        android:id="@+id/i_layer_filter_color_balance"
+                        android:icon="@drawable/ic_balance"
+                        android:iconTint="?attr/colorOnSurfaceVariant"
+                        android:title="@string/color_balance" />
+                    <item
+                        android:id="@+id/i_layer_filter_lighting"
+                        android:icon="@drawable/ic_void"
+                        android:iconTint="?attr/colorOnSurfaceVariant"
+                        android:title="@string/channel_lighting" />
+                    <item
+                        android:id="@+id/i_layer_filter_color_matrix"
+                        android:icon="@drawable/ic_void"
+                        android:iconTint="?attr/colorOnSurfaceVariant"
+                        android:title="@string/channel_mixer" />
+                </group>
+                <group
+                    android:id="@+id/g_layer_filters_more"
+                    android:checkableBehavior="all">
+                    <item
+                        android:id="@+id/i_layer_filter_threshold"
+                        android:icon="@drawable/ic_filter_b_and_w"
+                        android:iconTint="?attr/colorOnSurfaceVariant"
+                        android:title="@string/threshold" />
                 </group>
             </menu>
         </item>

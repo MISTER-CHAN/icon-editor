@@ -24,17 +24,18 @@ public class HsvDialog {
     private OnHsvChangedListener listener;
 
     @Size(3)
-    private float[] deltaHsv = new float[3];
+    private final float[] deltaHsv;
 
     public HsvDialog(Context context) {
+        this(context, null);
+    }
+
+    public HsvDialog(Context context, float[] defaultDeltaHsv) {
         builder = new MaterialAlertDialogBuilder(context)
                 .setTitle(R.string.hsv)
                 .setView(R.layout.hsv);
-    }
 
-    public HsvDialog setDefaultDeltaHsv(float[] deltaHsv) {
-        this.deltaHsv = deltaHsv;
-        return this;
+        deltaHsv = defaultDeltaHsv != null ? defaultDeltaHsv : new float[3];
     }
 
     public HsvDialog setOnCancelListener(DialogInterface.OnCancelListener listener) {
