@@ -4722,7 +4722,7 @@ public class MainActivity extends AppCompatActivity {
                         .setOnChangeListener(onLayerLightnessSliderChangeListener)
                         .setOnApplyListener(null)
                         .show();
-                activityMain.tvStatus.setText(getString(R.string.state_lightness, layer.lighting[1]));
+                activityMain.tvStatus.setText(getString(R.string.state_lightness, (int) layer.lighting[1]));
             }
             case R.id.i_layer_filter_none -> {
                 ssdLayerList.dismiss();
