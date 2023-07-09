@@ -203,6 +203,7 @@
     <string name="new_guide">New Guide</string>
     <string name="ninety_degrees" translatable="false">90°</string>
     <string name="no_repeats">No Repeats</string>
+    <string name="none">None</string>
     <string name="normal">Normal</string>
     <string name="not_public_format">Not a Public Format</string>
     <string name="not_supported_file_type">Not supported file type</string>

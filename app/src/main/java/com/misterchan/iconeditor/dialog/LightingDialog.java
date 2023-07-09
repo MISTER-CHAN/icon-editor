@@ -35,7 +35,15 @@ public class LightingDialog {
                 .setTitle(R.string.channel_lighting)
                 .setView(R.layout.channel_lighting);
 
-        lighting = defaultLighting != null ? defaultLighting : new float[]{1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f};
+        if (defaultLighting == null) {
+            lighting = new float[]{1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f};
+        } else {
+            lighting = defaultLighting;
+            for (int i = 0; i < lighting.length; i += 2) {
+                lighting[i] = Math.min(Math.max(lighting[i], 0.0f), 2.0f);
+                lighting[i + 1] = Math.min(Math.max(Math.round(lighting[i + 1]), -0xFF), 0xFF);
+            }
+        }
     }
 
     private void setElement(Slider slider, float e, boolean stopped) {
@@ -81,6 +89,15 @@ public class LightingDialog {
         final Slider sBlueShift = dialog.findViewById(R.id.s_blue_shift);
         final Slider sAlphaScale = dialog.findViewById(R.id.s_alpha_scale);
         final Slider sAlphaShift = dialog.findViewById(R.id.s_alpha_shift);
+
+        sRedScale.setValue(lighting[0]);
+        sRedShift.setValue(lighting[1]);
+        sGreenScale.setValue(lighting[2]);
+        sGreenShift.setValue(lighting[3]);
+        sBlueScale.setValue(lighting[4]);
+        sBlueShift.setValue(lighting[5]);
+        sAlphaScale.setValue(lighting[6]);
+        sAlphaShift.setValue(lighting[7]);
 
         final OnSliderChangeListener l = this::setElement;
 

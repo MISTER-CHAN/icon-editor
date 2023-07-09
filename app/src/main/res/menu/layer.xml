@@ -186,16 +186,18 @@
             android:iconTint="?attr/colorOnSurfaceVariant"
             android:title="@string/filters">
             <menu>
-                <group android:id="@+id/g_layer_filter_set">
+                <group
+                    android:id="@+id/g_layer_filter_none"
+                    android:checkableBehavior="single">
                     <item
-                        android:id="@+id/i_layer_filter_set"
+                        android:id="@+id/i_layer_filter_none"
                         android:icon="@drawable/ic_void"
                         android:iconTint="?attr/colorOnSurfaceVariant"
-                        android:title="@string/set" />
+                        android:title="@string/none" />
                 </group>
                 <group
                     android:id="@+id/g_layer_filters_lighting"
-                    android:checkableBehavior="all">
+                    android:checkableBehavior="single">
                     <item
                         android:id="@+id/i_layer_filter_lightness"
                         android:icon="@drawable/ic_brightness_5"
@@ -220,7 +222,7 @@
                 </group>
                 <group
                     android:id="@+id/g_layer_filters_advanced"
-                    android:checkableBehavior="all">
+                    android:checkableBehavior="single">
                     <item
                         android:id="@+id/i_layer_filter_saturation"
                         android:icon="@drawable/ic_void"
@@ -249,7 +251,7 @@
                 </group>
                 <group
                     android:id="@+id/g_layer_filters_more"
-                    android:checkableBehavior="all">
+                    android:checkableBehavior="single">
                     <item
                         android:id="@+id/i_layer_filter_threshold"
                         android:icon="@drawable/ic_filter_b_and_w"

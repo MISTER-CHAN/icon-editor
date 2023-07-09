@@ -180,6 +180,7 @@
     <string name="new_">新建</string>
     <string name="new_guide">新参考线</string>
     <string name="no_repeats">无重复</string>
+    <string name="none">无</string>
     <string name="normal">正常</string>
     <string name="not_public_format">非公有格式</string>
     <string name="not_supported_file_type">不支持的文件类型</string>
