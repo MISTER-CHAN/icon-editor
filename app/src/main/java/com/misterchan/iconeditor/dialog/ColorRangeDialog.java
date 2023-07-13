@@ -14,6 +14,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.slider.LabelFormatter;
 import com.google.android.material.slider.RangeSlider;
 import com.google.android.material.slider.Slider;
+import com.misterchan.iconeditor.ColorRange;
 import com.misterchan.iconeditor.R;
 import com.misterchan.iconeditor.listener.OnCircularRSChangeListener;
 import com.misterchan.iconeditor.listener.OnRSChangeListener;
@@ -24,23 +25,24 @@ import java.util.List;
 public class ColorRangeDialog {
 
     public interface OnChangedListener {
-        void onChanged(float[] cuboid, float transition, boolean stopped);
+        void onChanged(ColorRange colorRange, boolean stopped);
     }
 
     private final AlertDialog.Builder builder;
-    private float transition;
+    private final ColorRange cr;
     private OnChangedListener listener;
 
-    @Size(6)
-    private final float[] cuboid = new float[]{
-            0.0f, 0.0f, 0.0f, 360.0f, 1.0f, 1.0f
-    };
-
     public ColorRangeDialog(Context context) {
+        this(context, null);
+    }
+
+    public ColorRangeDialog(Context context, ColorRange defaultColorRange) {
         builder = new MaterialAlertDialogBuilder(context)
                 .setPositiveButton(R.string.ok, null)
                 .setTitle(R.string.color_range)
                 .setView(R.layout.color_range);
+
+        cr = defaultColorRange != null ? defaultColorRange : new ColorRange();
     }
 
     public ColorRangeDialog setOnCancelListener(DialogInterface.OnCancelListener listener) {
@@ -50,7 +52,7 @@ public class ColorRangeDialog {
     }
 
     public ColorRangeDialog setOnPositiveButtonClickListener(OnChangedListener listener) {
-        builder.setPositiveButton(R.string.ok, (dialog, which) -> listener.onChanged(cuboid, transition, true));
+        builder.setPositiveButton(R.string.ok, (dialog, which) -> listener.onChanged(cr, true));
         return this;
     }
 
@@ -75,30 +77,41 @@ public class ColorRangeDialog {
         final LabelFormatter dlf = value -> value + "°"; // Degree label formatter
         final LabelFormatter plf = value -> value * 100.0f + "%"; // Percentage label formatter
 
+        rsHue.setValues(cr.cuboid[0], cr.cuboid[3]);
+        rsSaturation.setValues(cr.cuboid[1], cr.cuboid[4]);
+        rsValue.setValues(cr.cuboid[2], cr.cuboid[5]);
+        sTransition.setValue(cr.transition);
+
         final OnCircularRSChangeListener hueOscl = new OnCircularRSChangeListener() {
             @Override
             public void onChange(@NonNull RangeSlider slider, float value, boolean inclusive, boolean stopped) {
                 final List<Float> values = slider.getValues();
-                cuboid[0] = values.get(inclusive ? 0 : 1);
-                cuboid[3] = values.get(inclusive ? 1 : 0);
-                listener.onChanged(cuboid, transition, stopped);
+                cr.cuboid[0] = values.get(inclusive ? 0 : 1);
+                cr.cuboid[3] = values.get(inclusive ? 1 : 0);
+                cr.update();
+                listener.onChanged(cr, stopped);
             }
         };
+        if (cr.cuboid[0] > cr.cuboid[3]) {
+            hueOscl.toggleInclusive(rsHue);
+        }
         final OnRSChangeListener satOscl = (slider, stopped) -> {
             final List<Float> values = slider.getValues();
-            cuboid[1] = values.get(0);
-            cuboid[4] = values.get(1);
-            listener.onChanged(cuboid, transition, stopped);
+            cr.cuboid[1] = values.get(0);
+            cr.cuboid[4] = values.get(1);
+            cr.update();
+            listener.onChanged(cr, stopped);
         };
         final OnRSChangeListener valOscl = (slider, stopped) -> {
             final List<Float> values = slider.getValues();
-            cuboid[2] = values.get(0);
-            cuboid[5] = values.get(1);
-            listener.onChanged(cuboid, transition, stopped);
+            cr.cuboid[2] = values.get(0);
+            cr.cuboid[5] = values.get(1);
+            cr.update();
+            listener.onChanged(cr, stopped);
         };
         final OnSliderChangeListener transOscl = (slider, value, stopped) -> {
-            transition = value;
-            listener.onChanged(cuboid, transition, stopped);
+            cr.transition = value;
+            listener.onChanged(cr, stopped);
         };
 
         rsHue.addOnChangeListener(hueOscl);

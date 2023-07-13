@@ -9,6 +9,7 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 
 import androidx.annotation.ColorInt;
+import androidx.annotation.IntRange;
 import androidx.annotation.Size;
 
 import com.misterchan.iconeditor.util.BitmapUtils;
@@ -140,6 +141,13 @@ class FilterPreview {
 
     public int getWidth() {
         return bm.getWidth();
+    }
+
+    public void posterize(@IntRange(from = 0x01, to = 0xFF) int level) {
+        final int w = getWidth(), h = getHeight();
+        final int[] src = getPixels(), dst = new int[w * h];
+        BitmapUtils.posterize(src, dst, level);
+        setPixels(dst, w, h);
     }
 
     public void recycle() {

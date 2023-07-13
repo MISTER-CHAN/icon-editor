@@ -50,7 +50,7 @@ public abstract class OnCircularRSChangeListener implements RangeSlider.OnChange
         onChange(slider, value, inclusive, false);
     }
 
-    private void toggleInclusive(@NonNull RangeSlider slider) {
+    public void toggleInclusive(@NonNull RangeSlider slider) {
         inclusive = !inclusive;
         final ColorStateList trackAtl = slider.getTrackActiveTintList(), trackItl = slider.getTrackInactiveTintList();
         slider.setTrackActiveTintList(trackItl);

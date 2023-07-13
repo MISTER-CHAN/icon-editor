@@ -10,6 +10,7 @@ public class Settings {
 
     static final String KEY_ACR = "acr"; // ARGB Color Int Component Radix
     static final String KEY_ACT = "act"; // ARGB Color Type
+    private static final String KEY_ASHA = "asha"; // Automatically Set Has Alpha
     static final String KEY_CFU = "cfu"; // Check for Updates
     private static final String KEY_FB = "fb"; // Filter Bitmap
     static final String KEY_FL = "fl"; // Frame List
@@ -20,6 +21,7 @@ public class Settings {
     static final String KEY_PIH = "pih"; // Pick in HSV
 
     private boolean argbColorType = false;
+    private boolean autoSetHasAlpha = false;
     private int historyMaxSize = 50;
     private boolean newLayerLevel = false;
     private boolean pickInHsv = false;
@@ -42,6 +44,10 @@ public class Settings {
         return argbCompRadix;
     }
 
+    public boolean autoSetHasAlpha() {
+        return autoSetHasAlpha;
+    }
+
     public int historyMaxSize() {
         return historyMaxSize;
     }
@@ -57,6 +63,7 @@ public class Settings {
     public void update(SharedPreferences preferences) {
         update(preferences, KEY_ACR);
         update(preferences, KEY_ACT);
+        update(preferences, KEY_ASHA);
         update(preferences, KEY_FB);
         update(preferences, KEY_HMS);
         update(preferences, KEY_MT);
@@ -78,6 +85,7 @@ public class Settings {
                 argbColorType = "l".equals(preferences.getString(KEY_ACT, "i"));
                 mainActivity.setArgbColorType();
             }
+            case KEY_ASHA -> autoSetHasAlpha = preferences.getBoolean(KEY_ASHA, false);
             case KEY_FB -> mainActivity.setFilterBitmap(preferences.getBoolean(KEY_FB, false));
             case KEY_FL ->
                     mainActivity.setFrameListMenuItemVisible(preferences.getBoolean(KEY_FL, false));

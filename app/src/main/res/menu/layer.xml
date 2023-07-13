@@ -12,10 +12,6 @@
             android:iconTint="?attr/colorOnSurfaceVariant"
             android:title="@string/duplicate" />
         <item
-            android:id="@+id/i_layer_duplicate_by_color_range"
-            android:icon="@drawable/ic_void"
-            android:title="@string/duplicate_by_color_range" />
-        <item
             android:id="@+id/i_layer_rename"
             android:icon="@drawable/ic_drive_file_rename_outline"
             android:iconTint="?attr/colorOnSurfaceVariant"
@@ -260,6 +256,10 @@
                 </group>
             </menu>
         </item>
+        <item
+            android:id="@+id/i_layer_select_by_color_range"
+            android:icon="@drawable/ic_void"
+            android:title="@string/select_by_color_range" />
         <item
             android:icon="@drawable/ic_void"
             android:title="@string/level">

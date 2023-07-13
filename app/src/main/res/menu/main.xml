@@ -267,6 +267,11 @@
                     </group>
                     <group android:id="@+id/g_filter_more">
                         <item
+                            android:id="@+id/i_filter_posterize"
+                            android:icon="@drawable/ic_void"
+                            android:title="@string/posterize"
+                            app:iconTint="?attr/colorOnSurfaceVariant" />
+                        <item
                             android:id="@+id/i_filter_threshold"
                             android:icon="@drawable/ic_filter_b_and_w"
                             android:title="@string/threshold"

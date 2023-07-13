@@ -19,11 +19,14 @@
     <string name="attaching_eraser">Attaching Eraser</string>
     <string name="author">Author</string>
     <string name="automatic">Automatic</string>
+    <string name="automatically_tell_has_alpha">Automatically Tell Has Alpha</string>
+    <string name="automatically_tell_bitmap_pixels_contain_alpha_values">Automatically tell the bitmap that the pixels contain alpha values</string>
     <string name="b" translatable="false">B</string>
     <string name="b_" translatable="false">b*</string>
     <string name="background">Background</string>
     <string name="background_color">Background Color</string>
     <string name="below_background">Below Background</string>
+    <string name="bitmap_opaque_can_take_faster_drawing_case">A bitmap that is opaque can take a faster drawing case</string>
     <string name="blend_mode">Blend Mode</string>
     <string name="blur_radius">Blur</string>
     <string name="bold">Bold</string>
@@ -228,12 +231,14 @@
     <string name="percent" translatable="false">%</string>
     <string name="performance">Performance</string>
     <string name="pick_in_hsv">Pick in HSV</string>
+    <string name="pick_rgb_colors_in_hsv">Pick RGB colors in HSV</string>
     <string name="pixel">Pixel</string>
     <string name="please_save_first">Please save first.</string>
     <string name="please_switch_orientation_to_vertical_to_get_all_functions">Please switch the orientation to vertical to get all functions.</string>
     <string name="point">Point</string>
     <string name="poly">Poly</string>
     <string name="position">Position</string>
+    <string name="posterize">Posterize</string>
     <string name="precise">Precise</string>
     <string name="preferences">Preferences</string>
     <string name="properties">Properties</string>
@@ -268,6 +273,7 @@
     <string name="seed">Seed</string>
     <string name="select">Select</string>
     <string name="select_all">Select All</string>
+    <string name="select_by_color_range">Select by Color Range</string>
     <string name="selected_layers">Selected Layer\'s</string>
     <string name="send_to_back">Send to Back</string>
     <string name="serif">Serif</string>
@@ -301,6 +307,7 @@
     <string name="state_lightness">Brightness: %d</string>
     <string name="state_l_t_r_b">L: %d, T: %d, R: %d, B: %d</string>
     <string name="state_l_t_r_b_size">L: %d, T: %d, R: %d, B: %d, Size: %d × %d</string>
+    <string name="state_posterization">Posterization level: %d</string>
     <string name="state_radius">Radius: %.1f</string>
     <string name="state_rotate" translatable="false">%d°</string>
     <string name="state_ruler">(%d, %d) – (%d, %d), Proj: (%d, %d), Length: %s</string>

@@ -54,7 +54,6 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.ColorLong;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.Size;
 import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -686,63 +685,10 @@ public class MainActivity extends AppCompatActivity {
         drawFilterPreviewOntoView(true);
     }, true);
 
-    private final ColorRangeDialog.OnChangedListener onColorRangeChangedListener = new ColorRangeDialog.OnChangedListener() {
-        @Size(3)
-        private final float[] hsv = new float[3];
-
-        @Override
-        public void onChanged(float[] cuboid, float transition, boolean stopped) {
-            runOrStart(() -> {
-                final int width = filterPreview.getWidth(), height = filterPreview.getHeight();
-                final int[] src = filterPreview.getPixels(), dst = new int[src.length];
-                for (int i = 0; i < src.length; ++i) {
-                    Color.colorToHSV(src[i], hsv);
-                    float a_ = 0.0f;
-                    final float ao3 = Color.alpha(src[i]) / 255.0f / 3.0f; // Alpha over 3
-                    float hi = 0.0f, ha = 0.0f; // Hue min and max
-                    if (transition > 0.0f) {
-                        hi = cuboid[0] - transition * 360.0f;
-                        ha = cuboid[3] + transition * 360.0f;
-                        if (hi > ha) {
-                            if (hsv[0] < ha) hi -= 360.0f;
-                            if (hsv[0] > hi) ha += 360.0f;
-                        }
-                    }
-                    a_ += transition > 0.0f
-                            ? Math.min(Math.min(hsv[0] - hi, ha - hsv[0]) / (transition * 360.0f), 1.0f) * ao3
-                            : (cuboid[0] <= cuboid[3] ? cuboid[0] <= hsv[0] && hsv[0] <= cuboid[3] : cuboid[0] <= hsv[0] || hsv[0] <= cuboid[3]) ? ao3 : ao3 * -2;
-                    a_ += transition > 0.0f
-                            ? Math.min(Math.min(hsv[1] - (cuboid[1] - transition), (cuboid[4] + transition) - hsv[1]) / transition, 1.0f) * ao3
-                            : cuboid[1] <= hsv[1] && hsv[1] <= cuboid[4] ? ao3 : ao3 * -2;
-                    a_ += transition > 0.0f
-                            ? Math.min(Math.min(hsv[2] - (cuboid[2] - transition), (cuboid[5] + transition) - hsv[2]) / transition, 1.0f) * ao3
-                            : cuboid[2] <= hsv[2] && hsv[2] <= cuboid[5] ? ao3 : ao3 * -2;
-                    dst[i] = Color.argb((int) (Math.max(a_, 0.0f) * 255.0f), Color.rgb(src[i]));
-                }
-                filterPreview.setPixels(dst, width, height);
-                drawFilterPreviewOntoView(stopped);
-            }, stopped);
-            activityMain.tvStatus.setText(getString(R.string.state_color_range,
-                    cuboid[0], cuboid[3], cuboid[1] * 100.0f, cuboid[4] * 100.0f, cuboid[2] * 100.0f, cuboid[5] * 100.0f));
-        }
-    };
-
-    private final ColorRangeDialog.OnChangedListener onLayerDuplicatingByColorRangeConfirmListener = (cuboid, transition, stopped) -> {
-        final Bitmap p = filterPreview.getEntire();
-        final Bitmap bm = Bitmap.createBitmap(p.getWidth(), p.getHeight(),
-                p.getConfig(), true, p.getColorSpace());
-        final Canvas cv = new Canvas(bm);
-        if (hasSelection) {
-            cv.drawBitmap(p, selection, selection, PAINT_SRC);
-        } else {
-            cv.drawBitmap(p, 0.0f, 0.0f, PAINT_SRC);
-        }
-        filterPreview.recycle();
-        filterPreview = null;
-        addLayer(project, frame, bm, frame.selectedLayerIndex,
-                layer.getLevel(), layer.left, layer.top,
-                layer.visible, getString(R.string.copy_noun), true);
-        clearStatus();
+    private final ColorRangeDialog.OnChangedListener onLayerColorRangeChangedListener = (colorRange, stopped) -> {
+        drawBitmapOntoView(stopped);
+        activityMain.tvStatus.setText(getString(R.string.state_color_range,
+                colorRange.cuboid[0], colorRange.cuboid[3], colorRange.cuboid[1] * 100.0f, colorRange.cuboid[4] * 100.0f, colorRange.cuboid[2] * 100.0f, colorRange.cuboid[5] * 100.0f));
     };
 
     private final CurvesDialog.OnCurvesChangedListener onFilterCurvesChangedListener = (curves, stopped) -> runOrStart(() -> {
@@ -754,8 +700,7 @@ public class MainActivity extends AppCompatActivity {
     }, stopped);
 
     private final HiddenImageMaker.OnMakeListener onHiddenImageMakeListener = bitmap -> {
-        final Bitmap bm = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
-        new Canvas(bm).drawBitmap(bitmap, 0.0f, 0.0f, PAINT_SRC);
+        final Bitmap bm = BitmapUtils.createBitmap(bitmap);
         addProject(bm, activityMain.tlProjectList.getSelectedTabPosition() + 2);
         bitmap.recycle();
     };
@@ -905,6 +850,14 @@ public class MainActivity extends AppCompatActivity {
         activityMain.tvStatus.setText(getString(R.string.state_lightness, (int) value));
     };
 
+    private final OnSliderChangeListener onFilterPosterizationSliderChangeListener = (slider, value, stopped) -> {
+        runOrStart(() -> {
+            filterPreview.posterize((int) value);
+            drawFilterPreviewOntoView(stopped);
+        }, stopped);
+        activityMain.tvStatus.setText(getString(R.string.state_posterization, (int) value));
+    };
+
     private final OnSliderChangeListener onFilterSaturationSliderChangeListener = (slider, value, stopped) -> {
         final ColorMatrix colorMatrix = new ColorMatrix();
         colorMatrix.setSaturation(value);
@@ -958,16 +911,7 @@ public class MainActivity extends AppCompatActivity {
             } else if (threshold == 0x00) {
                 filterPreview.clearFilters();
             } else {
-                final int w = filterPreview.getWidth(), h = filterPreview.getHeight(), area = w * h;
-                final int[] src = filterPreview.getPixels(), dst = new int[area];
-                for (int i = 0; i < area; ++i) {
-                    final int pixel = src[i];
-                    dst[i] = pixel & Color.BLACK | Color.rgb(
-                            Color.red(pixel) / threshold * threshold,
-                            Color.green(pixel) / threshold * threshold,
-                            Color.blue(pixel) / threshold * threshold);
-                }
-                filterPreview.setPixels(dst, 0, w, 0, 0, w, h);
+                filterPreview.posterize(0xFF - threshold);
             }
             drawFilterPreviewOntoView(stopped);
         }, stopped);
@@ -4603,18 +4547,6 @@ public class MainActivity extends AppCompatActivity {
                         new Layer(layer, bm, getString(R.string.copy_noun)),
                         frame.selectedLayerIndex, true);
             }
-            case R.id.i_layer_duplicate_by_color_range -> {
-                if (ssdLayerList != null) {
-                    ssdLayerList.dismiss();
-                }
-                drawFloatingLayersIntoImage();
-                createFilterPreview();
-                new ColorRangeDialog(this)
-                        .setOnColorRangeChangeListener(onColorRangeChangedListener)
-                        .setOnPositiveButtonClickListener(onLayerDuplicatingByColorRangeConfirmListener)
-                        .setOnCancelListener(onImagePreviewCancelListener)
-                        .show();
-            }
             case R.id.i_layer_filter_color_balance -> {
                 ssdLayerList.dismiss();
                 if (!item.isChecked()) {
@@ -4874,6 +4806,14 @@ public class MainActivity extends AppCompatActivity {
                 tiet.setText(layer.name);
                 til.setHint(R.string.layer_name);
                 dialog.findViewById(R.id.s_file_type).setVisibility(View.GONE);
+            }
+            case R.id.i_layer_select_by_color_range -> {
+                if (ssdLayerList != null) {
+                    ssdLayerList.dismiss();
+                }
+                new ColorRangeDialog(this, layer.colorRange)
+                        .setOnColorRangeChangeListener(onLayerColorRangeChangedListener)
+                        .show();
             }
         }
         return true;
@@ -5156,9 +5096,19 @@ public class MainActivity extends AppCompatActivity {
                 createFilterPreview();
                 new SliderDialog(this)
                         .setIcon(item.getIcon()).setTitle(R.string.lightness)
-                        .setValueFrom(-0xFF).setValueTo(0xFF).setValue(0)
-                        .setStepSize(1.0f)
+                        .setValueFrom(-0xFF).setValueTo(0xFF).setValue(0).setStepSize(1.0f)
                         .setOnChangeListener(onFilterLightnessSliderChangeListener)
+                        .setOnApplyListener(onImagePreviewPBClickListener)
+                        .setOnCancelListener(onImagePreviewCancelListener)
+                        .show();
+                clearStatus();
+            }
+            case R.id.i_filter_posterize -> {
+                drawFloatingLayersIntoImage();
+                createFilterPreview();
+                new SliderDialog(this).setTitle(R.string.posterize)
+                        .setValueFrom(0x02).setValueTo(0xFF).setValue(0xFF).setStepSize(1.0f)
+                        .setOnChangeListener(onFilterPosterizationSliderChangeListener)
                         .setOnApplyListener(onImagePreviewPBClickListener)
                         .setOnCancelListener(onImagePreviewCancelListener)
                         .show();
@@ -5179,8 +5129,7 @@ public class MainActivity extends AppCompatActivity {
                 createFilterPreview();
                 new SliderDialog(this)
                         .setIcon(item.getIcon()).setTitle(R.string.threshold)
-                        .setValueFrom(0x00).setValueTo(0xFF).setValue(0x80)
-                        .setStepSize(1.0f)
+                        .setValueFrom(0x00).setValueTo(0xFF).setValue(0x80).setStepSize(1.0f)
                         .setOnChangeListener(onFilterThresholdSliderChangeListener)
                         .setOnApplyListener(onImagePreviewPBClickListener)
                         .setOnCancelListener(onImagePreviewCancelListener)
@@ -5443,6 +5392,9 @@ public class MainActivity extends AppCompatActivity {
     private void openImage(Bitmap bitmap, Uri uri) {
         final Bitmap bm = bitmap.copy(bitmap.getConfig(), true);
         bitmap.recycle();
+        if (Settings.INST.autoSetHasAlpha()) {
+            bm.setHasAlpha(true);
+        }
         final DocumentFile documentFile = DocumentFile.fromSingleUri(this, uri);
         final String name = documentFile.getName(), mimeType = documentFile.getType();
         if (mimeType != null) {

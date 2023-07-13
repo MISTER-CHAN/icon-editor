@@ -1,22 +1,36 @@
 package com.misterchan.iconeditor.util;
 
 import android.graphics.Bitmap;
+import android.graphics.BlendMode;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.graphics.RectF;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.FloatRange;
+import androidx.annotation.IntRange;
+import androidx.annotation.Nullable;
 import androidx.annotation.Size;
 
 import com.misterchan.iconeditor.Color;
+import com.misterchan.iconeditor.ColorRange;
+import com.misterchan.iconeditor.dialog.ColorRangeDialog;
 
+import java.security.PublicKey;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Random;
 
 public class BitmapUtils {
+    private static final Paint PAINT = new Paint() {
+        {
+            setAntiAlias(false);
+            setBlendMode(BlendMode.SRC);
+            setFilterBitmap(false);
+        }
+    };
 
     public static void addLightingColorFilter(@ColorInt final int[] src, @ColorInt final int[] dst,
                                               final float scale, final float shift) {
@@ -135,6 +149,22 @@ public class BitmapUtils {
             src[i] = dst[i] & Color.BLACK | Color.rgb(src[i]);
         }
         srcBm.setPixels(src, 0, w, srcRect.left, srcRect.top, w, h);
+    }
+
+    public static Bitmap createBitmap(Bitmap src) {
+        return createBitmap(src, null);
+    }
+
+    public static Bitmap createBitmap(Bitmap src, @Nullable Rect rect) {
+        final int w = rect != null ? rect.width() : src.getWidth(), h = rect != null ? rect.height() : src.getHeight();
+        final Bitmap dst = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+        final Canvas dstCv = new Canvas(dst);
+        if (rect != null) {
+            dstCv.drawBitmap(src, rect, new Rect(0, 0, w, h), PAINT);
+        } else {
+            dstCv.drawBitmap(src, 0.0f, 0.0f, PAINT);
+        }
+        return dst;
     }
 
     private static Bitmap edgeDetection(final Bitmap bitmap) {
@@ -308,6 +338,28 @@ public class BitmapUtils {
         dst.setPixels(dstPixels, 0, w, 0, 0, w, h);
     }
 
+    public static void posterize(Bitmap bitmap, Rect rect, @IntRange(from = 0x01, to = 0xFF) int level) {
+        final int w = rect.width(), h = rect.height();
+        final int[] pixels = new int[w * h];
+        bitmap.getPixels(pixels, 0, w, rect.left, rect.top, w, h);
+        posterize(pixels, pixels, level);
+        bitmap.setPixels(pixels, 0, w, rect.left, rect.top, w, h);
+    }
+
+    public static void posterize(@ColorInt int[] src, @ColorInt int[] dst, @IntRange(from = 0x01, to = 0xFF) int level) {
+        for (int i = 0; i < src.length; ++i) {
+            // Inputs
+            final int ir = Color.red(src[i]), ig = Color.green(src[i]), ib = Color.blue(src[i]);
+
+            // Outputs
+            final int or = Math.round(ir / 255.0f * (level - 1.0f)) * 0xFF / (level - 1),
+                    og = Math.round(ig / 255.0f * (level - 1.0f)) * 0xFF / (level - 1),
+                    ob = Math.round(ib / 255.0f * (level - 1.0f)) * 0xFF / (level - 1);
+
+            dst[i] = src[i] & Color.BLACK | Color.rgb(or, og, ob);
+        }
+    }
+
     /**
      * @param fc Foreground color
      * @param bc Background color
@@ -340,6 +392,44 @@ public class BitmapUtils {
             pixels[i] = Color.argb(Color.sat(a_), fr, fg, fb);
         }
         bitmap.setPixels(pixels, 0, w, 0, 0, w, h);
+    }
+
+    public static void selectByColorRange(final Bitmap bitmap, @Nullable final Rect rect, final ColorRange cr) {
+        final int w = rect != null ? rect.width() : bitmap.getWidth(), h = rect != null ? rect.height() : bitmap.getHeight();
+        final int[] pixels = new int[w * h];
+        final int x = rect != null ? rect.left : 0, y = rect != null ? rect.top : 0;
+        bitmap.getPixels(pixels, 0, w, x, y, w, h);
+        selectByColorRange(pixels, pixels, cr);
+        bitmap.setPixels(pixels, 0, w, x, y, w, h);
+    }
+
+    public static void selectByColorRange(@ColorInt final int[] src, @ColorInt final int[] dst,
+                                          final ColorRange cr) {
+        final float[] hsv = new float[3];
+        for (int i = 0; i < src.length; ++i) {
+            Color.colorToHSV(src[i], hsv);
+            float a_ = 0.0f;
+            final float ao3 = Color.alpha(src[i]) / 255.0f / 3.0f; // Alpha over 3
+            float hi = 0.0f, ha = 0.0f; // Hue min and max
+            if (cr.transition > 0.0f) {
+                hi = cr.cuboid[0] - cr.transition * 360.0f;
+                ha = cr.cuboid[3] + cr.transition * 360.0f;
+                if (hi > ha) {
+                    if (hsv[0] < ha) hi -= 360.0f;
+                    if (hsv[0] > hi) ha += 360.0f;
+                }
+            }
+            a_ += cr.transition > 0.0f
+                    ? Math.min(Math.min(hsv[0] - hi, ha - hsv[0]) / (cr.transition * 360.0f), 1.0f) * ao3
+                    : (cr.cuboid[0] <= cr.cuboid[3] ? cr.cuboid[0] <= hsv[0] && hsv[0] <= cr.cuboid[3] : cr.cuboid[0] <= hsv[0] || hsv[0] <= cr.cuboid[3]) ? ao3 : ao3 * -2;
+            a_ += cr.transition > 0.0f
+                    ? Math.min(Math.min(hsv[1] - (cr.cuboid[1] - cr.transition), (cr.cuboid[4] + cr.transition) - hsv[1]) / cr.transition, 1.0f) * ao3
+                    : cr.cuboid[1] <= hsv[1] && hsv[1] <= cr.cuboid[4] ? ao3 : ao3 * -2;
+            a_ += cr.transition > 0.0f
+                    ? Math.min(Math.min(hsv[2] - (cr.cuboid[2] - cr.transition), (cr.cuboid[5] + cr.transition) - hsv[2]) / cr.transition, 1.0f) * ao3
+                    : cr.cuboid[2] <= hsv[2] && hsv[2] <= cr.cuboid[5] ? ao3 : ao3 * -2;
+            dst[i] = Color.argb((int) (Math.max(a_, 0.0f) * 255.0f), Color.rgb(src[i]));
+        }
     }
 
     private static void scaleAlpha(Bitmap bitmap) {

@@ -137,19 +137,19 @@ public class Layers {
     }
 
     public static Bitmap mergeLayers(final LayerTree tree, final Rect rect,
-                                     final Layer specifiedLayer, final Bitmap bmOfSpecifiedLayer, final FloatingLayer extraLayer) {
-        return mergeLayers(tree, rect, null, null, specifiedLayer, bmOfSpecifiedLayer, extraLayer);
+                                     final Layer specifiedLayer, final Bitmap specifiedLayerBm, final FloatingLayer extraLayer) {
+        return mergeLayers(tree, rect, null, null, specifiedLayer, specifiedLayerBm, extraLayer);
     }
 
     /**
-     * @param specifiedLayer     The layer whose bitmap is going to be replaced
-     * @param bmOfSpecifiedLayer The bitmap to replace with
-     * @param extraLayer         The extra layer to draw over the special layer
+     * @param specifiedLayer   The layer whose bitmap is going to be replaced
+     * @param specifiedLayerBm The bitmap to replace with
+     * @param extraLayer       The extra layer to draw over the special layer
      * @throws RuntimeException if any bitmap being drawn is recycled as this method is not thread-safe
      */
     public static Bitmap mergeLayers(final LayerTree tree, final Rect rect,
                                      final Bitmap base, final Paint basePaint,
-                                     final Layer specifiedLayer, final Bitmap bmOfSpecifiedLayer, final FloatingLayer extraLayer) throws RuntimeException {
+                                     final Layer specifiedLayer, final Bitmap specifiedLayerBm, final FloatingLayer extraLayer) throws RuntimeException {
         final LayerTree.Node backgroundNode = tree.getBackground();
         final Bitmap bitmap = Bitmap.createBitmap(rect.width(), rect.height(), Bitmap.Config.ARGB_8888);
         final Canvas canvas = new Canvas(bitmap);
@@ -200,19 +200,24 @@ public class Layers {
                             final Bitmap bmExtra = Bitmap.createBitmap(intW, intH, Bitmap.Config.ARGB_8888); // Intersection bitmap
                             final Canvas cvExtra = new Canvas(bmExtra);
                             try {
-                                cvExtra.drawBitmap(bmOfSpecifiedLayer, src, intRel, PAINT_SRC);
+                                cvExtra.drawBitmap(specifiedLayerBm, intRel, intRel, PAINT_SRC);
                                 cvExtra.drawBitmap(extraLayer.getBitmap(), extraSrc, extraDst, PAINT_SRC_OVER);
                                 canvas.drawBitmap(bmExtra, intRel, dst, paint);
                             } finally {
                                 bmExtra.recycle();
                             }
                         } else {
-                            canvas.drawBitmap(bmOfSpecifiedLayer, src, dst, paint);
+                            canvas.drawBitmap(specifiedLayerBm, src, dst, paint);
                         }
                     } else {
                         canvas.drawBitmap(layer.bitmap, src, dst, paint);
                     }
-                    addFilters(bitmap, dst, layer);
+                    if (layer.colorRange.enabled) {
+                        BitmapUtils.selectByColorRange(bitmap, dst, layer.colorRange);
+                    }
+                    if (layer.filter != null) {
+                        addFilters(bitmap, dst, layer);
+                    }
                     if (layer.clipToBelow) {
                         BitmapUtils.clip(bitmap, dst, pixels);
                     }
@@ -223,11 +228,11 @@ public class Layers {
                     }
                     if (!layer.passBelow) {
                         mergedChildren = mergeLayers(children, rect, null, null,
-                                specifiedLayer, bmOfSpecifiedLayer, extraLayer);
+                                specifiedLayer, specifiedLayerBm, extraLayer);
                         canvas.drawBitmap(mergedChildren, 0.0f, 0.0f, layer.paint);
                     } else {
                         mergedChildren = mergeLayers(children, rect, bitmap, layer.paint,
-                                specifiedLayer, bmOfSpecifiedLayer, extraLayer);
+                                specifiedLayer, specifiedLayerBm, extraLayer);
                         BitmapUtils.fillInBlank(mergedChildren, bitmap);
                     }
                     if (layer.clipToBelow) {

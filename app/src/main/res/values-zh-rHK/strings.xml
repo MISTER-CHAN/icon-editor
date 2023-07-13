@@ -15,9 +15,12 @@
     <string name="attaching_eraser">附擦膠</string>
     <string name="author">作者</string>
     <string name="automatic">自動</string>
+    <string name="automatically_tell_has_alpha">自動吿知有 Alpha</string>
+    <string name="automatically_tell_bitmap_pixels_contain_alpha_values">自動向二進制位圖吿知像素包含 Alpha 値</string>
     <string name="background">背景</string>
     <string name="background_color">底色</string>
     <string name="below_background">背景底下</string>
+    <string name="bitmap_opaque_can_take_faster_drawing_case">一個不透明二進制位圖具有更快繪畫速度</string>
     <string name="blend_mode">混合模式</string>
     <string name="blur_radius">模糊半徑</string>
     <string name="bold">粗體</string>
@@ -202,12 +205,14 @@
     <string name="pen_with_filter">濾光筆</string>
     <string name="performance">效能</string>
     <string name="pick_in_hsv">以 HSV 拾取</string>
+    <string name="pick_rgb_colors_in_hsv">以 HSV 拾取 RGB 顏色</string>
     <string name="pixel">像素</string>
     <string name="please_save_first">請先儲存。</string>
     <string name="please_switch_orientation_to_vertical_to_get_all_functions">請切換至縱向以獲取所有功能。</string>
     <string name="point">點</string>
     <string name="poly">多邊形</string>
     <string name="position">位置</string>
+    <string name="posterize">海報化</string>
     <string name="precise">精密</string>
     <string name="preferences">偏好</string>
     <string name="properties">屬性</string>
@@ -240,6 +245,7 @@
     <string name="seed">種子</string>
     <string name="select">選取</string>
     <string name="select_all">全選</string>
+    <string name="select_by_color_range">選取顏色範圍</string>
     <string name="selected_layers">選中圖層級別</string>
     <string name="send_to_back">置底</string>
     <string name="serif"> 白體</string>
@@ -268,6 +274,7 @@
     <string name="state_length">長：%f</string>
     <string name="state_l_t_r_b">左：%d，上：%d，右：%d，下：%d</string>
     <string name="state_l_t_r_b_size">左：%d，上：%d，右：%d，下：%d，尺寸：%d × %d</string>
+    <string name="state_posterization">海報化等級：%d</string>
     <string name="state_radius">半徑：%.1f</string>
     <string name="state_ruler">(%d, %d) – (%d, %d)，投影：(%d, %d)，長：%s</string>
     <string name="state_saturation">飽和度：%.1f</string>
