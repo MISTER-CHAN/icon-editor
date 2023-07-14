@@ -264,7 +264,7 @@
     <string name="stable">穩定</string>
     <string name="stamp">印章</string>
     <string name="state_axes">軸長：%d, %d</string>
-    <string name="state_lightness">明度：%d</string>
+    <string name="state_lightness">明度：%+d</string>
     <string name="state_contrast">對比度：%.1f</string>
     <string name="state_from_to_size">由：(%d, %d)，至：(%d, %d)，尺寸：%d × %d</string>
     <string name="state_from_to_size_1">由：(%d, %d)，至：(%d, %d)，尺寸：1 × 1</string>
@@ -274,7 +274,7 @@
     <string name="state_length">長：%f</string>
     <string name="state_l_t_r_b">左：%d，上：%d，右：%d，下：%d</string>
     <string name="state_l_t_r_b_size">左：%d，上：%d，右：%d，下：%d，尺寸：%d × %d</string>
-    <string name="state_posterization">海報化等級：%d</string>
+    <string name="state_posterization">海報化等級：%s</string>
     <string name="state_radius">半徑：%.1f</string>
     <string name="state_ruler">(%d, %d) – (%d, %d)，投影：(%d, %d)，長：%s</string>
     <string name="state_saturation">飽和度：%.1f</string>

@@ -271,10 +271,10 @@
     <string name="state_invert">反相：%.1f</string>
     <string name="state_left_top">左：%d，上：%d</string>
     <string name="state_length">长度：%f</string>
-    <string name="state_lightness">明度：%d</string>
+    <string name="state_lightness">明度：%+d</string>
     <string name="state_l_t_r_b">左：%d，上：%d，右：%d，下：%d</string>
     <string name="state_l_t_r_b_size">左：%d，上：%d，右：%d，下：%d，尺寸：%d × %d</string>
-    <string name="state_posterization">海报化等级：%d</string>
+    <string name="state_posterization">海报化等级：%s</string>
     <string name="state_radius">半径：%.1f</string>
     <string name="state_ruler">(%d, %d) – (%d, %d)，投影：(%d, %d)，长：%s</string>
     <string name="state_saturation">饱和度：%.1f</string>

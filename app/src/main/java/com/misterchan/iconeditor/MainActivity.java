@@ -841,6 +841,7 @@ public class MainActivity extends AppCompatActivity {
             filterPreview.addLightingColorFilter(1.0f, value);
             drawFilterPreviewOntoView(stopped);
         }, stopped);
+        final int i = (int) value, radix = Settings.INST.argbCompRadix();
         activityMain.tvStatus.setText(getString(R.string.state_lightness, (int) value));
     };
 
@@ -850,12 +851,15 @@ public class MainActivity extends AppCompatActivity {
         activityMain.tvStatus.setText(getString(R.string.state_lightness, (int) value));
     };
 
+    @SuppressLint("StringFormatMatches")
     private final OnSliderChangeListener onFilterPosterizationSliderChangeListener = (slider, value, stopped) -> {
         runOrStart(() -> {
             filterPreview.posterize((int) value);
             drawFilterPreviewOntoView(stopped);
         }, stopped);
-        activityMain.tvStatus.setText(getString(R.string.state_posterization, (int) value));
+        activityMain.tvStatus.setText(String.format(
+                getString(R.string.state_posterization, Settings.INST.argbCompFormat()),
+                (int) value));
     };
 
     private final OnSliderChangeListener onFilterSaturationSliderChangeListener = (slider, value, stopped) -> {
@@ -895,6 +899,7 @@ public class MainActivity extends AppCompatActivity {
         activityMain.tvStatus.setText(getString(R.string.state_threshold, (int) value));
     };
 
+    @SuppressLint("StringFormatMatches")
     private final OnSliderChangeListener onLayerAlphaSliderChangeListener = (slider, value, stopped) -> {
         layer.paint.setAlpha((int) value);
         drawBitmapOntoView(stopped);
@@ -1415,7 +1420,7 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    @SuppressLint({"ClickableViewAccessibility"})
+    @SuppressLint({"ClickableViewAccessibility", "StringFormatMatches"})
     private final View.OnTouchListener onIVTouchWithImpreciseEyedropperListener = (v, event) -> {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN, MotionEvent.ACTION_MOVE -> {
@@ -1427,8 +1432,7 @@ public class MainActivity extends AppCompatActivity {
                 activityMain.vForegroundColor.setBackgroundColor(color);
                 activityMain.tvStatus.setText(String.format(
                         getString(R.string.state_eyedropper_imprecise, Settings.INST.argbCompFormat()),
-                        bx, by,
-                        Color.alpha(color), Color.red(color), Color.green(color), Color.blue(color)));
+                        bx, by, Color.alpha(color), Color.red(color), Color.green(color), Color.blue(color)));
             }
             case MotionEvent.ACTION_CANCEL, MotionEvent.ACTION_UP -> clearStatus();
         }
@@ -4408,7 +4412,7 @@ public class MainActivity extends AppCompatActivity {
         return onLayerOptionsItemSelected(item, item.getItemId());
     }
 
-    @SuppressLint("NonConstantResourceId")
+    @SuppressLint({"NonConstantResourceId", "StringFormatMatches"})
     private boolean onLayerOptionsItemSelected(MenuItem item, int itemId) {
         switch (itemId) {
             default -> {
@@ -5663,6 +5667,7 @@ public class MainActivity extends AppCompatActivity {
         return y >= h ? h - 1 : y;
     }
 
+    @SuppressLint("StringFormatMatches")
     private void save() {
         if (project.filePath == null) {
             if (!checkOrRequestPermission()) {
