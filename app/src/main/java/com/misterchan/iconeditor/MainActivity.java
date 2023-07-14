@@ -841,7 +841,6 @@ public class MainActivity extends AppCompatActivity {
             filterPreview.addLightingColorFilter(1.0f, value);
             drawFilterPreviewOntoView(stopped);
         }, stopped);
-        final int i = (int) value, radix = Settings.INST.argbCompRadix();
         activityMain.tvStatus.setText(getString(R.string.state_lightness, (int) value));
     };
 
