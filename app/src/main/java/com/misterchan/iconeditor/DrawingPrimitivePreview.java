@@ -37,16 +37,6 @@ class DrawingPrimitivePreview implements FloatingLayer {
         return canvas;
     }
 
-    @Override
-    public int getLeft() {
-        return 0;
-    }
-
-    @Override
-    public int getTop() {
-        return 0;
-    }
-
     public boolean isRecycled() {
         return bitmap == null;
     }

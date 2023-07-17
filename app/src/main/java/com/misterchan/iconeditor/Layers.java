@@ -181,13 +181,18 @@ public class Layers {
 
                     Rect extraSrc = null, extraDst = null; // Intersection between intersection and extra layer
                     if (layer == specifiedLayer && extraLayer != null) {
-                        final int w = extraLayer.getWidth(), h = extraLayer.getHeight();
-                        extraSrc = new Rect(0, 0, w, h);
-                        final int sol = -extraLayer.getLeft() - layer.left + rect.left, sot = -extraLayer.getTop() - layer.top + rect.top; // Origin location relative to extra layer
-                        if (extraSrc.intersect(sol + dst.left, sot + dst.top, sol + dst.right, sot + dst.bottom)) {
-                            extraDst = new Rect(intRel);
-                            final int dl = -dst.left - rect.left + layer.left + extraLayer.getLeft(), dt = -dst.top - rect.top + layer.top + extraLayer.getTop(); // Extra location relative to intersection
-                            extraDst.intersect(dl, dt, dl + w, dt + h);
+                        if (extraLayer.hasRect()) {
+                            final int w = extraLayer.getWidth(), h = extraLayer.getHeight();
+                            extraSrc = new Rect(0, 0, w, h);
+                            final int sol = -extraLayer.getLeft() - layer.left + rect.left, sot = -extraLayer.getTop() - layer.top + rect.top; // Origin location relative to extra layer
+                            if (extraSrc.intersect(sol + dst.left, sot + dst.top, sol + dst.right, sot + dst.bottom)) {
+                                extraDst = new Rect(intRel);
+                                final int dl = -dst.left - rect.left + layer.left + extraLayer.getLeft(), dt = -dst.top - rect.top + layer.top + extraLayer.getTop(); // Extra location relative to intersection
+                                extraDst.intersect(dl, dt, dl + w, dt + h);
+                            }
+                        } else {
+                            extraSrc = src;
+                            extraDst = intRel;
                         }
                     }
 
@@ -200,7 +205,7 @@ public class Layers {
                             final Bitmap bmExtra = Bitmap.createBitmap(intW, intH, Bitmap.Config.ARGB_8888); // Intersection bitmap
                             final Canvas cvExtra = new Canvas(bmExtra);
                             try {
-                                cvExtra.drawBitmap(specifiedLayerBm, intRel, intRel, PAINT_SRC);
+                                cvExtra.drawBitmap(specifiedLayerBm, src, intRel, PAINT_SRC);
                                 cvExtra.drawBitmap(extraLayer.getBitmap(), extraSrc, extraDst, PAINT_SRC_OVER);
                                 canvas.drawBitmap(bmExtra, intRel, dst, paint);
                             } finally {

@@ -60,6 +60,11 @@ class Transformer implements FloatingLayer {
     }
 
     @Override
+    public boolean hasRect() {
+        return true;
+    }
+
+    @Override
     public Bitmap getBitmap() {
         return bitmap;
     }

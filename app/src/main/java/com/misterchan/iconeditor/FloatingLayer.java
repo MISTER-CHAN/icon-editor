@@ -3,11 +3,19 @@ package com.misterchan.iconeditor;
 import android.graphics.Bitmap;
 
 interface FloatingLayer {
+    default boolean hasRect() {
+        return false;
+    }
+
     Bitmap getBitmap();
 
-    int getLeft();
+    default int getLeft() {
+        return 0;
+    }
 
-    int getTop();
+    default int getTop() {
+        return 0;
+    }
 
     default int getWidth() {
         return getBitmap().getWidth();
