@@ -144,7 +144,7 @@ public class Layers {
     /**
      * @param specifiedLayer   The layer whose bitmap is going to be replaced
      * @param specifiedLayerBm The bitmap to replace with
-     * @param extraLayer       The extra layer to draw over the special layer
+     * @param extraLayer       The extra layer to draw over the specified layer
      * @throws RuntimeException if any bitmap being drawn is recycled as this method is not thread-safe
      */
     public static Bitmap mergeLayers(final LayerTree tree, final Rect rect,
