@@ -16,7 +16,7 @@ import com.misterchan.iconeditor.Settings;
 import com.misterchan.iconeditor.listener.AfterTextChangedListener;
 import com.misterchan.iconeditor.listener.OnSliderValueChangeListener;
 
-public class CmykColorPicker extends ColorPicker {
+class CmykColorPicker extends ColorPicker {
 
     private final int radix;
     private Slider sCyan, sMagenta, sYellow, sKey;
@@ -35,7 +35,7 @@ public class CmykColorPicker extends ColorPicker {
         this.oldColor = oldColor;
     }
 
-    public static ColorPicker make(Context context, final OnColorPickListener onColorPickListener, @ColorLong final Long oldColor) {
+    static ColorPicker make(Context context, final OnColorPickListener onColorPickListener, @ColorLong final Long oldColor) {
         return new CmykColorPicker(context, onColorPickListener, oldColor);
     }
 

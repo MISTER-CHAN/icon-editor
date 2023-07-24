@@ -1,9 +1,9 @@
 package com.misterchan.iconeditor.colorpicker;
 
 import android.content.Context;
-import android.graphics.ColorSpace;
 import android.widget.GridLayout;
 
+import androidx.annotation.ColorInt;
 import androidx.annotation.ColorLong;
 import androidx.annotation.IntRange;
 import androidx.annotation.Size;
@@ -20,9 +20,15 @@ import com.misterchan.iconeditor.Settings;
 import com.misterchan.iconeditor.listener.AfterTextChangedListener;
 import com.misterchan.iconeditor.listener.OnSliderValueChangeListener;
 
-public class HsvColorPicker extends ColorPicker {
+class HsvColorPicker extends ColorPicker {
 
+    private final boolean hasAlpha;
+    private final boolean type;
+    private final int alphaRadix;
+    private Slider sAlpha;
     private Slider sHue, sSaturation, sValue;
+    private final String alphaFormat;
+    private TextInputEditText tietAlpha;
     private TextInputEditText tietHue, tietSaturation, tietValue;
 
     @Size(3)
@@ -50,14 +56,30 @@ public class HsvColorPicker extends ColorPicker {
         } else {
             this.oldColor = Color.BLACK;
         }
+
+        hasAlpha = Settings.INST.pickInHsv();
+        type = Settings.INST.argbColorType();
+        alphaFormat = type ? null : Settings.INST.argbCompFormat();
+        alphaRadix = type ? 10 : Settings.INST.argbCompRadix();
     }
 
-    public static ColorPicker make(Context context, final OnColorPickListener onColorPickListener, @ColorLong final Long oldColor) {
+    static ColorPicker make(Context context, final OnColorPickListener onColorPickListener, @ColorLong final Long oldColor) {
         return new HsvColorPicker(context, onColorPickListener, oldColor);
     }
 
+    private void onAlphaChanged(String s) {
+        try {
+            sAlpha.setValue(type ? Float.parseFloat(s) : Integer.parseUnsignedInt(s, alphaRadix));
+        } catch (NumberFormatException e) {
+        }
+        onComponentChanged();
+    }
+
     private void onComponentChanged() {
-        final int color = Color.BLACK | Color.HSVToColor(hsv);
+        @ColorInt final int rgb = Color.HSVToColor(hsv);
+        final int color = hasAlpha
+                ? Color.argb((int) (type ? sAlpha.getValue() * 0xFF : sAlpha.getValue()), rgb)
+                : Color.BLACK | rgb;
         newColor = Color.pack(color);
         vPreview.setBackgroundColor(color);
     }
@@ -97,9 +119,15 @@ public class HsvColorPicker extends ColorPicker {
         tietSaturation = (TextInputEditText) tilSaturation.getEditText();
         tietValue = (TextInputEditText) tilValue.getEditText();
         vPreview = dialog.findViewById(R.id.v_color);
+        if (hasAlpha) {
+            sAlpha = dialog.findViewById(R.id.s_alpha);
+            tietAlpha = dialog.findViewById(R.id.tiet_alpha);
+        }
 
         hideOtherColorPickers(dialog);
-        hideAlphaComp(gl);
+        if (!hasAlpha) {
+            hideAlphaComp(gl);
+        }
 
         sHue.setValueTo(360.0f);
         sSaturation.setValueTo(100.0f);
@@ -119,10 +147,28 @@ public class HsvColorPicker extends ColorPicker {
         tietHue.addTextChangedListener((AfterTextChangedListener) this::onHueChanged);
         tietSaturation.addTextChangedListener((AfterTextChangedListener) s -> onSatOrValChanged(1, s, sSaturation));
         tietValue.addTextChangedListener((AfterTextChangedListener) s -> onSatOrValChanged(2, s, sValue));
+        if (hasAlpha) {
+            sAlpha.setValueTo(type ? 1.0f : 0xFF);
+            if (type) {
+                tietAlpha.setInputType(ColorPicker.EDITOR_TYPE_NUM_DEC);
+            } else {
+                if (alphaRadix <= 10) {
+                    tietAlpha.setInputType(ColorPicker.EDITOR_TYPE_NUM);
+                } else if (alphaRadix == 16) {
+                    tietAlpha.setKeyListener(ColorPicker.KEY_LISTENER_HEX);
+                }
+            }
+            sAlpha.addOnChangeListener((OnSliderValueChangeListener) (slider, value) -> tietAlpha.setText(type ? String.valueOf(value) : String.format(alphaFormat, (int) value)));
+            tietAlpha.addTextChangedListener((AfterTextChangedListener) this::onAlphaChanged);
+        }
 
-        Color.colorToHSV(Color.toArgb(oldColor), hsv);
+        @ColorInt final int oldColorInt = Color.toArgb(oldColor);
+        Color.colorToHSV(oldColorInt, hsv);
         tietHue.setText(String.valueOf(hsv[0]));
         tietSaturation.setText(String.valueOf(hsv[1] * 100.0f));
         tietValue.setText(String.valueOf(hsv[2] * 100.0f));
+        if (hasAlpha) {
+            tietAlpha.setText(type ? String.valueOf(Color.alpha(oldColor)) : String.format(alphaFormat, Color.alpha(oldColorInt)));
+        }
     }
 }

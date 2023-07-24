@@ -18,7 +18,7 @@ import com.misterchan.iconeditor.R;
 import com.misterchan.iconeditor.listener.AfterTextChangedListener;
 import com.misterchan.iconeditor.listener.OnSliderValueChangeListener;
 
-public class XyYColorPicker extends ColorPicker {
+class XyYColorPicker extends ColorPicker {
 
     private static final ColorSpace XYZ = ColorSpace.get(ColorSpace.Named.CIE_XYZ);
 
@@ -42,7 +42,7 @@ public class XyYColorPicker extends ColorPicker {
         this.oldColor = oldColor;
     }
 
-    public static ColorPicker make(Context context, final OnColorPickListener onColorPickListener, @ColorLong final Long oldColor) {
+    static ColorPicker make(Context context, final OnColorPickListener onColorPickListener, @ColorLong final Long oldColor) {
         return new XyYColorPicker(context, onColorPickListener, oldColor);
     }
 
