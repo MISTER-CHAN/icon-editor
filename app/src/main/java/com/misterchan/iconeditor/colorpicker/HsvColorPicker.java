@@ -1,7 +1,17 @@
 package com.misterchan.iconeditor.colorpicker;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BlendMode;
+import android.graphics.Canvas;
+import android.graphics.ComposeShader;
+import android.graphics.LinearGradient;
+import android.graphics.Paint;
+import android.graphics.Shader;
+import android.view.MotionEvent;
 import android.widget.GridLayout;
+import android.widget.ImageView;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.ColorLong;
@@ -9,6 +19,7 @@ import androidx.annotation.IntRange;
 import androidx.annotation.Size;
 import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
+import androidx.core.view.OneShotPreDrawListener;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.slider.Slider;
@@ -22,9 +33,23 @@ import com.misterchan.iconeditor.listener.OnSliderValueChangeListener;
 
 class HsvColorPicker extends ColorPicker {
 
+    private static final Paint PAINT_THUMB = new Paint() {
+        {
+            setBlendMode(BlendMode.DIFFERENCE);
+            setColor(Color.WHITE);
+            setStrokeWidth(2.0f);
+            setStyle(Style.STROKE);
+            setFilterBitmap(false);
+        }
+    };
+
     private final boolean hasAlpha;
     private final boolean type;
+    private Canvas canvas;
+    private ImageView ivHsv;
     private final int alphaRadix;
+    private int hsvImageW, hsvImageH;
+    private Shader valShader;
     private Slider sAlpha;
     private Slider sHue, sSaturation, sValue;
     private final String alphaFormat;
@@ -32,7 +57,15 @@ class HsvColorPicker extends ColorPicker {
     private TextInputEditText tietHue, tietSaturation, tietValue;
 
     @Size(3)
-    private final float[] hsv = new float[3];
+    private final float[] hsv = new float[3], hue = {0.0f, 1.0f, 1.0f};
+
+    private final Paint paint = new Paint() {
+        {
+            setAntiAlias(false);
+            setBlendMode(BlendMode.SRC);
+            setFilterBitmap(false);
+        }
+    };
 
     private HsvColorPicker(Context context, final OnColorPickListener onColorPickListener, @ColorLong final Long oldColor) {
         this(context, R.string.convert_hsv_to_rgb, onColorPickListener, oldColor, 0);
@@ -45,7 +78,7 @@ class HsvColorPicker extends ColorPicker {
                 .setNegativeButton(R.string.cancel, null)
                 .setPositiveButton(R.string.ok, (dialog, which) -> onColorPickListener.onPick(oldColor, newColor))
                 .setTitle(titleId)
-                .setView(R.layout.color_picker);
+                .setView(R.layout.color_picker_hsv);
 
         if (oldColor != null) {
             this.oldColor = oldColor;
@@ -61,6 +94,21 @@ class HsvColorPicker extends ColorPicker {
         type = Settings.INST.argbColorType();
         alphaFormat = type ? null : Settings.INST.argbCompFormat();
         alphaRadix = type ? 10 : Settings.INST.argbCompRadix();
+    }
+
+    private void drawHsv() {
+        if (valShader == null) {
+            return;
+        }
+        hue[0] = hsv[0];
+        final int color = Color.BLACK | Color.HSVToColor(hue);
+        final Shader satShader = new LinearGradient(0.0f, 0.0f, ivHsv.getWidth(), 0.0f,
+                Color.WHITE, color, Shader.TileMode.CLAMP);
+        final Shader satValShader = new ComposeShader(valShader, satShader, BlendMode.MULTIPLY);
+        paint.setShader(satValShader);
+        canvas.drawRect(0.0f, 0.0f, ivHsv.getWidth(), ivHsv.getHeight(), paint);
+        canvas.drawCircle(hsv[1] * hsvImageW, (1.0f - hsv[2]) * hsvImageH, 20.0f, PAINT_THUMB);
+        ivHsv.invalidate();
     }
 
     static ColorPicker make(Context context, final OnColorPickListener onColorPickListener, @ColorLong final Long oldColor) {
@@ -82,6 +130,7 @@ class HsvColorPicker extends ColorPicker {
                 : Color.BLACK | rgb;
         newColor = Color.pack(color);
         vPreview.setBackgroundColor(color);
+        drawHsv();
     }
 
     private void onHueChanged(String s) {
@@ -105,10 +154,12 @@ class HsvColorPicker extends ColorPicker {
     }
 
     @Override
+    @SuppressLint("ClickableViewAccessibility")
     public void show() {
         final AlertDialog dialog = dialogBuilder.show();
 
         final GridLayout gl = dialog.findViewById(R.id.gl);
+        ivHsv = dialog.findViewById(R.id.iv_sat_val);
         sHue = dialog.findViewById(R.id.s_comp_0);
         sSaturation = dialog.findViewById(R.id.s_comp_1);
         sValue = dialog.findViewById(R.id.s_comp_2);
@@ -124,10 +175,19 @@ class HsvColorPicker extends ColorPicker {
             tietAlpha = dialog.findViewById(R.id.tiet_alpha);
         }
 
-        hideOtherColorPickers(dialog);
         if (!hasAlpha) {
             hideAlphaComp(gl);
         }
+
+        OneShotPreDrawListener.add(ivHsv, () -> {
+            hsvImageW = ivHsv.getWidth();
+            hsvImageH = ivHsv.getHeight();
+            final Bitmap bitmap = Bitmap.createBitmap(hsvImageW, hsvImageH, Bitmap.Config.ARGB_4444);
+            canvas = new Canvas(bitmap);
+            ivHsv.setImageBitmap(bitmap);
+            valShader = new LinearGradient(0.0f, 0.0f, 0.0f, hsvImageH, Color.WHITE, Color.BLACK, Shader.TileMode.CLAMP);
+            drawHsv();
+        });
 
         sHue.setValueTo(360.0f);
         sSaturation.setValueTo(100.0f);
@@ -161,6 +221,17 @@ class HsvColorPicker extends ColorPicker {
             sAlpha.addOnChangeListener((OnSliderValueChangeListener) (slider, value) -> tietAlpha.setText(type ? String.valueOf(value) : String.format(alphaFormat, (int) value)));
             tietAlpha.addTextChangedListener((AfterTextChangedListener) this::onAlphaChanged);
         }
+
+        ivHsv.setOnTouchListener((v, event) -> {
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN, MotionEvent.ACTION_MOVE -> {
+                    final float x = event.getX(), y = event.getY();
+                    tietSaturation.setText(String.valueOf(Math.min(Math.max(x, 0.0f), hsvImageW) / hsvImageW * 100.0f));
+                    tietValue.setText(String.valueOf((1.0f - Math.min(Math.max(y, 0.0f), hsvImageH) / hsvImageH) * 100.0f));
+                }
+            }
+            return true;
+        });
 
         @ColorInt final int oldColorInt = Color.toArgb(oldColor);
         Color.colorToHSV(oldColorInt, hsv);

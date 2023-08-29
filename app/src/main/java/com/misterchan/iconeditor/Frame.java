@@ -52,24 +52,24 @@ public class Frame {
     }
 
     public Bitmap mergeReferenceLayers() {
-        final List<Integer> refLayersIndexes = new ArrayList<>();
+        final List<Layer> refLayers = new ArrayList<>();
         for (int i = layers.size() - 1; i >= 0; --i) {
             final Layer layer = layers.get(i);
             if (layer.reference && i != selectedLayerIndex) {
-                refLayersIndexes.add(i);
+                refLayers.add(0, layer);
             }
         }
-        switch (refLayersIndexes.size()) {
+        switch (refLayers.size()) {
             case 0 -> {
                 return null;
             }
             case 1 -> {
-                final Bitmap src = layers.get(refLayersIndexes.get(0)).bitmap;
+                final Bitmap src = refLayers.get(0).bitmap;
                 final Bitmap dst = Bitmap.createBitmap(src.getWidth(), src.getHeight(), Bitmap.Config.ARGB_8888);
                 new Canvas(dst).drawBitmap(src, 0.0f, 0.0f, PAINT_SRC);
                 return dst;
             }
         }
-        return Layers.mergeLayers(Layers.computeLayerTree(layers, refLayersIndexes));
+        return Layers.mergeLayers(Layers.computeLayerTree(refLayers));
     }
 }

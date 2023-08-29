@@ -66,7 +66,6 @@ class LabColorPicker extends ColorPicker {
         tietB = (TextInputEditText) tilB.getEditText();
         vPreview = dialog.findViewById(R.id.v_color);
 
-        hideOtherColorPickers(dialog);
         hideAlphaComp(dialog.findViewById(R.id.gl));
 
         sL.setValueTo(100.0f);

@@ -1243,6 +1243,16 @@ public class MainActivity extends AppCompatActivity {
         public void onFinalPointerUp() {
         }
 
+        public void onNonPrimaryPointerDown() {
+            if (!isShapeStopped) {
+                isShapeStopped = true;
+                dpPreview.erase();
+            }
+            if (dpPreview.isRecycled()) {
+                undoOrRedo(layer.history.getCurrent());
+            }
+        }
+
         @Override
         public boolean onTouch(View v, MotionEvent event) {
             final int pointerCount = event.getPointerCount(), action = event.getAction();
@@ -1258,13 +1268,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                     case MotionEvent.ACTION_POINTER_DOWN -> {
                         multiTouch = true;
-                        if (!isShapeStopped) {
-                            isShapeStopped = true;
-                            dpPreview.erase();
-                        }
-                        if (dpPreview.isRecycled()) {
-                            undoOrRedo(layer.history.getCurrent());
-                        }
+                        onNonPrimaryPointerDown();
                         if (lastMerged == null) {
                             mergeLayersEntire();
                         }
@@ -1420,41 +1424,52 @@ public class MainActivity extends AppCompatActivity {
     };
 
     @SuppressLint({"ClickableViewAccessibility", "StringFormatMatches"})
-    private final View.OnTouchListener onIVTouchWithImpreciseEyedropperListener = (v, event) -> {
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN, MotionEvent.ACTION_MOVE -> {
-                final float x = event.getX(), y = event.getY();
-                final int bx = satX(bitmap, toBitmapX(x)), by = satY(bitmap, toBitmapY(y));
-                final int color = activityMain.optionsEyedropper.btgSrc.getCheckedButtonId() == R.id.b_all_layers
-                        ? viewBitmap.getPixel((int) x, (int) y) : bitmap.getPixel(bx, by);
-                paint.setColor(color);
-                activityMain.vForegroundColor.setBackgroundColor(color);
-                activityMain.tvStatus.setText(String.format(
-                        getString(R.string.state_eyedropper_imprecise, Settings.INST.argbCompFormat()),
-                        bx, by, Color.alpha(color), Color.red(color), Color.green(color), Color.blue(color)));
-            }
-            case MotionEvent.ACTION_CANCEL, MotionEvent.ACTION_UP -> clearStatus();
+    private final View.OnTouchListener onIVTouchWithImpreciseEyedropperListener = new OnMultiTouchListener() {
+        @Override
+        public void onNonPrimaryPointerDown() {
         }
-        return true;
+
+        @Override
+        public void onSingleTouch(View v, MotionEvent event) {
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN, MotionEvent.ACTION_MOVE -> {
+                    final float x = event.getX(), y = event.getY();
+                    final int bx = satX(bitmap, toBitmapX(x)), by = satY(bitmap, toBitmapY(y));
+                    final int color = activityMain.optionsEyedropper.btgSrc.getCheckedButtonId() == R.id.b_all_layers
+                            ? viewBitmap.getPixel((int) x, (int) y) : bitmap.getPixel(bx, by);
+                    paint.setColor(color);
+                    activityMain.vForegroundColor.setBackgroundColor(color);
+                    activityMain.tvStatus.setText(String.format(
+                            getString(R.string.state_eyedropper_imprecise, Settings.INST.argbCompFormat()),
+                            bx, by, Color.alpha(color), Color.red(color), Color.green(color), Color.blue(color)));
+                }
+                case MotionEvent.ACTION_CANCEL, MotionEvent.ACTION_UP -> clearStatus();
+            }
+        }
     };
 
-    @SuppressLint({"ClickableViewAccessibility"})
-    private final View.OnTouchListener onIVTouchWithPreciseEyedropperListener = (v, event) -> {
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN, MotionEvent.ACTION_MOVE -> {
-                final float x = event.getX(), y = event.getY();
-                final int bx = satX(bitmap, toBitmapX(x)), by = satY(bitmap, toBitmapY(y));
-                final android.graphics.Color color = activityMain.optionsEyedropper.btgSrc.getCheckedButtonId() == R.id.b_all_layers
-                        ? viewBitmap.getColor((int) x, (int) y) : bitmap.getColor(bx, by);
-                paint.setColor(color.pack());
-                activityMain.vForegroundColor.setBackgroundColor(color.toArgb());
-                activityMain.tvStatus.setText(getString(R.string.state_eyedropper_precise,
-                        bx, by, String.valueOf(color.alpha()),
-                        String.valueOf(color.red()), String.valueOf(color.green()), String.valueOf(color.blue())));
-            }
-            case MotionEvent.ACTION_CANCEL, MotionEvent.ACTION_UP -> clearStatus();
+    private final View.OnTouchListener onIVTouchWithPreciseEyedropperListener = new OnMultiTouchListener() {
+        @Override
+        public void onNonPrimaryPointerDown() {
         }
-        return true;
+
+        @Override
+        public void onSingleTouch(View v, MotionEvent event) {
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN, MotionEvent.ACTION_MOVE -> {
+                    final float x = event.getX(), y = event.getY();
+                    final int bx = satX(bitmap, toBitmapX(x)), by = satY(bitmap, toBitmapY(y));
+                    final android.graphics.Color color = activityMain.optionsEyedropper.btgSrc.getCheckedButtonId() == R.id.b_all_layers
+                            ? viewBitmap.getColor((int) x, (int) y) : bitmap.getColor(bx, by);
+                    paint.setColor(color.pack());
+                    activityMain.vForegroundColor.setBackgroundColor(color.toArgb());
+                    activityMain.tvStatus.setText(getString(R.string.state_eyedropper_precise,
+                            bx, by, String.valueOf(color.alpha()),
+                            String.valueOf(color.red()), String.valueOf(color.green()), String.valueOf(color.blue())));
+                }
+                case MotionEvent.ACTION_CANCEL, MotionEvent.ACTION_UP -> clearStatus();
+            }
+        }
     };
 
     private View.OnTouchListener onIVTouchWithEyedropperListener;

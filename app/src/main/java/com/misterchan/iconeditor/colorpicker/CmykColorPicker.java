@@ -70,7 +70,6 @@ class CmykColorPicker extends ColorPicker {
         tietKey = dialog.findViewById(R.id.tiet_comp_3);
         vPreview = dialog.findViewById(R.id.v_color);
 
-        hideOtherColorPickers(dialog);
         hideAlphaComp(gl);
         showExtraComp(gl);
 

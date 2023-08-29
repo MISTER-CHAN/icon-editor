@@ -8,6 +8,8 @@ import android.graphics.Bitmap;
 import android.graphics.BlendMode;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.util.Log;
+import android.util.Printer;
 import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
@@ -52,6 +54,9 @@ public class CurvesDialog {
     @Size(5)
     private Bitmap[] histBitmaps = new Bitmap[5];
 
+    @Size(0x400)
+    private final float[] pts = new float[0x400];
+
     /**
      * <table>
      *     <tr>
@@ -71,23 +76,28 @@ public class CurvesDialog {
     private final Paint normalPaint = new Paint();
 
     private final Paint compPaint = new Paint();
+    private final Paint histCompPaint = new Paint();
 
     private final Paint[] paints = new Paint[]{new Paint(), new Paint(), new Paint(), compPaint, compPaint};
+    private final Paint[] histPaints = new Paint[]{new Paint(), new Paint(), new Paint(), histCompPaint, histCompPaint};
     private Paint paint;
-
-    private final Paint eraser = new Paint() {
-        {
-            setBlendMode(BlendMode.CLEAR);
-        }
-    };
 
     private final Paint.FontMetrics fontMetrics = normalPaint.getFontMetrics();
 
     {
+        for (int i = 0x00; i <= 0xFF; ++i) {
+            if (i > 0x00) pts[i * 4 - 2] = i;
+            if (i < 0xFF) pts[i * 4] = i;
+        }
+
         initPaint(compPaint);
         initPaint(paints[0]);
         initPaint(paints[1]);
         initPaint(paints[2]);
+        initHistPaint(histCompPaint);
+        initHistPaint(histPaints[0]);
+        initHistPaint(histPaints[1]);
+        initHistPaint(histPaints[2]);
     }
 
     public CurvesDialog(Context context) {
@@ -113,15 +123,21 @@ public class CurvesDialog {
         final TypedValue typedValue = new TypedValue();
         theme.resolveAttribute(android.R.attr.textColorPrimary, typedValue, true);
         final int color = context.getResources().getColor(typedValue.resourceId, theme);
+        final int a = Color.alpha(color) << 24;
+        final int aHalf = Color.alpha(color) / 2 << 24;
         normalPaint.setColor(color);
         compPaint.setColor(color);
+        histCompPaint.setColor(aHalf | Color.rgb(color));
         final int r = sat(Color.red(color) - 0x40) << 16,
                 g = sat(Color.green(color) - 0x40) << 8,
-                b = sat(Color.blue(color) - 0x40),
-                a = color & Color.BLACK;
-        paints[0].setColor(a | sat(r + 0x40) << 16 | g | b);
-        paints[1].setColor(a | r | sat(g + 0x40) << 8 | b);
-        paints[2].setColor(a | r | g | sat(b + 0x40));
+                b = sat(Color.blue(color) - 0x40);
+        final int cr = sat(r + 0x40) << 16 | g | b, cg = r | sat(g + 0x40) << 8 | b, cb = r | g | sat(b + 0x40);
+        paints[0].setColor(a | cr);
+        paints[1].setColor(a | cg);
+        paints[2].setColor(a | cb);
+        histPaints[0].setColor(aHalf | cr);
+        histPaints[1].setColor(aHalf | cg);
+        histPaints[2].setColor(aHalf | cb);
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -163,23 +179,16 @@ public class CurvesDialog {
 
     private void drawGraphics() {
         bitmap.eraseColor(Color.TRANSPARENT);
-        for (int i = 0x00; i < 0xFF; ) {
-            canvas.drawLine(i, 255.0f - c[i], ++i, 255.0f - c[i], paint);
-        }
+        canvas.drawLines(pts, paint);
         iv.invalidate();
     }
 
     private void drawGraphics(int leftIncl, int rightIncl) {
-        final int leftExcl = leftIncl - 1, rightExcl = rightIncl + 1;
-        canvas.drawRect(leftExcl, 0.0f, rightExcl, 256.0f, eraser);
-        if (leftExcl >= 0x0) {
-            canvas.drawLine(leftExcl, 255.0f - c[leftExcl], leftIncl, 255.0f - c[leftIncl], paint);
+        for (int i = leftIncl; i <= rightIncl; ++i) {
+            if (i > 0x00) pts[i * 4 - 1] = 255.0f - c[i];
+            if (i < 0xFF) pts[i * 4 + 1] = 255.0f - c[i];
         }
-        canvas.drawLine(leftIncl, 255.0f - c[leftIncl], rightIncl, 255.0f - c[rightIncl], paint);
-        if (rightExcl < 0x100) {
-            canvas.drawLine(rightIncl, 255.0f - c[rightIncl], rightExcl, 255.0f - c[rightExcl], paint);
-        }
-        iv.invalidate();
+        drawGraphics();
     }
 
     private void drawGrid() {
@@ -218,14 +227,19 @@ public class CurvesDialog {
         if (histBitmaps[selectedCompIndex] == null) {
             histBitmaps[selectedCompIndex] = Bitmap.createBitmap(0x100, 0x100, Bitmap.Config.ARGB_4444);
             LevelsDialog.drawHistogram(srcPixels, histBitmaps[selectedCompIndex], ivHistogram,
-                    compFuncs[selectedCompIndex], 256.0f, paints[selectedCompIndex]);
+                    compFuncs[selectedCompIndex], 256.0f, histPaints[selectedCompIndex]);
         }
         ivHistogram.setImageBitmap(histBitmaps[selectedCompIndex]);
     }
 
+    private void initHistPaint(Paint paint) {
+        paint.setAntiAlias(false);
+        paint.setBlendMode(BlendMode.SRC);
+    }
+
     private void initPaint(Paint paint) {
         paint.setAntiAlias(true);
-        paint.setDither(true);
+        paint.setBlendMode(BlendMode.SRC);
         paint.setStrokeCap(Paint.Cap.ROUND);
         paint.setStrokeJoin(Paint.Join.ROUND);
         paint.setStrokeWidth(2.0f);
@@ -254,6 +268,10 @@ public class CurvesDialog {
     private void selectComp(int index) {
         selectedCompIndex = index;
         c = curves[index];
+        for (int i = 0x00; i <= 0xFF; ++i) {
+            if (i > 0x00) pts[i * 4 - 1] = 255.0f - c[i];
+            if (i < 0xFF) pts[i * 4 + 1] = 255.0f - c[i];
+        }
         paint = paints[index];
         drawHistogram();
         drawGraphics();

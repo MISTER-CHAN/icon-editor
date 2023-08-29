@@ -33,10 +33,6 @@ public abstract class ColorPicker {
     @ColorInt
     protected long newColor, oldColor;
 
-    protected static void hideOtherColorPickers(AlertDialog dialog) {
-        dialog.findViewById(R.id.l_other_color_pickers).setVisibility(View.GONE);
-    }
-
     protected static void showExtraComp(GridLayout gl) {
         setChildVisibilities(gl, GL_POS_EXTRA_BEGIN, GL_POS_EXTRA_END, View.VISIBLE);
     }

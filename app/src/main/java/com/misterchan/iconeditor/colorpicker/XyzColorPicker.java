@@ -72,7 +72,6 @@ class XyzColorPicker extends ColorPicker {
         tietZ = (TextInputEditText) tilZ.getEditText();
         vPreview = dialog.findViewById(R.id.v_color);
 
-        hideOtherColorPickers(dialog);
         hideAlphaComp(dialog.findViewById(R.id.gl));
 
         sX.setValueFrom(-2.0f);

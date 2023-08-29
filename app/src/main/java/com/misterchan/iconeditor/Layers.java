@@ -47,25 +47,13 @@ public class Layers {
     }
 
     public static LayerTree computeLayerTree(List<Layer> layers) {
-        final List<Integer> indices = new ArrayList<>();
-        for (int i = layers.size() - 1; i >= 0; --i) {
-            indices.add(i);
-        }
-        return computeLayerTree(layers, indices);
-    }
-
-    /**
-     * @param layers  Layer list starts with foreground
-     * @param indices Layer index list starts with background
-     */
-    public static LayerTree computeLayerTree(List<Layer> layers, List<Integer> indices) {
         final Stack<LayerTree> stack = new Stack<>();
         LayerTree layerTree = new LayerTree();
-        LayerTree.Node prev = layerTree.push(layers.get(indices.get(0)), true);
+        LayerTree.Node prev = layerTree.push(layers.get(layers.size() - 1), true);
 
         stack.push(layerTree);
-        for (int i = 1; i < indices.size(); ++i) {
-            final Layer l = layers.get(indices.get(i));
+        for (int i = layers.size() - 2; i >= 0; --i) {
+            final Layer l = layers.get(i);
 
             final Layer prevLayer = prev.layer;
             final int levelDiff = l.getLevel() - prevLayer.getLevel();

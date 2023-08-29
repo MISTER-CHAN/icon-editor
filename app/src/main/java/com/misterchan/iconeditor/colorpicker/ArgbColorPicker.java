@@ -40,7 +40,7 @@ public class ArgbColorPicker extends ColorPicker {
                 .setPositiveButton(R.string.ok,
                         (dialog, which) -> onColorPickListener.onPick(oldColor, newColor))
                 .setTitle(titleId)
-                .setView(R.layout.color_picker);
+                .setView(R.layout.color_picker_argb);
 
         if (oldColor != null) {
             this.oldColor = oldColor;

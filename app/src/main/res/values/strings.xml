@@ -83,7 +83,7 @@
     <string name="custom">Custom</string>
     <string name="custom_color_filter">Custom Color Filter</string>
     <string name="cut">Cut</string>
-    <string name="dec">Dec</string>
+    <string name="dec">Decimal</string>
     <string name="default_">Default</string>
     <string name="default_bold">Default Bold</string>
     <string name="degree" translatable="false">°</string>
@@ -143,7 +143,7 @@
     <string name="has_alpha">Has Alpha</string>
     <string name="height">Height</string>
     <string name="help">Help</string>
-    <string name="hex">Hex</string>
+    <string name="hex">Hexadecimal</string>
     <string name="hidden_image">Hidden Image</string>
     <string name="highlights">Highlights</string>
     <string name="history_max_size">Maximum Size of History</string>

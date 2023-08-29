@@ -22,6 +22,14 @@
         <item name="android:layout_marginHorizontal">2dp</item>
     </style>
 
+    <style name="Widget_App_Inclusion_ItemColor">
+        <item name="android:layout_marginHorizontal">8dp</item>
+    </style>
+
+    <style name="Widget_App_LinearLayout">
+        <item name="android:orientation">vertical</item>
+    </style>
+
     <style name="Widget_App_LinearLayout_ToolOptions">
         <item name="android:gravity">center_vertical</item>
         <item name="android:orientation">horizontal</item>
