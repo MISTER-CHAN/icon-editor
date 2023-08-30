@@ -1,6 +1,8 @@
 package com.misterchan.iconeditor.colorpicker;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.ColorSpace;
 import android.view.View;
 import android.widget.TextView;
@@ -31,6 +33,7 @@ public class ArgbColorPicker extends ColorPicker {
     private TextInputEditText tietAlpha;
     private TextInputEditText tietRed, tietGreen, tietBlue;
 
+    @SuppressLint("NonConstantResourceId")
     private ArgbColorPicker(Context context, @StringRes int titleId,
                             final OnColorPickListener onColorPickListener,
                             @ColorLong final Long oldColor, @StringRes int neutralFunction) {
@@ -45,8 +48,12 @@ public class ArgbColorPicker extends ColorPicker {
         if (oldColor != null) {
             this.oldColor = oldColor;
             if (neutralFunction != 0) {
-                dialogBuilder.setNeutralButton(neutralFunction,
-                        (dialog, which) -> onColorPickListener.onPick(oldColor, null));
+                dialogBuilder.setNeutralButton(neutralFunction, (dialog, which) -> {
+                    switch (neutralFunction) {
+                        case R.string.swap -> onColorPickListener.onPick(null, newColor);
+                        case R.string.delete -> onColorPickListener.onPick(oldColor, null);
+                    }
+                });
             }
         } else {
             this.oldColor = Color.BLACK;
@@ -90,10 +97,14 @@ public class ArgbColorPicker extends ColorPicker {
     }
 
     private void onComponentChanged(String s, Slider slider) {
+        final float f;
         try {
-            slider.setValue(type ? Float.parseFloat(s) : Integer.parseUnsignedInt(s, radix));
+            f = type ? Float.parseFloat(s) : Integer.parseUnsignedInt(s, radix);
         } catch (NumberFormatException e) {
+            return;
         }
+        if (!(slider.getValueFrom() <= f && f <= slider.getValueTo())) return;
+        slider.setValue(f);
         final float av = sAlpha.getValue(), rv = sRed.getValue(), gv = sGreen.getValue(), bv = sBlue.getValue();
         @ColorInt final int newColorInt = type
                 ? Color.argb(av, rv, gv, bv)

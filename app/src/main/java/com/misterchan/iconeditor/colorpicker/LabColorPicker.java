@@ -42,10 +42,14 @@ class LabColorPicker extends ColorPicker {
     }
 
     private void onComponentChanged(String s, Slider slider) {
+        final float f;
         try {
-            slider.setValue(Float.parseFloat(s));
+            f = Float.parseFloat(s);
         } catch (NumberFormatException e) {
+            return;
         }
+        if (!(slider.getValueFrom() <= f && f <= slider.getValueTo())) return;
+        slider.setValue(f);
         final float l = sL.getValue(), a = sA.getValue(), b = sB.getValue();
         newColor = Color.pack(l, a, b, 1.0f, LAB);
         vPreview.setBackgroundColor(toArgb(l, a, b));

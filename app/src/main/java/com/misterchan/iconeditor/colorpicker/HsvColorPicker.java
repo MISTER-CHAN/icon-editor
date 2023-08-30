@@ -116,10 +116,14 @@ class HsvColorPicker extends ColorPicker {
     }
 
     private void onAlphaChanged(String s) {
+        final float f;
         try {
-            sAlpha.setValue(type ? Float.parseFloat(s) : Integer.parseUnsignedInt(s, alphaRadix));
+            f = type ? Float.parseFloat(s) : Integer.parseUnsignedInt(s, alphaRadix);
         } catch (NumberFormatException e) {
+            return;
         }
+        if (!(0.0f <= f && f <= (type ? 1.0f : 255.0f))) return;
+        sAlpha.setValue(f);
         onComponentChanged();
     }
 
@@ -134,22 +138,27 @@ class HsvColorPicker extends ColorPicker {
     }
 
     private void onHueChanged(String s) {
+        final float f;
         try {
-            float f = Float.parseFloat(s);
-            sHue.setValue(f);
-            hsv[0] = f % 360.0f;
+            f = Float.parseFloat(s);
         } catch (NumberFormatException e) {
+            return;
         }
+        sHue.setValue(f == 360.0f ? 360.0f : f % 360.0f);
+        hsv[0] = f % 360.0f;
         onComponentChanged();
     }
 
     private void onSatOrValChanged(@IntRange(from = 1, to = 2) int index, String s, Slider slider) {
+        final float f;
         try {
-            float f = Float.parseFloat(s);
-            slider.setValue(f);
-            hsv[index] = f / 100.0f;
+            f = Float.parseFloat(s);
         } catch (NumberFormatException e) {
+            return;
         }
+        if (!(0.0f <= f && f <= 100.0f)) return;
+        slider.setValue(f);
+        hsv[index] = f / 100.0f;
         onComponentChanged();
     }
 

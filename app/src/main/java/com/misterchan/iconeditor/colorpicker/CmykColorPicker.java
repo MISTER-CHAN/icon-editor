@@ -40,10 +40,14 @@ class CmykColorPicker extends ColorPicker {
     }
 
     private void onComponentChanged(String s, Slider slider) {
+        final float f;
         try {
-            slider.setValue(Integer.parseUnsignedInt(s, radix));
+            f = Integer.parseUnsignedInt(s, radix);
         } catch (NumberFormatException e) {
+            return;
         }
+        if (!(0.0f <= f && f <= 255.0f)) return;
+        slider.setValue(f);
         final int c = (int) sCyan.getValue(), m = (int) sMagenta.getValue(), y = (int) sYellow.getValue(), k = (int) sKey.getValue();
         final int invK = 0xFF - k;
         final int r = 0xFF - c * invK / 0xFF - k, g = 0xFF - m * invK / 0xFF - k, b = 0xFF - y * invK / 0xFF - k;

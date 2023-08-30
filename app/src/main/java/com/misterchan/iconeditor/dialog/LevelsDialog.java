@@ -81,11 +81,8 @@ public class LevelsDialog {
                 }
             }
             for (int i = 0x0; i < 0x100; ) {
-                cv.drawRect(i,
-                        maxHeight - (float) numValue[i] / (float) max * maxHeight,
-                        ++i,
-                        maxHeight,
-                        paint);
+                cv.drawRect(i, maxHeight - (float) numValue[i] / (float) max * maxHeight,
+                        ++i, maxHeight, paint);
             }
             iv.invalidate();
         }).start();

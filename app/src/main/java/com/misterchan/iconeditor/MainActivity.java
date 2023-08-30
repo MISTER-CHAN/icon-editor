@@ -32,6 +32,7 @@ import android.os.Environment;
 import android.os.Looper;
 import android.os.MessageQueue;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -420,30 +421,36 @@ public class MainActivity extends AppCompatActivity {
             });
 
     private final AfterTextChangedListener onBlurRadiusETTextChangedListener = s -> {
+        final float f;
         try {
-            final float f = Float.parseFloat(s);
-            blurRadius = f;
-            setBlurRadius(paint, f);
+            f = Float.parseFloat(s);
         } catch (NumberFormatException e) {
+            return;
         }
+        blurRadius = f;
+        setBlurRadius(paint, f);
     };
 
     private final AfterTextChangedListener onStrokeWidthETTextChangedListener = s -> {
+        final float f;
         try {
-            final float f = Float.parseFloat(s);
-            strokeWidth = f;
-            paint.setStrokeWidth(f);
+            f = Float.parseFloat(s);
         } catch (NumberFormatException e) {
+            return;
         }
+        strokeWidth = f;
+        paint.setStrokeWidth(f);
     };
 
     private final AfterTextChangedListener onTextSizeETTextChangedListener = s -> {
+        final float f;
         try {
-            final float f = Float.parseFloat(s);
-            textSize = f;
-            paint.setTextSize(f);
+            f = Float.parseFloat(s);
         } catch (NumberFormatException e) {
+            return;
         }
+        textSize = f;
+        paint.setTextSize(f);
         drawTextOntoView();
     };
 
@@ -633,8 +640,7 @@ public class MainActivity extends AppCompatActivity {
     };
 
     private final View.OnClickListener onAddSwatchButtonClickListener = v ->
-            ArgbColorPicker.make(MainActivity.this,
-                            R.string.add,
+            ArgbColorPicker.make(this, R.string.add,
                             (oldColor, newColor) -> {
                                 palette.offerFirst(newColor);
                                 colorAdapter.notifyItemInserted(0);
@@ -643,18 +649,16 @@ public class MainActivity extends AppCompatActivity {
                     .show();
 
     private final View.OnClickListener onBackgroundColorClickListener = v ->
-            ArgbColorPicker.make(MainActivity.this,
-                            R.string.background_color,
+            ArgbColorPicker.make(this, R.string.background_color,
                             (oldColor, newColor) -> {
-                                if (newColor != null) {
+                                if (oldColor != null) {
                                     eraser.setColor(newColor);
                                     activityMain.vBackgroundColor.setBackgroundColor(Color.toArgb(newColor));
                                 } else {
-                                    swapColor();
+                                    setPaintColor(newColor, paint.getColorLong());
                                 }
                             },
-                            eraser.getColorLong(),
-                            R.string.swap)
+                            eraser.getColorLong(), R.string.swap)
                     .show();
 
     private final View.OnClickListener onCloneStampSrcButtonClickListener = v -> {
@@ -663,21 +667,19 @@ public class MainActivity extends AppCompatActivity {
     };
 
     private final View.OnClickListener onForegroundColorClickListener = v ->
-            ArgbColorPicker.make(MainActivity.this,
-                            R.string.foreground_color,
+            ArgbColorPicker.make(this, R.string.foreground_color,
                             (oldColor, newColor) -> {
-                                if (newColor != null) {
+                                if (oldColor != null) {
                                     paint.setColor(newColor);
                                     activityMain.vForegroundColor.setBackgroundColor(Color.toArgb(newColor));
                                     if (isEditingText) {
                                         drawTextOntoView();
                                     }
                                 } else {
-                                    swapColor();
+                                    setPaintColor(eraser.getColorLong(), newColor);
                                 }
                             },
-                            paint.getColorLong(),
-                            R.string.swap)
+                            paint.getColorLong(), R.string.swap)
                     .show();
 
     private final ColorMatrixManager.OnMatrixElementsChangedListener onFilterColorMatrixChangedListener = matrix -> runOrStart(() -> {
@@ -3256,13 +3258,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void createTransformerMesh() {
+        final int w, h;
         try {
-            final int w = Integer.parseUnsignedInt(activityMain.optionsTransformer.tietMeshWidth.getText().toString()),
-                    h = Integer.parseUnsignedInt(activityMain.optionsTransformer.tietMeshHeight.getText().toString());
-            transformer.rect = selection;
-            transformer.createMesh(w, h);
+            w = Integer.parseUnsignedInt(activityMain.optionsTransformer.tietMeshWidth.getText().toString());
+            h = Integer.parseUnsignedInt(activityMain.optionsTransformer.tietMeshHeight.getText().toString());
         } catch (NumberFormatException e) {
+            return;
         }
+        transformer.rect = selection;
+        transformer.createMesh(w, h);
     }
 
     private void deleteFrame(int position) {
@@ -3937,8 +3941,11 @@ public class MainActivity extends AppCompatActivity {
             try (final FileOutputStream fos = new FileOutputStream(file)) {
                 bitmap.compress(project.compressFormat, quality, fos);
                 fos.flush();
-            } catch (IOException e) {
-                Snackbar.make(vContent, getString(R.string.failed) + '\n' + e.getMessage(), Snackbar.LENGTH_LONG).show();
+            } catch (final IOException e) {
+                Snackbar.make(vContent, getString(R.string.failed) + '\n' + e.getMessage(), Snackbar.LENGTH_LONG)
+                        .setTextMaxLines(Integer.MAX_VALUE)
+                        .show();
+                return;
             }
         } else if (project.fileType == Project.FileType.GIF) {
             final GifEncoder gifEncoder = new GifEncoder();
@@ -4030,20 +4037,18 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         colorAdapter.setOnItemLongClickListener((view, color) -> {
-            ArgbColorPicker.make(MainActivity.this,
-                            R.string.swatch,
+            ArgbColorPicker.make(this, R.string.swatch,
                             (oldColor, newColor) -> {
                                 final int index = palette.indexOf(oldColor);
                                 if (newColor != null) {
                                     palette.set(index, newColor);
-                                    colorAdapter.notifyItemChanged(index, ColorAdapter.Payload.COLOR);
+                                    colorAdapter.notifyItemChanged(index);
                                 } else {
                                     palette.remove(index);
                                     colorAdapter.notifyItemRemoved(index);
                                 }
                             },
-                            color,
-                            R.string.delete)
+                            color, R.string.delete)
                     .show();
             return true;
         });
@@ -4274,21 +4279,25 @@ public class MainActivity extends AppCompatActivity {
         ItemMovableAdapter.createItemMoveHelper(onLayerItemMoveListener).attachToRecyclerView(layerList.rvLayerList);
 
         activityMain.optionsEraser.tietBlurRadius.addTextChangedListener((AfterTextChangedListener) s -> {
+            final float f;
             try {
-                final float f = Float.parseFloat(s);
-                blurRadiusEraser = f;
-                setBlurRadius(eraser, f);
+                f = Float.parseFloat(s);
             } catch (NumberFormatException e) {
+                return;
             }
+            blurRadiusEraser = f;
+            setBlurRadius(eraser, f);
         });
 
         activityMain.optionsEraser.tietStrokeWidth.addTextChangedListener((AfterTextChangedListener) s -> {
+            final float f;
             try {
-                final float f = Float.parseFloat(s);
-                eraserStrokeHalfWidth = f / 2.0f;
-                eraser.setStrokeWidth(f);
+                f = Float.parseFloat(s);
             } catch (NumberFormatException e) {
+                return;
             }
+            eraserStrokeHalfWidth = f / 2.0f;
+            eraser.setStrokeWidth(f);
         });
 
         activityMain.optionsSoftBrush.tietSoftness.addTextChangedListener((AfterTextChangedListener) s -> {
@@ -5204,6 +5213,7 @@ public class MainActivity extends AppCompatActivity {
                 item.setChecked(checked);
                 bitmap.setHasAlpha(checked);
                 drawBitmapOntoView(true);
+                addToHistory();
             }
             case R.id.i_information -> {
                 final StringBuilder message = new StringBuilder()
@@ -5712,9 +5722,12 @@ public class MainActivity extends AppCompatActivity {
             try (final FileOutputStream fos = new FileOutputStream(file)) {
                 merged.compress(project.compressFormat, quality, fos);
                 fos.flush();
-            } catch (IOException e) {
-                Snackbar.make(vContent, getString(R.string.failed) + '\n' + e.getMessage(), Snackbar.LENGTH_LONG).show();
+            } catch (final IOException e) {
+                Snackbar.make(vContent, getString(R.string.failed) + '\n' + e.getMessage(), Snackbar.LENGTH_LONG)
+                        .setTextMaxLines(Integer.MAX_VALUE)
+                        .show();
                 e.printStackTrace();
+                return;
             } finally {
                 merged.recycle();
             }
@@ -5924,6 +5937,16 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void setPaintColor(long foregroundColor, long backgroundColor) {
+        paint.setColor(foregroundColor);
+        eraser.setColor(backgroundColor);
+        activityMain.vForegroundColor.setBackgroundColor(Color.toArgb(foregroundColor));
+        activityMain.vBackgroundColor.setBackgroundColor(Color.toArgb(backgroundColor));
+        if (isEditingText) {
+            drawTextOntoView();
+        }
+    }
+
     private void setQuality(Project project, DirectorySelector.OnApplyFileNameCallback callback) {
         switch (project.fileType) {
             case PNG -> callback.onApply(project);
@@ -5974,17 +5997,6 @@ public class MainActivity extends AppCompatActivity {
             selection.bottom = fromY + 1;
         }
         drawSelectionOntoView();
-    }
-
-    private void swapColor() {
-        final long backgroundColor = paint.getColorLong(), foregroundColor = eraser.getColorLong();
-        paint.setColor(foregroundColor);
-        eraser.setColor(backgroundColor);
-        activityMain.vForegroundColor.setBackgroundColor(Color.toArgb(foregroundColor));
-        activityMain.vBackgroundColor.setBackgroundColor(Color.toArgb(backgroundColor));
-        if (isEditingText) {
-            drawTextOntoView();
-        }
     }
 
     /**

@@ -8,8 +8,6 @@ import android.graphics.Bitmap;
 import android.graphics.BlendMode;
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.util.Log;
-import android.util.Printer;
 import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
@@ -19,6 +17,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
+import androidx.annotation.ColorInt;
 import androidx.annotation.IntRange;
 import androidx.annotation.Size;
 import androidx.appcompat.app.AlertDialog;
@@ -35,7 +34,7 @@ import java.util.function.Function;
 public class CurvesDialog {
 
     public interface OnCurvesChangedListener {
-        void onChanged(int[][] curves, boolean stopped);
+        void onChanged(@Size(5) int[][] curves, boolean stopped);
     }
 
     private Bitmap bitmap;
@@ -50,6 +49,7 @@ public class CurvesDialog {
     private int selectedCompIndex;
     private int[] srcPixels;
     private OnCurvesChangedListener listener;
+    private final Paint normalPaint = new Paint();
 
     @Size(5)
     private Bitmap[] histBitmaps = new Bitmap[5];
@@ -57,14 +57,18 @@ public class CurvesDialog {
     @Size(0x400)
     private final float[] pts = new float[0x400];
 
+    @ColorInt
+    @Size(5)
+    private final int[] curveColors = new int[5];
+
+    @ColorInt
+    @Size(5)
+    private final int[] histColors = new int[5];
+
     /**
      * <table>
-     *     <tr>
-     *         <th>Index</th><th>Curve</th>
-     *     </tr>
-     *     <tr><td>0, 1, 2</td><td>R, G, B</td></tr>
-     *     <tr><td>3</td><td>A</td></tr>
-     *     <tr><td>4</td><td>RGB outputs</td></tr>
+     *     <tr><th>Index</th><td>0</td><td>1</td><td>2</td><td>3</td><td>4</td></tr>
+     *     <tr><th>Curve</th><td>R &nbsp; &nbsp;</td><td>G &nbsp; &nbsp;</td><td>B &nbsp; &nbsp;</td><td>A &nbsp; &nbsp;</td><td>RGB Outputs</td></tr>
      * </table>
      */
     @Size(5)
@@ -73,31 +77,28 @@ public class CurvesDialog {
     @Size(0x100)
     private int[] c;
 
-    private final Paint normalPaint = new Paint();
+    private final Paint curvePaint = new Paint() {
+        {
+            setAntiAlias(true);
+            setBlendMode(BlendMode.SRC);
+            setStrokeCap(Paint.Cap.ROUND);
+            setStrokeJoin(Paint.Join.ROUND);
+            setStrokeWidth(2.0f);
+        }
+    };
 
-    private final Paint compPaint = new Paint();
-    private final Paint histCompPaint = new Paint();
-
-    private final Paint[] paints = new Paint[]{new Paint(), new Paint(), new Paint(), compPaint, compPaint};
-    private final Paint[] histPaints = new Paint[]{new Paint(), new Paint(), new Paint(), histCompPaint, histCompPaint};
-    private Paint paint;
-
-    private final Paint.FontMetrics fontMetrics = normalPaint.getFontMetrics();
+    private final Paint histPaint = new Paint() {
+        {
+            setAntiAlias(false);
+            setBlendMode(BlendMode.SRC);
+        }
+    };
 
     {
         for (int i = 0x00; i <= 0xFF; ++i) {
             if (i > 0x00) pts[i * 4 - 2] = i;
             if (i < 0xFF) pts[i * 4] = i;
         }
-
-        initPaint(compPaint);
-        initPaint(paints[0]);
-        initPaint(paints[1]);
-        initPaint(paints[2]);
-        initHistPaint(histCompPaint);
-        initHistPaint(histPaints[0]);
-        initHistPaint(histPaints[1]);
-        initHistPaint(histPaints[2]);
     }
 
     public CurvesDialog(Context context) {
@@ -126,18 +127,18 @@ public class CurvesDialog {
         final int a = Color.alpha(color) << 24;
         final int aHalf = Color.alpha(color) / 2 << 24;
         normalPaint.setColor(color);
-        compPaint.setColor(color);
-        histCompPaint.setColor(aHalf | Color.rgb(color));
+        curveColors[3] = curveColors[4] = color;
+        histColors[3] = histColors[4] = aHalf | Color.rgb(color);
         final int r = sat(Color.red(color) - 0x40) << 16,
                 g = sat(Color.green(color) - 0x40) << 8,
                 b = sat(Color.blue(color) - 0x40);
         final int cr = sat(r + 0x40) << 16 | g | b, cg = r | sat(g + 0x40) << 8 | b, cb = r | g | sat(b + 0x40);
-        paints[0].setColor(a | cr);
-        paints[1].setColor(a | cg);
-        paints[2].setColor(a | cb);
-        histPaints[0].setColor(aHalf | cr);
-        histPaints[1].setColor(aHalf | cg);
-        histPaints[2].setColor(aHalf | cb);
+        curveColors[0] = a | cr;
+        curveColors[1] = a | cg;
+        curveColors[2] = a | cb;
+        histColors[0] = aHalf | cr;
+        histColors[1] = aHalf | cg;
+        histColors[2] = aHalf | cb;
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -179,7 +180,7 @@ public class CurvesDialog {
 
     private void drawGraphics() {
         bitmap.eraseColor(Color.TRANSPARENT);
-        canvas.drawLines(pts, paint);
+        canvas.drawLines(pts, curvePaint);
         iv.invalidate();
     }
 
@@ -210,39 +211,28 @@ public class CurvesDialog {
         final String max = Settings.INST.argbColorType() ? "Max" : String.format(format, 0xFF);
         normalPaint.setTextAlign(Paint.Align.LEFT);
         cv.drawText(min, 0.0f, grid.getHeight(), normalPaint);
-        cv.drawText(max, 0.0f, -fontMetrics.ascent, normalPaint);
+        cv.drawText(max, 0.0f, -normalPaint.getFontMetrics().ascent, normalPaint);
         normalPaint.setTextAlign(Paint.Align.RIGHT);
         cv.drawText(max, grid.getWidth(), grid.getHeight(), normalPaint);
 
         ivGrid.invalidate();
     }
 
-    private static final Function<Integer, Integer> redFunc = Color::red;
-    private static final Function<Integer, Integer> greenFunc = Color::green;
-    private static final Function<Integer, Integer> blueFunc = Color::blue;
-    private static final Function<Integer, Integer> alphaFunc = Color::alpha;
-    private final Function<Integer, Integer>[] compFuncs = new Function[]{redFunc, greenFunc, blueFunc, alphaFunc, LevelsDialog.valueFunc};
+    private final Function<Integer, Integer>[] compFuncs = new Function[]{
+            (Function<Integer, Integer>) Color::red,
+            (Function<Integer, Integer>) Color::green,
+            (Function<Integer, Integer>) Color::blue,
+            (Function<Integer, Integer>) Color::alpha,
+            LevelsDialog.valueFunc
+    };
 
     private void drawHistogram() {
         if (histBitmaps[selectedCompIndex] == null) {
             histBitmaps[selectedCompIndex] = Bitmap.createBitmap(0x100, 0x100, Bitmap.Config.ARGB_4444);
             LevelsDialog.drawHistogram(srcPixels, histBitmaps[selectedCompIndex], ivHistogram,
-                    compFuncs[selectedCompIndex], 256.0f, histPaints[selectedCompIndex]);
+                    compFuncs[selectedCompIndex], 256.0f, histPaint);
         }
         ivHistogram.setImageBitmap(histBitmaps[selectedCompIndex]);
-    }
-
-    private void initHistPaint(Paint paint) {
-        paint.setAntiAlias(false);
-        paint.setBlendMode(BlendMode.SRC);
-    }
-
-    private void initPaint(Paint paint) {
-        paint.setAntiAlias(true);
-        paint.setBlendMode(BlendMode.SRC);
-        paint.setStrokeCap(Paint.Cap.ROUND);
-        paint.setStrokeJoin(Paint.Join.ROUND);
-        paint.setStrokeWidth(2.0f);
     }
 
     private void reset() {
@@ -272,7 +262,8 @@ public class CurvesDialog {
             if (i > 0x00) pts[i * 4 - 1] = 255.0f - c[i];
             if (i < 0xFF) pts[i * 4 + 1] = 255.0f - c[i];
         }
-        paint = paints[index];
+        curvePaint.setColor(curveColors[index]);
+        histPaint.setColor(histColors[index]);
         drawHistogram();
         drawGraphics();
     }
@@ -358,8 +349,12 @@ public class CurvesDialog {
 
         dialog.findViewById(R.id.b_reset).setOnClickListener(v -> {
             reset();
+            for (int i = 0x00; i <= 0xFF; ++i) {
+                if (i > 0x00) pts[i * 4 - 1] = 255.0f - i;
+                if (i < 0xFF) pts[i * 4 + 1] = 255.0f - i;
+            }
             bitmap.eraseColor(Color.TRANSPARENT);
-            canvas.drawLine(0.0f, 256.0f, 256.0f, 0.0f, paint);
+            canvas.drawLine(0.0f, 255.0f, 255.0f, 0.0f, curvePaint);
             iv.invalidate();
             update(true);
         });

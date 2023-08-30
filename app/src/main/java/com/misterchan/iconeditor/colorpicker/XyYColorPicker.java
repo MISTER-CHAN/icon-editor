@@ -53,22 +53,28 @@ class XyYColorPicker extends ColorPicker {
     }
 
     private void onXyChanged(@IntRange(from = 0, to = 1) int index, String s, Slider slider) {
+        final float f;
         try {
-            float f = Float.parseFloat(s);
-            slider.setValue(f);
-            xyY[index] = f;
+            f = Float.parseFloat(s);
         } catch (NumberFormatException e) {
+            return;
         }
+        if (!(0.0f <= f && f <= slider.getValueTo())) return;
+        slider.setValue(f);
+        xyY[index] = f;
         onComponentChanged();
     }
 
     private void onYChanged(String s) {
+        final float f;
         try {
-            float f = Float.parseFloat(s);
-            sY.setValue(f);
-            xyY[2] = f;
+            f = Float.parseFloat(s);
         } catch (NumberFormatException e) {
+            return;
         }
+        if (!(-2.0f <= f && f <= 2.0f)) return;
+        sY.setValue(f);
+        xyY[2] = f;
         onComponentChanged();
     }
 

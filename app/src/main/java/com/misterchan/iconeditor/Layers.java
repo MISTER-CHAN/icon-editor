@@ -234,7 +234,7 @@ public class Layers {
                     mergedChildren.recycle();
                 }
             }
-        } catch (RuntimeException e) {
+        } catch (final RuntimeException e) {
             bitmap.recycle();
             throw e;
         }

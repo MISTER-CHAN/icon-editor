@@ -47,12 +47,15 @@ class XyzColorPicker extends ColorPicker {
     }
 
     private void onComponentChanged(@IntRange(from = 0, to = 2) int index, String s, Slider slider) {
+        final float f;
         try {
-            float f = Float.parseFloat(s);
-            slider.setValue(f);
-            xyz[index] = f;
+            f = Float.parseFloat(s);
         } catch (NumberFormatException e) {
+            return;
         }
+        if (!(-2.0f <= f && f <= 2.0f)) return;
+        slider.setValue(f);
+        xyz[index] = f;
         newColor = Color.pack(xyz[0], xyz[1], xyz[2], 1.0f, XYZ);
         vPreview.setBackgroundColor(toArgb());
     }

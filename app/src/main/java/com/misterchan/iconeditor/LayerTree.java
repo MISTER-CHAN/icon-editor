@@ -17,19 +17,19 @@ package com.misterchan.iconeditor;
  * &nbsp; &nbsp;└──────────┘<br />
  * </nobr></code>
  * <br />
- * The layer list should display it like this:<br />
+ * It should be displayed on layer list like this:<br />
  * <code>
- * &nbsp;Layer 2<br />
- * ┌───────────────────────────┐<br />
- * &nbsp;Layer Mask of Clipped Layer<br />
- * &nbsp;↓<br />
- * &nbsp;Clipped Layer<br />
- * └─────────────┘<br />
- * &nbsp;↓<br />
- * &nbsp;Layer Mask<br />
- * &nbsp;↓<br />
- * &nbsp;Layer 1<br />
- * &nbsp;Background<br />
+ * &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;Layer 2<br />
+ *  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;┌─────┐<br />
+ * Layer Mask of Clipped Layer<br />
+ * &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ↓<br />
+ * &nbsp; &nbsp; &nbsp; Clipped Layer<br />
+ * &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;└─────┘<br />
+ * &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ↓<br />
+ * &nbsp; &nbsp; &nbsp; &nbsp; Layer Mask<br />
+ * &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ↓<br />
+ * &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;Layer 1<br />
+ * &nbsp; &nbsp; &nbsp; &nbsp;Background<br />
  * </code><br />
  * <br />
  * In Adobe Photoshop, it should be displayed on layer panel like this:<br />

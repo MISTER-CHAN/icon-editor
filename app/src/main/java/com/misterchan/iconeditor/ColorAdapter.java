@@ -1,5 +1,6 @@
 package com.misterchan.iconeditor;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,10 +13,6 @@ import com.misterchan.iconeditor.databinding.ItemColorBinding;
 import java.util.List;
 
 class ColorAdapter extends ItemMovableAdapter<ColorAdapter.ViewHolder> {
-
-    public enum Payload {
-        COLOR
-    }
 
     public interface OnItemClickListener {
         void onItemClick(View view, Long color);
@@ -50,23 +47,6 @@ class ColorAdapter extends ItemMovableAdapter<ColorAdapter.ViewHolder> {
     @Override
     public int getItemCount() {
         return colors.size();
-    }
-
-    @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position, @NonNull List<Object> payloads) {
-        if (payloads.isEmpty()) {
-            onBindViewHolder(holder, position);
-            return;
-        }
-        final Long color = colors.get(position);
-        for (final Object o : payloads) {
-            if (!(o instanceof final Payload payload)) {
-                continue;
-            }
-            if (payload == Payload.COLOR) {
-                holder.binding.vColor.setBackgroundColor(Color.toArgb(color));
-            }
-        }
     }
 
     @Override
