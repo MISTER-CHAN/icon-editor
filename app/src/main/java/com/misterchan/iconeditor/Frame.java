@@ -7,7 +7,6 @@ import android.graphics.Paint;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Stack;
 
 public class Frame {
     private static final Paint PAINT_SRC = new Paint() {

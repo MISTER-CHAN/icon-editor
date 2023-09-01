@@ -32,7 +32,6 @@ import android.os.Environment;
 import android.os.Looper;
 import android.os.MessageQueue;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -1742,7 +1741,7 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint({"ClickableViewAccessibility"})
     private final View.OnTouchListener onIVTouchWithMarqueeListener = new View.OnTouchListener() {
         private boolean hasDraggedBound = false;
-        private int startX, startY, stopX, stopY;
+        private int startX, startY;
 
         @Override
         public boolean onTouch(View v, MotionEvent event) {
@@ -1754,6 +1753,7 @@ public class MainActivity extends AppCompatActivity {
                             activityMain.tvStatus.setText(getString(R.string.state_selected_bound,
                                     getString(marqueeBoundBeingDragged.name)));
                         } else {
+                            final int stopX, stopY;
                             if (hasSelection && selection.width() == 1 && selection.height() == 1) {
                                 stopX = toBitmapX(x) + 1;
                                 stopY = toBitmapY(y) + 1;
@@ -1779,6 +1779,7 @@ public class MainActivity extends AppCompatActivity {
                 case MotionEvent.ACTION_MOVE -> {
                     final float x = event.getX(), y = event.getY();
                     if (marqueeBoundBeingDragged == null) {
+                        final int stopX, stopY;
                         stopX = toBitmapX(x) + 1;
                         stopY = toBitmapY(y) + 1;
                         setSelection(startX, startY, stopX, stopY);

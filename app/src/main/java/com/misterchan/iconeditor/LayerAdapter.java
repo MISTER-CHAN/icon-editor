@@ -15,7 +15,6 @@ import androidx.appcompat.content.res.AppCompatResources;
 import androidx.core.view.OneShotPreDrawListener;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.misterchan.iconeditor.databinding.ItemColorBinding;
 import com.misterchan.iconeditor.databinding.ItemLayerBinding;
 import com.misterchan.iconeditor.listener.OnCBCheckedListener;
 
@@ -91,7 +90,7 @@ class LayerAdapter extends ItemMovableAdapter<LayerAdapter.ViewHolder> {
             holder.binding.llFgLeaf.removeAllViews();
             if (lastLayer == null) {
                 for (int l = 0; l < layer.getLevel() - 1; ++l) {
-                    final View v = LayoutInflater.from(context).inflate(R.layout.bracket, null);
+                    final View v = LayoutInflater.from(context).inflate(R.layout.bracket, holder.binding.llRoot, false);
                     v.setBackground(AppCompatResources.getDrawable(context, R.drawable.np_bracket_open));
                     holder.binding.llRoot.addView(v);
                 }
@@ -99,13 +98,13 @@ class LayerAdapter extends ItemMovableAdapter<LayerAdapter.ViewHolder> {
                 final int levelDiff = layer.getLevel() - lastLayer.getLevel();
                 if (levelDiff > 0) {
                     for (int l = 0; l < (lastLayer.getLevel() > 0 ? levelDiff : levelDiff - 1); ++l) {
-                        final View v = LayoutInflater.from(context).inflate(R.layout.bracket, null);
+                        final View v = LayoutInflater.from(context).inflate(R.layout.bracket, lastHolder.binding.llParentBg, false);
                         v.setBackground(AppCompatResources.getDrawable(context, R.drawable.np_bracket_open));
                         lastHolder.binding.llParentBg.addView(v);
                     }
                 } else if (levelDiff < 0) {
                     for (int l = 0; l < (layer.getLevel() > 0 ? -levelDiff : -levelDiff - 1); ++l) {
-                        final View v = LayoutInflater.from(context).inflate(R.layout.bracket, null);
+                        final View v = LayoutInflater.from(context).inflate(R.layout.bracket, lastHolder.binding.llFgLeaf, false);
                         v.setBackground(AppCompatResources.getDrawable(context, R.drawable.np_bracket_close));
                         lastHolder.binding.llFgLeaf.addView(v);
                     }
@@ -116,7 +115,7 @@ class LayerAdapter extends ItemMovableAdapter<LayerAdapter.ViewHolder> {
         }
         if (lastLayer != null) {
             for (int l = 0; l < lastLayer.getLevel() - 1; ++l) {
-                final View v = LayoutInflater.from(context).inflate(R.layout.bracket, null);
+                final View v = LayoutInflater.from(context).inflate(R.layout.bracket, lastHolder.binding.llFgLeaf, false);
                 v.setBackground(AppCompatResources.getDrawable(context, R.drawable.np_bracket_close));
                 lastHolder.binding.llFgLeaf.addView(v);
             }

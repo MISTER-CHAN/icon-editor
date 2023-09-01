@@ -7,12 +7,9 @@ import android.graphics.Paint;
 import androidx.annotation.IntRange;
 import androidx.annotation.Size;
 
-import com.misterchan.iconeditor.dialog.ColorRangeDialog;
-
 import java.util.Arrays;
 import java.util.Deque;
 import java.util.LinkedList;
-import java.util.List;
 
 public class Layer {
     public enum Filter {

@@ -2,7 +2,6 @@ package com.misterchan.iconeditor.colorpicker;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.graphics.ColorSpace;
 import android.view.View;
 import android.widget.TextView;

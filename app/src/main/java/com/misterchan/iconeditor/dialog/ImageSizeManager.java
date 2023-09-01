@@ -16,7 +16,7 @@ import com.misterchan.iconeditor.R;
 public class ImageSizeManager {
 
     public enum ScaleType {
-        STRETCH, STRETCH_FILTER, CROP;
+        STRETCH, STRETCH_FILTER, CROP
     }
 
     public interface OnApplyListener {

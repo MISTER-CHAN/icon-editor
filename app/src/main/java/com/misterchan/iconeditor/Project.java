@@ -1,8 +1,6 @@
 package com.misterchan.iconeditor;
 
 import android.graphics.Bitmap;
-import android.widget.TableLayout;
-import android.widget.TextView;
 
 import com.google.android.material.tabs.TabLayout;
 import com.waynejo.androidndkgif.GifEncoder;

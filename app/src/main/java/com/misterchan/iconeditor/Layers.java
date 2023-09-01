@@ -8,7 +8,6 @@ import android.graphics.Rect;
 
 import com.misterchan.iconeditor.util.BitmapUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 

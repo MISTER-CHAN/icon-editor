@@ -5,19 +5,13 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RadioButton;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.core.view.OneShotPreDrawListener;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.misterchan.iconeditor.databinding.ItemColorBinding;
 import com.misterchan.iconeditor.databinding.ItemFrameBinding;
 import com.misterchan.iconeditor.listener.OnCBCheckedListener;
 

@@ -39,10 +39,9 @@ public class Color extends android.graphics.Color {
             return 60.0f * (g - b) / (max - min) + (g >= b ? 0.0f : 360.0f);
         } else if (max == g) {
             return 60.0f * (b - r) / (max - min) + 120.0f;
-        } else if (max == b) {
+        } else /* if (max == b) */ {
             return 60.0f * (r - g) / (max - min) + 240.0f;
         }
-        return 0.0f;
     }
 
     @ColorInt
@@ -54,21 +53,15 @@ public class Color extends android.graphics.Color {
         final float q = sat(v * (1.0f - f * s));
         final float t = sat(v * (1.0f - (1.0f - f) * s));
         v = sat(v);
-        switch (hi) {
-            case 0:
-                return argb(0.0f, v, t, p);
-            case 1:
-                return argb(0.0f, q, v, p);
-            case 2:
-                return argb(0.0f, p, v, t);
-            case 3:
-                return argb(0.0f, p, q, v);
-            case 4:
-                return argb(0.0f, t, p, v);
-            case 5:
-                return argb(0.0f, v, p, q);
-        }
-        return TRANSPARENT;
+        return switch (hi) {
+            case 0 -> argb(0.0f, v, t, p);
+            case 1 -> argb(0.0f, q, v, p);
+            case 2 -> argb(0.0f, p, v, t);
+            case 3 -> argb(0.0f, p, q, v);
+            case 4 -> argb(0.0f, t, p, v);
+            case 5 -> argb(0.0f, v, p, q);
+            default -> TRANSPARENT;
+        };
     }
 
     @FloatRange(from = 0.0f, to = 1.0f)

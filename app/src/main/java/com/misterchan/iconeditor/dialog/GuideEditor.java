@@ -28,7 +28,6 @@ public class GuideEditor {
     private final Guide guide;
     private final int width, height;
     private final OnNewGuideChangeListener onNewGuideChangeListener;
-    private RadioButton rbHorizontal, rbVertical;
     private TextInputEditText tietPosition;
 
     private AfterTextChangedListener onPositionTextChangedListener;
@@ -63,8 +62,8 @@ public class GuideEditor {
         lp.gravity = Gravity.BOTTOM;
         window.setAttributes(lp);
 
-        rbHorizontal = dialog.findViewById(R.id.rb_horizontal);
-        rbVertical = dialog.findViewById(R.id.rb_vertical);
+        final RadioButton rbHorizontal = dialog.findViewById(R.id.rb_horizontal);
+        final RadioButton rbVertical = dialog.findViewById(R.id.rb_vertical);
         final Slider sPosition = dialog.findViewById(R.id.s_position);
         tietPosition = dialog.findViewById(R.id.tiet_position);
         final OnSliderValueChangeListener onPositionSliderValueChange = (slider, value) -> {

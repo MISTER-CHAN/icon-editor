@@ -54,7 +54,7 @@ public class DirectorySelector {
         final Spinner sFileType = ((AlertDialog) dialog).findViewById(R.id.s_file_type);
         final String fileType = sFileType.getSelectedItem().toString();
         final String fileName = tietFileName.getText().toString() + fileType;
-        if (fileName.length() <= 0) {
+        if (fileName.length() == 0) {
             return;
         }
         dst.filePath = Environment.getExternalStorageDirectory().getPath() + File.separator + tree + File.separator + fileName;
