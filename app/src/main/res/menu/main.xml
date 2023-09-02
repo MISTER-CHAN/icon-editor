@@ -96,43 +96,49 @@
                 android:title="@string/file"
                 app:iconTint="?attr/colorOnSurfaceVariant">
                 <menu>
-                    <item
-                        android:id="@+id/i_file_new"
-                        android:icon="@drawable/ic_insert_drive_file"
-                        android:title="@string/new_"
-                        app:iconTint="?attr/colorOnSurfaceVariant" />
-                    <item
-                        android:id="@+id/i_file_open"
-                        android:icon="@drawable/ic_folder_open"
-                        android:title="@string/open"
-                        app:iconTint="?attr/colorOnSurfaceVariant" />
-                    <item
-                        android:id="@+id/i_file_open_from_clipboard"
-                        android:icon="@drawable/ic_void"
-                        android:title="@string/open_from_clipboard" />
-                    <item
-                        android:id="@+id/i_file_save"
-                        android:icon="@drawable/ic_save"
-                        android:title="@string/save"
-                        app:iconTint="?attr/colorOnSurfaceVariant" />
-                    <item
-                        android:id="@+id/i_file_save_as"
-                        android:icon="@drawable/ic_save_as"
-                        android:title="@string/save_as"
-                        app:iconTint="?attr/colorOnSurfaceVariant" />
-                    <item
-                        android:id="@+id/i_file_refer_to_clipboard"
-                        android:icon="@drawable/ic_void"
-                        android:title="@string/refer_to_clipboard" />
-                    <item
-                        android:id="@+id/i_file_export"
-                        android:icon="@drawable/ic_void"
-                        android:title="@string/export" />
-                    <item
-                        android:id="@+id/i_file_close"
-                        android:icon="@drawable/ic_close"
-                        android:title="@string/close"
-                        app:iconTint="?attr/colorOnSurfaceVariant" />
+                    <group android:id="@+id/g_file_open">
+                        <item
+                            android:id="@+id/i_file_new"
+                            android:icon="@drawable/ic_insert_drive_file"
+                            android:title="@string/new_"
+                            app:iconTint="?attr/colorOnSurfaceVariant" />
+                        <item
+                            android:id="@+id/i_file_open"
+                            android:icon="@drawable/ic_folder_open"
+                            android:title="@string/open"
+                            app:iconTint="?attr/colorOnSurfaceVariant" />
+                        <item
+                            android:id="@+id/i_file_open_from_clipboard"
+                            android:icon="@drawable/ic_void"
+                            android:title="@string/open_from_clipboard" />
+                    </group>
+                    <group android:id="@+id/g_file_save">
+                        <item
+                            android:id="@+id/i_file_save"
+                            android:icon="@drawable/ic_save"
+                            android:title="@string/save"
+                            app:iconTint="?attr/colorOnSurfaceVariant" />
+                        <item
+                            android:id="@+id/i_file_save_as"
+                            android:icon="@drawable/ic_save_as"
+                            android:title="@string/save_as"
+                            app:iconTint="?attr/colorOnSurfaceVariant" />
+                        <item
+                            android:id="@+id/i_file_refer_to_clipboard"
+                            android:icon="@drawable/ic_void"
+                            android:title="@string/refer_to_clipboard" />
+                        <item
+                            android:id="@+id/i_file_export"
+                            android:icon="@drawable/ic_void"
+                            android:title="@string/export" />
+                    </group>
+                    <group android:id="@+id/g_file_close">
+                        <item
+                            android:id="@+id/i_file_close"
+                            android:icon="@drawable/ic_close"
+                            android:title="@string/close"
+                            app:iconTint="?attr/colorOnSurfaceVariant" />
+                    </group>
                 </menu>
             </item>
             <item
