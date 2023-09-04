@@ -400,16 +400,6 @@
     <string name="luminosity">Luminosity</string>
 
     <!-- Matrix -->
-    <string name="matrix_3_open" translatable="false">⎡\n⎢\n⎢\n⎣</string>
-    <string name="matrix_3_close" translatable="false">⎤\n⎥\n⎥\n⎦</string>
-    <string name="matrix_4_open" translatable="false">⎡\n⎢\n⎢\n⎢\n⎣</string>
-    <string name="matrix_4_close" translatable="false">⎤\n⎥\n⎥\n⎥\n⎦</string>
-    <string name="matrix_5_open" translatable="false">⎡\n⎢\n⎢\n⎢\n⎢\n⎣</string>
-    <string name="matrix_5_close" translatable="false">⎤\n⎥\n⎥\n⎥\n⎥\n⎦</string>
-    <string name="matrix_3_open_large" translatable="false">⎡\n⎢\n⎢\n⎢\n⎣</string>
-    <string name="matrix_3_close_large" translatable="false">⎤\n⎥\n⎥\n⎥\n⎦</string>
-    <string name="matrix_4_open_large" translatable="false">⎡\n⎢\n⎢\n⎢\n⎢\n⎢\n⎣</string>
-    <string name="matrix_4_close_large" translatable="false">⎤\n⎥\n⎥\n⎥\n⎥\n⎥\n⎦</string>
     <string name="eq" translatable="false">＝</string>
     <string name="x_y_1" translatable="false">𝑥\n𝑦\n1</string>
     <string name="xp_yp_zp" translatable="false">𝑥\'\n𝑦\'\n𝑧\'</string>

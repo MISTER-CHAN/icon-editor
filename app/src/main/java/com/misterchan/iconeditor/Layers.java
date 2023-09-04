@@ -119,13 +119,16 @@ public class Layers {
 
     public static Bitmap mergeLayers(final LayerTree tree) {
         final Bitmap background = tree.getBackground().layer.bitmap;
-        return mergeLayers(tree, new Rect(0, 0, background.getWidth(), background.getHeight()),
-                null, null, null);
+        return mergeLayers(tree, new Rect(0, 0, background.getWidth(), background.getHeight()), true);
+    }
+
+    public static Bitmap mergeLayers(final LayerTree tree, final Rect rect, final boolean skipInvisible) {
+        return mergeLayers(tree, rect, null, null, skipInvisible, null, null, null);
     }
 
     public static Bitmap mergeLayers(final LayerTree tree, final Rect rect,
                                      final Layer specifiedLayer, final Bitmap specifiedLayerBm, final FloatingLayer extraLayer) {
-        return mergeLayers(tree, rect, null, null, specifiedLayer, specifiedLayerBm, extraLayer);
+        return mergeLayers(tree, rect, null, null, true, specifiedLayer, specifiedLayerBm, extraLayer);
     }
 
     /**
@@ -136,6 +139,7 @@ public class Layers {
      */
     public static Bitmap mergeLayers(final LayerTree tree, final Rect rect,
                                      final Bitmap base, final Paint basePaint,
+                                     final boolean skipInvisible,
                                      final Layer specifiedLayer, final Bitmap specifiedLayerBm, final FloatingLayer extraLayer) throws RuntimeException {
         final LayerTree.Node backgroundNode = tree.getBackground();
         final Bitmap bitmap = Bitmap.createBitmap(rect.width(), rect.height(), Bitmap.Config.ARGB_8888);
@@ -147,7 +151,7 @@ public class Layers {
         try {
             for (LayerTree.Node node = backgroundNode; node != null; node = node.getAbove()) {
                 final Layer layer = node.layer;
-                if (!layer.visible) {
+                if (skipInvisible && !layer.visible) {
                     continue;
                 }
                 final LayerTree children = node.children;
@@ -220,11 +224,11 @@ public class Layers {
                     }
                     if (!layer.passBelow) {
                         mergedChildren = mergeLayers(children, rect, null, null,
-                                specifiedLayer, specifiedLayerBm, extraLayer);
+                                skipInvisible, specifiedLayer, specifiedLayerBm, extraLayer);
                         canvas.drawBitmap(mergedChildren, 0.0f, 0.0f, layer.paint);
                     } else {
                         mergedChildren = mergeLayers(children, rect, bitmap, layer.paint,
-                                specifiedLayer, specifiedLayerBm, extraLayer);
+                                skipInvisible, specifiedLayer, specifiedLayerBm, extraLayer);
                         BitmapUtils.fillInBlank(mergedChildren, bitmap);
                     }
                     if (layer.clipToBelow) {

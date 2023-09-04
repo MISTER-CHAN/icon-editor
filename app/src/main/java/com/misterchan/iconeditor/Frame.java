@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.graphics.BlendMode;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Rect;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -63,12 +64,15 @@ public class Frame {
                 return null;
             }
             case 1 -> {
-                final Bitmap src = refLayers.get(0).bitmap;
-                final Bitmap dst = Bitmap.createBitmap(src.getWidth(), src.getHeight(), Bitmap.Config.ARGB_8888);
-                new Canvas(dst).drawBitmap(src, 0.0f, 0.0f, PAINT_SRC);
+                final Layer layer = refLayers.get(0);
+                final Bitmap src = layer.bitmap, background = getBackgroundLayer().bitmap;
+                final Bitmap dst = Bitmap.createBitmap(background.getWidth(), background.getHeight(), Bitmap.Config.ARGB_8888);
+                new Canvas(dst).drawBitmap(src, layer.left, layer.top, PAINT_SRC);
                 return dst;
             }
         }
-        return Layers.mergeLayers(Layers.computeLayerTree(refLayers));
+        final Bitmap background = getBackgroundLayer().bitmap;
+        return Layers.mergeLayers(Layers.computeLayerTree(refLayers),
+                new Rect(0, 0, background.getWidth(), background.getHeight()), false);
     }
 }

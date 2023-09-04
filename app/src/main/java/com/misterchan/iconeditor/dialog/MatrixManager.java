@@ -84,7 +84,7 @@ public class MatrixManager {
         lp.verticalMargin = -0.25f;
         window.setAttributes(lp);
 
-        final GridLayout gl = dialog.findViewById(R.id.gl);
+        final GridLayout gl = dialog.findViewById(R.id.gl_k);
 
         for (int i = 0; i < 9; ++i) {
             TextInputEditText tiet = (TextInputEditText) gl.getChildAt(i);

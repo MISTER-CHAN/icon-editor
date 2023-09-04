@@ -1,181 +1,221 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="center"
-    android:orientation="horizontal">
+    android:gravity="center">
 
-    <TextView
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="2dp"
-        android:lineSpacingMultiplier="0.75"
-        android:text="@string/matrix_4_open" />
+        android:layout_height="wrap_content">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="2dp"
-        android:maxLines="4"
-        android:text="@string/rp_gp_bp_ap" />
+        <TextView
+            android:id="@+id/tv_fx_open"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:background="@drawable/np_bracket_horiz_open"
+            app:layout_constraintBottom_toBottomOf="@id/tv_fx"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toLeftOf="@id/tv_fx"
+            app:layout_constraintTop_toTopOf="@id/tv_fx" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="2dp"
-        android:lineSpacingMultiplier="0.75"
-        android:text="@string/matrix_4_close" />
+        <TextView
+            android:id="@+id/tv_fx"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="2dp"
+            android:maxLines="4"
+            android:text="@string/rp_gp_bp_ap"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toRightOf="@id/tv_fx_open"
+            app:layout_constraintRight_toLeftOf="@id/tv_fx_close"
+            app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="2dp"
-        android:text="@string/eq" />
+        <TextView
+            android:id="@+id/tv_fx_close"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:background="@drawable/np_bracket_horiz_close"
+            app:layout_constraintBottom_toBottomOf="@id/tv_fx"
+            app:layout_constraintLeft_toRightOf="@id/tv_fx"
+            app:layout_constraintRight_toLeftOf="@id/tv_eq"
+            app:layout_constraintTop_toTopOf="@id/tv_fx" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="2dp"
-        android:lineSpacingMultiplier="0.75"
-        android:text="@string/matrix_4_open_large"
-        android:textAppearance="?android:attr/textAppearanceLarge" />
+        <TextView
+            android:id="@+id/tv_eq"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="2dp"
+            android:text="@string/eq"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toRightOf="@id/tv_fx_close"
+            app:layout_constraintRight_toLeftOf="@id/tv_k_open"
+            app:layout_constraintTop_toTopOf="parent" />
 
-    <GridLayout
-        android:id="@+id/gl"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:columnCount="5"
-        android:orientation="horizontal"
-        android:rowCount="4">
+        <TextView
+            android:id="@+id/tv_k_open"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:background="@drawable/np_bracket_horiz_open"
+            app:layout_constraintBottom_toBottomOf="@id/gl_k"
+            app:layout_constraintLeft_toRightOf="@id/tv_eq"
+            app:layout_constraintRight_toLeftOf="@id/gl_k"
+            app:layout_constraintTop_toTopOf="@id/gl_k" />
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:layout_width="36dp"
-            android:inputType="numberSigned|numberDecimal"
-            android:textAlignment="textEnd" />
+        <GridLayout
+            android:id="@+id/gl_k"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:columnCount="5"
+            android:orientation="horizontal"
+            android:rowCount="4"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toRightOf="@id/tv_k_open"
+            app:layout_constraintRight_toLeftOf="@id/tv_k_close"
+            app:layout_constraintTop_toTopOf="parent">
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:layout_width="36dp"
-            android:inputType="numberSigned|numberDecimal"
-            android:textAlignment="textEnd" />
+            <com.google.android.material.textfield.TextInputEditText
+                android:layout_width="36dp"
+                android:inputType="numberSigned|numberDecimal"
+                android:textAlignment="textEnd" />
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:layout_width="36dp"
-            android:inputType="numberSigned|numberDecimal"
-            android:textAlignment="textEnd" />
+            <com.google.android.material.textfield.TextInputEditText
+                android:layout_width="36dp"
+                android:inputType="numberSigned|numberDecimal"
+                android:textAlignment="textEnd" />
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:layout_width="36dp"
-            android:inputType="numberSigned|numberDecimal"
-            android:textAlignment="textEnd" />
+            <com.google.android.material.textfield.TextInputEditText
+                android:layout_width="36dp"
+                android:inputType="numberSigned|numberDecimal"
+                android:textAlignment="textEnd" />
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:layout_width="36dp"
-            android:inputType="numberSigned|numberDecimal"
-            android:textAlignment="textEnd" />
+            <com.google.android.material.textfield.TextInputEditText
+                android:layout_width="36dp"
+                android:inputType="numberSigned|numberDecimal"
+                android:textAlignment="textEnd" />
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:layout_width="36dp"
-            android:inputType="numberSigned|numberDecimal"
-            android:textAlignment="textEnd" />
+            <com.google.android.material.textfield.TextInputEditText
+                android:layout_width="36dp"
+                android:inputType="numberSigned|numberDecimal"
+                android:textAlignment="textEnd" />
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:layout_width="36dp"
-            android:inputType="numberSigned|numberDecimal"
-            android:textAlignment="textEnd" />
+            <com.google.android.material.textfield.TextInputEditText
+                android:layout_width="36dp"
+                android:inputType="numberSigned|numberDecimal"
+                android:textAlignment="textEnd" />
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:layout_width="36dp"
-            android:inputType="numberSigned|numberDecimal"
-            android:textAlignment="textEnd" />
+            <com.google.android.material.textfield.TextInputEditText
+                android:layout_width="36dp"
+                android:inputType="numberSigned|numberDecimal"
+                android:textAlignment="textEnd" />
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:layout_width="36dp"
-            android:inputType="numberSigned|numberDecimal"
-            android:textAlignment="textEnd" />
+            <com.google.android.material.textfield.TextInputEditText
+                android:layout_width="36dp"
+                android:inputType="numberSigned|numberDecimal"
+                android:textAlignment="textEnd" />
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:layout_width="36dp"
-            android:inputType="numberSigned|numberDecimal"
-            android:textAlignment="textEnd" />
+            <com.google.android.material.textfield.TextInputEditText
+                android:layout_width="36dp"
+                android:inputType="numberSigned|numberDecimal"
+                android:textAlignment="textEnd" />
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:layout_width="36dp"
-            android:inputType="numberSigned|numberDecimal"
-            android:textAlignment="textEnd" />
+            <com.google.android.material.textfield.TextInputEditText
+                android:layout_width="36dp"
+                android:inputType="numberSigned|numberDecimal"
+                android:textAlignment="textEnd" />
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:layout_width="36dp"
-            android:inputType="numberSigned|numberDecimal"
-            android:textAlignment="textEnd" />
+            <com.google.android.material.textfield.TextInputEditText
+                android:layout_width="36dp"
+                android:inputType="numberSigned|numberDecimal"
+                android:textAlignment="textEnd" />
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:layout_width="36dp"
-            android:inputType="numberSigned|numberDecimal"
-            android:textAlignment="textEnd" />
+            <com.google.android.material.textfield.TextInputEditText
+                android:layout_width="36dp"
+                android:inputType="numberSigned|numberDecimal"
+                android:textAlignment="textEnd" />
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:layout_width="36dp"
-            android:inputType="numberSigned|numberDecimal"
-            android:textAlignment="textEnd" />
+            <com.google.android.material.textfield.TextInputEditText
+                android:layout_width="36dp"
+                android:inputType="numberSigned|numberDecimal"
+                android:textAlignment="textEnd" />
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:layout_width="36dp"
-            android:inputType="numberSigned|numberDecimal"
-            android:textAlignment="textEnd" />
+            <com.google.android.material.textfield.TextInputEditText
+                android:layout_width="36dp"
+                android:inputType="numberSigned|numberDecimal"
+                android:textAlignment="textEnd" />
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:layout_width="36dp"
-            android:inputType="numberSigned|numberDecimal"
-            android:textAlignment="textEnd" />
+            <com.google.android.material.textfield.TextInputEditText
+                android:layout_width="36dp"
+                android:inputType="numberSigned|numberDecimal"
+                android:textAlignment="textEnd" />
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:layout_width="36dp"
-            android:inputType="numberSigned|numberDecimal"
-            android:textAlignment="textEnd" />
+            <com.google.android.material.textfield.TextInputEditText
+                android:layout_width="36dp"
+                android:inputType="numberSigned|numberDecimal"
+                android:textAlignment="textEnd" />
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:layout_width="36dp"
-            android:inputType="numberSigned|numberDecimal"
-            android:textAlignment="textEnd" />
+            <com.google.android.material.textfield.TextInputEditText
+                android:layout_width="36dp"
+                android:inputType="numberSigned|numberDecimal"
+                android:textAlignment="textEnd" />
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:layout_width="36dp"
-            android:inputType="numberSigned|numberDecimal"
-            android:textAlignment="textEnd" />
+            <com.google.android.material.textfield.TextInputEditText
+                android:layout_width="36dp"
+                android:inputType="numberSigned|numberDecimal"
+                android:textAlignment="textEnd" />
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:layout_width="36dp"
-            android:inputType="numberSigned|numberDecimal"
-            android:textAlignment="textEnd" />
-    </GridLayout>
+            <com.google.android.material.textfield.TextInputEditText
+                android:layout_width="36dp"
+                android:inputType="numberSigned|numberDecimal"
+                android:textAlignment="textEnd" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="2dp"
-        android:lineSpacingMultiplier="0.75"
-        android:text="@string/matrix_4_close_large"
-        android:textAppearance="?android:attr/textAppearanceLarge" />
+            <com.google.android.material.textfield.TextInputEditText
+                android:layout_width="36dp"
+                android:inputType="numberSigned|numberDecimal"
+                android:textAlignment="textEnd" />
+        </GridLayout>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="2dp"
-        android:lineSpacingMultiplier="0.75"
-        android:text="@string/matrix_5_open" />
+        <TextView
+            android:id="@+id/tv_k_close"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:background="@drawable/np_bracket_horiz_close"
+            app:layout_constraintBottom_toBottomOf="@id/gl_k"
+            app:layout_constraintLeft_toRightOf="@id/gl_k"
+            app:layout_constraintRight_toLeftOf="@id/tv_x_open"
+            app:layout_constraintTop_toTopOf="@id/gl_k" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="2dp"
-        android:maxLines="5"
-        android:text="@string/r_g_b_a_1"
-        android:typeface="serif" />
+        <TextView
+            android:id="@+id/tv_x_open"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:background="@drawable/np_bracket_horiz_open"
+            app:layout_constraintBottom_toBottomOf="@id/tv_x"
+            app:layout_constraintLeft_toRightOf="@id/tv_k_close"
+            app:layout_constraintRight_toLeftOf="@id/tv_x"
+            app:layout_constraintTop_toTopOf="@id/tv_x" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="2dp"
-        android:lineSpacingMultiplier="0.75"
-        android:text="@string/matrix_5_close" />
+        <TextView
+            android:id="@+id/tv_x"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="2dp"
+            android:maxLines="5"
+            android:text="@string/r_g_b_a_1"
+            android:typeface="serif"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toRightOf="@id/tv_x_open"
+            app:layout_constraintRight_toLeftOf="@id/tv_x_close"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/tv_x_close"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:background="@drawable/np_bracket_horiz_close"
+            app:layout_constraintBottom_toBottomOf="@id/tv_x"
+            app:layout_constraintLeft_toRightOf="@id/tv_x"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="@id/tv_x" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </LinearLayout>

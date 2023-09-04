@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<nine-patch xmlns:android="http://schemas.android.com/apk/res/android"
+    android:filter="false"
+    android:src="@drawable/bracket_vert_open"
+    android:tint="?attr/colorOnSurfaceVariant">
+
+</nine-patch>

@@ -104,7 +104,7 @@ public class BitmapUtils {
     }
 
     public static void bucketFill(final Bitmap src, final Bitmap dst, Rect rect,
-                                  int x, int y, @ColorInt final int color,
+                                  final int x, final int y, @ColorInt final int color,
                                   final boolean ignoreAlpha, final int tolerance) {
         if (rect == null) {
             rect = new Rect(0, 0, src.getWidth(), src.getHeight());
@@ -184,7 +184,7 @@ public class BitmapUtils {
     }
 
     public static void floodFill(final Bitmap src, final Bitmap dst, Rect rect,
-                                 int x, int y, @ColorInt final int color,
+                                 final int x, final int y, @ColorInt final int color,
                                  final boolean ignoreAlpha, final int tolerance) {
         if (rect == null) {
             rect = new Rect(0, 0, src.getWidth(), src.getHeight());
@@ -289,22 +289,22 @@ public class BitmapUtils {
     public static void generateNoise(final Canvas canvas, final Rect rect, final Bitmap bitmap, final Paint paint,
                                      @FloatRange(from = 0.0f, to = 1.0f) final float noisiness, final Long seed,
                                      final boolean noRepeats) {
-        final Random random = seed == null ? new Random() : new Random(seed);
         final int w = bitmap.getWidth(), h = bitmap.getHeight();
+        final Random random = seed == null ? new Random() : new Random(seed);
         if (noRepeats) {
-            for (float y = rect.top - h; y < rect.bottom; y += h) {
-                for (float x = rect.left - w; x < rect.right; x += w) {
+            for (float y = rect.top - w; y < rect.bottom; ++y) {
+                for (float x = rect.left - h; x < rect.right; ++x) {
                     if (random.nextFloat() < noisiness) {
                         canvas.drawBitmap(bitmap, x, y, paint);
                     }
                 }
             }
         } else {
-            final int amount = (int) ((rect.width() / w + 1) * (rect.height() / h + 1) * noisiness);
+            final int amount = (int) (rect.width() * rect.height() * noisiness);
             for (int i = 0; i < amount; ++i) {
                 canvas.drawBitmap(bitmap,
-                        (rect.width() + w) * random.nextFloat() - w,
-                        (rect.height() + h) * random.nextFloat() - h,
+                        (rect.width() + w) * random.nextFloat() - w + rect.left,
+                        (rect.height() + h) * random.nextFloat() - h + rect.top,
                         paint);
             }
         }
