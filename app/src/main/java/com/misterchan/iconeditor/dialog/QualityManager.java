@@ -116,6 +116,7 @@ public class QualityManager {
             tietQuality.addTextChangedListener((AfterTextChangedListener) s -> {
                 try {
                     final int i = Integer.parseUnsignedInt(s);
+                    if (!(0 <= i && i <= 100)) return;
                     quality = i;
                     sQuality.setValue(i);
                 } catch (NumberFormatException e) {

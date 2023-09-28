@@ -218,23 +218,23 @@ public class Layers {
                         BitmapUtils.clip(bitmap, dst, pixels);
                     }
                 } else {
-                    final Bitmap mergedChildren;
                     if (layer.clipToBelow) {
                         pixels = BitmapUtils.getPixels(bitmap, rect);
                     }
-                    if (!layer.passBelow) {
-                        mergedChildren = mergeLayers(children, rect, null, null,
-                                skipInvisible, specifiedLayer, specifiedLayerBm, extraLayer);
-                        canvas.drawBitmap(mergedChildren, 0.0f, 0.0f, layer.paint);
-                    } else {
+                    final Bitmap mergedChildren;
+                    if (layer.passBelow) {
                         mergedChildren = mergeLayers(children, rect, bitmap, layer.paint,
                                 skipInvisible, specifiedLayer, specifiedLayerBm, extraLayer);
                         BitmapUtils.fillInBlank(mergedChildren, bitmap);
+                    } else {
+                        mergedChildren = mergeLayers(children, rect, null, null,
+                                skipInvisible, specifiedLayer, specifiedLayerBm, extraLayer);
+                        canvas.drawBitmap(mergedChildren, 0.0f, 0.0f, layer.paint);
                     }
+                    mergedChildren.recycle();
                     if (layer.clipToBelow) {
                         BitmapUtils.clip(bitmap, rect, pixels);
                     }
-                    mergedChildren.recycle();
                 }
             }
         } catch (final RuntimeException e) {

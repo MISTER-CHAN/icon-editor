@@ -105,12 +105,14 @@ public class ArgbColorPicker extends ColorPicker {
         if (!(slider.getValueFrom() <= f && f <= slider.getValueTo())) return;
         slider.setValue(f);
         final float av = sAlpha.getValue(), rv = sRed.getValue(), gv = sGreen.getValue(), bv = sBlue.getValue();
-        @ColorInt final int newColorInt = type
-                ? Color.argb(av, rv, gv, bv)
-                : Color.argb((int) av, (int) rv, (int) gv, (int) bv);
-        newColor = type
-                ? Color.pack(rv, gv, bv, av)
-                : Color.pack(newColorInt);
+        @ColorInt final int newColorInt;
+        if (type) {
+            newColor = Color.pack(rv, gv, bv, av, colorSpace);
+            newColorInt = Color.toArgb(newColor);
+        } else {
+            newColorInt = Color.argb((int) av, (int) rv, (int) gv, (int) bv);
+            newColor = Color.pack(newColorInt);
+        }
         vPreview.setBackgroundColor(newColorInt);
     }
 
