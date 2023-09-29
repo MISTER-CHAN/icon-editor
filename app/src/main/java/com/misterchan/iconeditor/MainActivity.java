@@ -310,7 +310,6 @@ public class MainActivity extends AppCompatActivity {
     private LayerListBinding layerList;
     private LinkedList<Long> palette;
     private List<Project> projects;
-    private Menu mMain;
     private MenuItem miFrameList;
     private MenuItem miHasAlpha;
     private Point cloneStampSrc;
@@ -4397,7 +4396,6 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        mMain = menu;
         getMenuInflater().inflate(R.menu.main, menu);
         menu.setGroupDividerEnabled(true);
         miFrameList = menu.findItem(R.id.i_frame_list);
