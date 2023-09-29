@@ -24,7 +24,7 @@
                 android:id="@+id/tiet_quality"
                 android:layout_width="72dp"
                 android:layout_height="wrap_content"
-                android:backgroundTint="@color/transparent"
+                android:backgroundTint="@android:color/transparent"
                 android:hint="@string/quality"
                 android:inputType="number"
                 android:textAlignment="textEnd" />

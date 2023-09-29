@@ -1,54 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     tools:context=".MainActivity">
-
-    <include
-        android:id="@+id/top_app_bar"
-        layout="@layout/top_app_bar" />
-
-    <com.google.android.material.tabs.TabLayout
-        android:id="@+id/tl_project_list"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:tabGravity="start"
-        app:tabMode="scrollable" />
-
-    <TextView
-        android:id="@+id/tv_status"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="4dp"
-        android:maxLines="1" />
-
-    <include
-        android:id="@+id/canvas"
-        layout="@layout/canvas"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1" />
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="?android:attr/colorBackground"
-        android:elevation="8dp"
+        android:layout_height="match_parent"
         android:orientation="vertical">
+
+        <include
+            android:id="@+id/top_app_bar"
+            layout="@layout/top_app_bar" />
+
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/tl_project_list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:tabGravity="start"
+            app:tabMode="scrollable" />
+
+        <TextView
+            android:id="@+id/tv_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="4dp"
+            android:maxLines="1" />
+
+        <include
+            android:id="@+id/canvas"
+            layout="@layout/canvas"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
+            android:background="?android:attr/colorBackground"
+            android:elevation="8dp"
+            android:orientation="vertical">
 
             <FrameLayout
                 android:id="@+id/fl_tool_options"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical">
 
                 <HorizontalScrollView
                     android:id="@+id/sv_options_bucket_fill"
@@ -205,110 +204,126 @@
                         layout="@layout/options_transformer" />
                 </HorizontalScrollView>
             </FrameLayout>
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
-
-            <com.google.android.material.button.MaterialButtonToggleGroup
-                android:id="@+id/btg_zoom"
-                style="@style/Widget_App_ButtonToggleGroup_ToolOptions"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:singleSelection="true">
-
-                <Button
-                    android:id="@+id/b_zoom"
-                    style="@style/Widget.App.Button.OutlinedButton.Dense"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/zoom" />
-            </com.google.android.material.button.MaterialButtonToggleGroup>
-
-            <HorizontalScrollView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:fadingEdgeLength="16dp"
-                android:requiresFadingEdge="horizontal"
-                android:scrollbars="none">
-
-                <include
-                    android:id="@+id/tools"
-                    layout="@layout/tools" />
-            </HorizontalScrollView>
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="4dp"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
 
             <LinearLayout
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="?attr/colorOutline"
+                android:gravity="center_vertical"
                 android:orientation="horizontal">
 
-                <FrameLayout
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
-                    android:layout_margin="1dp">
+                <com.google.android.material.button.MaterialButtonToggleGroup
+                    android:id="@+id/btg_zoom"
+                    style="@style/Widget_App_ButtonToggleGroup_ToolOptions"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:singleSelection="true">
 
-                    <ImageView
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:scaleType="center"
-                        android:src="@mipmap/chessboard" />
+                    <Button
+                        android:id="@+id/b_zoom"
+                        style="@style/Widget.App.Button.OutlinedButton.Dense"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/zoom" />
+                </com.google.android.material.button.MaterialButtonToggleGroup>
 
-                    <View
-                        android:id="@+id/v_foreground_color"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:background="@color/black" />
-                </FrameLayout>
+                <HorizontalScrollView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:fadingEdgeLength="16dp"
+                    android:requiresFadingEdge="horizontal"
+                    android:scrollbars="none">
 
-                <FrameLayout
-                    android:layout_width="16dp"
-                    android:layout_height="32dp"
-                    android:layout_marginVertical="1dp"
-                    android:layout_marginEnd="1dp">
-
-                    <ImageView
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:scaleType="center"
-                        android:src="@mipmap/chessboard" />
-
-                    <View
-                        android:id="@+id/v_background_color"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:background="@color/transparent" />
-                </FrameLayout>
+                    <include
+                        android:id="@+id/tools"
+                        layout="@layout/tools" />
+                </HorizontalScrollView>
             </LinearLayout>
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rv_swatches"
-                android:layout_width="0dp"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:fadingEdgeLength="16dp"
-                android:orientation="horizontal"
-                android:requiresFadingEdge="horizontal"
-                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+                android:layout_margin="4dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
-            <Button
-                android:id="@+id/b_swatches_add"
-                style="?attr/materialIconButtonStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="32dp"
-                app:icon="@drawable/ic_add" />
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="?attr/colorOutline"
+                    android:orientation="horizontal">
+
+                    <FrameLayout
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:layout_margin="1dp">
+
+                        <ImageView
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:scaleType="center"
+                            android:src="@mipmap/chessboard" />
+
+                        <View
+                            android:id="@+id/v_foreground_color"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="@color/black" />
+                    </FrameLayout>
+
+                    <FrameLayout
+                        android:layout_width="16dp"
+                        android:layout_height="32dp"
+                        android:layout_marginVertical="1dp"
+                        android:layout_marginEnd="1dp">
+
+                        <ImageView
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:scaleType="center"
+                            android:src="@mipmap/chessboard" />
+
+                        <View
+                            android:id="@+id/v_background_color"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="@android:color/transparent" />
+                    </FrameLayout>
+                </LinearLayout>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_swatches"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:fadingEdgeLength="16dp"
+                    android:orientation="horizontal"
+                    android:requiresFadingEdge="horizontal"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
+                <Button
+                    android:id="@+id/b_swatches_add"
+                    style="?attr/materialIconButtonStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="32dp"
+                    app:icon="@drawable/ic_add" />
+            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
-</LinearLayout>
+
+    <TextView
+        android:id="@+id/v_blocker_neg"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:background="@android:color/transparent"
+        android:clickable="false" />
+
+    <TextView
+        android:id="@+id/v_blocker_pos"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="@android:color/transparent"
+        android:clickable="false" />
+</FrameLayout>

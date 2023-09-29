@@ -32,7 +32,7 @@
                     android:id="@+id/tiet_width"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:backgroundTint="@color/transparent"
+                    android:backgroundTint="@android:color/transparent"
                     android:hint="@string/width"
                     android:inputType="number"
                     android:textAlignment="textEnd" />
@@ -49,7 +49,7 @@
                     android:id="@+id/tiet_height"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:backgroundTint="@color/transparent"
+                    android:backgroundTint="@android:color/transparent"
                     android:hint="@string/height"
                     android:inputType="number"
                     android:textAlignment="textEnd" />

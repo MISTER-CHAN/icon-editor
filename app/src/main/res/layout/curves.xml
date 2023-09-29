@@ -9,7 +9,7 @@
         android:id="@+id/tl_comps"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:backgroundTint="@color/transparent"
+        android:backgroundTint="@android:color/transparent"
         android:elevation="1dp"
         app:tabMode="scrollable">
 

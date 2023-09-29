@@ -2,6 +2,7 @@ package com.misterchan.iconeditor.dialog;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -88,7 +89,7 @@ public class AnimationClipper {
 
         OneShotPreDrawListener.add(flIv, () -> {
             final int w = flIv.getMeasuredWidth();
-            final LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) flIv.getLayoutParams();
+            final ViewGroup.LayoutParams lp = flIv.getLayoutParams();
             lp.height = w * height / width;
             flIv.setLayoutParams(lp);
         });

@@ -91,7 +91,7 @@ class FrameAdapter extends ItemMovableAdapter<FrameAdapter.ViewHolder> {
         });
         OneShotPreDrawListener.add(holder.binding.flThumbnail, () -> {
             final Bitmap background = frame.getBackgroundLayer().bitmap;
-            final LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) holder.binding.flThumbnail.getLayoutParams();
+            final ViewGroup.LayoutParams lp = holder.binding.flThumbnail.getLayoutParams();
             final int w = background.getWidth(), h = background.getHeight();
             lp.width = w >= h ? dim64Dip : dim64Dip * w / h;
             lp.height = w >= h ? dim64Dip * h / w : dim64Dip;

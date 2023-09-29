@@ -4,7 +4,7 @@
     android:id="@+id/tl_project_list"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:backgroundTint="@color/transparent"
+    android:backgroundTint="@android:color/transparent"
     app:tabMode="scrollable">
 
 </com.google.android.material.tabs.TabLayout>

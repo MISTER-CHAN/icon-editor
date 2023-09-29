@@ -11,6 +11,7 @@ import android.graphics.Paint;
 import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
@@ -306,7 +307,7 @@ public class CurvesDialog {
         layoutParams.flags &= ~WindowManager.LayoutParams.FLAG_DIM_BEHIND;
 //      layoutParams.gravity = Gravity.BOTTOM;
         window.setAttributes(layoutParams);
-        window.setBackgroundDrawableResource(R.color.transparent);
+        window.setBackgroundDrawableResource(android.R.color.transparent);
 
         final FrameLayout fl = dialog.findViewById(R.id.fl);
         iv = dialog.findViewById(R.id.iv);
@@ -342,7 +343,7 @@ public class CurvesDialog {
         OneShotPreDrawListener.add(fl, () -> {
             final int width = fl.getMeasuredWidth();
             density = width / 256.0f;
-            final LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) fl.getLayoutParams();
+            final ViewGroup.LayoutParams lp = fl.getLayoutParams();
             lp.height = width;
             fl.setLayoutParams(lp);
         });

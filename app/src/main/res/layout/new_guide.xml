@@ -45,7 +45,7 @@
                 android:id="@+id/tiet_position"
                 android:layout_width="96dp"
                 android:layout_height="wrap_content"
-                android:backgroundTint="@color/transparent"
+                android:backgroundTint="@android:color/transparent"
                 android:hint="@string/position"
                 android:inputType="number"
                 android:text="@string/zero"

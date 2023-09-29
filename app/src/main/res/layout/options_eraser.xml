@@ -14,7 +14,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:autofillHints="0"
-            android:backgroundTint="@color/transparent"
+            android:backgroundTint="@android:color/transparent"
             android:hint="@string/stroke_width"
             android:inputType="numberDecimal"
             android:textAlignment="textEnd" />
@@ -29,7 +29,7 @@
             android:id="@+id/tiet_blur_radius"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:backgroundTint="@color/transparent"
+            android:backgroundTint="@android:color/transparent"
             android:hint="@string/blur_radius"
             android:inputType="numberDecimal"
             android:textAlignment="textEnd" />

@@ -15,7 +15,7 @@
             android:id="@+id/tiet"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:backgroundTint="@color/transparent"
+            android:backgroundTint="@android:color/transparent"
             android:inputType="number"
             android:textAlignment="textEnd" />
     </com.google.android.material.textfield.TextInputLayout>

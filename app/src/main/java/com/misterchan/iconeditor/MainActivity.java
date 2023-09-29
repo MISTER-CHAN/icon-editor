@@ -58,6 +58,7 @@ import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.view.ActionMode;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.FileProvider;
 import androidx.core.view.MenuCompat;
 import androidx.core.view.OneShotPreDrawListener;
@@ -309,6 +310,7 @@ public class MainActivity extends AppCompatActivity {
     private LayerListBinding layerList;
     private LinkedList<Long> palette;
     private List<Project> projects;
+    private Menu mMain;
     private MenuItem miFrameList;
     private MenuItem miHasAlpha;
     private Point cloneStampSrc;
@@ -1238,7 +1240,27 @@ public class MainActivity extends AppCompatActivity {
 
     private Shape shape = rect;
 
-    private abstract class OnMultiTouchListener implements View.OnTouchListener {
+    private abstract class OnIVTouchListener implements View.OnTouchListener {
+        public abstract void onIVTouch(View v, MotionEvent event);
+
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            onIVTouch(v, event);
+            final boolean enabled;
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN -> enabled = false;
+                case MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> enabled = true;
+                default -> {
+                    return true;
+                }
+            }
+            activityMain.vBlockerNeg.setClickable(!enabled);
+            activityMain.vBlockerPos.setClickable(!enabled);
+            return true;
+        }
+    }
+
+    private abstract class OnIVMultiTouchListener extends OnIVTouchListener {
         private boolean multiTouch = false;
 
         public void onFinalPointerUp() {
@@ -1254,11 +1276,13 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
+        public abstract void onIVSingleTouch(View v, MotionEvent event);
+
         @Override
-        public boolean onTouch(View v, MotionEvent event) {
+        public void onIVTouch(View v, MotionEvent event) {
             final int pointerCount = event.getPointerCount(), action = event.getAction();
             if (pointerCount == 1 && !multiTouch) {
-                onSingleTouch(v, event);
+                onIVSingleTouch(v, event);
             } else if (pointerCount <= 2) {
                 switch (action & MotionEvent.ACTION_MASK) {
                     case MotionEvent.ACTION_MOVE -> {
@@ -1284,10 +1308,7 @@ public class MainActivity extends AppCompatActivity {
                 onFinalPointerUp();
                 multiTouch = false;
             }
-            return true;
         }
-
-        public abstract void onSingleTouch(View v, MotionEvent event);
 
         public boolean isMultiTouch() {
             return multiTouch;
@@ -1295,44 +1316,46 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @SuppressLint("ClickableViewAccessibility")
-    private final View.OnTouchListener onIVTouchWithBucketListener = (v, event) -> {
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN -> {
-                final float x = event.getX(), y = event.getY();
-                final int bx = toBitmapX(x), by = toBitmapY(y);
-                if (!(0 <= bx && bx < bitmap.getWidth() && 0 <= by && by < bitmap.getHeight())) {
-                    break;
+    private final View.OnTouchListener onIVTouchWithBucketListener = new OnIVTouchListener() {
+        @Override
+        public void onIVTouch(View v, MotionEvent event) {
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN -> {
+                    final float x = event.getX(), y = event.getY();
+                    final int bx = toBitmapX(x), by = toBitmapY(y);
+                    if (!(0 <= bx && bx < bitmap.getWidth() && 0 <= by && by < bitmap.getHeight())) {
+                        break;
+                    }
+                    final Bitmap src = refBm != null ? refBm : bitmap;
+                    final Rect rect = hasSelection ? selection : null;
+                    runOrStart(() -> {
+                        if (activityMain.optionsBucketFill.cbContiguous.isChecked()) {
+                            BitmapUtils.floodFill(src, bitmap, rect, bx, by, paint.getColor(),
+                                    activityMain.optionsBucketFill.cbIgnoreAlpha.isChecked(), threshold);
+                        } else {
+                            BitmapUtils.bucketFill(src, bitmap, rect, bx, by, paint.getColor(),
+                                    activityMain.optionsBucketFill.cbIgnoreAlpha.isChecked(), threshold);
+                        }
+                        if (rect == null) {
+                            drawBitmapOntoView(true);
+                        } else {
+                            drawBitmapOntoView(rect, true);
+                        }
+                        addToHistory();
+                    }, true);
+                    clearStatus();
                 }
-                final Bitmap src = refBm != null ? refBm : bitmap;
-                final Rect rect = hasSelection ? selection : null;
-                runOrStart(() -> {
-                    if (activityMain.optionsBucketFill.cbContiguous.isChecked()) {
-                        BitmapUtils.floodFill(src, bitmap, rect, bx, by, paint.getColor(),
-                                activityMain.optionsBucketFill.cbIgnoreAlpha.isChecked(), threshold);
-                    } else {
-                        BitmapUtils.bucketFill(src, bitmap, rect, bx, by, paint.getColor(),
-                                activityMain.optionsBucketFill.cbIgnoreAlpha.isChecked(), threshold);
-                    }
-                    if (rect == null) {
-                        drawBitmapOntoView(true);
-                    } else {
-                        drawBitmapOntoView(rect, true);
-                    }
-                    addToHistory();
-                }, true);
-                clearStatus();
             }
         }
-        return true;
     };
 
     @SuppressLint({"ClickableViewAccessibility", "SetTextI18n"})
-    private final View.OnTouchListener onIVTouchWithCloneStampListener = new OnMultiTouchListener() {
+    private final View.OnTouchListener onIVTouchWithCloneStampListener = new OnIVMultiTouchListener() {
         private int lastBX, lastBY;
         private int dx, dy;
 
         @Override
-        public void onSingleTouch(View v, MotionEvent event) {
+        public void onIVSingleTouch(View v, MotionEvent event) {
             final float x = event.getX(), y = event.getY();
             final int bx = toBitmapX(x), by = toBitmapY(y);
             switch (event.getAction()) {
@@ -1393,11 +1416,11 @@ public class MainActivity extends AppCompatActivity {
     };
 
     @SuppressLint({"ClickableViewAccessibility"})
-    private final View.OnTouchListener onIVTouchWithEraserListener = new OnMultiTouchListener() {
+    private final View.OnTouchListener onIVTouchWithEraserListener = new OnIVMultiTouchListener() {
         private int lastBX, lastBY;
 
         @Override
-        public void onSingleTouch(View v, MotionEvent event) {
+        public void onIVSingleTouch(View v, MotionEvent event) {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN: {
                     final float x = event.getX(), y = event.getY();
@@ -1425,13 +1448,13 @@ public class MainActivity extends AppCompatActivity {
     };
 
     @SuppressLint({"ClickableViewAccessibility", "StringFormatMatches"})
-    private final View.OnTouchListener onIVTouchWithImpreciseEyedropperListener = new OnMultiTouchListener() {
+    private final View.OnTouchListener onIVTouchWithImpreciseEyedropperListener = new OnIVMultiTouchListener() {
         @Override
         public void onNonPrimaryPointerDown() {
         }
 
         @Override
-        public void onSingleTouch(View v, MotionEvent event) {
+        public void onIVSingleTouch(View v, MotionEvent event) {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN, MotionEvent.ACTION_MOVE -> {
                     final float x = event.getX(), y = event.getY();
@@ -1449,13 +1472,13 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    private final View.OnTouchListener onIVTouchWithPreciseEyedropperListener = new OnMultiTouchListener() {
+    private final View.OnTouchListener onIVTouchWithPreciseEyedropperListener = new OnIVMultiTouchListener() {
         @Override
         public void onNonPrimaryPointerDown() {
         }
 
         @Override
-        public void onSingleTouch(View v, MotionEvent event) {
+        public void onIVSingleTouch(View v, MotionEvent event) {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN, MotionEvent.ACTION_MOVE -> {
                     final float x = event.getX(), y = event.getY();
@@ -1476,7 +1499,7 @@ public class MainActivity extends AppCompatActivity {
     private View.OnTouchListener onIVTouchWithEyedropperListener;
 
     @SuppressLint({"ClickableViewAccessibility", "SetTextI18n"})
-    private final View.OnTouchListener onIVTouchWithGradientListener = new OnMultiTouchListener() {
+    private final View.OnTouchListener onIVTouchWithGradientListener = new OnIVMultiTouchListener() {
         @ColorLong
         private long color0;
         private Rect lastRect;
@@ -1487,7 +1510,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onSingleTouch(View v, MotionEvent event) {
+        public void onIVSingleTouch(View v, MotionEvent event) {
             final float x = event.getX(), y = event.getY();
             final int bx = toBitmapX(x), by = toBitmapY(y);
             final Bitmap src = refBm != null ? refBm : bitmap;
@@ -1539,11 +1562,11 @@ public class MainActivity extends AppCompatActivity {
     };
 
     @SuppressLint("ClickableViewAccessibility")
-    private final View.OnTouchListener onIVTouchWithImpreciseMagicEraserListener = new View.OnTouchListener() {
+    private final View.OnTouchListener onIVTouchWithImpreciseMagicEraserListener = new OnIVTouchListener() {
         private float lastX, lastY;
 
         @Override
-        public boolean onTouch(View v, MotionEvent event) {
+        public void onIVTouch(View v, MotionEvent event) {
             final float x = event.getX(), y = event.getY();
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN -> {
@@ -1596,93 +1619,94 @@ public class MainActivity extends AppCompatActivity {
                     clearStatus();
                 }
             }
-            return true;
         }
     };
 
     @SuppressLint("ClickableViewAccessibility")
-    private final View.OnTouchListener onIVTouchWithPreciseMagicEraserListener = (v, event) -> {
-        switch (event.getPointerCount()) {
-            case 1 -> {
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN -> {
-                        final float x = event.getX(), y = event.getY();
-                        final Rect vs = getVisibleSubset();
-                        if (magErB == null || magErF == null
-                                || (!vs.contains(magErB.x, magErB.y) && !vs.contains(magErF.x, magErF.y))) {
-                            final int bx = toBitmapX(x), by = toBitmapY(y);
-                            magErB = new Point(bx, by);
-                            magErF = new Point(bx, by);
-                            drawCrossOntoView(bx, by);
+    private final View.OnTouchListener onIVTouchWithPreciseMagicEraserListener = new OnIVTouchListener() {
+        @Override
+        public void onIVTouch(View v, MotionEvent event) {
+            switch (event.getPointerCount()) {
+                case 1 -> {
+                    switch (event.getAction()) {
+                        case MotionEvent.ACTION_DOWN -> {
+                            final float x = event.getX(), y = event.getY();
+                            final Rect vs = getVisibleSubset();
+                            if (magErB == null || magErF == null
+                                    || (!vs.contains(magErB.x, magErB.y) && !vs.contains(magErF.x, magErF.y))) {
+                                final int bx = toBitmapX(x), by = toBitmapY(y);
+                                magErB = new Point(bx, by);
+                                magErF = new Point(bx, by);
+                                drawCrossOntoView(bx, by);
+                            }
                         }
+                        case MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> addToHistory();
                     }
-                    case MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> addToHistory();
                 }
-            }
-            case 2 -> {
-                switch (event.getActionMasked()) {
-                    case MotionEvent.ACTION_MOVE -> {
-                        final float x0 = event.getX(0), y0 = event.getY(0);
-                        final float x1 = event.getX(1), y1 = event.getY(1);
-                        magErB.set(toBitmapX(x0 + magErBD.x), toBitmapY(y0 + magErBD.y));
-                        magErF.set(toBitmapX(x1 + magErFD.x), toBitmapY(y1 + magErFD.y));
-                        drawCrossOntoView(magErB.x, magErB.y, true);
-                        drawCrossOntoView(magErF.x, magErF.y, false);
+                case 2 -> {
+                    switch (event.getActionMasked()) {
+                        case MotionEvent.ACTION_MOVE -> {
+                            final float x0 = event.getX(0), y0 = event.getY(0);
+                            final float x1 = event.getX(1), y1 = event.getY(1);
+                            magErB.set(toBitmapX(x0 + magErBD.x), toBitmapY(y0 + magErBD.y));
+                            magErF.set(toBitmapX(x1 + magErFD.x), toBitmapY(y1 + magErFD.y));
+                            drawCrossOntoView(magErB.x, magErB.y, true);
+                            drawCrossOntoView(magErF.x, magErF.y, false);
 
-                        if (!activityMain.optionsMagicEraser.cbAccEnabled.isChecked()) {
-                            break;
+                            if (!activityMain.optionsMagicEraser.cbAccEnabled.isChecked()) {
+                                break;
+                            }
+
+                            final int rad = (int) (strokeWidth / 2.0f + blurRadius);
+                            final int backgroundColor = refBm.getPixel(
+                                    satX(refBm, magErB.x), satY(refBm, magErB.y));
+                            final int foregroundColor = refBm.getPixel(
+                                    satX(refBm, magErF.x), satY(refBm, magErF.y));
+
+                            final int left = Math.min(magErB.x, magErF.x) - rad,
+                                    top = Math.min(magErB.y, magErF.y) - rad,
+                                    right = Math.max(magErB.x, magErF.x) + rad + 1,
+                                    bottom = Math.max(magErB.y, magErF.y) + rad + 1;
+                            final int width = right - left, height = bottom - top;
+                            final Bitmap bLine = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+                            final Canvas cLine = new Canvas(bLine);
+                            cLine.drawLine(magErB.x - left, magErB.y - top,
+                                    magErF.x - left, magErF.y - top,
+                                    paint);
+                            canvas.drawBitmap(bLine, left, top, PAINT_DST_OUT);
+                            final Bitmap bm = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+                            new Canvas(bm).drawBitmap(refBm,
+                                    new Rect(left, top, right, bottom),
+                                    new Rect(0, 0, width, height),
+                                    PAINT_SRC);
+                            BitmapUtils.removeBackground(bm, foregroundColor, backgroundColor);
+                            cLine.drawBitmap(bm, 0.0f, 0.0f, PAINT_SRC_IN);
+                            bm.recycle();
+                            canvas.drawBitmap(bLine, left, top, PAINT_SRC_OVER);
+                            bLine.recycle();
+
+                            drawBitmapOntoView(left, top, right, bottom);
                         }
-
-                        final int rad = (int) (strokeWidth / 2.0f + blurRadius);
-                        final int backgroundColor = refBm.getPixel(
-                                satX(refBm, magErB.x), satY(refBm, magErB.y));
-                        final int foregroundColor = refBm.getPixel(
-                                satX(refBm, magErF.x), satY(refBm, magErF.y));
-
-                        final int left = Math.min(magErB.x, magErF.x) - rad,
-                                top = Math.min(magErB.y, magErF.y) - rad,
-                                right = Math.max(magErB.x, magErF.x) + rad + 1,
-                                bottom = Math.max(magErB.y, magErF.y) + rad + 1;
-                        final int width = right - left, height = bottom - top;
-                        final Bitmap bLine = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-                        final Canvas cLine = new Canvas(bLine);
-                        cLine.drawLine(magErB.x - left, magErB.y - top,
-                                magErF.x - left, magErF.y - top,
-                                paint);
-                        canvas.drawBitmap(bLine, left, top, PAINT_DST_OUT);
-                        final Bitmap bm = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-                        new Canvas(bm).drawBitmap(refBm,
-                                new Rect(left, top, right, bottom),
-                                new Rect(0, 0, width, height),
-                                PAINT_SRC);
-                        BitmapUtils.removeBackground(bm, foregroundColor, backgroundColor);
-                        cLine.drawBitmap(bm, 0.0f, 0.0f, PAINT_SRC_IN);
-                        bm.recycle();
-                        canvas.drawBitmap(bLine, left, top, PAINT_SRC_OVER);
-                        bLine.recycle();
-
-                        drawBitmapOntoView(left, top, right, bottom);
-                    }
-                    case MotionEvent.ACTION_POINTER_DOWN -> {
-                        final float x0 = event.getX(0), y0 = event.getY(0);
-                        final float x1 = event.getX(1), y1 = event.getY(1);
-                        magErBD.set(toViewX(magErB.x) - x0, toViewY(magErB.y) - y0);
-                        magErFD.set(toViewX(magErF.x) - x1, toViewY(magErF.y) - y1);
+                        case MotionEvent.ACTION_POINTER_DOWN -> {
+                            final float x0 = event.getX(0), y0 = event.getY(0);
+                            final float x1 = event.getX(1), y1 = event.getY(1);
+                            magErBD.set(toViewX(magErB.x) - x0, toViewY(magErB.y) - y0);
+                            magErFD.set(toViewX(magErF.x) - x1, toViewY(magErF.y) - y1);
+                        }
                     }
                 }
             }
         }
-        return true;
     };
 
     private View.OnTouchListener onIVTouchWithMagicEraserListener = onIVTouchWithImpreciseMagicEraserListener;
 
     @SuppressLint({"ClickableViewAccessibility"})
-    private final View.OnTouchListener onIVTouchWithMagicPaintListener = new OnMultiTouchListener() {
+    private final View.OnTouchListener onIVTouchWithMagicPaintListener = new OnIVMultiTouchListener() {
         private int lastBX, lastBY;
 
         @Override
-        public void onSingleTouch(View v, MotionEvent event) {
+        public void onIVSingleTouch(View v, MotionEvent event) {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN: {
                     final float x = event.getX(), y = event.getY();
@@ -1739,12 +1763,12 @@ public class MainActivity extends AppCompatActivity {
     };
 
     @SuppressLint({"ClickableViewAccessibility"})
-    private final View.OnTouchListener onIVTouchWithMarqueeListener = new View.OnTouchListener() {
+    private final View.OnTouchListener onIVTouchWithMarqueeListener = new OnIVTouchListener() {
         private boolean hasDraggedBound = false;
         private int startX, startY;
 
         @Override
-        public boolean onTouch(View v, MotionEvent event) {
+        public void onIVTouch(View v, MotionEvent event) {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN -> {
                     final float x = event.getX(), y = event.getY();
@@ -1813,14 +1837,13 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
             }
-            return true;
         }
     };
 
     @SuppressLint("ClickableViewAccessibility")
-    private final View.OnTouchListener onIVTouchWithPatcherListener = new OnMultiTouchListener() {
+    private final View.OnTouchListener onIVTouchWithPatcherListener = new OnIVMultiTouchListener() {
         @Override
-        public void onSingleTouch(View v, MotionEvent event) {
+        public void onIVSingleTouch(View v, MotionEvent event) {
             if (!hasSelection) {
                 return;
             }
@@ -1867,12 +1890,12 @@ public class MainActivity extends AppCompatActivity {
     };
 
     @SuppressLint({"ClickableViewAccessibility"})
-    private final View.OnTouchListener onIVTouchWithPathListener = new OnMultiTouchListener() {
+    private final View.OnTouchListener onIVTouchWithPathListener = new OnIVMultiTouchListener() {
         private Path path, previewPath;
 
         @Override
         @SuppressLint("NonConstantResourceId")
-        public void onSingleTouch(View v, MotionEvent event) {
+        public void onIVSingleTouch(View v, MotionEvent event) {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN -> {
                     final float x = event.getX(), y = event.getY();
@@ -1916,12 +1939,12 @@ public class MainActivity extends AppCompatActivity {
     };
 
     @SuppressLint({"ClickableViewAccessibility"})
-    private final View.OnTouchListener onIVTouchWithPencilListener = new OnMultiTouchListener() {
+    private final View.OnTouchListener onIVTouchWithPencilListener = new OnIVMultiTouchListener() {
         private int lastBX, lastBY;
         private Paint pencil;
 
         @Override
-        public void onSingleTouch(View v, MotionEvent event) {
+        public void onIVSingleTouch(View v, MotionEvent event) {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN: {
                     final float x = event.getX(), y = event.getY();
@@ -1952,45 +1975,47 @@ public class MainActivity extends AppCompatActivity {
     };
 
     @SuppressLint("ClickableViewAccessibility")
-    private final View.OnTouchListener onIVTouchWithRulerListener = (v, event) -> {
-        final float x = event.getX(), y = event.getY();
-        final float halfScale = scale / 2.0f;
-        final int bx = toBitmapX(x + halfScale), by = toBitmapY(y + halfScale);
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                if (isShapeStopped) {
-                    isShapeStopped = false;
-                    ruler.enabled = false;
-                    eraseBitmapAndInvalidateView(previewBitmap, activityMain.canvas.ivPreview);
-                    drawPointOntoView(bx, by);
-                    shapeStartX = bx;
-                    shapeStartY = by;
-                    activityMain.tvStatus.setText(getString(R.string.coordinates, bx, by));
+    private final View.OnTouchListener onIVTouchWithRulerListener = new OnIVTouchListener() {
+        @Override
+        public void onIVTouch(View v, MotionEvent event) {
+            final float x = event.getX(), y = event.getY();
+            final float halfScale = scale / 2.0f;
+            final int bx = toBitmapX(x + halfScale), by = toBitmapY(y + halfScale);
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    if (isShapeStopped) {
+                        isShapeStopped = false;
+                        ruler.enabled = false;
+                        eraseBitmapAndInvalidateView(previewBitmap, activityMain.canvas.ivPreview);
+                        drawPointOntoView(bx, by);
+                        shapeStartX = bx;
+                        shapeStartY = by;
+                        activityMain.tvStatus.setText(getString(R.string.coordinates, bx, by));
+                        break;
+                    }
+                    // Fall through
+                case MotionEvent.ACTION_MOVE:
+                    if (bx != shapeStartX || by != shapeStartY) {
+                        isShapeStopped = true;
+                        ruler.set(shapeStartX, shapeStartY, bx, by);
+                        ruler.enabled = true;
+                        drawRulerOntoView();
+                        final int dx = ruler.stopX - ruler.startX, dy = ruler.stopY - ruler.startY;
+                        activityMain.tvStatus.setText(getString(R.string.state_ruler,
+                                ruler.startX, ruler.startY, ruler.stopX, ruler.stopY, dx, dy,
+                                String.valueOf((float) Math.sqrt(dx * dx + dy * dy))));
+                    }
                     break;
-                }
-                // Fall through
-            case MotionEvent.ACTION_MOVE:
-                if (bx != shapeStartX || by != shapeStartY) {
-                    isShapeStopped = true;
-                    ruler.set(shapeStartX, shapeStartY, bx, by);
-                    ruler.enabled = true;
-                    drawRulerOntoView();
-                    final int dx = ruler.stopX - ruler.startX, dy = ruler.stopY - ruler.startY;
-                    activityMain.tvStatus.setText(getString(R.string.state_ruler,
-                            ruler.startX, ruler.startY, ruler.stopX, ruler.stopY, dx, dy,
-                            String.valueOf((float) Math.sqrt(dx * dx + dy * dy))));
-                }
-                break;
+            }
         }
-        return true;
     };
 
     @SuppressLint({"ClickableViewAccessibility", "SetTextI18n"})
-    private final View.OnTouchListener onIVTouchWithShapeListener = new OnMultiTouchListener() {
+    private final View.OnTouchListener onIVTouchWithShapeListener = new OnIVMultiTouchListener() {
         private Rect lastRect;
 
         @Override
-        public void onSingleTouch(View v, MotionEvent event) {
+        public void onIVSingleTouch(View v, MotionEvent event) {
             final float x = event.getX(), y = event.getY();
             final int bx = toBitmapX(x), by = toBitmapY(y);
             switch (event.getAction()) {
@@ -2035,11 +2060,11 @@ public class MainActivity extends AppCompatActivity {
     };
 
     @SuppressLint("ClickableViewAccessibility")
-    private final View.OnTouchListener onIVTouchWithTextListener = new View.OnTouchListener() {
+    private final View.OnTouchListener onIVTouchWithTextListener = new OnIVTouchListener() {
         private float dx, dy;
 
         @Override
-        public boolean onTouch(View v, MotionEvent event) {
+        public void onIVTouch(View v, MotionEvent event) {
             if (isEditingText) {
 
                 switch (event.getAction()) {
@@ -2075,7 +2100,6 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
             }
-            return true;
         }
     };
 
@@ -2083,13 +2107,13 @@ public class MainActivity extends AppCompatActivity {
      * Callback to call on touch image view with mesh transformer
      */
     @SuppressLint("ClickableViewAccessibility")
-    private final View.OnTouchListener onIVTouchWithMTListener = new View.OnTouchListener() {
+    private final View.OnTouchListener onIVTouchWithMTListener = new OnIVTouchListener() {
         private int lastVertIndex;
 
         @Override
-        public boolean onTouch(View v, MotionEvent event) {
+        public void onIVTouch(View v, MotionEvent event) {
             if (!hasSelection) {
-                return true;
+                return;
             }
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN -> {
@@ -2120,7 +2144,6 @@ public class MainActivity extends AppCompatActivity {
                     drawBitmapOntoView(selection, true);
                 }
             }
-            return true;
         }
     };
 
@@ -2128,15 +2151,15 @@ public class MainActivity extends AppCompatActivity {
      * Callback to call on touch image view with poly transformer
      */
     @SuppressLint("ClickableViewAccessibility")
-    private final View.OnTouchListener onIVTouchWithPTListener = new View.OnTouchListener() {
+    private final View.OnTouchListener onIVTouchWithPTListener = new OnIVTouchListener() {
         private float[] src, dst, bmSrc, bmDst;
         private int pointCount = 0;
         private Matrix matrix;
 
         @Override
-        public boolean onTouch(View v, MotionEvent event) {
+        public void onIVTouch(View v, MotionEvent event) {
             if (!hasSelection) {
-                return true;
+                return;
             }
             switch (event.getActionMasked()) {
                 case MotionEvent.ACTION_DOWN -> {
@@ -2219,7 +2242,6 @@ public class MainActivity extends AppCompatActivity {
                     clearStatus();
                 }
             }
-            return true;
         }
     };
 
@@ -2227,13 +2249,13 @@ public class MainActivity extends AppCompatActivity {
      * Callback to call on touch image view with rotation transformer
      */
     @SuppressLint({"ClickableViewAccessibility"})
-    private final View.OnTouchListener onIVTouchWithRTListener = new View.OnTouchListener() {
+    private final View.OnTouchListener onIVTouchWithRTListener = new OnIVTouchListener() {
         private double lastTheta;
 
         @Override
-        public boolean onTouch(View v, MotionEvent event) {
+        public void onIVTouch(View v, MotionEvent event) {
             if (!hasSelection) {
-                return true;
+                return;
             }
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN -> {
@@ -2278,16 +2300,15 @@ public class MainActivity extends AppCompatActivity {
                     clearStatus();
                 }
             }
-            return true;
         }
     };
 
     @SuppressLint("ClickableViewAccessibility")
-    private final View.OnTouchListener onIVTouchWithSoftBrushOffListener = new View.OnTouchListener() {
+    private final View.OnTouchListener onIVTouchWithSoftBrushOffListener = new OnIVTouchListener() {
         private float dx, dy;
 
         @Override
-        public boolean onTouch(View v, MotionEvent event) {
+        public void onIVTouch(View v, MotionEvent event) {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN -> {
                     final float x = event.getX(), y = event.getY();
@@ -2308,12 +2329,11 @@ public class MainActivity extends AppCompatActivity {
                     drawSelectionOntoView();
                 }
             }
-            return true;
         }
     };
 
     @SuppressLint({"ClickableViewAccessibility"})
-    private final View.OnTouchListener onIVTouchWithSoftBrushOnListener = new View.OnTouchListener() {
+    private final View.OnTouchListener onIVTouchWithSoftBrushOnListener = new OnIVTouchListener() {
         private boolean multiTouch;
         private float lastX, lastY;
         private float lastTLX = Float.NaN, lastTLY, lastRX, lastRY, lastBX, lastBY;
@@ -2321,7 +2341,7 @@ public class MainActivity extends AppCompatActivity {
         private VelocityTracker velocityTracker;
 
         @Override
-        public boolean onTouch(View v, MotionEvent event) {
+        public void onIVTouch(View v, MotionEvent event) {
             final int pointerCount = event.getPointerCount(), action = event.getAction();
             if (pointerCount == 1 && (hasSelection || !multiTouch)) {
                 switch (action) {
@@ -2459,7 +2479,6 @@ public class MainActivity extends AppCompatActivity {
             if (!hasSelection && (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL)) {
                 multiTouch = false;
             }
-            return true;
         }
     };
 
@@ -2469,16 +2488,16 @@ public class MainActivity extends AppCompatActivity {
      * Callback to call on touch image view with scale transformer
      */
     @SuppressLint({"ClickableViewAccessibility"})
-    private final View.OnTouchListener onIVTouchWithSTListener = new View.OnTouchListener() {
+    private final View.OnTouchListener onIVTouchWithSTListener = new OnIVTouchListener() {
         private boolean hasDraggedBound = false;
         private float aspectRatio;
         private float centerX, centerY;
         private float dlpbLeft, dlpbTop, dlpbRight, dlpbBottom; // Distances from last point to bound
 
         @Override
-        public boolean onTouch(View v, MotionEvent event) {
+        public void onIVTouch(View v, MotionEvent event) {
             if (!hasSelection) {
-                return true;
+                return;
             }
             switch (event.getPointerCount()) {
                 case 1 -> {
@@ -2615,7 +2634,6 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
             }
-            return true;
         }
 
         private boolean stretchByDraggedMarqueeBound(float viewX, float viewY) {
@@ -2640,11 +2658,11 @@ public class MainActivity extends AppCompatActivity {
      * Callback to call on touch image view with translation transformer
      */
     @SuppressLint({"ClickableViewAccessibility"})
-    private final View.OnTouchListener onIVTouchWithTTListener = new View.OnTouchListener() {
+    private final View.OnTouchListener onIVTouchWithTTListener = new OnIVTouchListener() {
         private float dx, dy;
 
         @Override
-        public boolean onTouch(View v, MotionEvent event) {
+        public void onIVTouch(View v, MotionEvent event) {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN -> {
                     final float x = event.getX(), y = event.getY();
@@ -2688,20 +2706,19 @@ public class MainActivity extends AppCompatActivity {
                     drawBitmapOntoView(true);
                 }
             }
-            return true;
         }
     };
 
     private View.OnTouchListener onIVTouchWithTransformerListener = onIVTouchWithTTListener;
 
     @SuppressLint({"ClickableViewAccessibility"})
-    private final View.OnTouchListener onIVTouchWithZoomToolListener = new View.OnTouchListener() {
+    private final View.OnTouchListener onIVTouchWithZoomToolListener = new OnIVTouchListener() {
         private float dx, dy;
         private float lastPivotX, lastPivotY;
         private double lastDiagonal;
 
         @Override
-        public boolean onTouch(View v, MotionEvent event) {
+        public void onIVTouch(View v, MotionEvent event) {
             switch (event.getPointerCount()) {
                 case 1 -> {
                     switch (event.getAction()) {
@@ -2767,7 +2784,6 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
             }
-            return true;
         }
     };
 
@@ -4115,6 +4131,19 @@ public class MainActivity extends AppCompatActivity {
             selectProject(0);
         }
 
+        {
+            final ViewGroup.LayoutParams lpNeg = activityMain.vBlockerNeg.getLayoutParams(), lpPos = activityMain.vBlockerPos.getLayoutParams();
+            if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                lpNeg.width = activityMain.llCanvas.getLeft();
+                lpPos.width = activityMain.llTl.getHeight();
+            } else {
+                final View canvasView = activityMain.canvas.getRoot();
+                lpNeg.height = canvasView.getTop();
+                lpPos.height = activityMain.getRoot().getHeight() - lpNeg.height - canvasView.getHeight();
+            }
+            activityMain.vBlockerNeg.setLayoutParams(lpNeg);
+            activityMain.vBlockerPos.setLayoutParams(lpPos);
+        }
     }
 
     private void loadTab(Project project, int position) {
@@ -4350,10 +4379,10 @@ public class MainActivity extends AppCompatActivity {
         ItemMovableAdapter.createItemMoveHelper(null).attachToRecyclerView(activityMain.rvSwatches);
 
         if (isLandscape) {
-            final LinearLayout ll = findViewById(R.id.ll_tl);
+            final LinearLayout ll = activityMain.llTl;
             OneShotPreDrawListener.add(ll, () -> {
                 final int width = ll.getMeasuredHeight(), height = activityMain.tlProjectList.getMeasuredHeight();
-                final FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) ll.getLayoutParams();
+                final ViewGroup.LayoutParams lp = ll.getLayoutParams();
                 lp.width = width;
                 lp.height = height;
                 ll.setLayoutParams(lp);
@@ -4368,6 +4397,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        mMain = menu;
         getMenuInflater().inflate(R.menu.main, menu);
         menu.setGroupDividerEnabled(true);
         miFrameList = menu.findItem(R.id.i_frame_list);
@@ -4754,7 +4784,8 @@ public class MainActivity extends AppCompatActivity {
                 drawFloatingLayersIntoImage();
                 final Layer layerBelow = frame.layers.get(posBelow);
                 BitmapUtils.mergeAlpha(layer.bitmap, layerBelow.bitmap);
-                selectProject(posBelow);
+                layer.visible = false;
+                selectLayer(posBelow);
                 addToHistory();
             }
             case R.id.i_layer_merge_as_hidden -> {
