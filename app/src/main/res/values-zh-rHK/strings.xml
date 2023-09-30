@@ -44,6 +44,7 @@
     <string name="clone_as_new">克隆爲新圖像</string>
     <string name="cloner">克隆筆</string>
     <string name="close">關閉</string>
+    <string name="close_others">關閉其他</string>
     <string name="color_balance">色彩平衡</string>
     <string name="color_filter">顏色濾鏡</string>
     <string name="color_picker">拾色器</string>
@@ -180,6 +181,7 @@
     <string name="monospace">等寬</string>
     <string name="more">更多</string>
     <string name="move_layer">移動圖層</string>
+    <string name="move_to_first">移到首位</string>
     <string name="new_">新建</string>
     <string name="new_guide">新參考線</string>
     <string name="no_repeats">無重複</string>

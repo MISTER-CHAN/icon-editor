@@ -51,6 +51,7 @@
     <string name="clone_as_new">Clone as New</string>
     <string name="cloner">Cloner</string>
     <string name="close">Close</string>
+    <string name="close_others">Close Others</string>
     <string name="color_balance">Color Balance</string>
     <string name="color_filter">Color Filter</string>
     <string name="color_picker">Color Picker</string>
@@ -202,6 +203,7 @@
     <string name="monospace">Monospace</string>
     <string name="more">More</string>
     <string name="move_layer">Move Layer</string>
+    <string name="move_to_first">Move to the First</string>
     <string name="new_">New</string>
     <string name="new_guide">New Guide</string>
     <string name="ninety_degrees" translatable="false">90°</string>

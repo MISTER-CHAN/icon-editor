@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:id="@+id/g_tab_move">
+        <item
+            android:id="@+id/i_tab_move_to_first"
+            android:icon="@drawable/ic_push_pin"
+            android:iconTint="?attr/colorOnSurfaceVariant"
+            android:title="@string/move_to_first" />
+    </group>
+    <group android:id="@+id/g_tab_close">
+        <item
+            android:id="@+id/i_tab_close"
+            android:icon="@drawable/ic_close"
+            android:iconTint="?attr/colorOnSurfaceVariant"
+            android:title="@string/close" />
+        <item
+            android:id="@+id/i_tab_close_others"
+            android:icon="@drawable/ic_void"
+            android:iconTint="?attr/colorOnSurfaceVariant"
+            android:title="@string/close_others" />
+    </group>
+</menu>

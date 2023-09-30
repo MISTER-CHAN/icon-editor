@@ -5,6 +5,9 @@
         <item name="actionBarStyle">@style/Widget.Material3.ActionBar.Solid</item>
         <item name="actionModeCloseDrawable">@drawable/ic_close</item>
         <item name="actionModeStyle">@style/Widget.App.ActionMode</item>
+        <item name="materialAlertDialogTheme">
+            @style/ThemeOverlay.Material3.Dialog.Alert.Sharp
+        </item>
         <item name="toolbarStyle">@style/Widget.Material3.Toolbar.Surface</item>
         <item name="windowActionModeOverlay">true</item>
     </style>
@@ -12,5 +15,11 @@
     <style name="Theme.IconEditor.NoActionBar" parent="Theme.IconEditor">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="ThemeOverlay.Material3.Dialog.Alert.Sharp" parent="ThemeOverlay.Material3.Dialog.Alert">
+        <item name="backgroundInsetBottom">16dp</item>
+        <item name="backgroundInsetTop">16dp</item>
+        <item name="android:dialogCornerRadius">4dp</item>
     </style>
 </resources>

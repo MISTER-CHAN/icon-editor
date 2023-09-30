@@ -41,7 +41,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.CompoundButton;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
@@ -58,7 +57,6 @@ import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.view.ActionMode;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.FileProvider;
 import androidx.core.view.MenuCompat;
 import androidx.core.view.OneShotPreDrawListener;
@@ -1066,6 +1064,13 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onTabReselected(TabLayout.Tab tab) {
+            final PopupMenu popupMenu = new PopupMenu(MainActivity.this, tab.view);
+            final Menu menu = popupMenu.getMenu();
+            MenuCompat.setGroupDividerEnabled(menu, true);
+            popupMenu.getMenuInflater().inflate(R.menu.proj_tab, menu);
+            popupMenu.setForceShowIcon(true);
+            popupMenu.setOnMenuItemClickListener(MainActivity.this::onProjTabOptionsItemSelected);
+            popupMenu.show();
         }
     };
 
@@ -3286,6 +3291,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void deleteFrame(int position) {
+        deleteFrame(project, position);
+    }
+
+    private void deleteFrame(Project project, int position) {
         final Frame frame = project.frames.get(position);
         for (int i = frame.layers.size() - 1; i >= 0; --i) {
             deleteLayer(frame, i);
@@ -3310,7 +3319,7 @@ public class MainActivity extends AppCompatActivity {
     private void deleteProject(int position) {
         final Project project = projects.get(position);
         for (int i = project.frames.size() - 1; i >= 0; --i) {
-            deleteFrame(i);
+            deleteFrame(project, i);
         }
         activityMain.tlProjectList.removeOnTabSelectedListener(onProjTabSelectedListener);
         activityMain.tlProjectList.removeTabAt(position);
@@ -5360,6 +5369,35 @@ public class MainActivity extends AppCompatActivity {
                 scale = project.scale;
                 calculateBackgroundSizeOnView();
                 drawAfterTransformingView(false);
+            }
+        }
+        return true;
+    }
+
+    @SuppressLint("NonConstantResourceId")
+    private boolean onProjTabOptionsItemSelected(MenuItem item) {
+        final int position = activityMain.tlProjectList.getSelectedTabPosition();
+        switch (item.getItemId()) {
+            case R.id.i_tab_close -> closeProject(position);
+            case R.id.i_tab_close_others -> {
+                for (int i = projects.size() - 1; projects.size() > 1; --i) {
+                    if (i != position) deleteProject(i);
+                }
+            }
+            case R.id.i_tab_move_to_first -> {
+                if (position == 0) break;
+
+                // Move without shifting the elements to the end since the list is an ArrayList
+                for (int i = position; i > 0; --i) {
+                    projects.set(i, projects.get(i - 1));
+                }
+                projects.set(0, project);
+
+                activityMain.tlProjectList.removeOnTabSelectedListener(onProjTabSelectedListener);
+                activityMain.tlProjectList.removeTabAt(position);
+                loadTab(project, 0);
+                activityMain.tlProjectList.getTabAt(0).select();
+                activityMain.tlProjectList.addOnTabSelectedListener(onProjTabSelectedListener);
             }
         }
         return true;

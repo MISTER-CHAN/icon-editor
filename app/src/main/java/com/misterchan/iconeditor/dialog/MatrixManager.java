@@ -62,6 +62,7 @@ public class MatrixManager {
         matrix.getValues(values);
 
         dialogBuilder = new MaterialAlertDialogBuilder(context)
+                .setBackgroundInsetBottom(0)
                 .setOnCancelListener(onCancelListener)
                 .setPositiveButton(R.string.ok, onPosButtonClickListener)
                 .setView(R.layout.matrix);
@@ -81,7 +82,6 @@ public class MatrixManager {
         final WindowManager.LayoutParams lp = window.getAttributes();
         lp.flags &= ~WindowManager.LayoutParams.FLAG_DIM_BEHIND;
         lp.gravity = Gravity.BOTTOM;
-        lp.verticalMargin = -0.25f;
         window.setAttributes(lp);
 
         final GridLayout gl = dialog.findViewById(R.id.gl_k);

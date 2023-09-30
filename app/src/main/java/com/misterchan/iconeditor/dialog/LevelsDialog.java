@@ -43,7 +43,6 @@ public class LevelsDialog {
 
     public LevelsDialog(Context context) {
         builder = new MaterialAlertDialogBuilder(context)
-                .setTitle(R.string.levels)
                 .setView(R.layout.levels);
 
         builder.setOnDismissListener(dialog -> {

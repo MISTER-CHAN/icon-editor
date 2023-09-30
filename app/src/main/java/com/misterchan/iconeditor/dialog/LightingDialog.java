@@ -32,7 +32,6 @@ public class LightingDialog {
 
     public LightingDialog(Context context, float[] defaultLighting) {
         builder = new MaterialAlertDialogBuilder(context)
-                .setTitle(R.string.channel_lighting)
                 .setView(R.layout.channel_lighting);
 
         if (defaultLighting == null) {
