@@ -35,6 +35,7 @@
     <string name="check_for_updates">檢査更新</string>
     <string name="check_for_updates_in_system_browser">以系統瀏覽器檢査更新</string>
     <string name="circle">圓</string>
+    <string name="clamp">鉗</string>
     <string name="clear">淸除</string>
     <string name="clear_destination">淸除目標</string>
     <string name="clear_guides">淸除參考線</string>
@@ -77,6 +78,7 @@
     <string name="custom_color_filter">自訂顏色濾鏡</string>
     <string name="cut">剪下</string>
     <string name="dec">十進制</string>
+    <string name="decal">Decal</string>
     <string name="default_">缺省</string>
     <string name="default_bold">缺省粗體</string>
     <string name="degrees_">角度：%f°</string>
@@ -89,6 +91,7 @@
     <string name="draw">繪畫</string>
     <string name="draw_color">畫顏色</string>
     <string name="draw_on_not_ui_thread">繪畫於非用戶介面線程</string>
+    <string name="drawing_primitive">繪圖基元</string>
     <string name="duplicate">複製</string>
     <string name="duplicate_by_color_range">複製顏色範圍</string>
     <string name="edit">編輯</string>
@@ -178,6 +181,7 @@
     <string name="merge_visible">合倂可見</string>
     <string name="mesh">網</string>
     <string name="min">最小</string>
+    <string name="mirror">鏡</string>
     <string name="monospace">等寬</string>
     <string name="more">更多</string>
     <string name="move_layer">移動圖層</string>
@@ -226,6 +230,7 @@
     <string name="refer_to_clipboard">參考至剪貼簿</string>
     <string name="reference">參照</string>
     <string name="rename">重命名</string>
+    <string name="repeat">重複</string>
     <string name="reset">重設</string>
     <string name="reset_this_curve">重設此曲線</string>
     <string name="reset_source">重設來源</string>
@@ -253,6 +258,7 @@
     <string name="serif"> 白體</string>
     <string name="set">設定</string>
     <string name="settings">設定</string>
+    <string name="shader_texture">著色器材質</string>
     <string name="shadows">陰影</string>
     <string name="shape">形狀</string>
     <string name="shift">偏移</string>

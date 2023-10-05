@@ -59,18 +59,18 @@
         android:text="@string/shape" />
 
     <Button
-        android:id="@+id/b_path"
-        style="@style/Widget.App.Button.OutlinedButton.Dense"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/path" />
-
-    <Button
         android:id="@+id/b_bucket_fill"
         style="@style/Widget.App.Button.OutlinedButton.Dense"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/bucket_fill" />
+
+    <Button
+        android:id="@+id/b_path"
+        style="@style/Widget.App.Button.OutlinedButton.Dense"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/path" />
 
     <Button
         android:id="@+id/b_text"
@@ -85,6 +85,13 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/soft_brush" />
+
+    <Button
+        android:id="@+id/b_ref"
+        style="@style/Widget.App.Button.OutlinedButton.Dense"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/reference" />
 
     <Button
         android:id="@+id/b_gradient"

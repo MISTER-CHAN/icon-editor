@@ -10,6 +10,7 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.BitmapShader;
 import android.graphics.BlendMode;
 import android.graphics.BlurMaskFilter;
 import android.graphics.Canvas;
@@ -262,7 +263,6 @@ public class MainActivity extends AppCompatActivity {
     private ActionMode transformerActionMode;
     private ActivityMainBinding activityMain;
     private Bitmap bitmap;
-    private Bitmap refBm;
     private Bitmap chessboard;
     private Bitmap chessboardBitmap;
     private Bitmap clipboard;
@@ -287,6 +287,7 @@ public class MainActivity extends AppCompatActivity {
     private Canvas selectionCanvas;
     private Canvas viewCanvas;
     private ColorAdapter colorAdapter;
+    private FilterPreview filterPreview;
     private final DirectorySelector dirSelector = new DirectorySelector(this);
     private final DrawingPrimitivePreview dpPreview = new DrawingPrimitivePreview();
     private float backgroundScaledW, backgroundScaledH;
@@ -314,9 +315,9 @@ public class MainActivity extends AppCompatActivity {
     private Point magErB, magErF; // Magic eraser background and foreground
     private final PointF magErBD = new PointF(0.0f, 0.0f), magErFD = new PointF(0.0f, 0.0f); // Distance
     private Position marqueeBoundBeingDragged = null;
-    private FilterPreview filterPreview;
     private Project project;
     private final Rect selection = new Rect();
+    private final Reference ref = new Reference();
     private final Ruler ruler = new Ruler();
     private SideSheetDialog ssdLayerList;
     private Paint.Style style = Paint.Style.FILL_AND_STROKE;
@@ -438,6 +439,13 @@ public class MainActivity extends AppCompatActivity {
         }
         strokeWidth = f;
         paint.setStrokeWidth(f);
+    };
+
+    private final AfterTextChangedListener onSoftStrokeWidthETTextChangedListener = s -> {
+        try {
+            strokeWidth = Float.parseFloat(s);
+        } catch (NumberFormatException e) {
+        }
     };
 
     private final AfterTextChangedListener onTextSizeETTextChangedListener = s -> {
@@ -798,7 +806,7 @@ public class MainActivity extends AppCompatActivity {
                     case REF -> {
                         filterPreview.clearFilters();
                         BitmapUtils.generateNoise(filterPreview.getCanvas(), filterPreview.getRect(),
-                                refBm != null ? refBm : filterPreview.getOriginal(), paint,
+                                !ref.recycled() ? ref.bm() : filterPreview.getOriginal(), paint,
                                 properties.noisiness(), properties.seed(), properties.noRepeats());
                     }
                 }
@@ -1330,7 +1338,7 @@ public class MainActivity extends AppCompatActivity {
                     if (!(0 <= bx && bx < bitmap.getWidth() && 0 <= by && by < bitmap.getHeight())) {
                         break;
                     }
-                    final Bitmap src = refBm != null ? refBm : bitmap;
+                    final Bitmap src = !ref.recycled() ? ref.bm() : bitmap;
                     final Rect rect = hasSelection ? selection : null;
                     runOrStart(() -> {
                         if (activityMain.optionsBucketFill.cbContiguous.isChecked()) {
@@ -1517,7 +1525,7 @@ public class MainActivity extends AppCompatActivity {
         public void onIVSingleTouch(View v, MotionEvent event) {
             final float x = event.getX(), y = event.getY();
             final int bx = toBitmapX(x), by = toBitmapY(y);
-            final Bitmap src = refBm != null ? refBm : bitmap;
+            final Bitmap src = !ref.recycled() ? ref.bm() : bitmap;
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN: {
                     if (isShapeStopped) {
@@ -1583,12 +1591,12 @@ public class MainActivity extends AppCompatActivity {
                     final int rad = (int) (strokeWidth / 2.0f + blurRadius);
                     final float radF = toScaled(rad);
                     final double theta = Math.atan2(y - lastY, x - lastX);
-                    final int colorLeft = refBm.getPixel(
-                            satX(refBm, toBitmapX(x + radF * (float) Math.sin(theta))),
-                            satY(refBm, toBitmapY(y - radF * (float) Math.cos(theta))));
-                    final int colorRight = refBm.getPixel(
-                            satX(refBm, toBitmapX(x - radF * (float) Math.sin(theta))),
-                            satY(refBm, toBitmapY(y + radF * (float) Math.cos(theta))));
+                    final int colorLeft = ref.bm().getPixel(
+                            satX(ref.bm(), toBitmapX(x + radF * (float) Math.sin(theta))),
+                            satY(ref.bm(), toBitmapY(y - radF * (float) Math.cos(theta))));
+                    final int colorRight = ref.bm().getPixel(
+                            satX(ref.bm(), toBitmapX(x - radF * (float) Math.sin(theta))),
+                            satY(ref.bm(), toBitmapY(y + radF * (float) Math.cos(theta))));
                     final int backgroundColor =
                             activityMain.optionsMagicEraser.btgSides.getCheckedButtonId() == R.id.b_left ? colorLeft : colorRight;
                     final int foregroundColor = backgroundColor == colorLeft ? colorRight : colorLeft;
@@ -1603,7 +1611,7 @@ public class MainActivity extends AppCompatActivity {
                             paint);
                     canvas.drawBitmap(bLine, left, top, PAINT_DST_OUT);
                     final Bitmap bm = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-                    new Canvas(bm).drawBitmap(refBm,
+                    new Canvas(bm).drawBitmap(ref.bm(),
                             new Rect(left, top, right, bottom),
                             new Rect(0, 0, width, height),
                             PAINT_SRC);
@@ -1662,10 +1670,10 @@ public class MainActivity extends AppCompatActivity {
                             }
 
                             final int rad = (int) (strokeWidth / 2.0f + blurRadius);
-                            final int backgroundColor = refBm.getPixel(
-                                    satX(refBm, magErB.x), satY(refBm, magErB.y));
-                            final int foregroundColor = refBm.getPixel(
-                                    satX(refBm, magErF.x), satY(refBm, magErF.y));
+                            final int backgroundColor = ref.bm().getPixel(
+                                    satX(ref.bm(), magErB.x), satY(ref.bm(), magErB.y));
+                            final int foregroundColor = ref.bm().getPixel(
+                                    satX(ref.bm(), magErF.x), satY(ref.bm(), magErF.y));
 
                             final int left = Math.min(magErB.x, magErF.x) - rad,
                                     top = Math.min(magErB.y, magErF.y) - rad,
@@ -1679,7 +1687,7 @@ public class MainActivity extends AppCompatActivity {
                                     paint);
                             canvas.drawBitmap(bLine, left, top, PAINT_DST_OUT);
                             final Bitmap bm = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-                            new Canvas(bm).drawBitmap(refBm,
+                            new Canvas(bm).drawBitmap(ref.bm(),
                                     new Rect(left, top, right, bottom),
                                     new Rect(0, 0, width, height),
                                     PAINT_SRC);
@@ -1740,7 +1748,7 @@ public class MainActivity extends AppCompatActivity {
                         cv.drawBitmap(bLine, 0.0f, 0.0f, PAINT_SRC);
                         final Rect absolute = new Rect(left, top, right, bottom),
                                 relative = new Rect(0, 0, width, height);
-                        cv.drawBitmap(refBm, absolute, relative, PAINT_SRC_IN);
+                        cv.drawBitmap(ref.bm(), absolute, relative, PAINT_SRC_IN);
                         final Bitmap bThr = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_4444); // Threshold
                         BitmapUtils.floodFill(bm, bThr, hasSelection ? selection : null,
                                 relativeX, relativeY, Color.BLACK, true, threshold);
@@ -1921,7 +1929,7 @@ public class MainActivity extends AppCompatActivity {
                     activityMain.tvStatus.setText(getString(R.string.coordinates, bx, by));
                 }
                 case MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                    switch (activityMain.optionsPath.btgWtd.getCheckedButtonId()) {
+                    switch (activityMain.optionsPath.btgDrawingPrimitive.getCheckedButtonId()) {
                         case R.id.b_path -> canvas.drawPath(path, paint);
                         case R.id.b_text ->
                                 canvas.drawTextOnPath(activityMain.optionsText.tietText.getText().toString(), path, 0.0f, 0.0f, paint);
@@ -1931,7 +1939,7 @@ public class MainActivity extends AppCompatActivity {
                     drawBitmapOntoView((int) Math.floor(bounds.left), (int) Math.floor(bounds.top),
                             (int) Math.ceil(bounds.right), (int) Math.ceil(bounds.bottom),
                             strokeWidth / 2.0f + blurRadius
-                                    + (activityMain.optionsPath.btgWtd.getCheckedButtonId() == R.id.b_text ? textSize : 0));
+                                    + (activityMain.optionsPath.btgDrawingPrimitive.getCheckedButtonId() == R.id.b_text ? textSize : 0));
                     eraseBitmapAndInvalidateView(previewBitmap, activityMain.canvas.ivPreview);
                     addToHistory();
                     clearStatus();
@@ -1977,6 +1985,97 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     };
+
+    private final View.OnTouchListener onIVTouchWithRefAsSTListener = new OnIVMultiTouchListener() {
+        private int lastBX, lastBY;
+
+        @Override
+        public void onIVSingleTouch(View v, MotionEvent event) {
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN: {
+                    final float x = event.getX(), y = event.getY();
+                    final int bx = toBitmapX(x), by = toBitmapY(y);
+                    lastBX = bx;
+                    lastBY = by;
+                }
+                case MotionEvent.ACTION_MOVE: {
+                    final float x = event.getX(), y = event.getY();
+                    final int bx = toBitmapX(x), by = toBitmapY(y);
+                    drawLineOntoCanvas(canvas, lastBX, lastBY, bx, by, paint);
+                    drawBitmapOntoView(lastBX, lastBY, bx, by, strokeWidth / 2.0f + blurRadius);
+                    activityMain.tvStatus.setText(getString(R.string.coordinates, bx, by));
+                    lastBX = bx;
+                    lastBY = by;
+                    break;
+                }
+                case MotionEvent.ACTION_UP:
+                case MotionEvent.ACTION_CANCEL:
+                    addToHistory();
+                    clearStatus();
+                    break;
+            }
+        }
+    };
+
+    private final View.OnTouchListener onIVTouchWithRefAsDPListener = new OnIVMultiTouchListener() {
+        private float lastRad;
+        private float maxRad;
+        private int lastBX, lastBY;
+        private VelocityTracker velocityTracker;
+
+        @Override
+        public void onIVSingleTouch(View v, MotionEvent event) {
+            if (ref.recycled()) {
+                return;
+            }
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN -> {
+                    velocityTracker = VelocityTracker.obtain();
+                    velocityTracker.addMovement(event);
+                    maxRad = strokeWidth / 2.0f + blurRadius;
+                    clearStatus();
+                    lastRad = 0.0f;
+                    lastBX = toBitmapX(event.getX());
+                    lastBY = toBitmapY(event.getY());
+                }
+                case MotionEvent.ACTION_MOVE -> {
+                    velocityTracker.addMovement(event);
+                    velocityTracker.computeCurrentVelocity(1);
+                    final int currBX = toBitmapX(event.getX()), currBY = toBitmapY(event.getY());
+                    final float vel = (float) Math.hypot(velocityTracker.getXVelocity(), velocityTracker.getYVelocity());
+                    final float rad = Math.min(maxRad / vel / softness, maxRad);
+                    final float diffBX = currBX - lastBX, diffBY = currBY - lastBY;
+                    final float projBX = Math.abs(diffBX), projBY = Math.abs(diffBY);
+                    final float stepBX = projBX >= projBY ? Math.signum(diffBX) : diffBX / projBY,
+                            stepBY = projBY >= projBX ? Math.signum(diffBY) : diffBY / projBX;
+                    final float stepCount = Math.max(projBX, projBY);
+                    final float stepRad = (rad - lastRad) / stepCount;
+
+                    {
+                        final float lastRad = this.lastRad;
+                        final int lastBX = this.lastBX, lastBY = this.lastBY;
+                        new Thread(() -> {
+                            for (float r = lastRad, bx = lastBX, by = lastBY, s = 0.0f; s < stepCount; r += stepRad, bx += stepBX, by += stepBY, ++s) {
+                                canvas.drawBitmap(ref.bm(), ref.rect(), new RectF(bx - r, by - r, bx + r, by + r), PAINT_SRC_OVER);
+                            }
+                            runOnUiThread(() -> drawBitmapOntoView(lastBX, lastBY, currBX, currBY, maxRad));
+                        }).start();
+                    }
+
+                    lastRad = rad;
+                    lastBX = currBX;
+                    lastBY = currBY;
+                }
+                case MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    velocityTracker.recycle();
+                    addToHistory();
+                    clearStatus();
+                }
+            }
+        }
+    };
+
+    private View.OnTouchListener onIVTouchWithRefListener = onIVTouchWithRefAsSTListener;
 
     @SuppressLint("ClickableViewAccessibility")
     private final View.OnTouchListener onIVTouchWithRulerListener = new OnIVTouchListener() {
@@ -2891,6 +2990,22 @@ public class MainActivity extends AppCompatActivity {
                     activityMain.svOptionsPencil.setVisibility(View.VISIBLE);
                 }
             }
+            case R.id.b_ref -> {
+                if (isChecked) {
+                    onToolChanged(onIVTouchWithRefListener);
+                    updateReference();
+                    activityMain.optionsPencil.cbAntiAlias.setChecked(antiAlias);
+                    activityMain.optionsRef.tietBlurRadius.setText(String.valueOf(blurRadius));
+                    activityMain.optionsRef.tietSoftness.setText(String.valueOf(softness));
+                    activityMain.optionsRef.tietStrokeWidth.setText(String.valueOf(strokeWidth));
+                    activityMain.svOptionsRef.setVisibility(View.VISIBLE);
+                    if (!activityMain.optionsRef.tbRef.isChecked()) {
+                        installRefShader();
+                    }
+                } else {
+                    paint.setShader(null);
+                }
+            }
             case R.id.b_ruler -> {
                 if (isChecked) {
                     onToolChanged(onIVTouchWithRulerListener);
@@ -2917,6 +3032,7 @@ public class MainActivity extends AppCompatActivity {
                     onToolChanged(onIVTouchWithSoftBrushListener);
                     paint.setAntiAlias(true);
                     activityMain.optionsSoftBrush.tietBlurRadius.setText(String.valueOf(blurRadius));
+                    activityMain.optionsSoftBrush.tietSoftness.setText(String.valueOf(softness));
                     activityMain.optionsSoftBrush.tietStrokeWidth.setText(String.valueOf(strokeWidth));
                     paint.setStyle(Paint.Style.FILL);
                     activityMain.optionsSoftBrush.tbSoftBrush.setEnabled(hasSelection);
@@ -2987,6 +3103,26 @@ public class MainActivity extends AppCompatActivity {
             activityMain.canvas.flIv.setOnTouchListener(onIVTouchWithZoomToolListener);
         } else {
             activityMain.canvas.flIv.setOnTouchListener(onIVTouchListener);
+        }
+    };
+
+    @SuppressLint({"ClickableViewAccessibility", "NonConstantResourceId"})
+    private final CompoundButton.OnCheckedChangeListener onRefToolTBCheckedChangeListener = (buttonView, isChecked) -> {
+        onIVTouchWithRefListener = isChecked ? onIVTouchWithRefAsDPListener : onIVTouchWithRefAsSTListener;
+        onIVTouchListener = onIVTouchWithRefListener;
+        if (activityMain.btgZoom.getCheckedButtonId() != R.id.b_zoom) {
+            activityMain.canvas.flIv.setOnTouchListener(onIVTouchWithRefListener);
+        }
+        activityMain.optionsRef.tietStrokeWidth.removeTextChangedListener(isChecked ? onStrokeWidthETTextChangedListener : onSoftStrokeWidthETTextChangedListener);
+        activityMain.optionsRef.tietStrokeWidth.addTextChangedListener(isChecked ? onSoftStrokeWidthETTextChangedListener : onStrokeWidthETTextChangedListener);
+        if (!isChecked) {
+            installRefShader();
+            activityMain.optionsRef.tilSoftness.setVisibility(View.GONE);
+            activityMain.optionsRef.btgTileMode.setVisibility(View.VISIBLE);
+        } else {
+            paint.setShader(null);
+            activityMain.optionsRef.btgTileMode.setVisibility(View.GONE);
+            activityMain.optionsRef.tilSoftness.setVisibility(View.VISIBLE);
         }
     };
 
@@ -3168,7 +3304,7 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("NonConstantResourceId")
     private boolean checkIfRequireRef() {
         return switch (activityMain.tools.btgTools.getCheckedButtonId()) {
-            case R.id.b_magic_eraser, R.id.b_magic_paint -> true;
+            case R.id.b_magic_eraser, R.id.b_magic_paint, R.id.b_ref -> true;
             default -> false;
         };
     }
@@ -4079,6 +4215,23 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    @SuppressLint("NonConstantResourceId")
+    private void installRefShader() {
+        if (ref.recycled()) {
+            paint.setShader(null);
+            return;
+        }
+        final Bitmap bm = Bitmap.createBitmap((int) strokeWidth, (int) strokeWidth, Bitmap.Config.ARGB_8888);
+        new Canvas(bm)
+                .drawBitmap(ref.bm(), ref.rect(), new Rect(0, 0, bm.getWidth(), bm.getHeight()), PAINT_SRC);
+        final Shader.TileMode tm = switch (activityMain.optionsRef.btgTileMode.getCheckedButtonId()) {
+            case R.id.b_repeat -> Shader.TileMode.REPEAT;
+            case R.id.b_mirror -> Shader.TileMode.MIRROR;
+            default -> Shader.TileMode.REPEAT;
+        };
+        paint.setShader(new BitmapShader(bm, tm, tm));
+    }
+
     private boolean isPaintStyleFill() {
         return paint.getStyle() != Paint.Style.STROKE;
     }
@@ -4224,6 +4377,7 @@ public class MainActivity extends AppCompatActivity {
         activityMain.optionsPath.cbAntiAlias.setOnCheckedChangeListener(onAntiAliasCBCheckedChangeListener);
         activityMain.optionsPath.cbFill.setOnCheckedChangeListener(onFillCBCheckedChangeListener);
         activityMain.optionsPencil.cbAntiAlias.setOnCheckedChangeListener(onAntiAliasCBCheckedChangeListener);
+        activityMain.optionsRef.cbAntiAlias.setOnCheckedChangeListener(onFillCBCheckedChangeListener);
         activityMain.optionsShape.cbFill.setOnCheckedChangeListener(onFillCBCheckedChangeListener);
         activityMain.optionsTransformer.cbFilter.setChecked(true);
         activityMain.canvas.flIv.setOnTouchListener(onIVTouchWithPencilListener);
@@ -4231,6 +4385,7 @@ public class MainActivity extends AppCompatActivity {
         activityMain.canvas.ivRulerV.setOnTouchListener(onTouchRulerVListener);
         activityMain.rvSwatches.setItemAnimator(new DefaultItemAnimator());
         activityMain.tlProjectList.addOnTabSelectedListener(onProjTabSelectedListener);
+        activityMain.optionsRef.tbRef.setOnCheckedChangeListener(onRefToolTBCheckedChangeListener);
         activityMain.optionsSoftBrush.tbSoftBrush.setOnCheckedChangeListener(onSoftBrushTBCheckedChangeListener);
         activityMain.optionsCloneStamp.tietBlurRadius.addTextChangedListener(onBlurRadiusETTextChangedListener);
         activityMain.optionsCloneStamp.tietStrokeWidth.addTextChangedListener(onStrokeWidthETTextChangedListener);
@@ -4245,8 +4400,11 @@ public class MainActivity extends AppCompatActivity {
         activityMain.optionsPath.tietStrokeWidth.addTextChangedListener(onStrokeWidthETTextChangedListener);
         activityMain.optionsPencil.tietBlurRadius.addTextChangedListener(onBlurRadiusETTextChangedListener);
         activityMain.optionsPencil.tietStrokeWidth.addTextChangedListener(onStrokeWidthETTextChangedListener);
+        activityMain.optionsRef.tietBlurRadius.addTextChangedListener(onBlurRadiusETTextChangedListener);
+        activityMain.optionsRef.tietStrokeWidth.addTextChangedListener(onSoftStrokeWidthETTextChangedListener);
         activityMain.optionsShape.tietStrokeWidth.addTextChangedListener(onStrokeWidthETTextChangedListener);
         activityMain.optionsSoftBrush.tietBlurRadius.addTextChangedListener(onBlurRadiusETTextChangedListener);
+        activityMain.optionsSoftBrush.tietStrokeWidth.addTextChangedListener(onSoftStrokeWidthETTextChangedListener);
         activityMain.optionsText.tietText.addTextChangedListener((AfterTextChangedListener) s -> drawTextOntoView());
         activityMain.optionsText.tietTextSize.addTextChangedListener(onTextSizeETTextChangedListener);
         activityMain.vBackgroundColor.setOnClickListener(onBackgroundColorClickListener);
@@ -4285,6 +4443,12 @@ public class MainActivity extends AppCompatActivity {
             activityMain.tools.bEyedropper.setVisibility(View.VISIBLE);
             activityMain.tools.btgTools.check(R.id.b_eyedropper);
             return true;
+        });
+
+        activityMain.optionsRef.btgTileMode.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
+            if (isChecked) {
+                installRefShader();
+            }
         });
 
         activityMain.optionsShape.btgShape.addOnButtonCheckedListener((OnButtonCheckedListener) (group, checkedId) -> {
@@ -4338,19 +4502,16 @@ public class MainActivity extends AppCompatActivity {
             eraser.setStrokeWidth(f);
         });
 
-        activityMain.optionsSoftBrush.tietSoftness.addTextChangedListener((AfterTextChangedListener) s -> {
-            try {
-                softness = Float.parseFloat(s);
-            } catch (NumberFormatException e) {
-            }
-        });
-
-        activityMain.optionsSoftBrush.tietStrokeWidth.addTextChangedListener((AfterTextChangedListener) s -> {
-            try {
-                strokeWidth = Float.parseFloat(s);
-            } catch (NumberFormatException e) {
-            }
-        });
+        {
+            final TextWatcher tw = (AfterTextChangedListener) s -> {
+                try {
+                    softness = Float.parseFloat(s);
+                } catch (NumberFormatException e) {
+                }
+            };
+            activityMain.optionsRef.tietSoftness.addTextChangedListener(tw);
+            activityMain.optionsSoftBrush.tietSoftness.addTextChangedListener(tw);
+        }
 
         {
             final TextWatcher tw = (AfterTextChangedListener) s -> {
@@ -5560,9 +5721,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void recycleAllBitmaps() {
-        if (refBm != null) {
-            refBm.recycle();
-            refBm = null;
+        {
+            ref.recycle();
         }
         if (chessboard != null) {
             chessboard.recycle();
@@ -6194,10 +6354,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateReference() {
-        if (refBm != null) {
-            refBm.recycle();
-        }
         final Bitmap rb = frame.mergeReferenceLayers();
-        refBm = rb != null ? rb : checkIfRequireRef() ? Bitmap.createBitmap(bitmap) : null;
+        ref.set(rb != null ? rb : checkIfRequireRef() ? Bitmap.createBitmap(bitmap) : null);
+        if (activityMain.tools.btgTools.getCheckedButtonId() == R.id.b_ref && !activityMain.optionsRef.tbRef.isChecked()) {
+            installRefShader();
+        }
     }
 }

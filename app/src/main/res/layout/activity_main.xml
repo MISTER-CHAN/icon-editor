@@ -160,6 +160,17 @@
                 </HorizontalScrollView>
 
                 <HorizontalScrollView
+                    android:id="@+id/sv_options_ref"
+                    style="@style/Widget_App_ScrollView_ToolOptions"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <include
+                        android:id="@+id/options_ref"
+                        layout="@layout/options_ref" />
+                </HorizontalScrollView>
+
+                <HorizontalScrollView
                     android:id="@+id/sv_options_shape"
                     style="@style/Widget_App_ScrollView_ToolOptions"
                     android:layout_width="match_parent"

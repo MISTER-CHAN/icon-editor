@@ -42,6 +42,7 @@
     <string name="check_for_updates">Check for Updates</string>
     <string name="check_for_updates_in_system_browser">Check for updates in system browser</string>
     <string name="circle">Circle</string>
+    <string name="clamp">Clamp</string>
     <string name="clear">Clear</string>
     <string name="clear_destination">Clear Destination</string>
     <string name="clear_guides">Clear Guides</string>
@@ -85,6 +86,7 @@
     <string name="custom_color_filter">Custom Color Filter</string>
     <string name="cut">Cut</string>
     <string name="dec">Decimal</string>
+    <string name="decal">Decal</string>
     <string name="default_">Default</string>
     <string name="default_bold">Default Bold</string>
     <string name="degree" translatable="false">°</string>
@@ -98,6 +100,7 @@
     <string name="draw">Draw</string>
     <string name="draw_color">Draw Color</string>
     <string name="draw_on_not_ui_thread">Draw on Not U.I. Thread</string>
+    <string name="drawing_primitive">Drawing Primitive</string>
     <string name="duplicate">Duplicate</string>
     <string name="duplicate_by_color_range">Duplicate by Color Range</string>
     <string name="edit">Edit</string>
@@ -199,6 +202,7 @@
     <string name="mesh">Mesh</string>
     <string name="milliseconds" translatable="false">%d ms</string>
     <string name="min">Min</string>
+    <string name="mirror">Mirror</string>
     <string name="mister_chan" translatable="false">MISTER_CHAN</string>
     <string name="monospace">Monospace</string>
     <string name="more">More</string>
@@ -253,6 +257,7 @@
     <string name="refer_to_clipboard">Refer to Clipboard</string>
     <string name="reference">Reference</string>
     <string name="rename">Rename</string>
+    <string name="repeat">Repeat</string>
     <string name="reset">Reset</string>
     <string name="reset_source">Reset Source</string>
     <string name="reset_this_curve">Reset This Curve</string>
@@ -281,6 +286,7 @@
     <string name="serif">Serif</string>
     <string name="set">Set</string>
     <string name="settings">Settings</string>
+    <string name="shader_texture">Shader Texture</string>
     <string name="shadows">Shadows</string>
     <string name="shape">Shape</string>
     <string name="shift">Shift</string>
