@@ -2032,7 +2032,7 @@ public class MainActivity extends AppCompatActivity {
                 case MotionEvent.ACTION_DOWN -> {
                     velocityTracker = VelocityTracker.obtain();
                     velocityTracker.addMovement(event);
-                    maxRad = strokeWidth / 2.0f + blurRadius;
+                    maxRad = strokeWidth / 2.0f;
                     clearStatus();
                     lastRad = 0.0f;
                     lastBX = toBitmapX(event.getX());
@@ -2058,7 +2058,7 @@ public class MainActivity extends AppCompatActivity {
                             for (float r = lastRad, bx = lastBX, by = lastBY, s = 0.0f; s < stepCount; r += stepRad, bx += stepBX, by += stepBY, ++s) {
                                 canvas.drawBitmap(ref.bm(), ref.rect(), new RectF(bx - r, by - r, bx + r, by + r), PAINT_SRC_OVER);
                             }
-                            runOnUiThread(() -> drawBitmapOntoView(lastBX, lastBY, currBX, currBY, maxRad));
+                            runOnUiThread(() -> drawBitmapOntoView(lastBX, lastBY, currBX, currBY, maxRad + blurRadius));
                         }).start();
                     }
 
@@ -2452,7 +2452,7 @@ public class MainActivity extends AppCompatActivity {
                         velocityTracker = VelocityTracker.obtain();
                         velocityTracker.addMovement(event);
                         final float x = event.getX(), y = event.getY();
-                        final float rad = strokeWidth / 2.0f + blurRadius;
+                        final float rad = strokeWidth / 2.0f;
                         if (hasSelection) {
                             if (!isWritingSoftStrokes) {
                                 isWritingSoftStrokes = true;
@@ -2533,7 +2533,7 @@ public class MainActivity extends AppCompatActivity {
                             canvas.drawPath(path, paint);
                             drawBitmapOntoView(toBitmapX(Math.min(lastTLX, tlx)), toBitmapY(Math.min(lastTLY, tly)),
                                     toBitmapX(Math.max(lastRX, rx)), toBitmapY(Math.max(lastBY, by)),
-                                    rad);
+                                    maxRad + blurRadius);
                         }
 
                         lastX = x;
@@ -4217,7 +4217,7 @@ public class MainActivity extends AppCompatActivity {
 
     @SuppressLint("NonConstantResourceId")
     private void installRefShader() {
-        if (ref.recycled()) {
+        if (ref.recycled() || strokeWidth <= 0.0f) {
             paint.setShader(null);
             return;
         }
