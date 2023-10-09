@@ -46,6 +46,7 @@ public class Layer {
     @Size(8)
     public float[] lighting;
 
+    @Size(5)
     public int[][] curves;
 
     public final Paint paint;

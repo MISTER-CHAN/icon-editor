@@ -42,6 +42,9 @@ class DrawingPrimitivePreview implements FloatingLayer {
     }
 
     public void recycle() {
+        if (bitmap == null) {
+            return;
+        }
         bitmap.recycle();
         bitmap = null;
         canvas = null;

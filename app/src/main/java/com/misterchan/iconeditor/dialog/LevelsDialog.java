@@ -12,6 +12,8 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageView;
 
+import androidx.annotation.ColorInt;
+import androidx.annotation.FloatRange;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 
@@ -34,12 +36,16 @@ public class LevelsDialog {
     private Bitmap progressBitmap;
     private final AlertDialog.Builder builder;
     private Canvas progressCanvas;
-    private float inputShadows = 0x00, inputHighlights = 0xFF;
-    private float outputShadows = 0x00, outputHighlights = 0xFF;
     private ImageView iv;
     private ImageView ivProgress;
     private OnLevelsChangedListener listener;
     private final Paint paint = new Paint();
+
+    @FloatRange(from = 0x00, to = 0xFF)
+    private float inputShadows = 0x00, inputHighlights = 0xFF;
+
+    @FloatRange(from = 0x00, to = 0xFF)
+    private float outputShadows = 0x00, outputHighlights = 0xFF;
 
     public LevelsDialog(Context context) {
         builder = new MaterialAlertDialogBuilder(context)
@@ -62,11 +68,11 @@ public class LevelsDialog {
     public static final Function<Integer, Integer> valueFunc =
             pixel -> Math.max(Math.max(Color.red(pixel), Color.green(pixel)), Color.blue(pixel));
 
-    public void drawHistogram(int[] src) {
+    public void drawHistogram(@ColorInt int[] src) {
         drawHistogram(src, bitmap, iv, valueFunc, 100.0f, paint);
     }
 
-    public static void drawHistogram(int[] src, Bitmap dst, ImageView iv,
+    public static void drawHistogram(@ColorInt int[] src, Bitmap dst, ImageView iv,
                                      Function<Integer, Integer> f, float maxHeight, Paint paint) {
         new Thread(() -> {
             final Canvas cv = new Canvas(dst);

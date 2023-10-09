@@ -122,40 +122,6 @@ public class MainActivity extends AppCompatActivity {
 
     private static final Looper MAIN_LOOPER = Looper.getMainLooper();
 
-    private static final Map<Integer, BlendMode> LAYER_BLEND_MODE_MENU_ITEMS_MAP = new HashMap<>() {
-        {
-            put(R.id.i_layer_blend_mode_clear, BlendMode.CLEAR);
-            put(R.id.i_layer_blend_mode_src, BlendMode.SRC);
-            put(R.id.i_layer_blend_mode_dst, BlendMode.DST);
-            put(R.id.i_layer_blend_mode_src_over, BlendMode.SRC_OVER);
-            put(R.id.i_layer_blend_mode_dst_over, BlendMode.DST_OVER);
-            put(R.id.i_layer_blend_mode_src_in, BlendMode.SRC_IN);
-            put(R.id.i_layer_blend_mode_dst_in, BlendMode.DST_IN);
-            put(R.id.i_layer_blend_mode_src_out, BlendMode.SRC_OUT);
-            put(R.id.i_layer_blend_mode_dst_out, BlendMode.DST_OUT);
-            put(R.id.i_layer_blend_mode_src_atop, BlendMode.SRC_ATOP);
-            put(R.id.i_layer_blend_mode_dst_atop, BlendMode.DST_ATOP);
-            put(R.id.i_layer_blend_mode_xor, BlendMode.XOR);
-            put(R.id.i_layer_blend_mode_plus, BlendMode.PLUS);
-            put(R.id.i_layer_blend_mode_modulate, BlendMode.MODULATE);
-            put(R.id.i_layer_blend_mode_screen, BlendMode.SCREEN);
-            put(R.id.i_layer_blend_mode_overlay, BlendMode.OVERLAY);
-            put(R.id.i_layer_blend_mode_darken, BlendMode.DARKEN);
-            put(R.id.i_layer_blend_mode_lighten, BlendMode.LIGHTEN);
-            put(R.id.i_layer_blend_mode_color_dodge, BlendMode.COLOR_DODGE);
-            put(R.id.i_layer_blend_mode_color_burn, BlendMode.COLOR_BURN);
-            put(R.id.i_layer_blend_mode_hard_light, BlendMode.HARD_LIGHT);
-            put(R.id.i_layer_blend_mode_soft_light, BlendMode.SOFT_LIGHT);
-            put(R.id.i_layer_blend_mode_difference, BlendMode.DIFFERENCE);
-            put(R.id.i_layer_blend_mode_exclusion, BlendMode.EXCLUSION);
-            put(R.id.i_layer_blend_mode_multiply, BlendMode.MULTIPLY);
-            put(R.id.i_layer_blend_mode_hue, BlendMode.HUE);
-            put(R.id.i_layer_blend_mode_saturation, BlendMode.SATURATION);
-            put(R.id.i_layer_blend_mode_color, BlendMode.COLOR);
-            put(R.id.i_layer_blend_mode_luminosity, BlendMode.LUMINOSITY);
-        }
-    };
-
     private static final Paint PAINT_BITMAP = new Paint() {
         {
             setBlendMode(BlendMode.SRC);
@@ -430,6 +396,24 @@ public class MainActivity extends AppCompatActivity {
         setBlurRadius(paint, f);
     };
 
+    private final AfterTextChangedListener onEraserBlurRadiusETTextChangedListener = s -> {
+        final float f;
+        try {
+            f = Float.parseFloat(s);
+        } catch (NumberFormatException e) {
+            return;
+        }
+        blurRadiusEraser = f;
+        setBlurRadius(eraser, f);
+    };
+
+    private final AfterTextChangedListener onSoftnessETTextChangedListener = s -> {
+        try {
+            softness = Float.parseFloat(s);
+        } catch (NumberFormatException e) {
+        }
+    };
+
     private final AfterTextChangedListener onStrokeWidthETTextChangedListener = s -> {
         final float f;
         try {
@@ -439,6 +423,17 @@ public class MainActivity extends AppCompatActivity {
         }
         strokeWidth = f;
         paint.setStrokeWidth(f);
+    };
+
+    private final AfterTextChangedListener onEraserStrokeWidthETTextChangedListener = s -> {
+        final float f;
+        try {
+            f = Float.parseFloat(s);
+        } catch (NumberFormatException e) {
+            return;
+        }
+        eraserStrokeHalfWidth = f / 2.0f;
+        eraser.setStrokeWidth(f);
     };
 
     private final AfterTextChangedListener onSoftStrokeWidthETTextChangedListener = s -> {
@@ -458,6 +453,17 @@ public class MainActivity extends AppCompatActivity {
         textSize = f;
         paint.setTextSize(f);
         drawTextOntoView();
+    };
+
+    private final AfterTextChangedListener onTransformerMeshSizeETTextChangedListener = s -> {
+        if (!hasSelection) {
+            return;
+        }
+        if (!transformer.isRecycled()) {
+            transformer.apply();
+        }
+        createTransformerMesh();
+        drawSelectionOntoView();
     };
 
     private final ActionMode.Callback onSoftStrokesActionModeCallback = new ActionMode.Callback() {
@@ -625,6 +631,12 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    private final MaterialButtonToggleGroup.OnButtonCheckedListener onRefTileModeButtonCheckedListener = (group, checkedId, isChecked) -> {
+        if (isChecked) {
+            installRefShader();
+        }
+    };
+
     private final CompoundButton.OnCheckedChangeListener onAntiAliasCBCheckedChangeListener = (buttonView, isChecked) -> {
         antiAlias = isChecked;
         paint.setAntiAlias(isChecked);
@@ -633,6 +645,19 @@ public class MainActivity extends AppCompatActivity {
     private final CompoundButton.OnCheckedChangeListener onFillCBCheckedChangeListener = (buttonView, isChecked) -> {
         style = isChecked ? Paint.Style.FILL_AND_STROKE : Paint.Style.STROKE;
         paint.setStyle(style);
+    };
+
+    private final CompoundButton.OnCheckedChangeListener onTextFillCBCheckedChangeListener = (buttonView, isChecked) -> {
+        style = isChecked ? Paint.Style.FILL_AND_STROKE : Paint.Style.STROKE;
+        paint.setStyle(style);
+        drawTextOntoView();
+    };
+
+    private final CompoundButton.OnCheckedChangeListener onTransformerFilterCheckedChangeListener = (buttonView, isChecked) -> {
+        if (activityMain.optionsTransformer.btgTransformer.getCheckedButtonId() == R.id.b_mesh && !transformer.isRecycled() && transformer.mesh != null) {
+            transformer.transformMesh(isChecked, antiAlias);
+            drawBitmapOntoView(selection, true);
+        }
     };
 
     private final DialogInterface.OnClickListener onLayerNameApplyListener = (dialog, which) -> {
@@ -1251,6 +1276,16 @@ public class MainActivity extends AppCompatActivity {
     };
 
     private Shape shape = rect;
+
+    private final MaterialButtonToggleGroup.OnButtonCheckedListener onShapeButtonCheckedListener = (OnButtonCheckedListener) (group, checkedId) -> {
+        shape = switch (checkedId) {
+            case R.id.b_line -> line;
+            case R.id.b_rect -> rect;
+            case R.id.b_oval -> oval;
+            case R.id.b_circle -> circle;
+            default -> null;
+        };
+    };
 
     private abstract class OnIVTouchListener implements View.OnTouchListener {
         public abstract void onIVTouch(View v, MotionEvent event);
@@ -3106,6 +3141,23 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    private final CompoundButton.OnCheckedChangeListener onMagicEraserStyleCBCheckedChangeListener = (buttonView, isChecked) -> {
+        activityMain.optionsMagicEraser.btgSides.setVisibility(isChecked ? View.GONE : View.VISIBLE);
+        activityMain.optionsMagicEraser.cbAccEnabled.setVisibility(isChecked ? View.VISIBLE : View.GONE);
+        onIVTouchWithMagicEraserListener = isChecked
+                ? onIVTouchWithPreciseMagicEraserListener
+                : onIVTouchWithImpreciseMagicEraserListener;
+        onIVTouchListener = onIVTouchWithMagicEraserListener;
+        if (activityMain.btgZoom.getCheckedButtonId() != R.id.b_zoom) {
+            activityMain.canvas.flIv.setOnTouchListener(onIVTouchWithMagicEraserListener);
+        }
+        if (!isChecked) {
+            magErB = null;
+            magErF = null;
+            eraseBitmapAndInvalidateView(previewBitmap, activityMain.canvas.ivPreview);
+        }
+    };
+
     @SuppressLint({"ClickableViewAccessibility", "NonConstantResourceId"})
     private final CompoundButton.OnCheckedChangeListener onRefToolTBCheckedChangeListener = (buttonView, isChecked) -> {
         onIVTouchWithRefListener = isChecked ? onIVTouchWithRefAsDPListener : onIVTouchWithRefAsSTListener;
@@ -4367,10 +4419,13 @@ public class MainActivity extends AppCompatActivity {
         activityMain.optionsMagicPaint.bTolerance.setOnClickListener(onToleranceButtonClickListener);
         activityMain.bSwatchesAdd.setOnClickListener(onAddSwatchButtonClickListener);
         activityMain.optionsText.bDraw.setOnClickListener(v -> drawTextIntoImage());
+        activityMain.optionsShape.btgShape.addOnButtonCheckedListener(onShapeButtonCheckedListener);
+        activityMain.optionsRef.btgTileMode.addOnButtonCheckedListener(onRefTileModeButtonCheckedListener);
         activityMain.optionsTransformer.btgTransformer.addOnButtonCheckedListener(onTransformerButtonCheckedListener);
         activityMain.optionsCloneStamp.cbAntiAlias.setOnCheckedChangeListener(onAntiAliasCBCheckedChangeListener);
         activityMain.optionsEraser.cbAntiAlias.setOnCheckedChangeListener((buttonView, isChecked) -> eraser.setAntiAlias(isChecked));
         activityMain.optionsGradient.cbAntiAlias.setOnCheckedChangeListener(onAntiAliasCBCheckedChangeListener);
+        activityMain.optionsMagicEraser.cbStyle.setOnCheckedChangeListener(onMagicEraserStyleCBCheckedChangeListener);
         activityMain.optionsMagicPaint.cbAntiAlias.setOnCheckedChangeListener(onAntiAliasCBCheckedChangeListener);
         activityMain.optionsMagicPaint.cbClear.setOnCheckedChangeListener(((buttonView, isChecked) -> magicPaint.setBlendMode(isChecked ? BlendMode.DST_OUT : null)));
         activityMain.optionsPatcher.cbAntiAlias.setOnCheckedChangeListener(onAntiAliasCBCheckedChangeListener);
@@ -4379,7 +4434,9 @@ public class MainActivity extends AppCompatActivity {
         activityMain.optionsPencil.cbAntiAlias.setOnCheckedChangeListener(onAntiAliasCBCheckedChangeListener);
         activityMain.optionsRef.cbAntiAlias.setOnCheckedChangeListener(onFillCBCheckedChangeListener);
         activityMain.optionsShape.cbFill.setOnCheckedChangeListener(onFillCBCheckedChangeListener);
+        activityMain.optionsText.cbFill.setOnCheckedChangeListener(onTextFillCBCheckedChangeListener);
         activityMain.optionsTransformer.cbFilter.setChecked(true);
+        activityMain.optionsTransformer.cbFilter.setOnCheckedChangeListener(onTransformerFilterCheckedChangeListener);
         activityMain.canvas.flIv.setOnTouchListener(onIVTouchWithPencilListener);
         activityMain.canvas.ivRulerH.setOnTouchListener(onTouchRulerHListener);
         activityMain.canvas.ivRulerV.setOnTouchListener(onTouchRulerVListener);
@@ -4389,6 +4446,8 @@ public class MainActivity extends AppCompatActivity {
         activityMain.optionsSoftBrush.tbSoftBrush.setOnCheckedChangeListener(onSoftBrushTBCheckedChangeListener);
         activityMain.optionsCloneStamp.tietBlurRadius.addTextChangedListener(onBlurRadiusETTextChangedListener);
         activityMain.optionsCloneStamp.tietStrokeWidth.addTextChangedListener(onStrokeWidthETTextChangedListener);
+        activityMain.optionsEraser.tietBlurRadius.addTextChangedListener(onEraserBlurRadiusETTextChangedListener);
+        activityMain.optionsEraser.tietStrokeWidth.addTextChangedListener(onEraserStrokeWidthETTextChangedListener);
         activityMain.optionsMagicEraser.tietStrokeWidth.addTextChangedListener(onStrokeWidthETTextChangedListener);
         activityMain.optionsMagicPaint.tietBlurRadius.addTextChangedListener(onBlurRadiusETTextChangedListener);
         activityMain.optionsMagicPaint.tietStrokeWidth.addTextChangedListener(onStrokeWidthETTextChangedListener);
@@ -4401,12 +4460,16 @@ public class MainActivity extends AppCompatActivity {
         activityMain.optionsPencil.tietBlurRadius.addTextChangedListener(onBlurRadiusETTextChangedListener);
         activityMain.optionsPencil.tietStrokeWidth.addTextChangedListener(onStrokeWidthETTextChangedListener);
         activityMain.optionsRef.tietBlurRadius.addTextChangedListener(onBlurRadiusETTextChangedListener);
+        activityMain.optionsRef.tietSoftness.addTextChangedListener(onSoftnessETTextChangedListener);
         activityMain.optionsRef.tietStrokeWidth.addTextChangedListener(onSoftStrokeWidthETTextChangedListener);
         activityMain.optionsShape.tietStrokeWidth.addTextChangedListener(onStrokeWidthETTextChangedListener);
         activityMain.optionsSoftBrush.tietBlurRadius.addTextChangedListener(onBlurRadiusETTextChangedListener);
+        activityMain.optionsSoftBrush.tietSoftness.addTextChangedListener(onSoftnessETTextChangedListener);
         activityMain.optionsSoftBrush.tietStrokeWidth.addTextChangedListener(onSoftStrokeWidthETTextChangedListener);
         activityMain.optionsText.tietText.addTextChangedListener((AfterTextChangedListener) s -> drawTextOntoView());
         activityMain.optionsText.tietTextSize.addTextChangedListener(onTextSizeETTextChangedListener);
+        activityMain.optionsTransformer.tietMeshWidth.addTextChangedListener(onTransformerMeshSizeETTextChangedListener);
+        activityMain.optionsTransformer.tietMeshHeight.addTextChangedListener(onTransformerMeshSizeETTextChangedListener);
         activityMain.vBackgroundColor.setOnClickListener(onBackgroundColorClickListener);
         activityMain.vForegroundColor.setOnClickListener(onForegroundColorClickListener);
 
@@ -4421,23 +4484,6 @@ public class MainActivity extends AppCompatActivity {
             return true;
         });
 
-        activityMain.optionsMagicEraser.cbStyle.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            activityMain.optionsMagicEraser.btgSides.setVisibility(isChecked ? View.GONE : View.VISIBLE);
-            activityMain.optionsMagicEraser.cbAccEnabled.setVisibility(isChecked ? View.VISIBLE : View.GONE);
-            onIVTouchWithMagicEraserListener = isChecked
-                    ? onIVTouchWithPreciseMagicEraserListener
-                    : onIVTouchWithImpreciseMagicEraserListener;
-            onIVTouchListener = onIVTouchWithMagicEraserListener;
-            if (activityMain.btgZoom.getCheckedButtonId() != R.id.b_zoom) {
-                activityMain.canvas.flIv.setOnTouchListener(onIVTouchWithMagicEraserListener);
-            }
-            if (!isChecked) {
-                magErB = null;
-                magErF = null;
-                eraseBitmapAndInvalidateView(previewBitmap, activityMain.canvas.ivPreview);
-            }
-        });
-
         activityMain.tools.bRuler.setOnLongClickListener(v -> {
             v.setVisibility(View.GONE);
             activityMain.tools.bEyedropper.setVisibility(View.VISIBLE);
@@ -4445,88 +4491,11 @@ public class MainActivity extends AppCompatActivity {
             return true;
         });
 
-        activityMain.optionsRef.btgTileMode.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
-            if (isChecked) {
-                installRefShader();
-            }
-        });
-
-        activityMain.optionsShape.btgShape.addOnButtonCheckedListener((OnButtonCheckedListener) (group, checkedId) -> {
-            shape = switch (checkedId) {
-                case R.id.b_line -> line;
-                case R.id.b_rect -> rect;
-                case R.id.b_oval -> oval;
-                case R.id.b_circle -> circle;
-                default -> null;
-            };
-        });
-
-        activityMain.optionsText.cbFill.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            style = isChecked ? Paint.Style.FILL_AND_STROKE : Paint.Style.STROKE;
-            paint.setStyle(style);
-            drawTextOntoView();
-        });
-
-        activityMain.optionsTransformer.cbFilter.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            if (activityMain.optionsTransformer.btgTransformer.getCheckedButtonId() == R.id.b_mesh && !transformer.isRecycled() && transformer.mesh != null) {
-                transformer.transformMesh(isChecked, antiAlias);
-                drawBitmapOntoView(selection, true);
-            }
-        });
-
         frameList.rvFrameList.setItemAnimator(new DefaultItemAnimator());
         ItemMovableAdapter.createItemMoveHelper(onFrameItemMoveListener).attachToRecyclerView(frameList.rvFrameList);
 
         layerList.rvLayerList.setItemAnimator(new DefaultItemAnimator());
         ItemMovableAdapter.createItemMoveHelper(onLayerItemMoveListener).attachToRecyclerView(layerList.rvLayerList);
-
-        activityMain.optionsEraser.tietBlurRadius.addTextChangedListener((AfterTextChangedListener) s -> {
-            final float f;
-            try {
-                f = Float.parseFloat(s);
-            } catch (NumberFormatException e) {
-                return;
-            }
-            blurRadiusEraser = f;
-            setBlurRadius(eraser, f);
-        });
-
-        activityMain.optionsEraser.tietStrokeWidth.addTextChangedListener((AfterTextChangedListener) s -> {
-            final float f;
-            try {
-                f = Float.parseFloat(s);
-            } catch (NumberFormatException e) {
-                return;
-            }
-            eraserStrokeHalfWidth = f / 2.0f;
-            eraser.setStrokeWidth(f);
-        });
-
-        {
-            final TextWatcher tw = (AfterTextChangedListener) s -> {
-                try {
-                    softness = Float.parseFloat(s);
-                } catch (NumberFormatException e) {
-                }
-            };
-            activityMain.optionsRef.tietSoftness.addTextChangedListener(tw);
-            activityMain.optionsSoftBrush.tietSoftness.addTextChangedListener(tw);
-        }
-
-        {
-            final TextWatcher tw = (AfterTextChangedListener) s -> {
-                if (!hasSelection) {
-                    return;
-                }
-                if (!transformer.isRecycled()) {
-                    transformer.apply();
-                }
-                createTransformerMesh();
-                drawSelectionOntoView();
-            };
-            activityMain.optionsTransformer.tietMeshWidth.addTextChangedListener(tw);
-            activityMain.optionsTransformer.tietMeshHeight.addTextChangedListener(tw);
-        }
 
         activityMain.optionsPencil.tietBlurRadius.setText(String.valueOf(0.0f));
         activityMain.optionsPencil.tietStrokeWidth.setText(String.valueOf(paint.getStrokeWidth()));
@@ -4702,7 +4671,38 @@ public class MainActivity extends AppCompatActivity {
                     R.id.i_layer_blend_mode_hard_light, R.id.i_layer_blend_mode_soft_light,
                     R.id.i_layer_blend_mode_difference, R.id.i_layer_blend_mode_exclusion, R.id.i_layer_blend_mode_multiply,
                     R.id.i_layer_blend_mode_hue, R.id.i_layer_blend_mode_saturation, R.id.i_layer_blend_mode_color, R.id.i_layer_blend_mode_luminosity -> {
-                layer.paint.setBlendMode(LAYER_BLEND_MODE_MENU_ITEMS_MAP.get(item.getItemId()));
+                layer.paint.setBlendMode(switch (itemId) {
+                    case R.id.i_layer_blend_mode_clear -> BlendMode.CLEAR;
+                    case R.id.i_layer_blend_mode_src -> BlendMode.SRC;
+                    case R.id.i_layer_blend_mode_dst -> BlendMode.DST;
+                    case R.id.i_layer_blend_mode_src_over -> BlendMode.SRC_OVER;
+                    case R.id.i_layer_blend_mode_dst_over -> BlendMode.DST_OVER;
+                    case R.id.i_layer_blend_mode_src_in -> BlendMode.SRC_IN;
+                    case R.id.i_layer_blend_mode_dst_in -> BlendMode.DST_IN;
+                    case R.id.i_layer_blend_mode_src_out -> BlendMode.SRC_OUT;
+                    case R.id.i_layer_blend_mode_dst_out -> BlendMode.DST_OUT;
+                    case R.id.i_layer_blend_mode_src_atop -> BlendMode.SRC_ATOP;
+                    case R.id.i_layer_blend_mode_dst_atop -> BlendMode.DST_ATOP;
+                    case R.id.i_layer_blend_mode_xor -> BlendMode.XOR;
+                    case R.id.i_layer_blend_mode_plus -> BlendMode.PLUS;
+                    case R.id.i_layer_blend_mode_modulate -> BlendMode.MODULATE;
+                    case R.id.i_layer_blend_mode_screen -> BlendMode.SCREEN;
+                    case R.id.i_layer_blend_mode_overlay -> BlendMode.OVERLAY;
+                    case R.id.i_layer_blend_mode_darken -> BlendMode.DARKEN;
+                    case R.id.i_layer_blend_mode_lighten -> BlendMode.LIGHTEN;
+                    case R.id.i_layer_blend_mode_color_dodge -> BlendMode.COLOR_DODGE;
+                    case R.id.i_layer_blend_mode_color_burn -> BlendMode.COLOR_BURN;
+                    case R.id.i_layer_blend_mode_hard_light -> BlendMode.HARD_LIGHT;
+                    case R.id.i_layer_blend_mode_soft_light -> BlendMode.SOFT_LIGHT;
+                    case R.id.i_layer_blend_mode_difference -> BlendMode.DIFFERENCE;
+                    case R.id.i_layer_blend_mode_exclusion -> BlendMode.EXCLUSION;
+                    case R.id.i_layer_blend_mode_multiply -> BlendMode.MULTIPLY;
+                    case R.id.i_layer_blend_mode_hue -> BlendMode.HUE;
+                    case R.id.i_layer_blend_mode_saturation -> BlendMode.SATURATION;
+                    case R.id.i_layer_blend_mode_color -> BlendMode.COLOR;
+                    case R.id.i_layer_blend_mode_luminosity -> BlendMode.LUMINOSITY;
+                    default -> null;
+                });
                 drawBitmapOntoView(true);
             }
             case R.id.i_layer_clipping -> {
@@ -4851,6 +4851,13 @@ public class MainActivity extends AppCompatActivity {
                     layer.filter = Layer.Filter.LEVELS;
                     drawBitmapOntoView(true);
                 }
+                float is, ih, os, oh;
+                new LevelsDialog(this)
+//                      .set(is, ih, os, oh)
+                        .setOnLevelsChangeListener(onLayerLevelsChangedListener)
+                        .setOnPositiveButtonClickListener(null)
+                        .show()
+                        .drawHistogram(BitmapUtils.getPixels(bitmap));
                 clearStatus();
             }
             case R.id.i_layer_filter_lighting -> {
@@ -5721,8 +5728,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void recycleAllBitmaps() {
-        {
-            ref.recycle();
+        dpPreview.recycle();
+        transformer.recycle();
+        ref.recycle();
+        if (filterPreview != null) {
+            filterPreview.recycle();
         }
         if (chessboard != null) {
             chessboard.recycle();
