@@ -1,5 +1,7 @@
 package com.misterchan.iconeditor.util;
 
+import androidx.annotation.Size;
+
 public class LightingToLevels {
     private static final int IS = 0, IH = 1, OS = 2, OH = 3;
     private static final int[] IS_IH_OS_OH = {IS, IH, OS, OH}, IS_OH_OS_IH = {IS, OH, OS, IH}, OS_IH_IS_OH = {OS, IH, IS, OH}, OS_OH_IS_IH = {OS, OH, IS, IH};
@@ -13,7 +15,11 @@ public class LightingToLevels {
 
     private static final Func[] F = {(scale, shift, arr) -> (shift - arr[OS]) / -scale, (scale, shift, arr) -> (arr[OH] - arr[OS]) / scale + arr[IS], (scale, shift, arr) -> shift + arr[IS] * scale, (scale, shift, arr) -> (arr[IH] - arr[IS]) * scale + arr[OS]};
 
+    @Size(4)
     public static float[] lightingToLevels(float scale, float shift) {
+        if (Float.isInfinite(scale) || Float.isNaN(scale) || Float.isInfinite(shift) || Float.isNaN(shift))
+            return new float[]{0x00, 0x00, 0x00, 0xFF};
+
         float[] arr = new float[4];
         for (int i = 0; ; ++i) {
             arr[IND[i][0]] = VAL[i][0];
