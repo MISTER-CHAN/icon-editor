@@ -13,19 +13,15 @@ public class LightingToLevels {
 
     private static final Func[] F = {(scale, shift, arr) -> (shift - arr[OS]) / -scale, (scale, shift, arr) -> (arr[OH] - arr[OS]) / scale + arr[IS], (scale, shift, arr) -> shift + arr[IS] * scale, (scale, shift, arr) -> (arr[IH] - arr[IS]) * scale + arr[OS]};
 
-    private static boolean check(float[] arr) {
-        for (float f : arr) if (0x00 > f || f > 0xFF) return true;
-        return false;
-    }
-
     public static float[] lightingToLevels(float scale, float shift) {
         float[] arr = new float[4];
-        for (int i = 0; i == 0 || check(arr); ++i) {
+        for (int i = 0; ; ++i) {
             arr[IND[i][0]] = VAL[i][0];
             arr[IND[i][1]] = VAL[i][1];
             arr[IND[i][2]] = F[IND[i][2]].apply(scale, shift, arr);
             arr[IND[i][3]] = F[IND[i][3]].apply(scale, shift, arr);
+            if (0x00 <= arr[IND[i][2]] && arr[IND[i][2]] <= 0xFF && 0x00 <= arr[IND[i][3]] && arr[IND[i][3]] <= 0xFF)
+                return arr;
         }
-        return arr;
     }
 }
