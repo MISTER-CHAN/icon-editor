@@ -33,6 +33,7 @@ import android.os.Environment;
 import android.os.Looper;
 import android.os.MessageQueue;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -4851,9 +4852,8 @@ public class MainActivity extends AppCompatActivity {
                     layer.filter = Layer.Filter.LEVELS;
                     drawBitmapOntoView(true);
                 }
-                float is, ih, os, oh;
                 new LevelsDialog(this)
-//                      .set(is, ih, os, oh)
+                        .set(layer.lighting[0], layer.lighting[1])
                         .setOnLevelsChangeListener(onLayerLevelsChangedListener)
                         .setOnPositiveButtonClickListener(null)
                         .show()

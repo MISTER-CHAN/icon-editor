@@ -330,14 +330,14 @@
 
     <!-- Blend Modes -->
     <string name="destination">目標</string>
-    <string name="source_over">來源置上</string>
-    <string name="destination_over">目標置上</string>
-    <string name="source_in">來源取內</string>
-    <string name="destination_in">目標取內</string>
-    <string name="source_out">來源取外</string>
-    <string name="destination_out">目標取外</string>
-    <string name="source_atop">來源置頂</string>
-    <string name="destination_atop">目標置頂</string>
+    <string name="source_over">來源上</string>
+    <string name="destination_over">目標上</string>
+    <string name="source_in">來源內</string>
+    <string name="destination_in">目標內</string>
+    <string name="source_out">來源外</string>
+    <string name="destination_out">目標外</string>
+    <string name="source_atop">來源頂</string>
+    <string name="destination_atop">目標頂</string>
     <string name="xor">異或</string>
     <string name="plus">加</string>
     <string name="modulate">調制</string>
