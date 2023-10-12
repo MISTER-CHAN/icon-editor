@@ -100,8 +100,8 @@ public class LevelsDialog {
         ivProgress.invalidate();
     }
 
-    public LevelsDialog set(float scale, float shift) {
-        final float[] arr = LightingToLevels.lightingToLevels(scale, shift);
+    public LevelsDialog set(float mul, float add) {
+        final float[] arr = LightingToLevels.lightingToLevels(mul, add);
         return set(arr[0], arr[1], arr[2], arr[3]);
     }
 

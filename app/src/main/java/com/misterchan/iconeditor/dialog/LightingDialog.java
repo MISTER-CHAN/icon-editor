@@ -80,41 +80,41 @@ public class LightingDialog {
         lp.gravity = Gravity.BOTTOM;
         window.setAttributes(lp);
 
-        final Slider sRedScale = dialog.findViewById(R.id.s_red_scale);
-        final Slider sRedShift = dialog.findViewById(R.id.s_red_shift);
-        final Slider sGreenScale = dialog.findViewById(R.id.s_green_scale);
-        final Slider sGreenShift = dialog.findViewById(R.id.s_green_shift);
-        final Slider sBlueScale = dialog.findViewById(R.id.s_blue_scale);
-        final Slider sBlueShift = dialog.findViewById(R.id.s_blue_shift);
-        final Slider sAlphaScale = dialog.findViewById(R.id.s_alpha_scale);
-        final Slider sAlphaShift = dialog.findViewById(R.id.s_alpha_shift);
+        final Slider sRedMul = dialog.findViewById(R.id.s_red_mul);
+        final Slider sRedAdd = dialog.findViewById(R.id.s_red_add);
+        final Slider sGreenMul = dialog.findViewById(R.id.s_green_mul);
+        final Slider sGreenAdd = dialog.findViewById(R.id.s_green_add);
+        final Slider sBlueMul = dialog.findViewById(R.id.s_blue_mul);
+        final Slider sBlueAdd = dialog.findViewById(R.id.s_blue_add);
+        final Slider sAlphaMul = dialog.findViewById(R.id.s_alpha_mul);
+        final Slider sAlphaAdd = dialog.findViewById(R.id.s_alpha_add);
 
-        sRedScale.setValue(lighting[0]);
-        sRedShift.setValue(lighting[1]);
-        sGreenScale.setValue(lighting[2]);
-        sGreenShift.setValue(lighting[3]);
-        sBlueScale.setValue(lighting[4]);
-        sBlueShift.setValue(lighting[5]);
-        sAlphaScale.setValue(lighting[6]);
-        sAlphaShift.setValue(lighting[7]);
+        sRedMul.setValue(lighting[0]);
+        sRedAdd.setValue(lighting[1]);
+        sGreenMul.setValue(lighting[2]);
+        sGreenAdd.setValue(lighting[3]);
+        sBlueMul.setValue(lighting[4]);
+        sBlueAdd.setValue(lighting[5]);
+        sAlphaMul.setValue(lighting[6]);
+        sAlphaAdd.setValue(lighting[7]);
 
         final OnSliderChangeListener l = this::setElement;
 
-        sRedScale.addOnChangeListener(l);
-        sRedScale.addOnSliderTouchListener(l);
-        sRedShift.addOnChangeListener(l);
-        sRedShift.addOnSliderTouchListener(l);
-        sGreenScale.addOnChangeListener(l);
-        sGreenScale.addOnSliderTouchListener(l);
-        sGreenShift.addOnChangeListener(l);
-        sGreenShift.addOnSliderTouchListener(l);
-        sBlueScale.addOnChangeListener(l);
-        sBlueScale.addOnSliderTouchListener(l);
-        sBlueShift.addOnChangeListener(l);
-        sBlueShift.addOnSliderTouchListener(l);
-        sAlphaScale.addOnChangeListener(l);
-        sAlphaScale.addOnSliderTouchListener(l);
-        sAlphaShift.addOnChangeListener(l);
-        sAlphaShift.addOnSliderTouchListener(l);
+        sRedMul.addOnChangeListener(l);
+        sRedMul.addOnSliderTouchListener(l);
+        sRedAdd.addOnChangeListener(l);
+        sRedAdd.addOnSliderTouchListener(l);
+        sGreenMul.addOnChangeListener(l);
+        sGreenMul.addOnSliderTouchListener(l);
+        sGreenAdd.addOnChangeListener(l);
+        sGreenAdd.addOnSliderTouchListener(l);
+        sBlueMul.addOnChangeListener(l);
+        sBlueMul.addOnSliderTouchListener(l);
+        sBlueAdd.addOnChangeListener(l);
+        sBlueAdd.addOnSliderTouchListener(l);
+        sAlphaMul.addOnChangeListener(l);
+        sAlphaMul.addOnSliderTouchListener(l);
+        sAlphaAdd.addOnChangeListener(l);
+        sAlphaAdd.addOnSliderTouchListener(l);
     }
 }

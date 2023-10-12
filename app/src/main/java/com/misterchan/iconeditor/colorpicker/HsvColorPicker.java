@@ -32,6 +32,7 @@ import com.misterchan.iconeditor.listener.AfterTextChangedListener;
 import com.misterchan.iconeditor.listener.OnSliderValueChangeListener;
 
 class HsvColorPicker extends ColorPicker {
+    private static final float THUMB_RADIUS = 20.0f;
 
     private static final Paint PAINT_THUMB = new Paint() {
         {
@@ -45,10 +46,10 @@ class HsvColorPicker extends ColorPicker {
 
     private final boolean hasAlpha;
     private final boolean type;
-    private Canvas canvas;
-    private ImageView ivHsv;
+    private Canvas hueCanvas, satValCanvas;
+    private ImageView ivHue, ivSatVal;
     private final int alphaRadix;
-    private int hsvImageW, hsvImageH;
+    private int hueImageW, hueImageH, satValImageW, satValImageH;
     private Shader valShader;
     private Slider sAlpha;
     private Slider sHue, sSaturation, sValue;
@@ -59,7 +60,15 @@ class HsvColorPicker extends ColorPicker {
     @Size(3)
     private final float[] hsv = new float[3], hue = {0.0f, 1.0f, 1.0f};
 
-    private final Paint paint = new Paint() {
+    private final Paint huePaint = new Paint() {
+        {
+            setAntiAlias(false);
+            setBlendMode(BlendMode.SRC);
+            setFilterBitmap(false);
+        }
+    };
+
+    private final Paint satValPaint = new Paint() {
         {
             setAntiAlias(false);
             setBlendMode(BlendMode.SRC);
@@ -96,19 +105,28 @@ class HsvColorPicker extends ColorPicker {
         alphaRadix = type ? 10 : Settings.INST.argbCompRadix();
     }
 
-    private void drawHsv() {
-        if (valShader == null) {
+    private void drawHue() {
+        if (hueCanvas == null) {
+            return;
+        }
+        hueCanvas.drawRect(0.0f, 0.0f, hueImageW, hueImageH, huePaint);
+        hueCanvas.drawCircle(hsv[0] / 360.0f * hueImageW, hueImageH / 2.0f, THUMB_RADIUS, PAINT_THUMB);
+        ivHue.invalidate();
+    }
+
+    private void drawSatVal() {
+        if (satValCanvas == null) {
             return;
         }
         hue[0] = hsv[0];
         final int color = Color.BLACK | Color.HSVToColor(hue);
-        final Shader satShader = new LinearGradient(0.0f, 0.0f, ivHsv.getWidth(), 0.0f,
+        final Shader satShader = new LinearGradient(0.0f, 0.0f, ivSatVal.getWidth(), 0.0f,
                 Color.WHITE, color, Shader.TileMode.CLAMP);
         final Shader satValShader = new ComposeShader(valShader, satShader, BlendMode.MULTIPLY);
-        paint.setShader(satValShader);
-        canvas.drawRect(0.0f, 0.0f, ivHsv.getWidth(), ivHsv.getHeight(), paint);
-        canvas.drawCircle(hsv[1] * hsvImageW, (1.0f - hsv[2]) * hsvImageH, 20.0f, PAINT_THUMB);
-        ivHsv.invalidate();
+        satValPaint.setShader(satValShader);
+        satValCanvas.drawRect(0.0f, 0.0f, satValImageW, satValImageH, satValPaint);
+        satValCanvas.drawCircle(hsv[1] * satValImageW, (1.0f - hsv[2]) * satValImageH, THUMB_RADIUS, PAINT_THUMB);
+        ivSatVal.invalidate();
     }
 
     static ColorPicker make(Context context, final OnColorPickListener onColorPickListener, @ColorLong final Long oldColor) {
@@ -134,7 +152,6 @@ class HsvColorPicker extends ColorPicker {
                 : Color.BLACK | rgb;
         newColor = Color.pack(color);
         vPreview.setBackgroundColor(color);
-        drawHsv();
     }
 
     private void onHueChanged(String s) {
@@ -147,6 +164,8 @@ class HsvColorPicker extends ColorPicker {
         sHue.setValue(f == 360.0f ? 360.0f : f % 360.0f);
         hsv[0] = f % 360.0f;
         onComponentChanged();
+        drawHue();
+        drawSatVal();
     }
 
     private void onSatOrValChanged(@IntRange(from = 1, to = 2) int index, String s, Slider slider) {
@@ -160,6 +179,7 @@ class HsvColorPicker extends ColorPicker {
         slider.setValue(f);
         hsv[index] = f / 100.0f;
         onComponentChanged();
+        drawSatVal();
     }
 
     @Override
@@ -168,7 +188,9 @@ class HsvColorPicker extends ColorPicker {
         final AlertDialog dialog = dialogBuilder.show();
 
         final GridLayout gl = dialog.findViewById(R.id.gl);
-        ivHsv = dialog.findViewById(R.id.iv_sat_val);
+
+        ivHue = dialog.findViewById(R.id.iv_hue);
+        ivSatVal = dialog.findViewById(R.id.iv_sat_val);
         sHue = dialog.findViewById(R.id.s_comp_0);
         sSaturation = dialog.findViewById(R.id.s_comp_1);
         sValue = dialog.findViewById(R.id.s_comp_2);
@@ -188,14 +210,26 @@ class HsvColorPicker extends ColorPicker {
             hideAlphaComp(gl);
         }
 
-        OneShotPreDrawListener.add(ivHsv, () -> {
-            hsvImageW = ivHsv.getWidth();
-            hsvImageH = ivHsv.getHeight();
-            final Bitmap bitmap = Bitmap.createBitmap(hsvImageW, hsvImageH, Bitmap.Config.ARGB_4444);
-            canvas = new Canvas(bitmap);
-            ivHsv.setImageBitmap(bitmap);
-            valShader = new LinearGradient(0.0f, 0.0f, 0.0f, hsvImageH, Color.WHITE, Color.BLACK, Shader.TileMode.CLAMP);
-            drawHsv();
+        OneShotPreDrawListener.add(ivHue, () -> {
+            hueImageW = ivHue.getWidth();
+            hueImageH = ivHue.getHeight();
+            final Bitmap bitmap = Bitmap.createBitmap(hueImageW, hueImageH, Bitmap.Config.ARGB_4444);
+            hueCanvas = new Canvas(bitmap);
+            ivHue.setImageBitmap(bitmap);
+            final Shader hueShader = new LinearGradient(0.0f, 0.0f, hueImageW, 0.0f,
+                    new int[]{Color.RED, Color.YELLOW, Color.GREEN, Color.CYAN, Color.BLUE, Color.MAGENTA, Color.RED},
+                    null, Shader.TileMode.CLAMP);
+            huePaint.setShader(hueShader);
+            drawHue();
+        });
+        OneShotPreDrawListener.add(ivSatVal, () -> {
+            satValImageW = ivSatVal.getWidth();
+            satValImageH = ivSatVal.getHeight();
+            final Bitmap bitmap = Bitmap.createBitmap(satValImageW, satValImageH, Bitmap.Config.ARGB_4444);
+            satValCanvas = new Canvas(bitmap);
+            ivSatVal.setImageBitmap(bitmap);
+            valShader = new LinearGradient(0.0f, 0.0f, 0.0f, satValImageH, Color.WHITE, Color.BLACK, Shader.TileMode.CLAMP);
+            drawSatVal();
         });
 
         sHue.setValueTo(360.0f);
@@ -231,12 +265,21 @@ class HsvColorPicker extends ColorPicker {
             tietAlpha.addTextChangedListener((AfterTextChangedListener) this::onAlphaChanged);
         }
 
-        ivHsv.setOnTouchListener((v, event) -> {
+        ivHue.setOnTouchListener((v, event) -> {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN, MotionEvent.ACTION_MOVE -> {
                     final float x = event.getX(), y = event.getY();
-                    tietSaturation.setText(String.valueOf(Math.min(Math.max(x, 0.0f), hsvImageW) / hsvImageW * 100.0f));
-                    tietValue.setText(String.valueOf((1.0f - Math.min(Math.max(y, 0.0f), hsvImageH) / hsvImageH) * 100.0f));
+                    tietHue.setText(String.valueOf(Math.min(Math.max(x, 0.0f), hueImageW) / hueImageW * 360.0f));
+                }
+            }
+            return true;
+        });
+        ivSatVal.setOnTouchListener((v, event) -> {
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN, MotionEvent.ACTION_MOVE -> {
+                    final float x = event.getX(), y = event.getY();
+                    tietSaturation.setText(String.valueOf(Math.min(Math.max(x, 0.0f), satValImageW) / satValImageW * 100.0f));
+                    tietValue.setText(String.valueOf((1.0f - Math.min(Math.max(y, 0.0f), satValImageH) / satValImageH) * 100.0f));
                 }
             }
             return true;

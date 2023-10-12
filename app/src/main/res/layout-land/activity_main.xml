@@ -40,8 +40,8 @@
                         <ImageView
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
-                            android:scaleType="center"
-                            android:src="@mipmap/chessboard" />
+                            android:scaleType="fitXY"
+                            android:src="@drawable/chessboard" />
 
                         <View
                             android:id="@+id/v_foreground_color"
@@ -59,8 +59,8 @@
                         <ImageView
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
-                            android:scaleType="center"
-                            android:src="@mipmap/chessboard" />
+                            android:scaleType="fitXY"
+                            android:src="@drawable/chessboard" />
 
                         <View
                             android:id="@+id/v_background_color"

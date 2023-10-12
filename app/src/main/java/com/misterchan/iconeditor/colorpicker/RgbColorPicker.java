@@ -20,7 +20,7 @@ import com.misterchan.iconeditor.Settings;
 import com.misterchan.iconeditor.listener.AfterTextChangedListener;
 import com.misterchan.iconeditor.listener.OnSliderValueChangeListener;
 
-public class ArgbColorPicker extends ColorPicker {
+public class RgbColorPicker extends ColorPicker {
 
     private final boolean type;
     private ColorSpace colorSpace;
@@ -33,16 +33,16 @@ public class ArgbColorPicker extends ColorPicker {
     private TextInputEditText tietRed, tietGreen, tietBlue;
 
     @SuppressLint("NonConstantResourceId")
-    private ArgbColorPicker(Context context, @StringRes int titleId,
-                            final OnColorPickListener onColorPickListener,
-                            @ColorLong final Long oldColor, @StringRes int neutralFunction) {
+    private RgbColorPicker(Context context, @StringRes int titleId,
+                           final OnColorPickListener onColorPickListener,
+                           @ColorLong final Long oldColor, @StringRes int neutralFunction) {
         this.context = context;
         dialogBuilder = new MaterialAlertDialogBuilder(context)
                 .setNegativeButton(R.string.cancel, null)
                 .setPositiveButton(R.string.ok,
                         (dialog, which) -> onColorPickListener.onPick(oldColor, newColor))
                 .setTitle(titleId)
-                .setView(R.layout.color_picker_argb);
+                .setView(R.layout.color_picker_rgb);
 
         if (oldColor != null) {
             this.oldColor = oldColor;
@@ -92,7 +92,7 @@ public class ArgbColorPicker extends ColorPicker {
                                    @ColorLong final Long oldColor, @StringRes int neutralFunction) {
         return Settings.INST.pickInHsv()
                 ? new HsvColorPicker(context, titleId, onColorPickListener, oldColor, neutralFunction)
-                : new ArgbColorPicker(context, titleId, onColorPickListener, oldColor, neutralFunction);
+                : new RgbColorPicker(context, titleId, onColorPickListener, oldColor, neutralFunction);
     }
 
     private void onComponentChanged(String s, Slider slider) {

@@ -30,13 +30,13 @@ public class BitmapUtils {
     };
 
     public static void addLightingColorFilter(@ColorInt final int[] src, @ColorInt final int[] dst,
-                                              final float scale, final float shift) {
+                                              final float mul, final float add) {
         for (int i = 0; i < src.length; ++i) {
             final int r = Color.red(src[i]), g = Color.green(src[i]), b = Color.blue(src[i]),
                     a = src[i] & Color.BLACK;
-            final int r_ = Color.sat((int) (r * scale + shift));
-            final int g_ = Color.sat((int) (g * scale + shift));
-            final int b_ = Color.sat((int) (b * scale + shift));
+            final int r_ = Color.sat((int) (r * mul + add));
+            final int g_ = Color.sat((int) (g * mul + add));
+            final int b_ = Color.sat((int) (b * mul + add));
             dst[i] = a | Color.rgb(r_, g_, b_);
         }
     }

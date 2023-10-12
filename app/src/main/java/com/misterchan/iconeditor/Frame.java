@@ -32,6 +32,10 @@ public class Frame {
         return layers.get(layers.size() - 1);
     }
 
+    public Layer getSelectedLayer() {
+        return layers.get(selectedLayerIndex);
+    }
+
     public int group() {
         int bottomPos = layers.size() - 1;
         for (int i = selectedLayerIndex; i <= bottomPos; ++i) {

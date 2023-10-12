@@ -62,10 +62,10 @@ class FilterPreview {
         this.rect = rect;
     }
 
-    public void addLightingColorFilter(float scale, float shift) {
+    public void addLightingColorFilter(float mul, float add) {
         final int w = bm.getWidth(), h = bm.getHeight();
         final int[] src = getPixels(), dst = new int[w * h];
-        BitmapUtils.addLightingColorFilter(src, dst, scale, shift);
+        BitmapUtils.addLightingColorFilter(src, dst, mul, add);
         setPixels(dst, w, h);
     }
 

@@ -36,6 +36,10 @@ public class Project {
         return i == -1 ? title : title.substring(0, i);
     }
 
+    public Frame getSelectedFrame() {
+        return frames.get(selectedFrameIndex);
+    }
+
     public String getTitle() {
         return title;
     }

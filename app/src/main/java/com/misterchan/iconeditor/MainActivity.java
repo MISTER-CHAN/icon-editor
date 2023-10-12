@@ -26,14 +26,11 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Shader;
 import android.graphics.Typeface;
-import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Looper;
 import android.os.MessageQueue;
-import android.text.TextWatcher;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -70,13 +67,12 @@ import androidx.recyclerview.widget.DefaultItemAnimator;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButtonToggleGroup;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.android.material.sidesheet.SideSheetDialog;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
-import com.misterchan.iconeditor.colorpicker.ArgbColorPicker;
+import com.misterchan.iconeditor.colorpicker.RgbColorPicker;
 import com.misterchan.iconeditor.databinding.ActivityMainBinding;
 import com.misterchan.iconeditor.databinding.FrameListBinding;
 import com.misterchan.iconeditor.databinding.LayerListBinding;
@@ -103,21 +99,18 @@ import com.misterchan.iconeditor.listener.AfterTextChangedListener;
 import com.misterchan.iconeditor.listener.OnButtonCheckedListener;
 import com.misterchan.iconeditor.listener.OnSliderChangeListener;
 import com.misterchan.iconeditor.util.BitmapUtils;
+import com.misterchan.iconeditor.util.CanvasUtils;
 import com.misterchan.iconeditor.util.RunnableRunnable;
-import com.misterchan.iconeditor.util.UriUtils;
+import com.misterchan.iconeditor.util.FileUtils;
 import com.waynejo.androidndkgif.GifDecoder;
 import com.waynejo.androidndkgif.GifEncoder;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -125,8 +118,8 @@ public class MainActivity extends AppCompatActivity {
 
     private static final Paint PAINT_BITMAP = new Paint() {
         {
-            setBlendMode(BlendMode.SRC);
             setAntiAlias(false);
+            setBlendMode(BlendMode.SRC);
             setFilterBitmap(false);
         }
     };
@@ -268,7 +261,6 @@ public class MainActivity extends AppCompatActivity {
     private FrameListBinding frameList;
     private InputMethodManager inputMethodManager;
     private int rulerHHeight, rulerVWidth;
-    private int shapeStartX, shapeStartY;
     private int textX, textY;
     private int threshold;
     private int viewWidth, viewHeight;
@@ -295,20 +287,28 @@ public class MainActivity extends AppCompatActivity {
 
     private final Paint bitmapPaint = new Paint() {
         {
-            setBlendMode(BlendMode.SRC);
             setAntiAlias(false);
+            setBlendMode(BlendMode.SRC);
+        }
+    };
+
+    private final Paint chessboardPaint = new Paint() {
+        {
+            setAntiAlias(false);
+            setBlendMode(BlendMode.SRC);
+            setFilterBitmap(false);
         }
     };
 
     private final Paint eraser = new Paint() {
         {
             setAntiAlias(false);
+            setBlendMode(BlendMode.SRC);
             setColor(Color.TRANSPARENT);
             setDither(false);
             setStrokeCap(Cap.ROUND);
             setStrokeJoin(Join.ROUND);
             setStrokeWidth(1.0f);
-            setBlendMode(BlendMode.SRC);
         }
     };
 
@@ -672,7 +672,7 @@ public class MainActivity extends AppCompatActivity {
     };
 
     private final View.OnClickListener onAddSwatchButtonClickListener = v ->
-            ArgbColorPicker.make(this, R.string.add,
+            RgbColorPicker.make(this, R.string.add,
                             (oldColor, newColor) -> {
                                 palette.offerFirst(newColor);
                                 colorAdapter.notifyItemInserted(0);
@@ -681,7 +681,7 @@ public class MainActivity extends AppCompatActivity {
                     .show();
 
     private final View.OnClickListener onBackgroundColorClickListener = v ->
-            ArgbColorPicker.make(this, R.string.background_color,
+            RgbColorPicker.make(this, R.string.background_color,
                             (oldColor, newColor) -> {
                                 if (oldColor != null) {
                                     eraser.setColor(newColor);
@@ -699,7 +699,7 @@ public class MainActivity extends AppCompatActivity {
     };
 
     private final View.OnClickListener onForegroundColorClickListener = v ->
-            ArgbColorPicker.make(this, R.string.foreground_color,
+            RgbColorPicker.make(this, R.string.foreground_color,
                             (oldColor, newColor) -> {
                                 if (oldColor != null) {
                                     paint.setColor(newColor);
@@ -843,20 +843,20 @@ public class MainActivity extends AppCompatActivity {
     };
 
     private final OnSliderChangeListener onFilterContrastSliderChangeListener = (slider, value, stopped) -> {
-        final float scale = value, shift = 0xFF / 2.0f * (1.0f - scale);
+        final float mul = value, add = 0xFF / 2.0f * (1.0f - mul);
         runOrStart(() -> {
-            filterPreview.addLightingColorFilter(scale, shift);
+            filterPreview.addLightingColorFilter(mul, add);
             drawFilterPreviewOntoView(stopped);
         }, stopped);
-        activityMain.tvStatus.setText(getString(R.string.state_contrast, scale));
+        activityMain.tvStatus.setText(getString(R.string.state_contrast, mul));
     };
 
     private final OnSliderChangeListener onLayerContrastSliderChangeListener = (slider, value, stopped) -> {
-        final float scale = value, shift = 0xFF / 2.0f * (1.0f - scale);
-        layer.lighting[0] = layer.lighting[2] = layer.lighting[4] = scale;
-        layer.lighting[1] = layer.lighting[3] = layer.lighting[5] = shift;
+        final float mul = value, add = 0xFF / 2.0f * (1.0f - mul);
+        layer.lighting[0] = layer.lighting[2] = layer.lighting[4] = mul;
+        layer.lighting[1] = layer.lighting[3] = layer.lighting[5] = add;
         drawBitmapOntoView(stopped);
-        activityMain.tvStatus.setText(getString(R.string.state_contrast, scale));
+        activityMain.tvStatus.setText(getString(R.string.state_contrast, mul));
     };
 
     private final OnSliderChangeListener onFilterHToASliderChangeListener = (slider, value, stopped) -> {
@@ -1233,7 +1233,7 @@ public class MainActivity extends AppCompatActivity {
     private final Shape line = new Shape() {
         @Override
         public String drawShapeOntoCanvas(Canvas canvas, int x0, int y0, int x1, int y1) {
-            drawLineOntoCanvas(canvas, x0, y0, x1, y1, paint);
+            CanvasUtils.drawInclusiveLine(canvas, x0, y0, x1, y1, paint);
             return canvas == dpPreview.getCanvas()
                     ? getString(R.string.state_length, Math.hypot(x1 - x0, y1 - y0) + 1) : null;
         }
@@ -1479,7 +1479,7 @@ public class MainActivity extends AppCompatActivity {
                 case MotionEvent.ACTION_MOVE: {
                     final float x = event.getX(), y = event.getY();
                     final int bx = toBitmapX(x), by = toBitmapY(y);
-                    drawLineOntoCanvas(canvas, lastBX, lastBY, bx, by, eraser);
+                    CanvasUtils.drawInclusiveLine(canvas, lastBX, lastBY, bx, by, eraser);
                     drawBitmapOntoView(lastBX, lastBY, bx, by, eraserStrokeHalfWidth + blurRadiusEraser);
                     activityMain.tvStatus.setText(getString(R.string.coordinates, bx, by));
                     lastBX = bx;
@@ -1548,9 +1548,11 @@ public class MainActivity extends AppCompatActivity {
 
     @SuppressLint({"ClickableViewAccessibility", "SetTextI18n"})
     private final View.OnTouchListener onIVTouchWithGradientListener = new OnIVMultiTouchListener() {
+        private int shapeStartX, shapeStartY;
+        private Rect lastRect;
+
         @ColorLong
         private long color0;
-        private Rect lastRect;
 
         @Override
         public void onFinalPointerUp() {
@@ -1582,7 +1584,7 @@ public class MainActivity extends AppCompatActivity {
                             src.getColor(satX(src, bx), satY(src, by)).pack(),
                             Shader.TileMode.CLAMP));
                     dpPreview.erase(lastRect);
-                    drawLineOntoCanvas(dpPreview.getCanvas(), shapeStartX, shapeStartY, bx, by, paint);
+                    CanvasUtils.drawInclusiveLine(dpPreview.getCanvas(), shapeStartX, shapeStartY, bx, by, paint);
                     final Rect rect = mapRect(shapeStartX, shapeStartY, bx, by, strokeWidth / 2.0f + blurRadius);
                     lastRect.union(rect);
                     drawBitmapOntoView(lastRect);
@@ -1595,7 +1597,7 @@ public class MainActivity extends AppCompatActivity {
                 case MotionEvent.ACTION_UP:
                     if (bx != shapeStartX || by != shapeStartY) {
                         isShapeStopped = true;
-                        drawLineOntoCanvas(canvas, shapeStartX, shapeStartY, bx, by, paint);
+                        CanvasUtils.drawInclusiveLine(canvas, shapeStartX, shapeStartY, bx, by, paint);
                         final Rect rect = mapRect(shapeStartX, shapeStartY, bx, by, strokeWidth / 2.0f + blurRadius);
                         lastRect.union(rect);
                         dpPreview.erase(lastRect);
@@ -2006,7 +2008,7 @@ public class MainActivity extends AppCompatActivity {
                 case MotionEvent.ACTION_MOVE: {
                     final float x = event.getX(), y = event.getY();
                     final int bx = toBitmapX(x), by = toBitmapY(y);
-                    drawLineOntoCanvas(canvas, lastBX, lastBY, bx, by, pencil);
+                    CanvasUtils.drawInclusiveLine(canvas, lastBX, lastBY, bx, by, pencil);
                     drawBitmapOntoView(lastBX, lastBY, bx, by, strokeWidth / 2.0f + blurRadius);
                     activityMain.tvStatus.setText(getString(R.string.coordinates, bx, by));
                     lastBX = bx;
@@ -2037,7 +2039,7 @@ public class MainActivity extends AppCompatActivity {
                 case MotionEvent.ACTION_MOVE: {
                     final float x = event.getX(), y = event.getY();
                     final int bx = toBitmapX(x), by = toBitmapY(y);
-                    drawLineOntoCanvas(canvas, lastBX, lastBY, bx, by, paint);
+                    CanvasUtils.drawInclusiveLine(canvas, lastBX, lastBY, bx, by, paint);
                     drawBitmapOntoView(lastBX, lastBY, bx, by, strokeWidth / 2.0f + blurRadius);
                     activityMain.tvStatus.setText(getString(R.string.coordinates, bx, by));
                     lastBX = bx;
@@ -2115,6 +2117,8 @@ public class MainActivity extends AppCompatActivity {
 
     @SuppressLint("ClickableViewAccessibility")
     private final View.OnTouchListener onIVTouchWithRulerListener = new OnIVTouchListener() {
+        private int shapeStartX, shapeStartY;
+
         @Override
         public void onIVTouch(View v, MotionEvent event) {
             final float x = event.getX(), y = event.getY();
@@ -2151,6 +2155,7 @@ public class MainActivity extends AppCompatActivity {
 
     @SuppressLint({"ClickableViewAccessibility", "SetTextI18n"})
     private final View.OnTouchListener onIVTouchWithShapeListener = new OnIVMultiTouchListener() {
+        private int shapeStartX, shapeStartY;
         private Rect lastRect;
 
         @Override
@@ -3762,13 +3767,8 @@ public class MainActivity extends AppCompatActivity {
         final float right = Math.min(translationX + backgroundScaledW, viewWidth);
         final float bottom = Math.min(translationY + backgroundScaledH, viewHeight);
 
-        chessboardCanvas.drawBitmap(chessboard,
-                new Rect((int) left, (int) top, (int) right, (int) bottom),
-                new RectF(left, top, right, bottom),
-                PAINT_SRC);
-
+        chessboardCanvas.drawRect(left, top, right, bottom, chessboardPaint);
         activityMain.canvas.ivChessboard.invalidate();
-
         drawRuler();
     }
 
@@ -3926,22 +3926,6 @@ public class MainActivity extends AppCompatActivity {
 
         activityMain.canvas.ivRulerH.invalidate();
         activityMain.canvas.ivRulerV.invalidate();
-    }
-
-    private void drawLineOntoCanvas(Canvas canvas, int startX, int startY, int stopX, int stopY, Paint paint) {
-        if (startX <= stopX) ++stopX;
-        else ++startX;
-        if (startY <= stopY) ++stopY;
-        else ++startY;
-
-        canvas.drawLine(startX, startY, stopX, stopY, paint);
-    }
-
-    private void drawPointOntoCanvas(Canvas canvas, float x, float y, String text) {
-        canvas.drawLine(x - 100.0f, y, x + 100.0f, y, PAINT_POINT);
-        canvas.drawLine(x, y - 100.0f, x, y + 100.0f, PAINT_POINT);
-        canvas.drawText(text, x, y, PAINT_POINT);
-        activityMain.canvas.iv.invalidate();
     }
 
     private void drawPointOntoView(int x, int y) {
@@ -4147,33 +4131,8 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
         }
-
         drawFloatingLayersIntoImage();
-
-        final File file = new File(project.filePath);
-        if (project.compressFormat != null) {
-            try (final FileOutputStream fos = new FileOutputStream(file)) {
-                bitmap.compress(project.compressFormat, quality, fos);
-                fos.flush();
-            } catch (final IOException e) {
-                Snackbar.make(vContent, getString(R.string.failed) + '\n' + e.getMessage(), Snackbar.LENGTH_LONG)
-                        .setTextMaxLines(Integer.MAX_VALUE)
-                        .show();
-                return;
-            }
-        } else if (project.fileType == Project.FileType.GIF) {
-            final GifEncoder gifEncoder = new GifEncoder();
-            final int width = layer.bitmap.getWidth(), height = layer.bitmap.getHeight();
-            try {
-                gifEncoder.init(width, height, project.filePath);
-            } catch (FileNotFoundException e) {
-                return;
-            }
-            gifEncoder.setDither(project.gifDither);
-            gifEncoder.encodeFrame(bitmap, frame.delay);
-            gifEncoder.close();
-        }
-        MediaScannerConnection.scanFile(this, new String[]{file.toString()}, null, null);
+        FileUtils.export(this, project, quality);
     }
 
     private void exportAs() {
@@ -4251,7 +4210,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         colorAdapter.setOnItemLongClickListener((view, color) -> {
-            ArgbColorPicker.make(this, R.string.swatch,
+            RgbColorPicker.make(this, R.string.swatch,
                             (oldColor, newColor) -> {
                                 final int index = palette.indexOf(oldColor);
                                 if (newColor != null) {
@@ -4508,6 +4467,7 @@ public class MainActivity extends AppCompatActivity {
         activityMain.optionsTransformer.tietMeshHeight.setText(String.valueOf(2));
 
         chessboard = BitmapFactory.decodeResource(getResources(), R.mipmap.chessboard);
+        chessboardPaint.setShader(new BitmapShader(chessboard, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT));
         fileToOpen = getIntent().getData();
         projects = viewModel.getProjects();
 
@@ -5677,10 +5637,10 @@ public class MainActivity extends AppCompatActivity {
                 default -> null;
             };
             if (compressFormat != null) {
-                path = UriUtils.getRealPath(this, uri);
+                path = FileUtils.getRealPath(this, uri);
                 addProject(bm, projects.size(), name, path, type, compressFormat);
             } else if (type == Project.FileType.GIF) {
-                path = UriUtils.getRealPath(this, uri);
+                path = FileUtils.getRealPath(this, uri);
                 final GifDecoder gifDecoder = new GifDecoder();
                 if (path != null && gifDecoder.load(path)) {
                     final Project proj = addProject(null, projects.size(), name, path, type, null, false);
@@ -5951,79 +5911,8 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
         }
-
         drawFloatingLayersIntoImage();
-
-        final File file = new File(project.filePath);
-        if (project.compressFormat != null) {
-            final Bitmap merged = Layers.mergeLayers(frame.layerTree);
-            try (final FileOutputStream fos = new FileOutputStream(file)) {
-                merged.compress(project.compressFormat, quality, fos);
-                fos.flush();
-            } catch (final IOException e) {
-                Snackbar.make(vContent, getString(R.string.failed) + '\n' + e.getMessage(), Snackbar.LENGTH_LONG)
-                        .setTextMaxLines(Integer.MAX_VALUE)
-                        .show();
-                e.printStackTrace();
-                return;
-            } finally {
-                merged.recycle();
-            }
-            MediaScannerConnection.scanFile(this, new String[]{file.toString()}, null, null);
-
-        } else if (project.fileType == Project.FileType.GIF) {
-            final GifEncoder gifEncoder = new GifEncoder();
-            final Bitmap ffblb = project.getFirstFrame().getBackgroundLayer().bitmap;
-            final int width = ffblb.getWidth(), height = ffblb.getHeight();
-            try {
-                gifEncoder.init(width, height, project.filePath);
-            } catch (FileNotFoundException e) {
-                return;
-            }
-            gifEncoder.setDither(project.gifDither);
-            final int size = project.frames.size();
-            final AlertDialog dialog = new MaterialAlertDialogBuilder(this)
-                    .setTitle(R.string.exporting)
-                    .setView(R.layout.progress_indicator)
-                    .setCancelable(false)
-                    .show();
-            final LinearProgressIndicator pi = dialog.findViewById(R.id.progress_indicator);
-            pi.setMax(size);
-            new Thread(() -> {
-                final List<String> invalidFrames = new LinkedList<>();
-                for (int i = 0; i < project.frames.size(); ++i) {
-                    final Frame f = project.frames.get(i);
-                    final Bitmap blb = f.getBackgroundLayer().bitmap;
-                    if (blb.getWidth() == width && blb.getHeight() == height
-                            && blb.getConfig() == Bitmap.Config.ARGB_8888) {
-                        final Bitmap merged = Layers.mergeLayers(f.layerTree);
-                        gifEncoder.encodeFrame(merged, f.delay);
-                        merged.recycle();
-                    } else {
-                        invalidFrames.add(String.valueOf(i));
-                    }
-                    final int progress = i + 1;
-                    runOnUiThread(() -> pi.setProgressCompat(progress, true));
-                }
-                gifEncoder.close();
-                MediaScannerConnection.scanFile(this, new String[]{file.toString()}, null, null);
-                runOnUiThread(() -> {
-                    dialog.dismiss();
-                    if (invalidFrames.isEmpty()) {
-                        Snackbar.make(vContent, R.string.done, Snackbar.LENGTH_SHORT).show();
-                    } else {
-                        new MaterialAlertDialogBuilder(this)
-                                .setTitle(R.string.done)
-                                .setMessage(getString(R.string.there_are_frames_invalid_which_are,
-                                        invalidFrames.size(),
-                                        String.join(", ", invalidFrames)))
-                                .setPositiveButton(R.string.ok, null)
-                                .show();
-                    }
-                });
-            }).start();
-        }
-
+        FileUtils.save(this, project, quality);
     }
 
     private void saveAs() {
@@ -6235,6 +6124,13 @@ public class MainActivity extends AppCompatActivity {
             selection.bottom = fromY + 1;
         }
         drawSelectionOntoView();
+    }
+
+    private void spotPoint(float x, float y, String text) {
+        canvas.drawLine(x - 100.0f, y, x + 100.0f, y, PAINT_POINT);
+        canvas.drawLine(x, y - 100.0f, x, y + 100.0f, PAINT_POINT);
+        canvas.drawText(text, x, y, PAINT_POINT);
+        activityMain.canvas.iv.invalidate();
     }
 
     /**

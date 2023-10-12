@@ -23,8 +23,8 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_gravity="center"
-            android:scaleType="center"
-            android:src="@mipmap/chessboard" />
+            android:scaleType="fitXY"
+            android:src="@drawable/chessboard" />
 
         <ImageView
             android:id="@+id/iv_thumbnail"
