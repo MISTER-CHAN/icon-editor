@@ -14,7 +14,7 @@ import androidx.annotation.Size;
 
 import com.misterchan.iconeditor.util.BitmapUtils;
 
-class FilterPreview {
+public class FilterPreview {
 
     private static final Paint PAINT_CLEAR = new Paint() {
         {

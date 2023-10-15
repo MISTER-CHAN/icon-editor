@@ -1,4 +1,4 @@
-package com.misterchan.iconeditor;
+package com.misterchan.iconeditor.ui;
 
 import android.content.Context;
 import android.content.Intent;
@@ -18,6 +18,8 @@ import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.misterchan.iconeditor.R;
+import com.misterchan.iconeditor.Settings;
 
 public class SettingsActivity extends AppCompatActivity {
 

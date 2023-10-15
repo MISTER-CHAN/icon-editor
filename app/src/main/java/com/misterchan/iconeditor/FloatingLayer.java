@@ -2,7 +2,7 @@ package com.misterchan.iconeditor;
 
 import android.graphics.Bitmap;
 
-interface FloatingLayer {
+public interface FloatingLayer {
     default boolean hasRect() {
         return false;
     }

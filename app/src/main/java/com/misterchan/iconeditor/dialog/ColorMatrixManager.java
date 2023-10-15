@@ -63,7 +63,7 @@ public class ColorMatrixManager {
                               @Size(value = 20) float[] defaultMatrix) {
         m = defaultMatrix;
 
-        dialogBuilder = new MaterialAlertDialogBuilder(context)
+        dialogBuilder = new MaterialAlertDialogBuilder(context, R.style.ThemeOverlay_IconEditor_MaterialAlertDialog_Insetless_Square)
                 .setBackgroundInsetBottom(0)
                 .setOnCancelListener(onCancelListener)
                 .setPositiveButton(R.string.ok, onPosButtonClickListener)

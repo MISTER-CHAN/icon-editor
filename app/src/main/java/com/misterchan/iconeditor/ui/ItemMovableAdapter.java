@@ -1,4 +1,4 @@
-package com.misterchan.iconeditor;
+package com.misterchan.iconeditor.ui;
 
 import android.view.View;
 

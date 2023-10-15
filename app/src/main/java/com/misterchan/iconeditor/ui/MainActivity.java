@@ -1,4 +1,4 @@
-package com.misterchan.iconeditor;
+package com.misterchan.iconeditor.ui;
 
 import android.annotation.SuppressLint;
 import android.content.ClipData;
@@ -21,11 +21,11 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Point;
-import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Shader;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -43,6 +43,7 @@ import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultCallback;
@@ -50,12 +51,15 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.ColorLong;
+import androidx.annotation.DrawableRes;
+import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.view.ActionMode;
+import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.core.view.MenuCompat;
 import androidx.core.view.OneShotPreDrawListener;
@@ -68,10 +72,29 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButtonToggleGroup;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.sidesheet.SideSheetDialog;
+import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+import com.misterchan.iconeditor.tool.BrushTool;
+import com.misterchan.iconeditor.CellGrid;
+import com.misterchan.iconeditor.Color;
+import com.misterchan.iconeditor.DrawingPrimitivePreview;
+import com.misterchan.iconeditor.FilterPreview;
+import com.misterchan.iconeditor.FloatingLayer;
+import com.misterchan.iconeditor.Frame;
+import com.misterchan.iconeditor.Guide;
+import com.misterchan.iconeditor.Layer;
+import com.misterchan.iconeditor.Layers;
+import com.misterchan.iconeditor.Project;
+import com.misterchan.iconeditor.R;
+import com.misterchan.iconeditor.Reference;
+import com.misterchan.iconeditor.tool.MagicEraser;
+import com.misterchan.iconeditor.tool.Ruler;
+import com.misterchan.iconeditor.Settings;
+import com.misterchan.iconeditor.tool.Shape;
+import com.misterchan.iconeditor.tool.Transformer;
 import com.misterchan.iconeditor.colorpicker.RgbColorPicker;
 import com.misterchan.iconeditor.databinding.ActivityMainBinding;
 import com.misterchan.iconeditor.databinding.FrameListBinding;
@@ -84,6 +107,7 @@ import com.misterchan.iconeditor.dialog.ColorRangeDialog;
 import com.misterchan.iconeditor.dialog.CurvesDialog;
 import com.misterchan.iconeditor.dialog.DirectorySelector;
 import com.misterchan.iconeditor.dialog.EditNumberDialog;
+import com.misterchan.iconeditor.dialog.FillWithRefDialog;
 import com.misterchan.iconeditor.dialog.GuideEditor;
 import com.misterchan.iconeditor.dialog.HiddenImageMaker;
 import com.misterchan.iconeditor.dialog.HsvDialog;
@@ -239,6 +263,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean isShapeStopped = true;
     private boolean isWritingSoftStrokes = false;
     private BottomSheetDialog bsdFrameList;
+    private final BrushTool brush = new BrushTool();
     private Canvas canvas;
     private Canvas chessboardCanvas;
     private Canvas gridCanvas;
@@ -268,11 +293,10 @@ public class MainActivity extends AppCompatActivity {
     private LayerListBinding layerList;
     private LinkedList<Long> palette;
     private List<Project> projects;
+    private final MagicEraser magEr = new MagicEraser();
     private MenuItem miFrameList;
     private MenuItem miHasAlpha;
     private Point cloneStampSrc;
-    private Point magErB, magErF; // Magic eraser background and foreground
-    private final PointF magErBD = new PointF(0.0f, 0.0f), magErFD = new PointF(0.0f, 0.0f); // Distance
     private Position marqueeBoundBeingDragged = null;
     private Project project;
     private final Rect selection = new Rect();
@@ -467,33 +491,6 @@ public class MainActivity extends AppCompatActivity {
         drawSelectionOntoView();
     };
 
-    private final ActionMode.Callback onSoftStrokesActionModeCallback = new ActionMode.Callback() {
-        @Override
-        public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-            getMenuInflater().inflate(R.menu.action_mode_soft_strokes, menu);
-            menu.setGroupDividerEnabled(true);
-            return true;
-        }
-
-        @Override
-        public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-            return false;
-        }
-
-        @Override
-        public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-            return onSoftStrokesActionItemClick(mode, item);
-        }
-
-        @Override
-        public void onDestroyActionMode(ActionMode mode) {
-            if (isWritingSoftStrokes) {
-                isWritingSoftStrokes = false;
-                eraseBitmapAndInvalidateView(previewBitmap, activityMain.canvas.ivPreview);
-            }
-        }
-    };
-
     private final ActionMode.Callback onTextActionModeCallback = new ActionMode.Callback() {
         @Override
         public boolean onCreateActionMode(ActionMode mode, Menu menu) {
@@ -632,12 +629,6 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    private final MaterialButtonToggleGroup.OnButtonCheckedListener onRefTileModeButtonCheckedListener = (group, checkedId, isChecked) -> {
-        if (isChecked) {
-            installRefShader();
-        }
-    };
-
     private final CompoundButton.OnCheckedChangeListener onAntiAliasCBCheckedChangeListener = (buttonView, isChecked) -> {
         antiAlias = isChecked;
         paint.setAntiAlias(isChecked);
@@ -693,6 +684,21 @@ public class MainActivity extends AppCompatActivity {
                             eraser.getColorLong(), R.string.swap)
                     .show();
 
+    private final View.OnClickListener onBrushTipShapeButtonClickListener = v -> {
+        final int checkedItem = brush.tipShape.ordinal();
+        new MaterialAlertDialogBuilder(this).setTitle(R.string.tip_shape)
+                .setSingleChoiceItems(R.array.brush_tip_shapes, checkedItem, (dialog, which) -> {
+                    brush.tipShape = switch (which) {
+                        case 0 -> BrushTool.TipShape.BRUSH;
+                        case 1 -> BrushTool.TipShape.REF;
+                        default -> BrushTool.TipShape.BRUSH;
+                    };
+                    updateBrush();
+                })
+                .setPositiveButton(R.string.ok, null)
+                .show();
+    };
+
     private final View.OnClickListener onCloneStampSrcButtonClickListener = v -> {
         cloneStampSrc = null;
         eraseBitmapAndInvalidateView(previewBitmap, activityMain.canvas.ivPreview);
@@ -704,9 +710,7 @@ public class MainActivity extends AppCompatActivity {
                                 if (oldColor != null) {
                                     paint.setColor(newColor);
                                     activityMain.vForegroundColor.setBackgroundColor(Color.toArgb(newColor));
-                                    if (isEditingText) {
-                                        drawTextOntoView();
-                                    }
+                                    onPaintColorChanged();
                                 } else {
                                     setPaintColor(eraser.getColorLong(), newColor);
                                 }
@@ -731,6 +735,13 @@ public class MainActivity extends AppCompatActivity {
         BitmapUtils.applyCurves(src, dst, curves);
         filterPreview.setPixels(dst, w, h);
         drawFilterPreviewOntoView(stopped);
+    }, stopped);
+
+    private final FillWithRefDialog.OnChangeListener onFillWithRefTileModeChangeListener = (bitmap, tileMode, stopped) -> runOrStart(() -> {
+        paint.setShader(new BitmapShader(bitmap, tileMode, tileMode));
+        filterPreview.clearFilters();
+        filterPreview.getCanvas().drawRect(filterPreview.getRect(), paint);
+        drawFilterPreviewOntoView(true);
     }, stopped);
 
     private final HiddenImageMaker.OnMakeListener onHiddenImageMakeListener = bitmap -> {
@@ -1276,17 +1287,7 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    private Shape shape = rect;
-
-    private final MaterialButtonToggleGroup.OnButtonCheckedListener onShapeButtonCheckedListener = (OnButtonCheckedListener) (group, checkedId) -> {
-        shape = switch (checkedId) {
-            case R.id.b_line -> line;
-            case R.id.b_rect -> rect;
-            case R.id.b_oval -> oval;
-            case R.id.b_circle -> circle;
-            default -> null;
-        };
-    };
+    private Shape shape = null;
 
     private abstract class OnIVTouchListener implements View.OnTouchListener {
         public abstract void onIVTouch(View v, MotionEvent event);
@@ -1362,6 +1363,64 @@ public class MainActivity extends AppCompatActivity {
             return multiTouch;
         }
     }
+
+    private final View.OnTouchListener onIVTouchWithBrushListener = new OnIVMultiTouchListener() {
+        private float lastRad;
+        private float maxRad;
+        private int lastBX, lastBY;
+        private VelocityTracker velocityTracker;
+
+        @Override
+        public void onIVSingleTouch(View v, MotionEvent event) {
+            if (brush.recycled()) {
+                return;
+            }
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN -> {
+                    velocityTracker = VelocityTracker.obtain();
+                    velocityTracker.addMovement(event);
+                    maxRad = strokeWidth / 2.0f;
+                    clearStatus();
+                    lastRad = 0.0f;
+                    lastBX = toBitmapX(event.getX());
+                    lastBY = toBitmapY(event.getY());
+                }
+                case MotionEvent.ACTION_MOVE -> {
+                    velocityTracker.addMovement(event);
+                    velocityTracker.computeCurrentVelocity(1);
+                    final int currBX = toBitmapX(event.getX()), currBY = toBitmapY(event.getY());
+                    final float vel = (float) Math.hypot(velocityTracker.getXVelocity(), velocityTracker.getYVelocity());
+                    final float rad = Math.min(maxRad / vel / softness, maxRad);
+                    final float diffBX = currBX - lastBX, diffBY = currBY - lastBY;
+                    final float projBX = Math.abs(diffBX), projBY = Math.abs(diffBY);
+                    final float stepBX = projBX >= projBY ? Math.signum(diffBX) : diffBX / projBY,
+                            stepBY = projBY >= projBX ? Math.signum(diffBY) : diffBY / projBX;
+                    final float stepCount = Math.max(projBX, projBY);
+                    final float stepRad = (rad - lastRad) / stepCount;
+
+                    {
+                        final float lastRad = this.lastRad;
+                        final int lastBX = this.lastBX, lastBY = this.lastBY;
+                        new Thread(() -> {
+                            for (float r = lastRad, bx = lastBX, by = lastBY, s = 0.0f; s < stepCount; r += stepRad, bx += stepBX, by += stepBY, ++s) {
+                                canvas.drawBitmap(brush.bm(), brush.rect, new RectF(bx - r, by - r, bx + r, by + r), PAINT_SRC_OVER);
+                            }
+                            runOnUiThread(() -> drawBitmapOntoView(lastBX, lastBY, currBX, currBY, maxRad + blurRadius));
+                        }).start();
+                    }
+
+                    lastRad = rad;
+                    lastBX = currBX;
+                    lastBY = currBY;
+                }
+                case MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    velocityTracker.recycle();
+                    addToHistory();
+                    clearStatus();
+                }
+            }
+        }
+    };
 
     @SuppressLint("ClickableViewAccessibility")
     private final View.OnTouchListener onIVTouchWithBucketListener = new OnIVTouchListener() {
@@ -1682,11 +1741,11 @@ public class MainActivity extends AppCompatActivity {
                         case MotionEvent.ACTION_DOWN -> {
                             final float x = event.getX(), y = event.getY();
                             final Rect vs = getVisibleSubset();
-                            if (magErB == null || magErF == null
-                                    || (!vs.contains(magErB.x, magErB.y) && !vs.contains(magErF.x, magErF.y))) {
+                            if (magEr.b == null || magEr.f == null
+                                    || (!vs.contains(magEr.b.x, magEr.b.y) && !vs.contains(magEr.f.x, magEr.f.y))) {
                                 final int bx = toBitmapX(x), by = toBitmapY(y);
-                                magErB = new Point(bx, by);
-                                magErF = new Point(bx, by);
+                                magEr.b = new Point(bx, by);
+                                magEr.f = new Point(bx, by);
                                 drawCrossOntoView(bx, by);
                             }
                         }
@@ -1698,10 +1757,10 @@ public class MainActivity extends AppCompatActivity {
                         case MotionEvent.ACTION_MOVE -> {
                             final float x0 = event.getX(0), y0 = event.getY(0);
                             final float x1 = event.getX(1), y1 = event.getY(1);
-                            magErB.set(toBitmapX(x0 + magErBD.x), toBitmapY(y0 + magErBD.y));
-                            magErF.set(toBitmapX(x1 + magErFD.x), toBitmapY(y1 + magErFD.y));
-                            drawCrossOntoView(magErB.x, magErB.y, true);
-                            drawCrossOntoView(magErF.x, magErF.y, false);
+                            magEr.b.set(toBitmapX(x0 + magEr.bd.x), toBitmapY(y0 + magEr.bd.y));
+                            magEr.f.set(toBitmapX(x1 + magEr.fd.x), toBitmapY(y1 + magEr.fd.y));
+                            drawCrossOntoView(magEr.b.x, magEr.b.y, true);
+                            drawCrossOntoView(magEr.f.x, magEr.f.y, false);
 
                             if (!activityMain.optionsMagicEraser.cbAccEnabled.isChecked()) {
                                 break;
@@ -1709,19 +1768,19 @@ public class MainActivity extends AppCompatActivity {
 
                             final int rad = (int) (strokeWidth / 2.0f + blurRadius);
                             final int backgroundColor = ref.bm().getPixel(
-                                    satX(ref.bm(), magErB.x), satY(ref.bm(), magErB.y));
+                                    satX(ref.bm(), magEr.b.x), satY(ref.bm(), magEr.b.y));
                             final int foregroundColor = ref.bm().getPixel(
-                                    satX(ref.bm(), magErF.x), satY(ref.bm(), magErF.y));
+                                    satX(ref.bm(), magEr.f.x), satY(ref.bm(), magEr.f.y));
 
-                            final int left = Math.min(magErB.x, magErF.x) - rad,
-                                    top = Math.min(magErB.y, magErF.y) - rad,
-                                    right = Math.max(magErB.x, magErF.x) + rad + 1,
-                                    bottom = Math.max(magErB.y, magErF.y) + rad + 1;
+                            final int left = Math.min(magEr.b.x, magEr.f.x) - rad,
+                                    top = Math.min(magEr.b.y, magEr.f.y) - rad,
+                                    right = Math.max(magEr.b.x, magEr.f.x) + rad + 1,
+                                    bottom = Math.max(magEr.b.y, magEr.f.y) + rad + 1;
                             final int width = right - left, height = bottom - top;
                             final Bitmap bLine = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
                             final Canvas cLine = new Canvas(bLine);
-                            cLine.drawLine(magErB.x - left, magErB.y - top,
-                                    magErF.x - left, magErF.y - top,
+                            cLine.drawLine(magEr.b.x - left, magEr.b.y - top,
+                                    magEr.f.x - left, magEr.f.y - top,
                                     paint);
                             canvas.drawBitmap(bLine, left, top, PAINT_DST_OUT);
                             final Bitmap bm = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
@@ -1740,8 +1799,8 @@ public class MainActivity extends AppCompatActivity {
                         case MotionEvent.ACTION_POINTER_DOWN -> {
                             final float x0 = event.getX(0), y0 = event.getY(0);
                             final float x1 = event.getX(1), y1 = event.getY(1);
-                            magErBD.set(toViewX(magErB.x) - x0, toViewY(magErB.y) - y0);
-                            magErFD.set(toViewX(magErF.x) - x1, toViewY(magErF.y) - y1);
+                            magEr.bd.set(toViewX(magEr.b.x) - x0, toViewY(magEr.b.y) - y0);
+                            magEr.fd.set(toViewX(magEr.f.x) - x1, toViewY(magEr.f.y) - y1);
                         }
                     }
                 }
@@ -1967,7 +2026,7 @@ public class MainActivity extends AppCompatActivity {
                     activityMain.tvStatus.setText(getString(R.string.coordinates, bx, by));
                 }
                 case MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                    switch (activityMain.optionsPath.btgDrawingPrimitive.getCheckedButtonId()) {
+                    switch (activityMain.optionsPath.btgDrawingPrimitives.getCheckedButtonId()) {
                         case R.id.b_path -> canvas.drawPath(path, paint);
                         case R.id.b_text ->
                                 canvas.drawTextOnPath(activityMain.optionsText.tietText.getText().toString(), path, 0.0f, 0.0f, paint);
@@ -1977,7 +2036,7 @@ public class MainActivity extends AppCompatActivity {
                     drawBitmapOntoView((int) Math.floor(bounds.left), (int) Math.floor(bounds.top),
                             (int) Math.ceil(bounds.right), (int) Math.ceil(bounds.bottom),
                             strokeWidth / 2.0f + blurRadius
-                                    + (activityMain.optionsPath.btgDrawingPrimitive.getCheckedButtonId() == R.id.b_text ? textSize : 0));
+                                    + (activityMain.optionsPath.btgDrawingPrimitives.getCheckedButtonId() == R.id.b_text ? textSize : 0));
                     eraseBitmapAndInvalidateView(previewBitmap, activityMain.canvas.ivPreview);
                     addToHistory();
                     clearStatus();
@@ -2023,97 +2082,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     };
-
-    private final View.OnTouchListener onIVTouchWithRefAsSTListener = new OnIVMultiTouchListener() {
-        private int lastBX, lastBY;
-
-        @Override
-        public void onIVSingleTouch(View v, MotionEvent event) {
-            switch (event.getAction()) {
-                case MotionEvent.ACTION_DOWN: {
-                    final float x = event.getX(), y = event.getY();
-                    final int bx = toBitmapX(x), by = toBitmapY(y);
-                    lastBX = bx;
-                    lastBY = by;
-                }
-                case MotionEvent.ACTION_MOVE: {
-                    final float x = event.getX(), y = event.getY();
-                    final int bx = toBitmapX(x), by = toBitmapY(y);
-                    CanvasUtils.drawInclusiveLine(canvas, lastBX, lastBY, bx, by, paint);
-                    drawBitmapOntoView(lastBX, lastBY, bx, by, strokeWidth / 2.0f + blurRadius);
-                    activityMain.tvStatus.setText(getString(R.string.coordinates, bx, by));
-                    lastBX = bx;
-                    lastBY = by;
-                    break;
-                }
-                case MotionEvent.ACTION_UP:
-                case MotionEvent.ACTION_CANCEL:
-                    addToHistory();
-                    clearStatus();
-                    break;
-            }
-        }
-    };
-
-    private final View.OnTouchListener onIVTouchWithRefAsDPListener = new OnIVMultiTouchListener() {
-        private float lastRad;
-        private float maxRad;
-        private int lastBX, lastBY;
-        private VelocityTracker velocityTracker;
-
-        @Override
-        public void onIVSingleTouch(View v, MotionEvent event) {
-            if (ref.recycled()) {
-                return;
-            }
-            switch (event.getAction()) {
-                case MotionEvent.ACTION_DOWN -> {
-                    velocityTracker = VelocityTracker.obtain();
-                    velocityTracker.addMovement(event);
-                    maxRad = strokeWidth / 2.0f;
-                    clearStatus();
-                    lastRad = 0.0f;
-                    lastBX = toBitmapX(event.getX());
-                    lastBY = toBitmapY(event.getY());
-                }
-                case MotionEvent.ACTION_MOVE -> {
-                    velocityTracker.addMovement(event);
-                    velocityTracker.computeCurrentVelocity(1);
-                    final int currBX = toBitmapX(event.getX()), currBY = toBitmapY(event.getY());
-                    final float vel = (float) Math.hypot(velocityTracker.getXVelocity(), velocityTracker.getYVelocity());
-                    final float rad = Math.min(maxRad / vel / softness, maxRad);
-                    final float diffBX = currBX - lastBX, diffBY = currBY - lastBY;
-                    final float projBX = Math.abs(diffBX), projBY = Math.abs(diffBY);
-                    final float stepBX = projBX >= projBY ? Math.signum(diffBX) : diffBX / projBY,
-                            stepBY = projBY >= projBX ? Math.signum(diffBY) : diffBY / projBX;
-                    final float stepCount = Math.max(projBX, projBY);
-                    final float stepRad = (rad - lastRad) / stepCount;
-
-                    {
-                        final float lastRad = this.lastRad;
-                        final int lastBX = this.lastBX, lastBY = this.lastBY;
-                        new Thread(() -> {
-                            for (float r = lastRad, bx = lastBX, by = lastBY, s = 0.0f; s < stepCount; r += stepRad, bx += stepBX, by += stepBY, ++s) {
-                                canvas.drawBitmap(ref.bm(), ref.rect(), new RectF(bx - r, by - r, bx + r, by + r), PAINT_SRC_OVER);
-                            }
-                            runOnUiThread(() -> drawBitmapOntoView(lastBX, lastBY, currBX, currBY, maxRad + blurRadius));
-                        }).start();
-                    }
-
-                    lastRad = rad;
-                    lastBX = currBX;
-                    lastBY = currBY;
-                }
-                case MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                    velocityTracker.recycle();
-                    addToHistory();
-                    clearStatus();
-                }
-            }
-        }
-    };
-
-    private View.OnTouchListener onIVTouchWithRefListener = onIVTouchWithRefAsSTListener;
 
     @SuppressLint("ClickableViewAccessibility")
     private final View.OnTouchListener onIVTouchWithRulerListener = new OnIVTouchListener() {
@@ -2447,187 +2415,6 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    @SuppressLint("ClickableViewAccessibility")
-    private final View.OnTouchListener onIVTouchWithSoftBrushOffListener = new OnIVTouchListener() {
-        private float dx, dy;
-
-        @Override
-        public void onIVTouch(View v, MotionEvent event) {
-            switch (event.getAction()) {
-                case MotionEvent.ACTION_DOWN -> {
-                    final float x = event.getX(), y = event.getY();
-                    dx = x - toScaled(selection.left);
-                    dy = y - toScaled(selection.top);
-                    activityMain.tvStatus.setText(getString(R.string.state_l_t_r_b,
-                            selection.left, selection.top, selection.right, selection.bottom));
-                }
-                case MotionEvent.ACTION_MOVE -> {
-                    final float x = event.getX(), y = event.getY();
-                    selection.offsetTo(toUnscaled(x - dx), toUnscaled(y - dy));
-                    drawSelectionOntoView();
-                    activityMain.tvStatus.setText(getString(R.string.state_l_t_r_b,
-                            selection.left, selection.top, selection.right, selection.bottom));
-                }
-                case MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                    optimizeSelection();
-                    drawSelectionOntoView();
-                }
-            }
-        }
-    };
-
-    @SuppressLint({"ClickableViewAccessibility"})
-    private final View.OnTouchListener onIVTouchWithSoftBrushOnListener = new OnIVTouchListener() {
-        private boolean multiTouch;
-        private float lastX, lastY;
-        private float lastTLX = Float.NaN, lastTLY, lastRX, lastRY, lastBX, lastBY;
-        private float maxRad;
-        private VelocityTracker velocityTracker;
-
-        @Override
-        public void onIVTouch(View v, MotionEvent event) {
-            final int pointerCount = event.getPointerCount(), action = event.getAction();
-            if (pointerCount == 1 && (hasSelection || !multiTouch)) {
-                switch (action) {
-                    case MotionEvent.ACTION_DOWN -> {
-                        velocityTracker = VelocityTracker.obtain();
-                        velocityTracker.addMovement(event);
-                        final float x = event.getX(), y = event.getY();
-                        final float rad = strokeWidth / 2.0f;
-                        if (hasSelection) {
-                            if (!isWritingSoftStrokes) {
-                                isWritingSoftStrokes = true;
-                                softStrokesActionMode = startSupportActionMode(onSoftStrokesActionModeCallback);
-                                softStrokesActionMode.setTitle(R.string.soft_brush);
-                            }
-                            final float scale = Math.max(
-                                    (float) viewWidth / (float) selection.width(),
-                                    (float) viewHeight / (float) selection.height());
-                            maxRad = rad * scale;
-                        } else {
-                            maxRad = toScaled(rad);
-                        }
-                        clearStatus();
-                        lastX = x;
-                        lastY = y;
-                    }
-                    case MotionEvent.ACTION_MOVE -> {
-                        velocityTracker.addMovement(event);
-                        velocityTracker.computeCurrentVelocity(1);
-                        final float x = event.getX(), y = event.getY();
-                        final float vel = (float) Math.hypot(velocityTracker.getXVelocity(), velocityTracker.getYVelocity());
-                        final float rad = Math.min(maxRad / vel / softness, maxRad);
-
-                        if (Float.isNaN(lastTLX) /* || ... || Float.isNaN(lastBY) */) {
-                            lastTLX = lastX - rad;
-                            lastTLY = lastY - rad;
-                            lastRX = lastX + rad;
-                            lastRY = lastY;
-                            lastBX = lastX;
-                            lastBY = lastY + rad;
-                        }
-                        final float
-                                tlx = x - rad, tly = y - rad,
-                                rx = x + rad, ry = y,
-                                bx = x, by = y + rad;
-                        final float // Destination coordinates
-                                dltlx = hasSelection ? lastTLX : toBitmapX(lastTLX),
-                                dltly = hasSelection ? lastTLY : toBitmapY(lastTLY),
-                                dlrx = hasSelection ? lastRX : toBitmapX(lastRX),
-                                dlry = hasSelection ? lastRY : toBitmapY(lastRY),
-                                dlbx = hasSelection ? lastBX : toBitmapX(lastBX),
-                                dlby = hasSelection ? lastBY : toBitmapY(lastBY),
-                                dtlx = hasSelection ? tlx : toBitmapX(tlx),
-                                dtly = hasSelection ? tly : toBitmapY(tly),
-                                drx = hasSelection ? rx : toBitmapX(rx),
-                                dry = hasSelection ? ry : toBitmapY(ry),
-                                dbx = hasSelection ? bx : toBitmapX(bx),
-                                dby = hasSelection ? by : toBitmapY(by);
-
-                        final Path pathT = new Path();
-                        pathT.moveTo(dltlx, dltly);
-                        pathT.lineTo(dlrx, dlry);
-                        pathT.lineTo(drx, dry);
-                        pathT.lineTo(dtlx, dtly);
-                        pathT.close();
-                        final Path pathBR = new Path();
-                        pathBR.moveTo(dlrx, dlry);
-                        pathBR.lineTo(dlbx, dlby);
-                        pathBR.lineTo(dbx, dby);
-                        pathBR.lineTo(drx, dry);
-                        pathBR.close();
-                        final Path pathL = new Path();
-                        pathL.moveTo(dlbx, dlby);
-                        pathL.lineTo(dltlx, dltly);
-                        pathL.lineTo(dtlx, dtly);
-                        pathL.lineTo(dbx, dby);
-                        pathL.close();
-                        final Path path = new Path();
-                        path.op(pathT, Path.Op.UNION);
-                        path.op(pathBR, Path.Op.UNION);
-                        path.op(pathL, Path.Op.UNION);
-
-                        if (hasSelection) {
-                            previewCanvas.drawPath(path, paint);
-                            activityMain.canvas.ivPreview.invalidate();
-                        } else {
-                            canvas.drawPath(path, paint);
-                            drawBitmapOntoView(toBitmapX(Math.min(lastTLX, tlx)), toBitmapY(Math.min(lastTLY, tly)),
-                                    toBitmapX(Math.max(lastRX, rx)), toBitmapY(Math.max(lastBY, by)),
-                                    maxRad + blurRadius);
-                        }
-
-                        lastX = x;
-                        lastY = y;
-                        lastTLX = tlx;
-                        lastTLY = tly;
-                        lastRX = rx;
-                        lastRY = ry;
-                        lastBX = bx;
-                        lastBY = by;
-                    }
-                    case MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                        velocityTracker.recycle();
-                        lastTLX = /* lastTLY = ... = lastRY = */ Float.NaN;
-                        if (!hasSelection) {
-                            addToHistory();
-                        }
-                    }
-                }
-            } else if (!hasSelection && pointerCount <= 2) {
-                switch (action & MotionEvent.ACTION_MASK) {
-                    case MotionEvent.ACTION_MOVE -> {
-                        if (lastMerged == null) {
-                            break;
-                        }
-                        onIVTouchWithZoomToolListener.onTouch(v, event);
-                    }
-                    case MotionEvent.ACTION_POINTER_DOWN -> {
-                        multiTouch = true;
-                        undoOrRedo(layer.history.getCurrent());
-                        if (lastMerged == null) {
-                            mergeLayersEntire();
-                        }
-                        if (velocityTracker != null) {
-                            velocityTracker.recycle();
-                            velocityTracker = null;
-                            lastTLX = /* lastTLY = ... = lastRY = */ Float.NaN;
-                        }
-                        onIVTouchWithZoomToolListener.onTouch(v, event);
-                    }
-                    case MotionEvent.ACTION_POINTER_UP -> {
-                        onIVTouchWithZoomToolListener.onTouch(v, event);
-                    }
-                }
-            }
-            if (!hasSelection && (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL)) {
-                multiTouch = false;
-            }
-        }
-    };
-
-    private View.OnTouchListener onIVTouchWithSoftBrushListener = onIVTouchWithSoftBrushOnListener;
-
     /**
      * Callback to call on touch image view with scale transformer
      */
@@ -2936,20 +2723,28 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("NonConstantResourceId")
     private final MaterialButtonToggleGroup.OnButtonCheckedListener onToolButtonCheckedListener = (group, checkedId, isChecked) -> {
         switch (checkedId) {
+            case R.id.b_brush -> {
+                if (isChecked) {
+                    onToolChanged(onIVTouchWithBrushListener, activityMain.svOptionsBrush);
+                    paint.setAntiAlias(true);
+                    activityMain.optionsBrush.tietSoftness.setText(String.valueOf(softness));
+                    activityMain.optionsBrush.tietStrokeWidth.setText(String.valueOf(strokeWidth));
+                    activityMain.svOptionsBrush.setVisibility(View.VISIBLE);
+                    updateBrush();
+                }
+            }
             case R.id.b_bucket_fill -> {
                 if (isChecked) {
-                    onToolChanged(onIVTouchWithBucketListener);
+                    onToolChanged(onIVTouchWithBucketListener, activityMain.svOptionsBucketFill);
                     threshold = 0x0;
-                    activityMain.svOptionsBucketFill.setVisibility(View.VISIBLE);
                 }
             }
             case R.id.b_clone_stamp -> {
                 if (isChecked) {
-                    onToolChanged(onIVTouchWithCloneStampListener);
+                    onToolChanged(onIVTouchWithCloneStampListener, activityMain.svOptionsCloneStamp);
                     activityMain.optionsCloneStamp.cbAntiAlias.setChecked(antiAlias);
                     activityMain.optionsCloneStamp.tietBlurRadius.setText(String.valueOf(blurRadius));
                     activityMain.optionsCloneStamp.tietStrokeWidth.setText(String.valueOf(strokeWidth));
-                    activityMain.svOptionsCloneStamp.setVisibility(View.VISIBLE);
                 } else {
                     cloneStampSrc = null;
                 }
@@ -2964,14 +2759,13 @@ public class MainActivity extends AppCompatActivity {
                     onToolChanged(onIVTouchWithEyedropperListener, activityMain.svOptionsEyedropper);
                 }
             }
-            case R.id.b_gradient -> {
+            case R.id.b_gradient_line -> {
                 if (isChecked) {
-                    onToolChanged(onIVTouchWithGradientListener);
+                    onToolChanged(onIVTouchWithGradientListener, activityMain.svOptionsGradientLine);
                     paint.setBlendMode(BlendMode.SRC);
-                    activityMain.optionsGradient.cbAntiAlias.setChecked(antiAlias);
-                    activityMain.optionsGradient.tietBlurRadius.setText(String.valueOf(blurRadius));
-                    activityMain.optionsGradient.tietStrokeWidth.setText(String.valueOf(strokeWidth));
-                    activityMain.svOptionsGradient.setVisibility(View.VISIBLE);
+                    activityMain.optionsGradientLine.cbAntiAlias.setChecked(antiAlias);
+                    activityMain.optionsGradientLine.tietBlurRadius.setText(String.valueOf(blurRadius));
+                    activityMain.optionsGradientLine.tietStrokeWidth.setText(String.valueOf(strokeWidth));
                     dpPreview.setBitmap(bitmap.getWidth(), bitmap.getHeight());
                 } else {
                     paint.setBlendMode(BlendMode.SRC_OVER);
@@ -2979,72 +2773,51 @@ public class MainActivity extends AppCompatActivity {
             }
             case R.id.b_magic_eraser -> {
                 if (isChecked) {
-                    onToolChanged(onIVTouchWithMagicEraserListener);
+                    onToolChanged(onIVTouchWithMagicEraserListener, activityMain.svOptionsMagicEraser);
                     updateReference();
                     paint.setAntiAlias(false);
                     paint.setMaskFilter(null);
                     paint.setStrokeCap(Paint.Cap.BUTT);
                     activityMain.optionsMagicEraser.tietStrokeWidth.setText(String.valueOf(strokeWidth));
-                    activityMain.svOptionsMagicEraser.setVisibility(View.VISIBLE);
                 } else {
                     paint.setStrokeCap(Paint.Cap.ROUND);
-                    magErB = null;
-                    magErF = null;
+                    magEr.b = null;
+                    magEr.f = null;
                 }
             }
             case R.id.b_magic_paint -> {
                 if (isChecked) {
-                    onToolChanged(onIVTouchWithMagicPaintListener);
+                    onToolChanged(onIVTouchWithMagicPaintListener, activityMain.svOptionsMagicPaint);
                     updateReference();
                     threshold = 0xFF;
                     activityMain.optionsMagicPaint.cbAntiAlias.setChecked(antiAlias);
                     activityMain.optionsMagicPaint.tietBlurRadius.setText(String.valueOf(blurRadius));
                     activityMain.optionsMagicPaint.tietStrokeWidth.setText(String.valueOf(strokeWidth));
-                    activityMain.svOptionsMagicPaint.setVisibility(View.VISIBLE);
                 }
             }
             case R.id.b_patcher -> {
                 if (isChecked) {
-                    onToolChanged(onIVTouchWithPatcherListener);
+                    onToolChanged(onIVTouchWithPatcherListener, activityMain.svOptionsPatcher);
                     activityMain.optionsPatcher.cbAntiAlias.setChecked(antiAlias);
                     activityMain.optionsPatcher.tietBlurRadius.setText(String.valueOf(blurRadius));
                     activityMain.optionsPatcher.tietStrokeWidth.setText(String.valueOf(strokeWidth));
-                    activityMain.svOptionsPatcher.setVisibility(View.VISIBLE);
                 }
             }
             case R.id.b_path -> {
                 if (isChecked) {
-                    onToolChanged(onIVTouchWithPathListener);
+                    onToolChanged(onIVTouchWithPathListener, activityMain.svOptionsPath);
                     activityMain.optionsPath.cbAntiAlias.setChecked(antiAlias);
                     activityMain.optionsPath.cbFill.setChecked(isPaintStyleFill());
                     activityMain.optionsPath.tietBlurRadius.setText(String.valueOf(blurRadius));
                     activityMain.optionsPath.tietStrokeWidth.setText(String.valueOf(strokeWidth));
-                    activityMain.svOptionsPath.setVisibility(View.VISIBLE);
                 }
             }
             case R.id.b_pencil -> {
                 if (isChecked) {
-                    onToolChanged(onIVTouchWithPencilListener);
+                    onToolChanged(onIVTouchWithPencilListener, activityMain.svOptionsPencil);
                     activityMain.optionsPencil.cbAntiAlias.setChecked(antiAlias);
                     activityMain.optionsPencil.tietBlurRadius.setText(String.valueOf(blurRadius));
                     activityMain.optionsPencil.tietStrokeWidth.setText(String.valueOf(strokeWidth));
-                    activityMain.svOptionsPencil.setVisibility(View.VISIBLE);
-                }
-            }
-            case R.id.b_ref -> {
-                if (isChecked) {
-                    onToolChanged(onIVTouchWithRefListener);
-                    updateReference();
-                    activityMain.optionsPencil.cbAntiAlias.setChecked(antiAlias);
-                    activityMain.optionsRef.tietBlurRadius.setText(String.valueOf(blurRadius));
-                    activityMain.optionsRef.tietSoftness.setText(String.valueOf(softness));
-                    activityMain.optionsRef.tietStrokeWidth.setText(String.valueOf(strokeWidth));
-                    activityMain.svOptionsRef.setVisibility(View.VISIBLE);
-                    if (!activityMain.optionsRef.tbRef.isChecked()) {
-                        installRefShader();
-                    }
-                } else {
-                    paint.setShader(null);
                 }
             }
             case R.id.b_ruler -> {
@@ -3059,26 +2832,23 @@ public class MainActivity extends AppCompatActivity {
                     onToolChanged(onIVTouchWithMarqueeListener);
                 }
             }
-            case R.id.b_shape -> {
+            case R.id.b_circle, R.id.b_line, R.id.b_oval, R.id.b_rect -> {
                 if (isChecked) {
-                    onToolChanged(onIVTouchWithShapeListener);
-                    activityMain.optionsShape.cbFill.setChecked(isPaintStyleFill());
-                    activityMain.optionsShape.tietStrokeWidth.setText(String.valueOf(paint.getStrokeWidth()));
-                    activityMain.svOptionsShape.setVisibility(View.VISIBLE);
-                    dpPreview.setBitmap(bitmap.getWidth(), bitmap.getHeight());
-                }
-            }
-            case R.id.b_soft_brush -> {
-                if (isChecked) {
-                    onToolChanged(onIVTouchWithSoftBrushListener);
-                    paint.setAntiAlias(true);
-                    activityMain.optionsSoftBrush.tietBlurRadius.setText(String.valueOf(blurRadius));
-                    activityMain.optionsSoftBrush.tietSoftness.setText(String.valueOf(softness));
-                    activityMain.optionsSoftBrush.tietStrokeWidth.setText(String.valueOf(strokeWidth));
-                    paint.setStyle(Paint.Style.FILL);
-                    activityMain.optionsSoftBrush.tbSoftBrush.setEnabled(hasSelection);
-                    activityMain.optionsSoftBrush.tbSoftBrush.setChecked(true);
-                    activityMain.svOptionsSoftBrush.setVisibility(View.VISIBLE);
+                    if (shape == null) {
+                        onToolChanged(onIVTouchWithShapeListener, activityMain.svOptionsShape);
+                        activityMain.optionsShape.cbAntiAlias.setChecked(antiAlias);
+                        activityMain.optionsShape.cbFill.setChecked(isPaintStyleFill());
+                        activityMain.optionsShape.tietBlurRadius.setText(String.valueOf(blurRadius));
+                        activityMain.optionsShape.tietStrokeWidth.setText(String.valueOf(strokeWidth));
+                        dpPreview.setBitmap(bitmap.getWidth(), bitmap.getHeight());
+                    }
+                    shape = switch (checkedId) {
+                        case R.id.b_line -> line;
+                        case R.id.b_rect -> rect;
+                        case R.id.b_oval -> oval;
+                        case R.id.b_circle -> circle;
+                        default -> null;
+                    };
                 }
             }
             case R.id.b_text -> {
@@ -3092,8 +2862,7 @@ public class MainActivity extends AppCompatActivity {
             }
             case R.id.b_transformer -> {
                 if (isChecked) {
-                    onToolChanged(onIVTouchWithTransformerListener);
-                    activityMain.svOptionsTransformer.setVisibility(View.VISIBLE);
+                    onToolChanged(onIVTouchWithTransformerListener, activityMain.svOptionsTransformer);
                     selector.setColor(Color.BLUE);
                     if (hasSelection && activityMain.optionsTransformer.btgTransformer.getCheckedButtonId() == R.id.b_mesh) {
                         createTransformerMesh();
@@ -3158,41 +2927,9 @@ public class MainActivity extends AppCompatActivity {
             activityMain.canvas.flIv.setOnTouchListener(onIVTouchWithMagicEraserListener);
         }
         if (!isChecked) {
-            magErB = null;
-            magErF = null;
+            magEr.b = null;
+            magEr.f = null;
             eraseBitmapAndInvalidateView(previewBitmap, activityMain.canvas.ivPreview);
-        }
-    };
-
-    @SuppressLint({"ClickableViewAccessibility", "NonConstantResourceId"})
-    private final CompoundButton.OnCheckedChangeListener onRefToolTBCheckedChangeListener = (buttonView, isChecked) -> {
-        onIVTouchWithRefListener = isChecked ? onIVTouchWithRefAsDPListener : onIVTouchWithRefAsSTListener;
-        onIVTouchListener = onIVTouchWithRefListener;
-        if (activityMain.btgZoom.getCheckedButtonId() != R.id.b_zoom) {
-            activityMain.canvas.flIv.setOnTouchListener(onIVTouchWithRefListener);
-        }
-        activityMain.optionsRef.tietStrokeWidth.removeTextChangedListener(isChecked ? onStrokeWidthETTextChangedListener : onSoftStrokeWidthETTextChangedListener);
-        activityMain.optionsRef.tietStrokeWidth.addTextChangedListener(isChecked ? onSoftStrokeWidthETTextChangedListener : onStrokeWidthETTextChangedListener);
-        if (!isChecked) {
-            installRefShader();
-            activityMain.optionsRef.tilSoftness.setVisibility(View.GONE);
-            activityMain.optionsRef.btgTileMode.setVisibility(View.VISIBLE);
-        } else {
-            paint.setShader(null);
-            activityMain.optionsRef.btgTileMode.setVisibility(View.GONE);
-            activityMain.optionsRef.tilSoftness.setVisibility(View.VISIBLE);
-        }
-    };
-
-    @SuppressLint("ClickableViewAccessibility")
-    private final CompoundButton.OnCheckedChangeListener onSoftBrushTBCheckedChangeListener = (buttonView, isChecked) -> {
-        onIVTouchWithSoftBrushListener = isChecked ? onIVTouchWithSoftBrushOnListener : onIVTouchWithSoftBrushOffListener;
-        onIVTouchListener = onIVTouchWithSoftBrushListener;
-        if (activityMain.btgZoom.getCheckedButtonId() != R.id.b_zoom) {
-            activityMain.canvas.flIv.setOnTouchListener(onIVTouchWithSoftBrushListener);
-        }
-        if (!isChecked && isWritingSoftStrokes) {
-            drawSoftStrokesIntoSelection();
         }
     };
 
@@ -3362,7 +3099,8 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("NonConstantResourceId")
     private boolean checkIfRequireRef() {
         return switch (activityMain.tools.btgTools.getCheckedButtonId()) {
-            case R.id.b_magic_eraser, R.id.b_magic_paint, R.id.b_ref -> true;
+            case R.id.b_brush -> brush.tipShape == BrushTool.TipShape.REF;
+            case R.id.b_magic_eraser, R.id.b_magic_paint -> true;
             default -> false;
         };
     }
@@ -3551,6 +3289,15 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+    private Bitmap drawableToBitmap(@DrawableRes int id) {
+        final Drawable drawable = ContextCompat.getDrawable(this, id);
+        final Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+        final Canvas canvas = new Canvas(bitmap);
+        drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+        drawable.draw(canvas);
+        return bitmap;
+    }
+
     private void drawAfterTransformingView(boolean doNotMerge) {
         if (doNotMerge) {
             drawBitmapLastOntoView(false);
@@ -3565,9 +3312,9 @@ public class MainActivity extends AppCompatActivity {
             drawCrossOntoView(cloneStampSrc.x, cloneStampSrc.y);
         } else if (ruler.enabled) {
             drawRulerOntoView();
-        } else if (magErB != null && magErF != null) {
-            drawCrossOntoView(magErB.x, magErB.y, true);
-            drawCrossOntoView(magErF.x, magErF.y, false);
+        } else if (magEr.b != null && magEr.f != null) {
+            drawCrossOntoView(magEr.b.x, magEr.b.y, true);
+            drawCrossOntoView(magEr.f.x, magEr.f.y, false);
         }
         drawChessboardOntoView();
         drawGridOntoView();
@@ -4161,6 +3908,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    ActivityMainBinding getBinding() {
+        return activityMain;
+    }
+
     private FloatingLayer getCurrentFloatingLayer() {
         FloatingLayer floatingLayer = null;
         if (!transformer.isRecycled()) {
@@ -4205,9 +3956,7 @@ public class MainActivity extends AppCompatActivity {
         colorAdapter.setOnItemClickListener((view, color) -> {
             paint.setColor(color);
             activityMain.vForegroundColor.setBackgroundColor(Color.toArgb(color));
-            if (isEditingText) {
-                drawTextOntoView();
-            }
+            onPaintColorChanged();
         });
         colorAdapter.setOnItemLongClickListener((view, color) -> {
             RgbColorPicker.make(this, R.string.swatch,
@@ -4225,23 +3974,6 @@ public class MainActivity extends AppCompatActivity {
                     .show();
             return true;
         });
-    }
-
-    @SuppressLint("NonConstantResourceId")
-    private void installRefShader() {
-        if (ref.recycled() || strokeWidth <= 0.0f) {
-            paint.setShader(null);
-            return;
-        }
-        final Bitmap bm = Bitmap.createBitmap((int) strokeWidth, (int) strokeWidth, Bitmap.Config.ARGB_8888);
-        new Canvas(bm)
-                .drawBitmap(ref.bm(), ref.rect(), new Rect(0, 0, bm.getWidth(), bm.getHeight()), PAINT_SRC);
-        final Shader.TileMode tm = switch (activityMain.optionsRef.btgTileMode.getCheckedButtonId()) {
-            case R.id.b_repeat -> Shader.TileMode.REPEAT;
-            case R.id.b_mirror -> Shader.TileMode.MIRROR;
-            default -> Shader.TileMode.REPEAT;
-        };
-        paint.setShader(new BitmapShader(bm, tm, tm));
     }
 
     private boolean isPaintStyleFill() {
@@ -4374,17 +4106,16 @@ public class MainActivity extends AppCompatActivity {
 
         activityMain.tools.btgTools.addOnButtonCheckedListener(onToolButtonCheckedListener);
         activityMain.btgZoom.addOnButtonCheckedListener(onZoomToolButtonCheckedListener);
+        activityMain.optionsBrush.bTipShape.setOnClickListener(onBrushTipShapeButtonClickListener);
         activityMain.optionsBucketFill.bTolerance.setOnClickListener(onToleranceButtonClickListener);
         activityMain.optionsCloneStamp.bSrc.setOnClickListener(onCloneStampSrcButtonClickListener);
         activityMain.optionsMagicPaint.bTolerance.setOnClickListener(onToleranceButtonClickListener);
         activityMain.bSwatchesAdd.setOnClickListener(onAddSwatchButtonClickListener);
         activityMain.optionsText.bDraw.setOnClickListener(v -> drawTextIntoImage());
-        activityMain.optionsShape.btgShape.addOnButtonCheckedListener(onShapeButtonCheckedListener);
-        activityMain.optionsRef.btgTileMode.addOnButtonCheckedListener(onRefTileModeButtonCheckedListener);
         activityMain.optionsTransformer.btgTransformer.addOnButtonCheckedListener(onTransformerButtonCheckedListener);
         activityMain.optionsCloneStamp.cbAntiAlias.setOnCheckedChangeListener(onAntiAliasCBCheckedChangeListener);
         activityMain.optionsEraser.cbAntiAlias.setOnCheckedChangeListener((buttonView, isChecked) -> eraser.setAntiAlias(isChecked));
-        activityMain.optionsGradient.cbAntiAlias.setOnCheckedChangeListener(onAntiAliasCBCheckedChangeListener);
+        activityMain.optionsGradientLine.cbAntiAlias.setOnCheckedChangeListener(onAntiAliasCBCheckedChangeListener);
         activityMain.optionsMagicEraser.cbStyle.setOnCheckedChangeListener(onMagicEraserStyleCBCheckedChangeListener);
         activityMain.optionsMagicPaint.cbAntiAlias.setOnCheckedChangeListener(onAntiAliasCBCheckedChangeListener);
         activityMain.optionsMagicPaint.cbClear.setOnCheckedChangeListener(((buttonView, isChecked) -> magicPaint.setBlendMode(isChecked ? BlendMode.DST_OUT : null)));
@@ -4392,7 +4123,7 @@ public class MainActivity extends AppCompatActivity {
         activityMain.optionsPath.cbAntiAlias.setOnCheckedChangeListener(onAntiAliasCBCheckedChangeListener);
         activityMain.optionsPath.cbFill.setOnCheckedChangeListener(onFillCBCheckedChangeListener);
         activityMain.optionsPencil.cbAntiAlias.setOnCheckedChangeListener(onAntiAliasCBCheckedChangeListener);
-        activityMain.optionsRef.cbAntiAlias.setOnCheckedChangeListener(onFillCBCheckedChangeListener);
+        activityMain.optionsShape.cbAntiAlias.setOnCheckedChangeListener(onAntiAliasCBCheckedChangeListener);
         activityMain.optionsShape.cbFill.setOnCheckedChangeListener(onFillCBCheckedChangeListener);
         activityMain.optionsText.cbFill.setOnCheckedChangeListener(onTextFillCBCheckedChangeListener);
         activityMain.optionsTransformer.cbFilter.setChecked(true);
@@ -4402,8 +4133,8 @@ public class MainActivity extends AppCompatActivity {
         activityMain.canvas.ivRulerV.setOnTouchListener(onTouchRulerVListener);
         activityMain.rvSwatches.setItemAnimator(new DefaultItemAnimator());
         activityMain.tlProjectList.addOnTabSelectedListener(onProjTabSelectedListener);
-        activityMain.optionsRef.tbRef.setOnCheckedChangeListener(onRefToolTBCheckedChangeListener);
-        activityMain.optionsSoftBrush.tbSoftBrush.setOnCheckedChangeListener(onSoftBrushTBCheckedChangeListener);
+        activityMain.optionsBrush.tietSoftness.addTextChangedListener(onSoftnessETTextChangedListener);
+        activityMain.optionsBrush.tietStrokeWidth.addTextChangedListener(onSoftStrokeWidthETTextChangedListener);
         activityMain.optionsCloneStamp.tietBlurRadius.addTextChangedListener(onBlurRadiusETTextChangedListener);
         activityMain.optionsCloneStamp.tietStrokeWidth.addTextChangedListener(onStrokeWidthETTextChangedListener);
         activityMain.optionsEraser.tietBlurRadius.addTextChangedListener(onEraserBlurRadiusETTextChangedListener);
@@ -4411,21 +4142,16 @@ public class MainActivity extends AppCompatActivity {
         activityMain.optionsMagicEraser.tietStrokeWidth.addTextChangedListener(onStrokeWidthETTextChangedListener);
         activityMain.optionsMagicPaint.tietBlurRadius.addTextChangedListener(onBlurRadiusETTextChangedListener);
         activityMain.optionsMagicPaint.tietStrokeWidth.addTextChangedListener(onStrokeWidthETTextChangedListener);
-        activityMain.optionsGradient.tietBlurRadius.addTextChangedListener(onBlurRadiusETTextChangedListener);
-        activityMain.optionsGradient.tietStrokeWidth.addTextChangedListener(onStrokeWidthETTextChangedListener);
+        activityMain.optionsGradientLine.tietBlurRadius.addTextChangedListener(onBlurRadiusETTextChangedListener);
+        activityMain.optionsGradientLine.tietStrokeWidth.addTextChangedListener(onStrokeWidthETTextChangedListener);
         activityMain.optionsPatcher.tietBlurRadius.addTextChangedListener(onBlurRadiusETTextChangedListener);
         activityMain.optionsPatcher.tietStrokeWidth.addTextChangedListener(onStrokeWidthETTextChangedListener);
         activityMain.optionsPath.tietBlurRadius.addTextChangedListener(onBlurRadiusETTextChangedListener);
         activityMain.optionsPath.tietStrokeWidth.addTextChangedListener(onStrokeWidthETTextChangedListener);
         activityMain.optionsPencil.tietBlurRadius.addTextChangedListener(onBlurRadiusETTextChangedListener);
         activityMain.optionsPencil.tietStrokeWidth.addTextChangedListener(onStrokeWidthETTextChangedListener);
-        activityMain.optionsRef.tietBlurRadius.addTextChangedListener(onBlurRadiusETTextChangedListener);
-        activityMain.optionsRef.tietSoftness.addTextChangedListener(onSoftnessETTextChangedListener);
-        activityMain.optionsRef.tietStrokeWidth.addTextChangedListener(onSoftStrokeWidthETTextChangedListener);
+        activityMain.optionsShape.tietBlurRadius.addTextChangedListener(onBlurRadiusETTextChangedListener);
         activityMain.optionsShape.tietStrokeWidth.addTextChangedListener(onStrokeWidthETTextChangedListener);
-        activityMain.optionsSoftBrush.tietBlurRadius.addTextChangedListener(onBlurRadiusETTextChangedListener);
-        activityMain.optionsSoftBrush.tietSoftness.addTextChangedListener(onSoftnessETTextChangedListener);
-        activityMain.optionsSoftBrush.tietStrokeWidth.addTextChangedListener(onSoftStrokeWidthETTextChangedListener);
         activityMain.optionsText.tietText.addTextChangedListener((AfterTextChangedListener) s -> drawTextOntoView());
         activityMain.optionsText.tietTextSize.addTextChangedListener(onTextSizeETTextChangedListener);
         activityMain.optionsTransformer.tietMeshWidth.addTextChangedListener(onTransformerMeshSizeETTextChangedListener);
@@ -4437,19 +4163,24 @@ public class MainActivity extends AppCompatActivity {
             setSupportActionBar(activityMain.topAppBar.toolBar);
         }
 
-        activityMain.tools.bEyedropper.setOnLongClickListener(v -> {
-            v.setVisibility(View.GONE);
-            activityMain.tools.bRuler.setVisibility(View.VISIBLE);
-            activityMain.tools.btgTools.check(R.id.b_ruler);
-            return true;
-        });
-
-        activityMain.tools.bRuler.setOnLongClickListener(v -> {
-            v.setVisibility(View.GONE);
-            activityMain.tools.bEyedropper.setVisibility(View.VISIBLE);
-            activityMain.tools.btgTools.check(R.id.b_eyedropper);
-            return true;
-        });
+        {
+            final View.OnLongClickListener onToolLongClickListener = v -> {
+                ToolSelector.show(this, (TextView) v);
+                return true;
+            };
+            activityMain.tools.bBrush.setOnLongClickListener(onToolLongClickListener);
+            activityMain.tools.bCircle.setOnLongClickListener(onToolLongClickListener);
+            activityMain.tools.bEraser.setOnLongClickListener(onToolLongClickListener);
+            activityMain.tools.bEyedropper.setOnLongClickListener(onToolLongClickListener);
+            activityMain.tools.bGradientLine.setOnLongClickListener(onToolLongClickListener);
+            activityMain.tools.bLine.setOnLongClickListener(onToolLongClickListener);
+            activityMain.tools.bMagicEraser.setOnLongClickListener(onToolLongClickListener);
+            activityMain.tools.bMagicPaint.setOnLongClickListener(onToolLongClickListener);
+            activityMain.tools.bOval.setOnLongClickListener(onToolLongClickListener);
+            activityMain.tools.bPencil.setOnLongClickListener(onToolLongClickListener);
+            activityMain.tools.bRect.setOnLongClickListener(onToolLongClickListener);
+            activityMain.tools.bRuler.setOnLongClickListener(onToolLongClickListener);
+        }
 
         frameList.rvFrameList.setItemAnimator(new DefaultItemAnimator());
         ItemMovableAdapter.createItemMoveHelper(onFrameItemMoveListener).attachToRecyclerView(frameList.rvFrameList);
@@ -4457,16 +4188,18 @@ public class MainActivity extends AppCompatActivity {
         layerList.rvLayerList.setItemAnimator(new DefaultItemAnimator());
         ItemMovableAdapter.createItemMoveHelper(onLayerItemMoveListener).attachToRecyclerView(layerList.rvLayerList);
 
-        activityMain.optionsPencil.tietBlurRadius.setText(String.valueOf(0.0f));
-        activityMain.optionsPencil.tietStrokeWidth.setText(String.valueOf(paint.getStrokeWidth()));
+        activityMain.optionsBrush.tietSoftness.setText(String.valueOf(softness));
         activityMain.optionsEraser.tietBlurRadius.setText(String.valueOf(0.0f));
         activityMain.optionsEraser.tietStrokeWidth.setText(String.valueOf(eraser.getStrokeWidth()));
-        activityMain.optionsSoftBrush.tietSoftness.setText(String.valueOf(softness));
+        activityMain.optionsPencil.tietBlurRadius.setText(String.valueOf(0.0f));
+        activityMain.optionsPencil.tietStrokeWidth.setText(String.valueOf(paint.getStrokeWidth()));
         activityMain.optionsText.tietTextSize.setText(String.valueOf(paint.getTextSize()));
         activityMain.optionsTransformer.tietMeshWidth.setText(String.valueOf(2));
         activityMain.optionsTransformer.tietMeshHeight.setText(String.valueOf(2));
 
-        chessboard = BitmapFactory.decodeResource(getResources(), R.mipmap.chessboard);
+        final Resources res = getResources();
+
+        chessboard = BitmapFactory.decodeResource(res, R.mipmap.chessboard);
         chessboardPaint.setShader(new BitmapShader(chessboard, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT));
         fileToOpen = getIntent().getData();
         projects = viewModel.getProjects();
@@ -4476,6 +4209,8 @@ public class MainActivity extends AppCompatActivity {
         initColorAdapter();
         activityMain.rvSwatches.setAdapter(colorAdapter);
         ItemMovableAdapter.createItemMoveHelper(null).attachToRecyclerView(activityMain.rvSwatches);
+
+        brush.setBrush(drawableToBitmap(R.drawable.brush_tip_shape));
 
         if (isLandscape) {
             final LinearLayout ll = activityMain.llTl;
@@ -5132,10 +4867,6 @@ public class MainActivity extends AppCompatActivity {
                 drawFloatingLayersIntoImage();
                 hasSelection = false;
                 switch (activityMain.tools.btgTools.getCheckedButtonId()) {
-                    case R.id.b_soft_brush -> {
-                        activityMain.optionsSoftBrush.tbSoftBrush.setEnabled(false);
-                        activityMain.optionsSoftBrush.tbSoftBrush.setChecked(true);
-                    }
                     case R.id.b_transformer -> {
                         if (activityMain.optionsTransformer.btgTransformer.getCheckedButtonId() == R.id.b_mesh) {
                             transformer.mesh = null;
@@ -5201,6 +4932,21 @@ public class MainActivity extends AppCompatActivity {
             }
             case R.id.i_file_save, R.id.i_save -> save();
             case R.id.i_file_save_as -> saveAs();
+            case R.id.i_fill_with_ref -> {
+                if (ref.recycled()) {
+                    Snackbar.make(vContent, R.string.no_reference, BaseTransientBottomBar.LENGTH_SHORT).show();
+                    break;
+                }
+                drawFloatingLayersIntoImage();
+                createFilterPreview();
+                new FillWithRefDialog(this, ref.bm())
+                        .setOnChangeListener(onFillWithRefTileModeChangeListener)
+                        .setOnPositiveButtonClickListener(onImagePreviewPBClickListener)
+                        .setOnCancelListener(onImagePreviewCancelListener)
+                        .setOnDismissListener(dialog -> paint.setShader(null))
+                        .show();
+                clearStatus();
+            }
             case R.id.i_filter_color_balance -> {
                 drawFloatingLayersIntoImage();
                 createFilterPreview();
@@ -5441,8 +5187,6 @@ public class MainActivity extends AppCompatActivity {
                 selectAll();
                 hasSelection = true;
                 switch (activityMain.tools.btgTools.getCheckedButtonId()) {
-                    case R.id.b_soft_brush ->
-                            activityMain.optionsSoftBrush.tbSoftBrush.setEnabled(true);
                     case R.id.b_transformer -> {
                         if (activityMain.optionsTransformer.btgTransformer.getCheckedButtonId() == R.id.b_mesh) {
                             createTransformerMesh();
@@ -5550,6 +5294,7 @@ public class MainActivity extends AppCompatActivity {
         activityMain.canvas.flIv.setOnTouchListener(onTouchIVListener);
         hideToolOptions();
         isShapeStopped = true;
+        shape = null;
         if (!dpPreview.isRecycled()) {
             dpPreview.recycle();
             drawBitmapOntoView(true);
@@ -5566,17 +5311,6 @@ public class MainActivity extends AppCompatActivity {
         if (toolOption != null) {
             toolOption.setVisibility(View.VISIBLE);
         }
-    }
-
-    @SuppressLint("NonConstantResourceId")
-    private boolean onSoftStrokesActionItemClick(ActionMode mode, MenuItem item) {
-        switch (item.getItemId()) {
-            default -> {
-                return false;
-            }
-            case R.id.i_ok -> activityMain.optionsSoftBrush.tbSoftBrush.setChecked(false);
-        }
-        return true;
     }
 
     @SuppressLint("NonConstantResourceId")
@@ -5676,10 +5410,6 @@ public class MainActivity extends AppCompatActivity {
                     Math.min(imageWidth, selection.right), Math.min(imageHeight, selection.bottom));
         } else {
             hasSelection = false;
-            if (activityMain.tools.btgTools.getCheckedButtonId() == R.id.b_soft_brush) {
-                activityMain.optionsSoftBrush.tbSoftBrush.setEnabled(false);
-                activityMain.optionsSoftBrush.tbSoftBrush.setChecked(true);
-            }
         }
     }
 
@@ -5691,54 +5421,20 @@ public class MainActivity extends AppCompatActivity {
         dpPreview.recycle();
         transformer.recycle();
         ref.recycle();
+        brush.recycleAll();
         if (filterPreview != null) {
             filterPreview.recycle();
         }
-        if (chessboard != null) {
-            chessboard.recycle();
-            chessboard = null;
-        }
-        if (chessboardBitmap != null) {
-            chessboardBitmap.recycle();
-            chessboardBitmap = null;
-            chessboardCanvas = null;
-        }
-        if (clipboard != null) {
-            clipboard.recycle();
-            clipboard = null;
-        }
-        if (gridBitmap != null) {
-            gridBitmap.recycle();
-            gridBitmap = null;
-            gridCanvas = null;
-        }
-        if (lastMerged != null) {
-            lastMerged.recycle();
-            lastMerged = null;
-        }
-        if (previewBitmap != null) {
-            previewBitmap.recycle();
-            previewBitmap = null;
-            previewCanvas = null;
-        }
-        if (rulerHBitmap != null) {
-            rulerHBitmap.recycle();
-            rulerHBitmap = null;
-        }
-        if (rulerVBitmap != null) {
-            rulerVBitmap.recycle();
-            rulerVBitmap = null;
-        }
-        if (selectionBitmap != null) {
-            selectionBitmap.recycle();
-            selectionBitmap = null;
-            selectionCanvas = null;
-        }
-        if (viewBitmap != null) {
-            viewBitmap.recycle();
-            viewBitmap = null;
-            viewCanvas = null;
-        }
+        recycleBitmap(chessboard);
+        recycleBitmap(chessboardBitmap);
+        recycleBitmap(clipboard);
+        recycleBitmap(gridBitmap);
+        recycleBitmap(lastMerged);
+        recycleBitmap(previewBitmap);
+        recycleBitmap(rulerHBitmap);
+        recycleBitmap(rulerVBitmap);
+        recycleBitmap(selectionBitmap);
+        recycleBitmap(viewBitmap);
     }
 
     private static void recycleBitmap(Bitmap bm) {
@@ -5798,11 +5494,6 @@ public class MainActivity extends AppCompatActivity {
 
             recycleTransformer();
             hasSelection = false;
-
-            if (activityMain.tools.btgTools.getCheckedButtonId() == R.id.b_soft_brush) {
-                activityMain.optionsSoftBrush.tbSoftBrush.setEnabled(false);
-                activityMain.optionsSoftBrush.tbSoftBrush.setChecked(true);
-            }
 
             drawBitmapOntoView(true, true);
             drawChessboardOntoView();
@@ -5996,15 +5687,7 @@ public class MainActivity extends AppCompatActivity {
         optimizeSelection();
 
         switch (activityMain.tools.btgTools.getCheckedButtonId()) {
-            case R.id.b_clone_stamp -> {
-                cloneStampSrc = null;
-            }
-            case R.id.b_soft_brush -> {
-                activityMain.optionsSoftBrush.tbSoftBrush.setEnabled(hasSelection);
-                if (!hasSelection) {
-                    activityMain.optionsSoftBrush.tbSoftBrush.setChecked(true);
-                }
-            }
+            case R.id.b_clone_stamp -> cloneStampSrc = null;
         }
 
         updateReference();
@@ -6035,7 +5718,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @SuppressLint("ClickableViewAccessibility")
-    void setArgbColorType() {
+    public void setArgbColorType() {
         onIVTouchWithEyedropperListener = Settings.INST.argbColorType()
                 ? onIVTouchWithPreciseEyedropperListener : onIVTouchWithImpreciseEyedropperListener;
         if (activityMain != null && activityMain.tools.btgTools.getCheckedButtonId() == R.id.b_eyedropper) {
@@ -6050,14 +5733,14 @@ public class MainActivity extends AppCompatActivity {
         paint.setMaskFilter(f > 0.0f ? new BlurMaskFilter(f, BlurMaskFilter.Blur.NORMAL) : null);
     }
 
-    void setFilterBitmap(boolean filterBitmap) {
+    public void setFilterBitmap(boolean filterBitmap) {
         bitmapPaint.setFilterBitmap(filterBitmap);
         if (!hasNotLoaded) {
             drawBitmapOntoView(true);
         }
     }
 
-    void setFrameListMenuItemVisible(boolean visible) {
+    public void setFrameListMenuItemVisible(boolean visible) {
         if (activityMain.topAppBar != null) {
             miFrameList.setVisible(visible);
             activityMain.topAppBar.toolBar.setTitle(visible ? R.string.app_name_abbrev : R.string.app_name);
@@ -6069,7 +5752,13 @@ public class MainActivity extends AppCompatActivity {
         eraser.setColor(backgroundColor);
         activityMain.vForegroundColor.setBackgroundColor(Color.toArgb(foregroundColor));
         activityMain.vBackgroundColor.setBackgroundColor(Color.toArgb(backgroundColor));
-        if (isEditingText) {
+        onPaintColorChanged();
+    }
+
+    private void onPaintColorChanged() {
+        if (activityMain.tools.btgTools.getCheckedButtonId() == R.id.b_brush) {
+            brush.set(paint.getColorLong());
+        } else if (isEditingText) {
             drawTextOntoView();
         }
     }
@@ -6104,7 +5793,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    void setRunnableRunner(boolean multithreaded) {
+    public void setRunnableRunner(boolean multithreaded) {
         runnableRunner = multithreaded ? runnableStartingRunner : runnableRunningRunner;
     }
 
@@ -6237,9 +5926,9 @@ public class MainActivity extends AppCompatActivity {
         optimizeSelection();
         isShapeStopped = true;
         marqueeBoundBeingDragged = null;
-        if (magErB != null && magErF != null) {
-            drawCrossOntoView(magErB.x, magErB.y, true);
-            drawCrossOntoView(magErF.x, magErF.y, false);
+        if (magEr.b != null && magEr.f != null) {
+            drawCrossOntoView(magEr.b.x, magEr.b.y, true);
+            drawCrossOntoView(magEr.f.x, magEr.f.y, false);
         } else {
             eraseBitmapAndInvalidateView(previewBitmap, activityMain.canvas.ivPreview);
             if (!dpPreview.isRecycled()) {
@@ -6259,11 +5948,18 @@ public class MainActivity extends AppCompatActivity {
         clearStatus();
     }
 
+    private void updateBrush() {
+        switch (brush.tipShape) {
+            case BRUSH -> brush.setToBrush(paint.getColorLong());
+            case REF -> updateReference();
+        }
+    }
+
     private void updateReference() {
         final Bitmap rb = frame.mergeReferenceLayers();
         ref.set(rb != null ? rb : checkIfRequireRef() ? Bitmap.createBitmap(bitmap) : null);
-        if (activityMain.tools.btgTools.getCheckedButtonId() == R.id.b_ref && !activityMain.optionsRef.tbRef.isChecked()) {
-            installRefShader();
+        if (activityMain.tools.btgTools.getCheckedButtonId() == R.id.b_brush && brush.tipShape == BrushTool.TipShape.REF) {
+            brush.setToRef(ref.bm(), paint.getColorLong());
         }
     }
 }

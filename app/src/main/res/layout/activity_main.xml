@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    tools:context=".ui.MainActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -50,8 +50,19 @@
                 android:gravity="center_vertical">
 
                 <HorizontalScrollView
+                    android:id="@+id/sv_options_brush"
+                    style="@style/Widget_IconEditor_ScrollView_ToolOptions"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <include
+                        android:id="@+id/options_brush"
+                        layout="@layout/options_brush" />
+                </HorizontalScrollView>
+
+                <HorizontalScrollView
                     android:id="@+id/sv_options_bucket_fill"
-                    style="@style/Widget_App_ScrollView_ToolOptions"
+                    style="@style/Widget_IconEditor_ScrollView_ToolOptions"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
@@ -62,7 +73,7 @@
 
                 <HorizontalScrollView
                     android:id="@+id/sv_options_clone_stamp"
-                    style="@style/Widget_App_ScrollView_ToolOptions"
+                    style="@style/Widget_IconEditor_ScrollView_ToolOptions"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
@@ -73,7 +84,7 @@
 
                 <HorizontalScrollView
                     android:id="@+id/sv_options_eraser"
-                    style="@style/Widget_App_ScrollView_ToolOptions"
+                    style="@style/Widget_IconEditor_ScrollView_ToolOptions"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
@@ -84,7 +95,7 @@
 
                 <HorizontalScrollView
                     android:id="@+id/sv_options_eyedropper"
-                    style="@style/Widget_App_ScrollView_ToolOptions"
+                    style="@style/Widget_IconEditor_ScrollView_ToolOptions"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
@@ -94,19 +105,19 @@
                 </HorizontalScrollView>
 
                 <HorizontalScrollView
-                    android:id="@+id/sv_options_gradient"
-                    style="@style/Widget_App_ScrollView_ToolOptions"
+                    android:id="@+id/sv_options_gradient_line"
+                    style="@style/Widget_IconEditor_ScrollView_ToolOptions"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
                     <include
-                        android:id="@+id/options_gradient"
-                        layout="@layout/options_gradient" />
+                        android:id="@+id/options_gradient_line"
+                        layout="@layout/options_gradient_line" />
                 </HorizontalScrollView>
 
                 <HorizontalScrollView
                     android:id="@+id/sv_options_magic_eraser"
-                    style="@style/Widget_App_ScrollView_ToolOptions"
+                    style="@style/Widget_IconEditor_ScrollView_ToolOptions"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
@@ -117,7 +128,7 @@
 
                 <HorizontalScrollView
                     android:id="@+id/sv_options_magic_paint"
-                    style="@style/Widget_App_ScrollView_ToolOptions"
+                    style="@style/Widget_IconEditor_ScrollView_ToolOptions"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
@@ -128,7 +139,7 @@
 
                 <HorizontalScrollView
                     android:id="@+id/sv_options_patcher"
-                    style="@style/Widget_App_ScrollView_ToolOptions"
+                    style="@style/Widget_IconEditor_ScrollView_ToolOptions"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
@@ -139,7 +150,7 @@
 
                 <HorizontalScrollView
                     android:id="@+id/sv_options_path"
-                    style="@style/Widget_App_ScrollView_ToolOptions"
+                    style="@style/Widget_IconEditor_ScrollView_ToolOptions"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
@@ -150,7 +161,7 @@
 
                 <HorizontalScrollView
                     android:id="@+id/sv_options_pencil"
-                    style="@style/Widget_App_ScrollView_ToolOptions"
+                    style="@style/Widget_IconEditor_ScrollView_ToolOptions"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
@@ -160,19 +171,8 @@
                 </HorizontalScrollView>
 
                 <HorizontalScrollView
-                    android:id="@+id/sv_options_ref"
-                    style="@style/Widget_App_ScrollView_ToolOptions"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-
-                    <include
-                        android:id="@+id/options_ref"
-                        layout="@layout/options_ref" />
-                </HorizontalScrollView>
-
-                <HorizontalScrollView
                     android:id="@+id/sv_options_shape"
-                    style="@style/Widget_App_ScrollView_ToolOptions"
+                    style="@style/Widget_IconEditor_ScrollView_ToolOptions"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
@@ -181,20 +181,9 @@
                         layout="@layout/options_shape" />
                 </HorizontalScrollView>
 
-                <HorizontalScrollView
-                    android:id="@+id/sv_options_soft_brush"
-                    style="@style/Widget_App_ScrollView_ToolOptions"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-
-                    <include
-                        android:id="@+id/options_soft_brush"
-                        layout="@layout/options_soft_brush" />
-                </HorizontalScrollView>
-
                 <LinearLayout
                     android:id="@+id/ll_options_text"
-                    style="@style/Widget_App_LinearLayout_ToolOptions"
+                    style="@style/Widget_IconEditor_LinearLayout_ToolOptions"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:visibility="invisible">
@@ -206,7 +195,7 @@
 
                 <HorizontalScrollView
                     android:id="@+id/sv_options_transformer"
-                    style="@style/Widget_App_ScrollView_ToolOptions"
+                    style="@style/Widget_IconEditor_ScrollView_ToolOptions"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
@@ -224,14 +213,14 @@
 
                 <com.google.android.material.button.MaterialButtonToggleGroup
                     android:id="@+id/btg_zoom"
-                    style="@style/Widget_App_ButtonToggleGroup_ToolOptions"
+                    style="@style/Widget_IconEditor_ButtonToggleGroup_ToolOptions"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     app:singleSelection="true">
 
                     <Button
                         android:id="@+id/b_zoom"
-                        style="@style/Widget.App.Button.OutlinedButton.Dense"
+                        style="@style/Widget.IconEditor.Button.OutlinedButton.Dense"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/zoom" />

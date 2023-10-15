@@ -91,7 +91,7 @@ public class NoiseGenerator {
         window.setAttributes(lp);
 
         final CheckBox cbNoRepeats = dialog.findViewById(R.id.cb_no_repeats);
-        final MaterialButtonToggleGroup btgDrawingPrimitive = dialog.findViewById(R.id.btg_drawing_primitive);
+        final MaterialButtonToggleGroup btgDrawingPrimitive = dialog.findViewById(R.id.btg_drawing_primitives);
         final Slider sNoisiness = dialog.findViewById(R.id.s_noisiness);
         final TextInputEditText tietSeed = dialog.findViewById(R.id.tiet_seed);
 

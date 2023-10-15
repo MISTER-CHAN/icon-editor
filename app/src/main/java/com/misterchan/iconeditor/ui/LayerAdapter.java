@@ -1,4 +1,4 @@
-package com.misterchan.iconeditor;
+package com.misterchan.iconeditor.ui;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -8,19 +8,22 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CompoundButton;
-import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.core.view.OneShotPreDrawListener;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.misterchan.iconeditor.Frame;
+import com.misterchan.iconeditor.Layer;
+import com.misterchan.iconeditor.R;
+import com.misterchan.iconeditor.Settings;
 import com.misterchan.iconeditor.databinding.ItemLayerBinding;
 import com.misterchan.iconeditor.listener.OnCBCheckedListener;
 
 import java.util.List;
 
-class LayerAdapter extends ItemMovableAdapter<LayerAdapter.ViewHolder> {
+public class LayerAdapter extends ItemMovableAdapter<LayerAdapter.ViewHolder> {
 
     public enum Payload {
         NAME, SELECTED

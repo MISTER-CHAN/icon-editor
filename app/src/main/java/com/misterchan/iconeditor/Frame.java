@@ -6,6 +6,8 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
 
+import com.misterchan.iconeditor.ui.LayerAdapter;
+
 import java.util.ArrayList;
 import java.util.List;
 

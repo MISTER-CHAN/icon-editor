@@ -3,6 +3,7 @@ package com.misterchan.iconeditor;
 import android.graphics.Bitmap;
 
 import com.google.android.material.tabs.TabLayout;
+import com.misterchan.iconeditor.ui.FrameAdapter;
 import com.waynejo.androidndkgif.GifEncoder;
 
 import java.util.ArrayList;

@@ -1,6 +1,6 @@
-package com.misterchan.iconeditor;
+package com.misterchan.iconeditor.tool;
 
-class Ruler {
+public class Ruler {
     public boolean enabled = false;
     public int startX, startY;
     public int stopX, stopY;

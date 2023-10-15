@@ -31,6 +31,7 @@
     <string name="blur_radius">Blur</string>
     <string name="bold">Bold</string>
     <string name="bottom">Bottom</string>
+    <string name="brush">Brush</string>
     <string name="bucket_fill">Bucket Fill</string>
     <string name="c" translatable="false">C</string>
     <string name="cancel">Cancel</string>
@@ -120,6 +121,7 @@
     <string name="file">File</string>
     <string name="file_name">File name</string>
     <string name="fill">Fill</string>
+    <string name="fill_with_reference">Fill with Reference</string>
     <string name="filter_layer">Filter Layer</string>
     <string name="filter_noun">Filter</string>
     <string name="filter_verb">Filter</string>
@@ -138,7 +140,7 @@
     <string name="g" translatable="false">G</string>
     <string name="general">General</string>
     <string name="generate_noise">Generate Noise</string>
-    <string name="gradient">Gradient</string>
+    <string name="gradient_line">Gradient Line</string>
     <string name="group">Group</string>
     <string name="gt" translatable="false"><![CDATA[>]]></string>
     <string name="h" translatable="false">H</string>
@@ -211,6 +213,7 @@
     <string name="new_">New</string>
     <string name="new_guide">New Guide</string>
     <string name="ninety_degrees" translatable="false">90°</string>
+    <string name="no_reference">No reference.</string>
     <string name="no_repeats">No Repeats</string>
     <string name="none">None</string>
     <string name="normal">Normal</string>
@@ -337,6 +340,7 @@
     <string name="this_would_affect_size_of_memory_used">This would affect the size of memory used</string>
     <string name="threshold">Threshold</string>
     <string name="timeline">Timeline</string>
+    <string name="tip_shape">Tip Shape</string>
     <string name="to">To</string>
     <string name="tolerance">Tolerance</string>
     <string name="tool_options">Tool Options</string>

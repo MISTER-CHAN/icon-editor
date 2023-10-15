@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group
+        android:id="@+id/g_eyedropper"
+        android:checkableBehavior="single"
+        android:visible="false">
+        <item android:title="@string/eyedropper" />
+        <item android:title="@string/ruler" />
+    </group>
+    <group
+        android:id="@+id/g_pencil"
+        android:checkableBehavior="single"
+        android:visible="false">
+        <item android:title="@string/pencil" />
+        <item android:title="@string/brush" />
+        <item android:title="@string/magic_paint" />
+    </group>
+    <group
+        android:id="@+id/g_eraser"
+        android:checkableBehavior="single"
+        android:visible="false">
+        <item android:title="@string/eraser" />
+        <item android:title="@string/magic_eraser" />
+    </group>
+    <group
+        android:id="@+id/g_shape"
+        android:checkableBehavior="single"
+        android:visible="false">
+        <item android:title="@string/line" />
+        <item android:title="@string/rectangle" />
+        <item android:title="@string/oval" />
+        <item android:title="@string/circle" />
+        <item android:title="@string/gradient_line" />
+    </group>
+</menu>

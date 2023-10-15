@@ -10,7 +10,7 @@
 
     <RadioButton
         android:id="@+id/rb"
-        style="@style/Widget.App.RadioButton"
+        style="@style/Widget.IconEditor.RadioButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 

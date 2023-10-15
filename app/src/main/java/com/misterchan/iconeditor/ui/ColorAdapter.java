@@ -1,4 +1,4 @@
-package com.misterchan.iconeditor;
+package com.misterchan.iconeditor.ui;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -7,11 +7,12 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.misterchan.iconeditor.Color;
 import com.misterchan.iconeditor.databinding.ItemColorBinding;
 
 import java.util.List;
 
-class ColorAdapter extends ItemMovableAdapter<ColorAdapter.ViewHolder> {
+public class ColorAdapter extends ItemMovableAdapter<ColorAdapter.ViewHolder> {
 
     public interface OnItemClickListener {
         void onItemClick(View view, Long color);

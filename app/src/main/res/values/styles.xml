@@ -1,45 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Widget.App.ActionMode" parent="Widget.Material3.ActionMode">
+    <style name="MaterialAlertDialog.IconEditor.Insetless" parent="MaterialAlertDialog.Material3">
+        <item name="backgroundInsetTop">16dp</item>
+        <item name="backgroundInsetBottom">16dp</item>
+    </style>
+
+    <style name="Widget.IconEditor.ActionMode" parent="Widget.Material3.ActionMode">
         <item name="background">?attr/colorSurface</item>
     </style>
 
-    <style name="Widget.App.Button.OutlinedButton.Dense" parent="Widget.Material3.Button.OutlinedButton">
+    <style name="Widget.IconEditor.Button.OutlinedButton.Dense" parent="Widget.Material3.Button.OutlinedButton">
         <item name="android:minWidth">0dp</item>
         <item name="android:minHeight">0dp</item>
-        <item name="android:paddingLeft">16dp</item>
-        <item name="android:paddingRight">16dp</item>
+        <item name="android:paddingStart">16dp</item>
+        <item name="android:paddingEnd">16dp</item>
     </style>
 
-    <style name="Widget.App.Button.TextButton.Dense" parent="Widget.Material3.Button.TextButton">
+    <style name="Widget.IconEditor.Button.OutlinedButton.Dense.Icon" parent="Widget.IconEditor.Button.OutlinedButton.Dense">
+        <item name="android:paddingStart">0dp</item>
+    </style>
+
+    <style name="Widget.IconEditor.Button.TextButton.Dense" parent="Widget.Material3.Button.TextButton">
         <item name="android:minWidth">0dp</item>
         <item name="android:minHeight">0dp</item>
     </style>
 
-    <style name="Widget_App_ButtonToggleGroup_ToolOptions" parent="Widget_App_LinearLayout_ToolOptions">
+    <style name="Widget_IconEditor_ButtonToggleGroup_ToolOptions" parent="Widget_IconEditor_LinearLayout_ToolOptions">
         <item name="android:layout_gravity">center_vertical</item>
         <item name="android:layout_marginHorizontal">2dp</item>
     </style>
 
-    <style name="Widget_App_Inclusion_ItemColor">
+    <style name="Widget_IconEditor_Inclusion_ItemColor">
         <item name="android:layout_marginHorizontal">8dp</item>
     </style>
 
-    <style name="Widget_App_LinearLayout">
+    <style name="Widget_IconEditor_LinearLayout">
         <item name="android:orientation">vertical</item>
     </style>
 
-    <style name="Widget_App_LinearLayout_ToolOptions">
+    <style name="Widget_IconEditor_LinearLayout_ToolOptions">
         <item name="android:gravity">center_vertical</item>
         <item name="android:orientation">horizontal</item>
     </style>
 
-    <style name="Widget.App.RadioButton" parent="Widget.Material3.CompoundButton.RadioButton">
+    <style name="Widget.IconEditor.RadioButton" parent="Widget.Material3.CompoundButton.RadioButton">
         <item name="android:textColor">@color/item_checked</item>
     </style>
 
-    <style name="Widget_App_ScrollView_ToolOptions">
+    <style name="Widget_IconEditor_ScrollView_ToolOptions">
         <item name="android:layout_gravity">center_vertical</item>
         <item name="android:fadingEdgeLength">16dp</item>
         <item name="android:requiresFadingEdge">horizontal</item>
@@ -47,11 +56,11 @@
         <item name="android:visibility">invisible</item>
     </style>
 
-    <style name="Widget.App.TextInputLayout.Dense" parent="Widget.Material3.TextInputLayout.FilledBox.Dense">
+    <style name="Widget.IconEditor.TextInputLayout.Dense" parent="Widget.Material3.TextInputLayout.FilledBox.Dense">
         <item name="android:layout_marginHorizontal">2dp</item>
     </style>
 
-    <style name="Widget_App_View">
+    <style name="Widget_IconEditor_View">
         <item name="android:layout_marginHorizontal">2dp</item>
     </style>
 </resources>

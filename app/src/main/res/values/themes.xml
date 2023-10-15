@@ -4,9 +4,9 @@
         <!-- Customize your theme here. -->
         <item name="actionBarStyle">@style/Widget.Material3.ActionBar.Solid</item>
         <item name="actionModeCloseDrawable">@drawable/ic_close</item>
-        <item name="actionModeStyle">@style/Widget.App.ActionMode</item>
+        <item name="actionModeStyle">@style/Widget.IconEditor.ActionMode</item>
         <item name="materialAlertDialogTheme">
-            @style/ThemeOverlay.Material3.Dialog.Alert.Square
+            @style/ThemeOverlay.IconEditor.MaterialAlertDialog.Insetless
         </item>
         <item name="toolbarStyle">@style/Widget.Material3.Toolbar.Surface</item>
         <item name="windowActionModeOverlay">true</item>
@@ -17,9 +17,11 @@
         <item name="windowNoTitle">true</item>
     </style>
 
-    <style name="ThemeOverlay.Material3.Dialog.Alert.Square" parent="ThemeOverlay.Material3.Dialog.Alert">
-        <item name="backgroundInsetBottom">16dp</item>
-        <item name="backgroundInsetTop">16dp</item>
-        <item name="android:dialogCornerRadius">4dp</item>
+    <style name="ThemeOverlay.IconEditor.MaterialAlertDialog.Insetless" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="alertDialogStyle">@style/MaterialAlertDialog.IconEditor.Insetless</item>
+    </style>
+
+    <style name="ThemeOverlay.IconEditor.MaterialAlertDialog.Insetless.Square" parent="ThemeOverlay.IconEditor.MaterialAlertDialog.Insetless">
+        <item name="shapeAppearanceOverlay">?attr/shapeAppearanceCornerSmall</item>
     </style>
 </resources>

@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    style="@style/Widget_App_LinearLayout"
+    style="@style/Widget_IconEditor_LinearLayout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:paddingHorizontal="16dp"
     android:paddingTop="16dp">
 
     <include
-        style="@style/Widget_App_Inclusion_ItemColor"
+        style="@style/Widget_IconEditor_Inclusion_ItemColor"
         layout="@layout/item_color"
         android:layout_width="32dp"
         android:layout_height="32dp" />

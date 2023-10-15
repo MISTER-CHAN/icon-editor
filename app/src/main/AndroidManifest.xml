@@ -15,7 +15,7 @@
         android:theme="@style/Theme.IconEditor">
 
         <activity
-            android:name=".MainActivity"
+            android:name=".ui.MainActivity"
             android:configChanges="fontScale|keyboard|keyboardHidden|locale"
             android:exported="true"
             android:resizeableActivity="false"
@@ -43,7 +43,7 @@
         </activity>
 
         <activity
-            android:name=".SettingsActivity"
+            android:name=".ui.SettingsActivity"
             android:exported="false"
             android:label="@string/settings" />
 

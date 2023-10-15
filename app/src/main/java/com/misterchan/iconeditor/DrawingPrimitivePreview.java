@@ -7,7 +7,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 
-class DrawingPrimitivePreview implements FloatingLayer {
+public class DrawingPrimitivePreview implements FloatingLayer {
     private static final Paint PAINT_CLEAR = new Paint() {
         {
             setAntiAlias(false);

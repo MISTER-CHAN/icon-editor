@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    style="@style/Widget_App_LinearLayout_ToolOptions"
+    style="@style/Widget_IconEditor_LinearLayout_ToolOptions"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content">
 
     <com.google.android.material.textfield.TextInputLayout
-        style="@style/Widget.App.TextInputLayout.Dense"
+        style="@style/Widget.IconEditor.TextInputLayout.Dense"
         android:layout_width="96dp"
         android:layout_height="wrap_content">
 
@@ -32,7 +32,7 @@
 
         <com.google.android.material.button.MaterialButtonToggleGroup
             android:id="@+id/btg_sides"
-            style="@style/Widget_App_ButtonToggleGroup_ToolOptions"
+            style="@style/Widget_IconEditor_ButtonToggleGroup_ToolOptions"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:checkedButton="@id/b_left"
@@ -41,14 +41,14 @@
 
             <Button
                 android:id="@+id/b_left"
-                style="@style/Widget.App.Button.OutlinedButton.Dense"
+                style="@style/Widget.IconEditor.Button.OutlinedButton.Dense"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/left" />
 
             <Button
                 android:id="@+id/b_right"
-                style="@style/Widget.App.Button.OutlinedButton.Dense"
+                style="@style/Widget.IconEditor.Button.OutlinedButton.Dense"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/right" />

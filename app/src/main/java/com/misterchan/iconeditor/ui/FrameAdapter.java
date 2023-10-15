@@ -1,4 +1,4 @@
-package com.misterchan.iconeditor;
+package com.misterchan.iconeditor.ui;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -6,18 +6,21 @@ import android.graphics.Bitmap;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
 import androidx.core.view.OneShotPreDrawListener;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.misterchan.iconeditor.Frame;
+import com.misterchan.iconeditor.Project;
+import com.misterchan.iconeditor.R;
+import com.misterchan.iconeditor.Settings;
 import com.misterchan.iconeditor.databinding.ItemFrameBinding;
 import com.misterchan.iconeditor.listener.OnCBCheckedListener;
 
 import java.util.List;
 
-class FrameAdapter extends ItemMovableAdapter<FrameAdapter.ViewHolder> {
+public class FrameAdapter extends ItemMovableAdapter<FrameAdapter.ViewHolder> {
 
     public enum Payload {
         DELAY, SELECTED

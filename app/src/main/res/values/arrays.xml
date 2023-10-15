@@ -12,6 +12,12 @@
         <item>@string/rgba_1010102</item>
     </string-array>
 
+    <!-- Brush Tip Shapes -->
+    <string-array name="brush_tip_shapes">
+        <item>@string/brush</item>
+        <item>@string/reference</item>
+    </string-array>
+
     <!-- Boolean Values -->
     <string-array name="bool_values">
         <item>false</item>

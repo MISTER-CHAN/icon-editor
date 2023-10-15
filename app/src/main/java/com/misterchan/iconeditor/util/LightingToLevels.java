@@ -15,6 +15,9 @@ public class LightingToLevels {
 
     private static final Func[] F = {(scale, shift, arr) -> (shift - arr[OS]) / -scale, (scale, shift, arr) -> (arr[OH] - arr[OS]) / scale + arr[IS], (scale, shift, arr) -> shift + arr[IS] * scale, (scale, shift, arr) -> (arr[IH] - arr[IS]) * scale + arr[OS]};
 
+    private LightingToLevels() {
+    }
+
     @Size(4)
     public static float[] lightingToLevels(float mul, float add) {
         if (Float.isInfinite(mul) || Float.isNaN(mul) || Float.isInfinite(add) || Float.isNaN(add))

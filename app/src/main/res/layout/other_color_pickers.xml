@@ -6,35 +6,35 @@
 
     <Button
         android:id="@+id/b_cmyk"
-        style="@style/Widget.App.Button.TextButton.Dense"
+        style="@style/Widget.IconEditor.Button.TextButton.Dense"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/convert_from_cmyk" />
 
     <Button
         android:id="@+id/b_hsv"
-        style="@style/Widget.App.Button.TextButton.Dense"
+        style="@style/Widget.IconEditor.Button.TextButton.Dense"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/convert_from_hsv" />
 
     <Button
         android:id="@+id/b_lab"
-        style="@style/Widget.App.Button.TextButton.Dense"
+        style="@style/Widget.IconEditor.Button.TextButton.Dense"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/convert_from_lab" />
 
     <Button
         android:id="@+id/b_xyz"
-        style="@style/Widget.App.Button.TextButton.Dense"
+        style="@style/Widget.IconEditor.Button.TextButton.Dense"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/convert_from_xyz" />
 
     <Button
         android:id="@+id/b_xyy"
-        style="@style/Widget.App.Button.TextButton.Dense"
+        style="@style/Widget.IconEditor.Button.TextButton.Dense"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/convert_from_xyy" />

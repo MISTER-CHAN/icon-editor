@@ -202,6 +202,10 @@
                         android:icon="@drawable/ic_void"
                         android:title="@string/generate_noise" />
                     <item
+                        android:id="@+id/i_fill_with_ref"
+                        android:icon="@drawable/ic_void"
+                        android:title="@string/fill_with_reference" />
+                    <item
                         android:id="@+id/i_image_config"
                         android:icon="@drawable/ic_void"
                         android:title="@string/config"

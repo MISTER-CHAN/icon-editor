@@ -29,6 +29,9 @@ public class BitmapUtils {
         }
     };
 
+    private BitmapUtils() {
+    }
+
     public static void addLightingColorFilter(@ColorInt final int[] src, @ColorInt final int[] dst,
                                               final float mul, final float add) {
         for (int i = 0; i < src.length; ++i) {

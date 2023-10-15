@@ -37,6 +37,9 @@ public class FileUtils {
 
     private static final Uri URI_PUBLIC_DOWNLOADS = Uri.parse("content://downloads/public_downloads");
 
+    private FileUtils() {
+    }
+
     private static String getMediaDataColumnValue(ContentResolver contentResolver, Uri uri, String selection, String[] selectionArgs) {
         try (final Cursor cursor = contentResolver.query(uri, PROJECTION, selection, selectionArgs, null)) {
             if (cursor != null && cursor.moveToFirst()) {

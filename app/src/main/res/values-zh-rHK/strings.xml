@@ -25,6 +25,7 @@
     <string name="blur_radius">模糊半徑</string>
     <string name="bold">粗體</string>
     <string name="bottom">底</string>
+    <string name="brush">筆刷</string>
     <string name="bucket_fill">油漆桶</string>
     <string name="cancel">取消</string>
     <string name="cell_grid">網格</string>
@@ -111,6 +112,7 @@
     <string name="file">檔案</string>
     <string name="file_name">檔案名</string>
     <string name="fill">塡充</string>
+    <string name="fill_with_reference">以參照塡充</string>
     <string name="filter_layer">濾鏡圖層</string>
     <string name="filter_noun">濾鏡</string>
     <string name="filter_verb">過濾</string>
@@ -127,7 +129,7 @@
     <string name="fuzziness">容差</string>
     <string name="general">一般</string>
     <string name="generate_noise">生成噪音</string>
-    <string name="gradient">漸變</string>
+    <string name="gradient_line">漸變線</string>
     <string name="group">組</string>
     <string name="has_alpha">有 Alpha</string>
     <string name="height">高度</string>
@@ -188,6 +190,7 @@
     <string name="move_to_first">移到首位</string>
     <string name="new_">新建</string>
     <string name="new_guide">新參考線</string>
+    <string name="no_reference">無參照。</string>
     <string name="no_repeats">無重複</string>
     <string name="none">無</string>
     <string name="normal">正常</string>
@@ -303,6 +306,7 @@
     <string name="this_would_affect_size_of_memory_used">此項將影響記憶體使用量</string>
     <string name="threshold">閾値</string>
     <string name="timeline">時間線</string>
+    <string name="tip_shape">尖端形狀</string>
     <string name="to">至</string>
     <string name="tolerance">容許度</string>
     <string name="tool_options">工具選項</string>

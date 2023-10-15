@@ -2,7 +2,7 @@ package com.misterchan.iconeditor;
 
 import android.graphics.Bitmap;
 
-class History {
+public class History {
     private static class Node {
         private Bitmap bitmap;
         private Node later;

@@ -1,4 +1,4 @@
-package com.misterchan.iconeditor;
+package com.misterchan.iconeditor.tool;
 
 import android.graphics.Bitmap;
 import android.graphics.BlendMode;
@@ -8,7 +8,10 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
 
-class Transformer implements FloatingLayer {
+import com.misterchan.iconeditor.Color;
+import com.misterchan.iconeditor.FloatingLayer;
+
+public class Transformer implements FloatingLayer {
 
     private final Paint PAINT_SRC = new Paint() {
         {

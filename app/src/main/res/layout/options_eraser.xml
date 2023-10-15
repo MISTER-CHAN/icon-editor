@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    style="@style/Widget_App_LinearLayout_ToolOptions"
+    style="@style/Widget_IconEditor_LinearLayout_ToolOptions"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
     <com.google.android.material.textfield.TextInputLayout
-        style="@style/Widget.App.TextInputLayout.Dense"
+        style="@style/Widget.IconEditor.TextInputLayout.Dense"
         android:layout_width="96dp"
         android:layout_height="wrap_content">
 
@@ -21,7 +21,7 @@
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.textfield.TextInputLayout
-        style="@style/Widget.App.TextInputLayout.Dense"
+        style="@style/Widget.IconEditor.TextInputLayout.Dense"
         android:layout_width="96dp"
         android:layout_height="wrap_content">
 

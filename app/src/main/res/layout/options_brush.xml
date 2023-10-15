@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    style="@style/Widget_App_LinearLayout_ToolOptions"
+    style="@style/Widget_IconEditor_LinearLayout_ToolOptions"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content">
 
     <com.google.android.material.textfield.TextInputLayout
-        style="@style/Widget.App.TextInputLayout.Dense"
+        style="@style/Widget.IconEditor.TextInputLayout.Dense"
         android:layout_width="96dp"
         android:layout_height="wrap_content">
 
@@ -20,23 +20,24 @@
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.textfield.TextInputLayout
-        style="@style/Widget.App.TextInputLayout.Dense"
+        style="@style/Widget.IconEditor.TextInputLayout.Dense"
         android:layout_width="96dp"
         android:layout_height="wrap_content">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/tiet_blur_radius"
+            android:id="@+id/tiet_softness"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:backgroundTint="@android:color/transparent"
-            android:hint="@string/blur_radius"
+            android:hint="@string/softness"
             android:inputType="numberDecimal"
             android:textAlignment="textEnd" />
     </com.google.android.material.textfield.TextInputLayout>
 
-    <CheckBox
-        android:id="@+id/cb_anti_alias"
+    <Button
+        android:id="@+id/b_tip_shape"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/anti_alias" />
+        android:layout_margin="2dp"
+        android:text="@string/tip_shape" />
 </LinearLayout>

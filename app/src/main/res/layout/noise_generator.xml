@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="16dp">
 
@@ -15,7 +15,7 @@
         app:tickVisible="false" />
 
     <com.google.android.material.button.MaterialButtonToggleGroup
-        android:id="@+id/btg_drawing_primitive"
+        android:id="@+id/btg_drawing_primitives"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="2dp"
@@ -25,21 +25,21 @@
 
         <Button
             android:id="@+id/b_pixel"
-            style="@style/Widget.App.Button.OutlinedButton.Dense"
+            style="@style/Widget.IconEditor.Button.OutlinedButton.Dense"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/pixel" />
 
         <Button
             android:id="@+id/b_point"
-            style="@style/Widget.App.Button.OutlinedButton.Dense"
+            style="@style/Widget.IconEditor.Button.OutlinedButton.Dense"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/point" />
 
         <Button
             android:id="@+id/b_ref"
-            style="@style/Widget.App.Button.OutlinedButton.Dense"
+            style="@style/Widget.IconEditor.Button.OutlinedButton.Dense"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/reference" />
