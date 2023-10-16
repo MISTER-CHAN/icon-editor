@@ -50,6 +50,7 @@ public class BitmapConfigModifier {
                             colorSpace != null || bcm.config == Bitmap.Config.ALPHA_8 ? colorSpace : ColorSpace.get(ColorSpace.Named.SRGB));
                     listener.onChanged(bm);
                 })
+                .setNegativeButton(R.string.cancel, null)
                 .show();
     }
 }
