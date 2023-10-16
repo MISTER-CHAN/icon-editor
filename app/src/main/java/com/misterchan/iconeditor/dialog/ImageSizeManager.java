@@ -46,39 +46,45 @@ public class ImageSizeManager {
                 .setView(R.layout.image_size);
 
         builder.setPositiveButton(R.string.ok, (dialog, which) -> {
+            final int width, height;
             try {
-                final int width = Integer.parseUnsignedInt(tietWidth.getText().toString());
-                final int height = Integer.parseUnsignedInt(tietHeight.getText().toString());
-                if (!(width > 0 && height > 0)) {
-                    return;
-                }
-                final ScaleType scaleType = rbStretch.isChecked()
-                        ? cbFilter.isChecked() ? ScaleType.STRETCH_FILTER : ScaleType.STRETCH
-                        : ScaleType.CROP;
-                listener.onApply(width, height, scaleType);
+                width = Integer.parseUnsignedInt(tietWidth.getText().toString());
+                height = Integer.parseUnsignedInt(tietHeight.getText().toString());
             } catch (NumberFormatException e) {
+                return;
             }
+            if (!(width > 0 && height > 0)) {
+                return;
+            }
+            final ScaleType scaleType = rbStretch.isChecked()
+                    ? cbFilter.isChecked() ? ScaleType.STRETCH_FILTER : ScaleType.STRETCH
+                    : ScaleType.CROP;
+            listener.onApply(width, height, scaleType);
         });
     }
 
     private void onWidthTextChanged(String s) {
+        final int i;
         try {
-            final int i = Integer.parseUnsignedInt(s);
-            tietHeight.removeTextChangedListener(onSizeYTextChangedListener);
-            tietHeight.setText(String.valueOf((int) (i / ratio)));
-            tietHeight.addTextChangedListener(onSizeYTextChangedListener);
+            i = Integer.parseUnsignedInt(s);
         } catch (NumberFormatException e) {
+            return;
         }
+        tietHeight.removeTextChangedListener(onSizeYTextChangedListener);
+        tietHeight.setText(String.valueOf((int) (i / ratio)));
+        tietHeight.addTextChangedListener(onSizeYTextChangedListener);
     }
 
     private void onHeightTextChanged(String s) {
+        final int i;
         try {
-            final int i = Integer.parseUnsignedInt(s);
-            tietWidth.removeTextChangedListener(onSizeXTextChangedListener);
-            tietWidth.setText(String.valueOf((int) (i * ratio)));
-            tietWidth.addTextChangedListener(onSizeXTextChangedListener);
+            i = Integer.parseUnsignedInt(s);
         } catch (NumberFormatException e) {
+            return;
         }
+        tietWidth.removeTextChangedListener(onSizeXTextChangedListener);
+        tietWidth.setText(String.valueOf((int) (i * ratio)));
+        tietWidth.addTextChangedListener(onSizeXTextChangedListener);
     }
 
     public void show() {

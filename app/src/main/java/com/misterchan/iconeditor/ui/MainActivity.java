@@ -52,7 +52,6 @@ import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.ColorLong;
 import androidx.annotation.DrawableRes;
-import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
@@ -77,6 +76,7 @@ import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+import com.misterchan.iconeditor.dialog.BitmapConfigModifier;
 import com.misterchan.iconeditor.tool.BrushTool;
 import com.misterchan.iconeditor.CellGrid;
 import com.misterchan.iconeditor.Color;
@@ -94,6 +94,7 @@ import com.misterchan.iconeditor.tool.MagicEraser;
 import com.misterchan.iconeditor.tool.Ruler;
 import com.misterchan.iconeditor.Settings;
 import com.misterchan.iconeditor.tool.Shape;
+import com.misterchan.iconeditor.tool.TextTool;
 import com.misterchan.iconeditor.tool.Transformer;
 import com.misterchan.iconeditor.colorpicker.RgbColorPicker;
 import com.misterchan.iconeditor.databinding.ActivityMainBinding;
@@ -286,7 +287,6 @@ public class MainActivity extends AppCompatActivity {
     private FrameListBinding frameList;
     private InputMethodManager inputMethodManager;
     private int rulerHHeight, rulerVWidth;
-    private int textX, textY;
     private int threshold;
     private int viewWidth, viewHeight;
     private Layer layer;
@@ -304,6 +304,7 @@ public class MainActivity extends AppCompatActivity {
     private final Ruler ruler = new Ruler();
     private SideSheetDialog ssdLayerList;
     private Paint.Style style = Paint.Style.FILL_AND_STROKE;
+    private final TextTool text = new TextTool();
     private Thread thread = new Thread();
     private final Transformer transformer = new Transformer();
     private Uri fileToOpen;
@@ -627,6 +628,17 @@ public class MainActivity extends AppCompatActivity {
                 undoOrRedo(layer.history.getCurrent());
             }
         }
+    };
+
+    private final BitmapConfigModifier.OnChangedListener onNewConfigBitmapCreatedListener = bitmap -> {
+        if (bitmap == null) {
+            Snackbar.make(vContent, R.string.this_config_is_not_supported_yet, Snackbar.LENGTH_LONG).show();
+            return;
+        }
+        this.bitmap.recycle();
+        this.bitmap = bitmap;
+        drawBitmapOntoView(true);
+        addToHistory();
     };
 
     private final CompoundButton.OnCheckedChangeListener onAntiAliasCBCheckedChangeListener = (buttonView, isChecked) -> {
@@ -1369,6 +1381,12 @@ public class MainActivity extends AppCompatActivity {
         private float maxRad;
         private int lastBX, lastBY;
         private VelocityTracker velocityTracker;
+
+        @Override
+        public void onNonPrimaryPointerDown() {
+            velocityTracker.recycle();
+            undoOrRedo(layer.history.getCurrent());
+        }
 
         @Override
         public void onIVSingleTouch(View v, MotionEvent event) {
@@ -2182,16 +2200,16 @@ public class MainActivity extends AppCompatActivity {
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN -> {
                         final float x = event.getX(), y = event.getY();
-                        dx = x - toScaled(textX);
-                        dy = y - toScaled(textY);
+                        dx = x - toScaled(text.x);
+                        dy = y - toScaled(text.y);
                         drawTextOntoView();
                     }
                     case MotionEvent.ACTION_MOVE -> {
                         final float x = event.getX(), y = event.getY();
-                        textX = toUnscaled(x - dx);
-                        textY = toUnscaled(y - dy);
+                        text.x = toUnscaled(x - dx);
+                        text.y = toUnscaled(y - dy);
                         drawTextOntoView();
-                        activityMain.tvStatus.setText(getString(R.string.coordinates, textX, textY));
+                        activityMain.tvStatus.setText(getString(R.string.coordinates, text.x, text.y));
                     }
                 }
 
@@ -2200,8 +2218,8 @@ public class MainActivity extends AppCompatActivity {
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN -> {
                         final float x = event.getX(), y = event.getY();
-                        textX = toBitmapX(x);
-                        textY = toBitmapY(y);
+                        text.x = toBitmapX(x);
+                        text.y = toBitmapY(y);
                         activityMain.llOptionsText.setVisibility(View.VISIBLE);
                         isEditingText = true;
                         drawTextOntoView();
@@ -3799,7 +3817,7 @@ public class MainActivity extends AppCompatActivity {
             textActionMode.finish();
             textActionMode = null;
         }
-        canvas.drawText(activityMain.optionsText.tietText.getText().toString(), textX, textY, paint);
+        canvas.drawText(text.s, text.x, text.y, paint);
         dpPreview.erase();
         drawBitmapOntoView(true);
         eraseBitmapAndInvalidateView(previewBitmap, activityMain.canvas.ivPreview);
@@ -3812,7 +3830,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void drawTextGuideOntoView() {
         eraseBitmap(previewBitmap);
-        final float x = toViewX(textX), y = toViewY(textY);
+        final float x = toViewX(text.x), y = toViewY(text.y);
         final Paint.FontMetrics fontMetrics = paint.getFontMetrics();
         final float centerVertical = y + toScaled(fontMetrics.ascent) / 2.0f;
         previewCanvas.drawLine(x, 0.0f, x, viewHeight, PAINT_CELL_GRID);
@@ -3821,12 +3839,17 @@ public class MainActivity extends AppCompatActivity {
         activityMain.canvas.ivPreview.invalidate();
     }
 
+    private void drawTextOntoView(String s) {
+        text.s = s;
+        drawTextOntoView();
+    }
+
     private void drawTextOntoView() {
         if (!isEditingText) {
             return;
         }
         dpPreview.erase();
-        dpPreview.getCanvas().drawText(activityMain.optionsText.tietText.getText().toString(), textX, textY, paint);
+        dpPreview.getCanvas().drawText(text.s, text.x, text.y, paint);
         drawBitmapOntoView();
         drawTextGuideOntoView();
     }
@@ -4152,7 +4175,7 @@ public class MainActivity extends AppCompatActivity {
         activityMain.optionsPencil.tietStrokeWidth.addTextChangedListener(onStrokeWidthETTextChangedListener);
         activityMain.optionsShape.tietBlurRadius.addTextChangedListener(onBlurRadiusETTextChangedListener);
         activityMain.optionsShape.tietStrokeWidth.addTextChangedListener(onStrokeWidthETTextChangedListener);
-        activityMain.optionsText.tietText.addTextChangedListener((AfterTextChangedListener) s -> drawTextOntoView());
+        activityMain.optionsText.tietText.addTextChangedListener((AfterTextChangedListener) this::drawTextOntoView);
         activityMain.optionsText.tietTextSize.addTextChangedListener(onTextSizeETTextChangedListener);
         activityMain.optionsTransformer.tietMeshWidth.addTextChangedListener(onTransformerMeshSizeETTextChangedListener);
         activityMain.optionsTransformer.tietMeshHeight.addTextChangedListener(onTransformerMeshSizeETTextChangedListener);
@@ -4919,7 +4942,7 @@ public class MainActivity extends AppCompatActivity {
             case R.id.i_file_refer_to_clipboard -> {
                 final String filePath = project.filePath;
                 if (filePath == null) {
-                    Snackbar.make(vContent, R.string.please_save_first, Snackbar.LENGTH_SHORT)
+                    Snackbar.make(vContent, R.string.please_save_first, Snackbar.LENGTH_LONG)
                             .setAction(R.string.save, v -> save())
                             .show();
                     break;
@@ -4934,7 +4957,7 @@ public class MainActivity extends AppCompatActivity {
             case R.id.i_file_save_as -> saveAs();
             case R.id.i_fill_with_ref -> {
                 if (ref.recycled()) {
-                    Snackbar.make(vContent, R.string.no_reference, BaseTransientBottomBar.LENGTH_SHORT).show();
+                    Snackbar.make(vContent, R.string.no_reference, BaseTransientBottomBar.LENGTH_LONG).show();
                     break;
                 }
                 drawFloatingLayersIntoImage();
@@ -5120,6 +5143,7 @@ public class MainActivity extends AppCompatActivity {
             case R.id.i_image_color_space -> {
             }
             case R.id.i_image_config -> {
+                BitmapConfigModifier.showDialog(this, bitmap, onNewConfigBitmapCreatedListener);
             }
             case R.id.i_image_has_alpha -> {
                 final boolean checked = !item.isChecked();
@@ -5336,7 +5360,7 @@ public class MainActivity extends AppCompatActivity {
         try (final InputStream inputStream = getContentResolver().openInputStream(uri)) {
             final Bitmap bm = BitmapFactory.decodeStream(inputStream);
             if (bm == null) {
-                Snackbar.make(vContent, R.string.image_is_invalid, Snackbar.LENGTH_SHORT)
+                Snackbar.make(vContent, R.string.image_is_invalid, Snackbar.LENGTH_LONG)
                         .setAction(R.string.open, v -> pickMedia())
                         .show();
                 return;
@@ -5391,7 +5415,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             } else {
                 addProject(bm, projects.size(), name);
-                Snackbar.make(vContent, R.string.not_supported_file_type, Snackbar.LENGTH_SHORT)
+                Snackbar.make(vContent, R.string.not_supported_file_type, Snackbar.LENGTH_LONG)
                         .setAction(R.string.save_as, v -> save())
                         .show();
             }

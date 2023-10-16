@@ -1,6 +1,7 @@
 package com.misterchan.iconeditor.dialog;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.widget.CheckBox;
 
 import androidx.appcompat.app.AlertDialog;
@@ -31,7 +32,7 @@ public class CellGridManager {
         builder = new MaterialAlertDialogBuilder(context)
                 .setIcon(R.drawable.ic_grid_on)
                 .setNegativeButton(R.string.cancel, null)
-                .setPositiveButton(R.string.ok, (dialog, which) -> update())
+                .setPositiveButton(R.string.ok, this::onPositiveButtonClick)
                 .setTitle(R.string.cell_grid)
                 .setView(R.layout.cell_grid);
     }
@@ -56,24 +57,27 @@ public class CellGridManager {
         tietOffsetY.setText(String.valueOf(cellGrid.offsetY));
     }
 
-    private void update() {
-        try {
-            int sizeX = Integer.parseInt(tietSizeX.getText().toString()),
-                    sizeY = Integer.parseInt(tietSizeY.getText().toString()),
-                    spacingX = Integer.parseInt(tietSpacingX.getText().toString()),
-                    spacingY = Integer.parseInt(tietSpacingY.getText().toString()),
-                    offsetX = Integer.parseInt(tietOffsetX.getText().toString()),
-                    offsetY = Integer.parseInt(tietOffsetY.getText().toString());
+    private void onPositiveButtonClick(DialogInterface dialog, int which) {
+        final int sizeX, sizeY, spacingX, spacingY, offsetX, offsetY;
 
-            cellGrid.enabled = cbEnabled.isChecked();
-            cellGrid.sizeX = sizeX;
-            cellGrid.sizeY = sizeY;
-            cellGrid.spacingX = spacingX;
-            cellGrid.spacingY = spacingY;
-            cellGrid.offsetX = offsetX;
-            cellGrid.offsetY = offsetY;
+        try {
+            sizeX = Integer.parseInt(tietSizeX.getText().toString());
+            sizeY = Integer.parseInt(tietSizeY.getText().toString());
+            spacingX = Integer.parseInt(tietSpacingX.getText().toString());
+            spacingY = Integer.parseInt(tietSpacingY.getText().toString());
+            offsetX = Integer.parseInt(tietOffsetX.getText().toString());
+            offsetY = Integer.parseInt(tietOffsetY.getText().toString());
         } catch (NumberFormatException e) {
+            return;
         }
+
+        cellGrid.enabled = cbEnabled.isChecked();
+        cellGrid.sizeX = sizeX;
+        cellGrid.sizeY = sizeY;
+        cellGrid.spacingX = spacingX;
+        cellGrid.spacingY = spacingY;
+        cellGrid.offsetX = offsetX;
+        cellGrid.offsetY = offsetY;
 
         onUpdateListener.onApply();
     }

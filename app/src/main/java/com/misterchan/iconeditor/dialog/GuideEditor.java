@@ -73,12 +73,14 @@ public class GuideEditor {
         };
 
         onPositionTextChangedListener = s -> {
+            final int position;
             try {
-                final int position = Integer.parseUnsignedInt(tietPosition.getText().toString());
-                guide.position = position;
-                sPosition.setValue(position);
+                position = Integer.parseUnsignedInt(tietPosition.getText().toString());
             } catch (NumberFormatException e) {
+                return;
             }
+            guide.position = position;
+            sPosition.setValue(position);
             onNewGuideChangeListener.onChange(guide);
         };
 

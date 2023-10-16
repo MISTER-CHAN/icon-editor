@@ -3,6 +3,7 @@ package com.misterchan.iconeditor.util;
 import android.graphics.Bitmap;
 import android.graphics.BlendMode;
 import android.graphics.Canvas;
+import android.graphics.ColorSpace;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
@@ -156,8 +157,12 @@ public class BitmapUtils {
     }
 
     public static Bitmap createBitmap(Bitmap src, @Nullable Rect rect) {
+        return createBitmap(src, rect, Bitmap.Config.ARGB_8888, true, ColorSpace.get(ColorSpace.Named.SRGB));
+    }
+
+    public static Bitmap createBitmap(Bitmap src, @Nullable Rect rect, Bitmap.Config config, boolean hasAlpha, ColorSpace colorSpace) {
         final int w = rect != null ? rect.width() : src.getWidth(), h = rect != null ? rect.height() : src.getHeight();
-        final Bitmap dst = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+        final Bitmap dst = Bitmap.createBitmap(w, h, config, hasAlpha, colorSpace);
         final Canvas dstCv = new Canvas(dst);
         if (rect != null) {
             dstCv.drawBitmap(src, rect, new Rect(0, 0, w, h), PAINT);

@@ -19,12 +19,12 @@ public class BrushTool {
         }
     };
 
-    private Bitmap bitmap, brush;
+    private Bitmap src, dst, brush;
     public final Rect rect = new Rect();
     public TipShape tipShape = TipShape.BRUSH;
 
     public Bitmap bm() {
-        return bitmap;
+        return dst;
     }
 
     public void setBrush(Bitmap brush) {
@@ -43,34 +43,39 @@ public class BrushTool {
     }
 
     public void set(long color) {
-        set(bitmap, color);
+        set(src, color);
     }
 
     private void set(Bitmap src, long color) {
-        if (src == null) src = bm();
+        if (this.src != null && !this.src.isRecycled()) this.src.recycle();
+        this.src = src != null ? src : dst;
 
-        final Bitmap dst = Bitmap.createBitmap(src.getWidth(), src.getHeight(), Bitmap.Config.ARGB_8888);
+        final Bitmap dst = Bitmap.createBitmap(this.src.getWidth(), this.src.getHeight(), Bitmap.Config.ARGB_8888);
         dst.eraseColor(color);
-        new Canvas(dst).drawBitmap(src, 0.0f, 0.0f, PAINT);
-        recycle();
-        bitmap = dst;
+        new Canvas(dst).drawBitmap(this.src, 0.0f, 0.0f, PAINT);
+        if (this.dst != null) dst.recycle();
+        this.dst = dst;
         rect.right = dst.getWidth();
         rect.bottom = dst.getHeight();
     }
 
     public void recycle() {
-        if (bitmap != null) {
-            bitmap.recycle();
-            bitmap = null;
+        if (src != null) {
+            src.recycle();
+            src = null;
+        }
+        if (dst != null) {
+            dst.recycle();
+            dst = null;
         }
     }
 
     public void recycleAll() {
         recycle();
-        if (brush != null) brush.recycle();
+        if (brush != null && !brush.isRecycled()) brush.recycle();
     }
 
     public boolean recycled() {
-        return bitmap == null;
+        return dst == null;
     }
 }

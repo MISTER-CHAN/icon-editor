@@ -9,6 +9,7 @@
         <item>@string/argb_4444</item>
         <item>@string/argb_8888</item>
         <item>@string/rgba_f16</item>
+        <item>@string/hardware</item>
         <item>@string/rgba_1010102</item>
     </string-array>
 

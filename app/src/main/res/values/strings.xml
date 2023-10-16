@@ -146,6 +146,7 @@
     <string name="h" translatable="false">H</string>
     <string name="h_max" translatable="false">H<sub>max</sub></string>
     <string name="h_min" translatable="false">H<sub>min</sub></string>
+    <string name="hardware"><strike>Hardware</strike></string>
     <string name="has_alpha">Has Alpha</string>
     <string name="height">Height</string>
     <string name="help">Help</string>
@@ -217,7 +218,7 @@
     <string name="no_repeats">No Repeats</string>
     <string name="none">None</string>
     <string name="normal">Normal</string>
-    <string name="not_public_format">Not a Public Format</string>
+    <string name="not_public_format"><strike>Not a Public Format</strike></string>
     <string name="not_supported_file_type">Not supported file type</string>
     <string name="null_">Null</string>
     <string name="offset">Offset</string>
@@ -336,7 +337,8 @@
     <string name="swatch">Swatch</string>
     <string name="synchronously_draw_image_and_ui">Synchronously draw image and U.I.</string>
     <string name="text">Text</string>
-    <string name="there_are_frames_invalid_which_are">There are %d frames invalid whose tab absolute positions are\n%s\n\nPossible reasons are\n- The sizes differ from the first frame\'s\n- The configs are not ARGB_8888</string>
+    <string name="there_are_frames_invalid_which_are">There are %d frames invalid whose positions are\n%s\n\nPossible reasons are\n- The sizes differ from the first frame\'s\n- The configs are not ARGB_8888</string>
+    <string name="this_config_is_not_supported_yet">This config is not supported yet.</string>
     <string name="this_would_affect_size_of_memory_used">This would affect the size of memory used</string>
     <string name="threshold">Threshold</string>
     <string name="timeline">Timeline</string>
@@ -376,12 +378,12 @@
 
     <!-- Bitmap Configs -->
     <string name="alpha_8" translatable="false">Alpha 8</string>
-    <string name="gray_8" translatable="false">Gray 8</string>
+    <string name="gray_8" translatable="false"><strike>Gray 8</strike></string>
     <string name="rgb_565" translatable="false">RGB 565</string>
     <string name="argb_4444" translatable="false">ARGB 4444</string>
     <string name="argb_8888" translatable="false">ARGB 8888</string>
-    <string name="rgba_f16" translatable="false">RGBA F16</string>
-    <string name="rgba_1010102" translatable="false">RGBA 1010102</string>
+    <string name="rgba_f16" translatable="false"><strike>RGBA F16</strike></string>
+    <string name="rgba_1010102" translatable="false"><strike>RGBA 1010102</strike></string>
 
     <!-- Blend Modes -->
     <string name="destination">Destination</string>

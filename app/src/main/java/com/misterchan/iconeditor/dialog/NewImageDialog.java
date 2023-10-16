@@ -7,6 +7,7 @@ import androidx.appcompat.app.AlertDialog;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputEditText;
 import com.misterchan.iconeditor.R;
+import com.misterchan.iconeditor.ui.MainActivity;
 
 public class NewImageDialog {
 
@@ -26,15 +27,17 @@ public class NewImageDialog {
 
     public NewImageDialog setOnFinishSettingListener(OnApplyListener listener) {
         builder.setPositiveButton(R.string.ok, (dialog, which) -> {
+            final int width, height;
             try {
-                final int width = Integer.parseUnsignedInt(tietWidth.getText().toString());
-                final int height = Integer.parseUnsignedInt(tietHeight.getText().toString());
-                if (!(width > 0 && height > 0)) {
-                    return;
-                }
-                listener.onApply(width, height);
+                width = Integer.parseUnsignedInt(tietWidth.getText().toString());
+                height = Integer.parseUnsignedInt(tietHeight.getText().toString());
             } catch (NumberFormatException e) {
+                return;
             }
+            if (!(width > 0 && height > 0)) {
+                return;
+            }
+            listener.onApply(width, height);
         });
         return this;
     }

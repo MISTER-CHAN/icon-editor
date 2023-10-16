@@ -95,12 +95,14 @@ public class MatrixManager {
     }
 
     private void tryParsing(int index, String s) {
+        final float f;
         try {
-            final float f = Float.parseFloat(s);
-            values[index] = f;
-            matrix.setValues(values);
+            f = Float.parseFloat(s);
         } catch (NumberFormatException e) {
+            return;
         }
+        values[index] = f;
+        matrix.setValues(values);
         onMatrixElementsChangeListener.onChanged(matrix);
     }
 }

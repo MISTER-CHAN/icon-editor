@@ -97,11 +97,13 @@ public class ColorMatrixManager {
     }
 
     private void tryParsing(int index, String s) {
+        final float f;
         try {
-            final float f = Float.parseFloat(s);
-            m[index] = f;
+            f = Float.parseFloat(s);
         } catch (NumberFormatException e) {
+            return;
         }
+        m[index] = f;
         onMatrixElementsChangeListener.onChanged(m);
     }
 }

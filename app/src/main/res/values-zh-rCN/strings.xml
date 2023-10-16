@@ -131,6 +131,7 @@
     <string name="generate_noise">生成噪音</string>
     <string name="gradient_line">渐变线</string>
     <string name="group">组</string>
+    <string name="hardware"><strike>硬件</strike></string>
     <string name="has_alpha">有 Alpha</string>
     <string name="height">高度</string>
     <string name="help">帮助</string>
@@ -194,7 +195,7 @@
     <string name="no_repeats">无重复</string>
     <string name="none">无</string>
     <string name="normal">正常</string>
-    <string name="not_public_format">非公有格式</string>
+    <string name="not_public_format"><strike>非公有格式</strike></string>
     <string name="not_supported_file_type">不支持的文件类型</string>
     <string name="null_">空</string>
     <string name="offset">偏移量</string>
@@ -302,7 +303,8 @@
     <string name="swatch">颜色</string>
     <string name="synchronously_draw_image_and_ui">同步绘画图像与用户界面</string>
     <string name="text">文本</string>
-    <string name="there_are_frames_invalid_which_are">有 %d 帧无效，其分页绝对位置为\n%s\n\n可能原因为\n- 尺寸异于首帧\n- 配置为非 ARGB_8888</string>
+    <string name="there_are_frames_invalid_which_are">有 %d 帧无效，其位置为\n%s\n\n可能原因为\n- 尺寸异于首帧\n- 配置为非 ARGB_8888</string>
+    <string name="this_config_is_not_supported_yet">暂不支援该配置。</string>
     <string name="this_would_affect_size_of_memory_used">此项将影响内存使用量</string>
     <string name="threshold">阈值</string>
     <string name="timeline">时间线</string>
