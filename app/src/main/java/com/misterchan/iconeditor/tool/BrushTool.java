@@ -6,6 +6,8 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
 
+import androidx.annotation.NonNull;
+
 public class BrushTool {
     public enum TipShape {
         BRUSH, REF
@@ -46,14 +48,15 @@ public class BrushTool {
         set(src, color);
     }
 
-    private void set(Bitmap src, long color) {
-        if (this.src != null && !this.src.isRecycled()) this.src.recycle();
-        this.src = src != null ? src : dst;
+    private void set(@NonNull Bitmap src, long color) {
+        if (tipShape == TipShape.REF && this.src != null && !this.src.isRecycled())
+            this.src.recycle();
+        this.src = src;
 
-        final Bitmap dst = Bitmap.createBitmap(this.src.getWidth(), this.src.getHeight(), Bitmap.Config.ARGB_8888);
+        final Bitmap dst = Bitmap.createBitmap(src.getWidth(), src.getHeight(), Bitmap.Config.ARGB_8888);
         dst.eraseColor(color);
-        new Canvas(dst).drawBitmap(this.src, 0.0f, 0.0f, PAINT);
-        if (this.dst != null) dst.recycle();
+        new Canvas(dst).drawBitmap(src, 0.0f, 0.0f, PAINT);
+        if (this.dst != null) this.dst.recycle();
         this.dst = dst;
         rect.right = dst.getWidth();
         rect.bottom = dst.getHeight();

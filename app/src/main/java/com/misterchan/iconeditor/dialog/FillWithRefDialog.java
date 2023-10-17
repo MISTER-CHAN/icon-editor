@@ -1,5 +1,6 @@
 package com.misterchan.iconeditor.dialog;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
@@ -39,6 +40,7 @@ public class FillWithRefDialog {
     private Rect srcRect;
     private Shader.TileMode tileMode = Shader.TileMode.REPEAT;
 
+    @SuppressLint("NonConstantResourceId")
     private final MaterialButtonToggleGroup.OnButtonCheckedListener onTileModeButtonCheckedListener = (group, checkedId, isChecked) -> {
         if (!isChecked) {
             return;

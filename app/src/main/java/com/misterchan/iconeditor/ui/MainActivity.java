@@ -637,6 +637,7 @@ public class MainActivity extends AppCompatActivity {
         }
         this.bitmap.recycle();
         this.bitmap = bitmap;
+        layer.bitmap = bitmap;
         drawBitmapOntoView(true);
         addToHistory();
     };
@@ -830,34 +831,32 @@ public class MainActivity extends AppCompatActivity {
         runOrStart(() -> {
             if (properties.noisiness() == 0.0f) {
                 filterPreview.clearFilters();
-            } else {
-                switch (properties.drawingPrimitive()) {
-                    case PIXEL -> {
-                        if (properties.noisiness() == 1.0f && properties.noRepeats()) {
-                            filterPreview.drawColor(paint.getColor(), BlendMode.SRC);
-                            break;
-                        }
-                        final int w = filterPreview.getWidth(), h = filterPreview.getHeight();
-                        final int[] pixels = filterPreview.getPixels(w, h);
-                        BitmapUtils.generateNoise(pixels, paint.getColor(),
-                                properties.noisiness(), properties.seed(), properties.noRepeats());
-                        filterPreview.setPixels(pixels, w, h);
+            } else switch (properties.drawingPrimitive()) {
+                case PIXEL -> {
+                    if (properties.noisiness() == 1.0f && properties.noRepeats()) {
+                        filterPreview.drawColor(paint.getColor(), BlendMode.SRC);
+                        break;
                     }
-                    case POINT -> {
-                        if (properties.noisiness() == 1.0f && properties.noRepeats()) {
-                            filterPreview.drawColor(paint.getColor(), BlendMode.SRC);
-                            break;
-                        }
-                        filterPreview.clearFilters();
-                        BitmapUtils.generateNoise(filterPreview.getCanvas(), filterPreview.getRect(), paint,
-                                properties.noisiness(), properties.seed(), properties.noRepeats());
+                    final int w = filterPreview.getWidth(), h = filterPreview.getHeight();
+                    final int[] pixels = filterPreview.getPixels(w, h);
+                    BitmapUtils.generateNoise(pixels, paint.getColor(),
+                            properties.noisiness(), properties.seed(), properties.noRepeats());
+                    filterPreview.setPixels(pixels, w, h);
+                }
+                case POINT -> {
+                    if (properties.noisiness() == 1.0f && properties.noRepeats()) {
+                        filterPreview.drawColor(paint.getColor(), BlendMode.SRC);
+                        break;
                     }
-                    case REF -> {
-                        filterPreview.clearFilters();
-                        BitmapUtils.generateNoise(filterPreview.getCanvas(), filterPreview.getRect(),
-                                !ref.recycled() ? ref.bm() : filterPreview.getOriginal(), paint,
-                                properties.noisiness(), properties.seed(), properties.noRepeats());
-                    }
+                    filterPreview.clearFilters();
+                    BitmapUtils.generateNoise(filterPreview.getCanvas(), filterPreview.getRect(), paint,
+                            properties.noisiness(), properties.seed(), properties.noRepeats());
+                }
+                case REF -> {
+                    filterPreview.clearFilters();
+                    BitmapUtils.generateNoise(filterPreview.getCanvas(), filterPreview.getRect(),
+                            !ref.recycled() ? ref.bm() : filterPreview.getOriginal(), paint,
+                            properties.noisiness(), properties.seed(), properties.noRepeats());
                 }
             }
             drawFilterPreviewOntoView(stopped);
@@ -1353,10 +1352,12 @@ public class MainActivity extends AppCompatActivity {
                         onIVTouchWithZoomToolListener.onTouch(v, event);
                     }
                     case MotionEvent.ACTION_POINTER_DOWN -> {
-                        multiTouch = true;
-                        onNonPrimaryPointerDown();
-                        if (lastMerged == null) {
-                            mergeLayersEntire();
+                        if (!multiTouch) {
+                            multiTouch = true;
+                            onNonPrimaryPointerDown();
+                            if (lastMerged == null) {
+                                mergeLayersEntire();
+                            }
                         }
                         onIVTouchWithZoomToolListener.onTouch(v, event);
                     }
@@ -4671,9 +4672,8 @@ public class MainActivity extends AppCompatActivity {
             }
             case R.id.i_layer_merge_alpha -> {
                 final int pos = frame.selectedLayerIndex, posBelow = pos + 1;
-                if (posBelow >= frame.layers.size()) {
-                    break;
-                }
+                if (posBelow >= frame.layers.size()) break;
+
                 drawFloatingLayersIntoImage();
                 final Layer layerBelow = frame.layers.get(posBelow);
                 BitmapUtils.mergeAlpha(layer.bitmap, layerBelow.bitmap);
@@ -4683,12 +4683,9 @@ public class MainActivity extends AppCompatActivity {
             }
             case R.id.i_layer_merge_as_hidden -> {
                 final int j = activityMain.tlProjectList.getSelectedTabPosition() + 1;
-                if (j >= projects.size()) {
-                    break;
-                }
-                if (ssdLayerList != null) {
-                    ssdLayerList.dismiss();
-                }
+                if (j >= projects.size()) break;
+                if (ssdLayerList != null) ssdLayerList.dismiss();
+
                 drawFloatingLayersIntoImage();
                 HiddenImageMaker.merge(this,
                         new Bitmap[]{bitmap, projects.get(j).getFirstFrame().getBackgroundLayer().bitmap},
@@ -4696,9 +4693,8 @@ public class MainActivity extends AppCompatActivity {
             }
             case R.id.i_layer_merge_down -> {
                 final int pos = frame.selectedLayerIndex, posBelow = pos + 1;
-                if (posBelow >= frame.layers.size()) {
-                    break;
-                }
+                if (posBelow >= frame.layers.size()) break;
+
                 drawFloatingLayersIntoImage();
                 final Layer layerBelow = frame.layers.get(posBelow);
                 Layers.mergeLayers(layer, layerBelow);

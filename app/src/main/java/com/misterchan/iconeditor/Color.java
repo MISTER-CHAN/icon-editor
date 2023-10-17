@@ -6,6 +6,8 @@ import androidx.annotation.IntRange;
 import androidx.annotation.Size;
 
 public class Color extends android.graphics.Color {
+    private Color() {
+    }
 
     @ColorInt
     public static int argb(@IntRange(from = 0, to = 255) int alpha, @ColorInt int rgb) {
