@@ -146,33 +146,12 @@
                 android:title="@string/image"
                 app:iconTint="?attr/colorOnSurfaceVariant">
                 <menu>
-                    <group android:id="@+id/g_image_info">
+                    <group android:id="@+id/g_image_edit">
                         <item
                             android:id="@+id/i_size"
                             android:icon="@drawable/ic_photo_size_select_large"
                             android:title="@string/size"
                             app:iconTint="?attr/colorOnSurfaceVariant" />
-                        <item
-                            android:id="@+id/i_image_config"
-                            android:icon="@drawable/ic_void"
-                            android:title="@string/config" />
-                        <item
-                            android:id="@+id/i_image_has_alpha"
-                            android:checkable="true"
-                            android:icon="@drawable/ic_void"
-                            android:title="@string/has_alpha" />
-                        <item
-                            android:id="@+id/i_image_color_space"
-                            android:icon="@drawable/ic_void"
-                            android:title="@string/color_space"
-                            android:visible="false" />
-                        <item
-                            android:id="@+id/i_information"
-                            android:icon="@drawable/ic_info"
-                            android:title="@string/information"
-                            app:iconTint="?attr/colorOnSurfaceVariant" />
-                    </group>
-                    <group android:id="@+id/g_image_edit">
                         <item
                             android:id="@+id/i_crop"
                             android:icon="@drawable/ic_crop"
@@ -227,6 +206,27 @@
                             android:id="@+id/i_fill_with_ref"
                             android:icon="@drawable/ic_void"
                             android:title="@string/fill_with_reference" />
+                    </group>
+                    <group android:id="@+id/g_image_info">
+                        <item
+                            android:id="@+id/i_image_config"
+                            android:icon="@drawable/ic_void"
+                            android:title="@string/config" />
+                        <item
+                            android:id="@+id/i_image_has_alpha"
+                            android:checkable="true"
+                            android:icon="@drawable/ic_void"
+                            android:title="@string/has_alpha" />
+                        <item
+                            android:id="@+id/i_image_color_space"
+                            android:icon="@drawable/ic_void"
+                            android:title="@string/color_space"
+                            android:visible="false" />
+                        <item
+                            android:id="@+id/i_information"
+                            android:icon="@drawable/ic_info"
+                            android:title="@string/information"
+                            app:iconTint="?attr/colorOnSurfaceVariant" />
                     </group>
                 </menu>
             </item>
