@@ -74,7 +74,7 @@ public class FrameAdapter extends ItemMovableAdapter<FrameAdapter.ViewHolder> {
             switch (payload) {
                 case DELAY -> {
                     final Frame frame = project.frames.get(position);
-                    holder.binding.rb.setText(context.getString(R.string.milliseconds, frame.delay));
+                    holder.binding.tvDelay.setText(context.getString(R.string.milliseconds, frame.delay));
                 }
                 case SELECTED -> setFrameSelected(holder, position);
             }
