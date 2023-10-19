@@ -93,16 +93,16 @@ public class FrameAdapter extends ItemMovableAdapter<FrameAdapter.ViewHolder> {
             }
         });
         OneShotPreDrawListener.add(holder.binding.flThumbnail, () -> {
-            final Bitmap background = frame.getBackgroundLayer().bitmap;
+            final Bitmap thumbnail = frame.getThumbnail();
             final ViewGroup.LayoutParams lp = holder.binding.flThumbnail.getLayoutParams();
-            final int w = background.getWidth(), h = background.getHeight();
+            final int w = thumbnail.getWidth(), h = thumbnail.getHeight();
             lp.width = w >= h ? dim64Dip : dim64Dip * w / h;
             lp.height = w >= h ? dim64Dip * h / w : dim64Dip;
             holder.binding.flThumbnail.setLayoutParams(lp);
         });
-        holder.binding.ivThumbnail.setImageBitmap(frame.getBackgroundLayer().bitmap);
-        holder.binding.rb.setText(context.getString(R.string.milliseconds, frame.delay));
-        holder.binding.tvThumbnail.setText(String.valueOf(position));
+        holder.binding.ivThumbnail.setImageBitmap(frame.getThumbnail());
+        holder.binding.rb.setText(String.valueOf(position));
+        holder.binding.tvDelay.setText(context.getString(R.string.milliseconds, frame.delay));
         setFrameSelected(holder, position);
     }
 

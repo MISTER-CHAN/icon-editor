@@ -32,14 +32,11 @@
             android:layout_height="match_parent"
             android:layout_gravity="center"
             android:scaleType="fitCenter" />
-
-        <TextView
-            android:id="@+id/tv_thumbnail"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:textColor="@color/black"
-            android:textStyle="bold" />
     </FrameLayout>
+
+    <TextView
+        android:id="@+id/tv_delay"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center" />
 </LinearLayout>

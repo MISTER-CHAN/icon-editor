@@ -14,7 +14,7 @@ import androidx.annotation.Size;
 
 import com.misterchan.iconeditor.util.BitmapUtils;
 
-public class FilterPreview {
+public class EditPreview {
 
     private static final Paint PAINT_CLEAR = new Paint() {
         {
@@ -49,7 +49,7 @@ public class FilterPreview {
     @ColorInt
     private final int[] pixels;
 
-    public FilterPreview(Bitmap bitmap, Rect rect) {
+    public EditPreview(Bitmap bitmap, Rect rect) {
         final int w = rect.width(), h = rect.height();
         src = bitmap;
         this.bitmap = Bitmap.createBitmap(bitmap);

@@ -81,7 +81,7 @@ import com.misterchan.iconeditor.tool.BrushTool;
 import com.misterchan.iconeditor.CellGrid;
 import com.misterchan.iconeditor.Color;
 import com.misterchan.iconeditor.DrawingPrimitivePreview;
-import com.misterchan.iconeditor.FilterPreview;
+import com.misterchan.iconeditor.EditPreview;
 import com.misterchan.iconeditor.FloatingLayer;
 import com.misterchan.iconeditor.Frame;
 import com.misterchan.iconeditor.Guide;
@@ -243,7 +243,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private ActionMode softStrokesActionMode;
     private ActionMode textActionMode;
     private ActionMode transformerActionMode;
     private ActivityMainBinding activityMain;
@@ -262,7 +261,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean hasSelection = false;
     private boolean isEditingText = false;
     private boolean isShapeStopped = true;
-    private boolean isWritingSoftStrokes = false;
+    private boolean isZoomingEnabled = false;
     private BottomSheetDialog bsdFrameList;
     private final BrushTool brush = new BrushTool();
     private Canvas canvas;
@@ -273,9 +272,9 @@ public class MainActivity extends AppCompatActivity {
     private Canvas selectionCanvas;
     private Canvas viewCanvas;
     private ColorAdapter colorAdapter;
-    private FilterPreview filterPreview;
     private final DirectorySelector dirSelector = new DirectorySelector(this);
     private final DrawingPrimitivePreview dpPreview = new DrawingPrimitivePreview();
+    private EditPreview editPreview;
     private float backgroundScaledW, backgroundScaledH;
     private float blurRadius = 0.0f, blurRadiusEraser = 0.0f;
     private float scale;
@@ -580,7 +579,6 @@ public class MainActivity extends AppCompatActivity {
         public void onDestroyActionMode(ActionMode mode) {
             if (isEditingText) {
                 isEditingText = false;
-                paint.setTextSize(textSize);
                 if (!dpPreview.isRecycled()) {
                     dpPreview.erase();
                     drawBitmapOntoView(true);
@@ -732,8 +730,8 @@ public class MainActivity extends AppCompatActivity {
                     .show();
 
     private final ColorMatrixManager.OnMatrixElementsChangedListener onFilterColorMatrixChangedListener = matrix -> runOrStart(() -> {
-        filterPreview.addColorMatrixColorFilter(matrix);
-        drawFilterPreviewOntoView(true);
+        editPreview.addColorMatrixColorFilter(matrix);
+        drawEditPreviewOntoView(true);
     }, true);
 
     private final ColorRangeDialog.OnChangedListener onLayerColorRangeChangedListener = (colorRange, stopped) -> {
@@ -743,18 +741,34 @@ public class MainActivity extends AppCompatActivity {
     };
 
     private final CurvesDialog.OnCurvesChangedListener onFilterCurvesChangedListener = (curves, stopped) -> runOrStart(() -> {
-        final int w = filterPreview.getWidth(), h = filterPreview.getHeight();
-        final int[] src = filterPreview.getPixels(), dst = new int[w * h];
+        final int w = editPreview.getWidth(), h = editPreview.getHeight();
+        final int[] src = editPreview.getPixels(), dst = new int[w * h];
         BitmapUtils.applyCurves(src, dst, curves);
-        filterPreview.setPixels(dst, w, h);
-        drawFilterPreviewOntoView(stopped);
+        editPreview.setPixels(dst, w, h);
+        drawEditPreviewOntoView(stopped);
     }, stopped);
+
+    private final DialogInterface.OnCancelListener onEditPreviewCancelListener = dialog -> {
+        drawBitmapOntoView(selection, true);
+        editPreview.recycle();
+        editPreview = null;
+        clearStatus();
+    };
+
+    private final DialogInterface.OnClickListener onEditPreviewNBClickListener =
+            (dialog, which) -> onEditPreviewCancelListener.onCancel(dialog);
+
+    private final DialogInterface.OnClickListener onEditPreviewPBClickListener = (dialog, which) -> {
+        drawEditPreviewIntoImage();
+        addToHistory();
+        clearStatus();
+    };
 
     private final FillWithRefDialog.OnChangeListener onFillWithRefTileModeChangeListener = (bitmap, tileMode, stopped) -> runOrStart(() -> {
         paint.setShader(new BitmapShader(bitmap, tileMode, tileMode));
-        filterPreview.clearFilters();
-        filterPreview.getCanvas().drawRect(filterPreview.getRect(), paint);
-        drawFilterPreviewOntoView(true);
+        editPreview.clearFilters();
+        editPreview.getCanvas().drawRect(editPreview.getRect(), paint);
+        drawEditPreviewOntoView(true);
     }, stopped);
 
     private final HiddenImageMaker.OnMakeListener onHiddenImageMakeListener = bitmap -> {
@@ -766,14 +780,14 @@ public class MainActivity extends AppCompatActivity {
     private final HsvDialog.OnHsvChangedListener onFilterHsvChangedListener = (deltaHsv, stopped) -> {
         runOrStart(() -> {
             if (deltaHsv[0] == 0.0f && deltaHsv[1] == 0.0f && deltaHsv[2] == 0.0f) {
-                filterPreview.clearFilters();
+                editPreview.clearFilters();
             } else {
-                final int w = filterPreview.getWidth(), h = filterPreview.getHeight();
-                final int[] src = filterPreview.getPixels(), dst = new int[w * h];
+                final int w = editPreview.getWidth(), h = editPreview.getHeight();
+                final int[] src = editPreview.getPixels(), dst = new int[w * h];
                 BitmapUtils.shiftHsv(src, dst, deltaHsv);
-                filterPreview.setPixels(dst, w, h);
+                editPreview.setPixels(dst, w, h);
             }
-            drawFilterPreviewOntoView(stopped);
+            drawEditPreviewOntoView(stopped);
         }, stopped);
         activityMain.tvStatus.setText(getString(R.string.state_hsv, deltaHsv[0], deltaHsv[1], deltaHsv[2]));
     };
@@ -784,27 +798,11 @@ public class MainActivity extends AppCompatActivity {
         activityMain.tvStatus.setText(getString(R.string.state_hsv, deltaHsv[0], deltaHsv[1], deltaHsv[2]));
     };
 
-    private final DialogInterface.OnCancelListener onImagePreviewCancelListener = dialog -> {
-        drawBitmapOntoView(selection, true);
-        filterPreview.recycle();
-        filterPreview = null;
-        clearStatus();
-    };
-
-    private final DialogInterface.OnClickListener onImagePreviewNBClickListener =
-            (dialog, which) -> onImagePreviewCancelListener.onCancel(dialog);
-
-    private final DialogInterface.OnClickListener onImagePreviewPBClickListener = (dialog, which) -> {
-        drawFilterPreviewIntoImage();
-        addToHistory();
-        clearStatus();
-    };
-
     private final LevelsDialog.OnLevelsChangedListener onFilterLevelsChangedListener = (inputShadows, inputHighlights, outputShadows, outputHighlights, stopped) -> {
         final float ratio = (outputHighlights - outputShadows) / (inputHighlights - inputShadows);
         runOrStart(() -> {
-            filterPreview.addLightingColorFilter(ratio, -inputShadows * ratio + outputShadows);
-            drawFilterPreviewOntoView(stopped);
+            editPreview.addLightingColorFilter(ratio, -inputShadows * ratio + outputShadows);
+            drawEditPreviewOntoView(stopped);
         }, stopped);
     };
 
@@ -816,13 +814,13 @@ public class MainActivity extends AppCompatActivity {
     };
 
     private final LightingDialog.OnLightingChangedListener onFilterLightingChangedListener = (lighting, stopped) -> runOrStart(() -> {
-        filterPreview.addLightingColorFilter(lighting);
-        drawFilterPreviewOntoView(stopped);
+        editPreview.addLightingColorFilter(lighting);
+        drawEditPreviewOntoView(stopped);
     }, stopped);
 
     private final MatrixManager.OnMatrixElementsChangedListener onMatrixChangedListener = matrix -> runOrStart(() -> {
-        filterPreview.transform(matrix);
-        drawBitmapOntoView(filterPreview.getEntire(), true);
+        editPreview.transform(matrix);
+        drawBitmapOntoView(editPreview.getEntire(), true);
     }, true);
 
     private final NewImageDialog.OnApplyListener onNewImagePropertiesApplyListener = this::createImage;
@@ -830,36 +828,36 @@ public class MainActivity extends AppCompatActivity {
     private final NoiseGenerator.OnPropChangedListener onNoisePropChangedListener = (properties, stopped) -> {
         runOrStart(() -> {
             if (properties.noisiness() == 0.0f) {
-                filterPreview.clearFilters();
+                editPreview.clearFilters();
             } else switch (properties.drawingPrimitive()) {
                 case PIXEL -> {
                     if (properties.noisiness() == 1.0f && properties.noRepeats()) {
-                        filterPreview.drawColor(paint.getColor(), BlendMode.SRC);
+                        editPreview.drawColor(paint.getColor(), BlendMode.SRC);
                         break;
                     }
-                    final int w = filterPreview.getWidth(), h = filterPreview.getHeight();
-                    final int[] pixels = filterPreview.getPixels(w, h);
+                    final int w = editPreview.getWidth(), h = editPreview.getHeight();
+                    final int[] pixels = editPreview.getPixels(w, h);
                     BitmapUtils.generateNoise(pixels, paint.getColor(),
                             properties.noisiness(), properties.seed(), properties.noRepeats());
-                    filterPreview.setPixels(pixels, w, h);
+                    editPreview.setPixels(pixels, w, h);
                 }
                 case POINT -> {
                     if (properties.noisiness() == 1.0f && properties.noRepeats()) {
-                        filterPreview.drawColor(paint.getColor(), BlendMode.SRC);
+                        editPreview.drawColor(paint.getColor(), BlendMode.SRC);
                         break;
                     }
-                    filterPreview.clearFilters();
-                    BitmapUtils.generateNoise(filterPreview.getCanvas(), filterPreview.getRect(), paint,
+                    editPreview.clearFilters();
+                    BitmapUtils.generateNoise(editPreview.getCanvas(), editPreview.getRect(), paint,
                             properties.noisiness(), properties.seed(), properties.noRepeats());
                 }
                 case REF -> {
-                    filterPreview.clearFilters();
-                    BitmapUtils.generateNoise(filterPreview.getCanvas(), filterPreview.getRect(),
-                            !ref.recycled() ? ref.bm() : filterPreview.getOriginal(), paint,
+                    editPreview.clearFilters();
+                    BitmapUtils.generateNoise(editPreview.getCanvas(), editPreview.getRect(),
+                            !ref.recycled() ? ref.bm() : editPreview.getOriginal(), paint,
                             properties.noisiness(), properties.seed(), properties.noRepeats());
                 }
             }
-            drawFilterPreviewOntoView(stopped);
+            drawEditPreviewOntoView(stopped);
         }, stopped);
         clearStatus();
     };
@@ -867,8 +865,8 @@ public class MainActivity extends AppCompatActivity {
     private final OnSliderChangeListener onFilterContrastSliderChangeListener = (slider, value, stopped) -> {
         final float mul = value, add = 0xFF / 2.0f * (1.0f - mul);
         runOrStart(() -> {
-            filterPreview.addLightingColorFilter(mul, add);
-            drawFilterPreviewOntoView(stopped);
+            editPreview.addLightingColorFilter(mul, add);
+            drawEditPreviewOntoView(stopped);
         }, stopped);
         activityMain.tvStatus.setText(getString(R.string.state_contrast, mul));
     };
@@ -883,19 +881,19 @@ public class MainActivity extends AppCompatActivity {
 
     private final OnSliderChangeListener onFilterHToASliderChangeListener = (slider, value, stopped) -> {
         runOrStart(() -> {
-            final int w = filterPreview.getWidth(), h = filterPreview.getHeight();
-            final int[] src = filterPreview.getPixels(), dst = new int[w * h];
+            final int w = editPreview.getWidth(), h = editPreview.getHeight();
+            final int[] src = editPreview.getPixels(), dst = new int[w * h];
             BitmapUtils.setAlphaByHue(src, dst, value);
-            filterPreview.setPixels(dst, w, h);
-            drawFilterPreviewOntoView(stopped);
+            editPreview.setPixels(dst, w, h);
+            drawEditPreviewOntoView(stopped);
         }, stopped);
         activityMain.tvStatus.setText(getString(R.string.state_hue, value));
     };
 
     private final OnSliderChangeListener onFilterLightnessSliderChangeListener = (slider, value, stopped) -> {
         runOrStart(() -> {
-            filterPreview.addLightingColorFilter(1.0f, value);
-            drawFilterPreviewOntoView(stopped);
+            editPreview.addLightingColorFilter(1.0f, value);
+            drawEditPreviewOntoView(stopped);
         }, stopped);
         activityMain.tvStatus.setText(getString(R.string.state_lightness, (int) value));
     };
@@ -909,8 +907,8 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("StringFormatMatches")
     private final OnSliderChangeListener onFilterPosterizationSliderChangeListener = (slider, value, stopped) -> {
         runOrStart(() -> {
-            filterPreview.posterize((int) value);
-            drawFilterPreviewOntoView(stopped);
+            editPreview.posterize((int) value);
+            drawEditPreviewOntoView(stopped);
         }, stopped);
         activityMain.tvStatus.setText(String.format(
                 getString(R.string.state_posterization, Settings.INST.argbCompFormat()),
@@ -921,8 +919,8 @@ public class MainActivity extends AppCompatActivity {
         final ColorMatrix colorMatrix = new ColorMatrix();
         colorMatrix.setSaturation(value);
         runOrStart(() -> {
-            filterPreview.addColorMatrixColorFilter(colorMatrix.getArray());
-            drawFilterPreviewOntoView(stopped);
+            editPreview.addColorMatrixColorFilter(colorMatrix.getArray());
+            drawEditPreviewOntoView(stopped);
         }, stopped);
         activityMain.tvStatus.setText(getString(R.string.state_saturation, value));
     };
@@ -936,13 +934,13 @@ public class MainActivity extends AppCompatActivity {
     private final OnSliderChangeListener onFilterThresholdSliderChangeListener = (slider, value, stopped) -> {
         final float f = -0x100 * value;
         runOrStart(() -> {
-            filterPreview.addColorMatrixColorFilter(new float[]{
+            editPreview.addColorMatrixColorFilter(new float[]{
                     0.213f * 0x100, 0.715f * 0x100, 0.072f * 0x100, 0.0f, f,
                     0.213f * 0x100, 0.715f * 0x100, 0.072f * 0x100, 0.0f, f,
                     0.213f * 0x100, 0.715f * 0x100, 0.072f * 0x100, 0.0f, f,
                     0.0f, 0.0f, 0.0f, 1.0f, 0.0f
             });
-            drawFilterPreviewOntoView(stopped);
+            drawEditPreviewOntoView(stopped);
         }, stopped);
         activityMain.tvStatus.setText(getString(R.string.state_threshold, (int) value));
     };
@@ -967,26 +965,26 @@ public class MainActivity extends AppCompatActivity {
         threshold = (int) value;
         runOrStart(() -> {
             if (threshold == 0xFF) {
-                filterPreview.drawColor(Color.BLACK, BlendMode.SRC_IN);
+                editPreview.drawColor(Color.BLACK, BlendMode.SRC_IN);
             } else if (threshold == 0x00) {
-                filterPreview.clearFilters();
+                editPreview.clearFilters();
             } else {
-                filterPreview.posterize(0xFF - threshold);
+                editPreview.posterize(0xFF - threshold);
             }
-            drawFilterPreviewOntoView(stopped);
+            drawEditPreviewOntoView(stopped);
         }, stopped);
         activityMain.tvStatus.setText(getString(R.string.state_threshold, threshold));
     };
 
-    private final DialogInterface.OnClickListener onThresholdApplyListener = onImagePreviewNBClickListener;
+    private final DialogInterface.OnClickListener onThresholdApplyListener = onEditPreviewNBClickListener;
 
     private final View.OnClickListener onToleranceButtonClickListener = v -> {
-        createFilterPreview();
+        createEditPreview();
         new SliderDialog(this).setTitle(R.string.tolerance).setValueFrom(0x00).setValueTo(0xFF).setValue(threshold)
                 .setStepSize(1.0f)
                 .setOnChangeListener(onThresholdChangeListener)
                 .setOnApplyListener(onThresholdApplyListener)
-                .setOnCancelListener(onImagePreviewCancelListener, false)
+                .setOnCancelListener(onEditPreviewCancelListener, false)
                 .show();
         onThresholdChangeListener.onChange(null, threshold, true);
     };
@@ -1301,21 +1299,29 @@ public class MainActivity extends AppCompatActivity {
     private Shape shape = null;
 
     private abstract class OnIVTouchListener implements View.OnTouchListener {
-        public abstract void onIVTouch(View v, MotionEvent event);
-
-        @Override
-        public boolean onTouch(View v, MotionEvent event) {
-            onIVTouch(v, event);
+        private void blockViews(MotionEvent event) {
             final boolean enabled;
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN -> enabled = false;
                 case MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> enabled = true;
                 default -> {
-                    return true;
+                    return;
                 }
             }
             activityMain.vBlockerNeg.setClickable(!enabled);
             activityMain.vBlockerPos.setClickable(!enabled);
+        }
+
+        public abstract void onIVTouch(View v, MotionEvent event);
+
+        @Override
+        public final boolean onTouch(View v, MotionEvent event) {
+            blockViews(event);
+            if (isZoomingEnabled) {
+                onIVTouchWithZoomToolListener.onIVTouch(v, event);
+            } else {
+                onIVTouch(v, event);
+            }
             return true;
         }
     }
@@ -1323,41 +1329,29 @@ public class MainActivity extends AppCompatActivity {
     private abstract class OnIVMultiTouchListener extends OnIVTouchListener {
         private boolean multiTouch = false;
 
-        public void onFinalPointerUp() {
-        }
-
-        public void onNonPrimaryPointerDown() {
-            if (!isShapeStopped) {
-                isShapeStopped = true;
-                dpPreview.erase();
-            }
-            if (dpPreview.isRecycled()) {
-                undoOrRedo(layer.history.getCurrent());
-            }
-        }
-
         public abstract void onIVSingleTouch(View v, MotionEvent event);
 
+        protected void onStartMultiTouch() {
+        }
+
         @Override
-        public void onIVTouch(View v, MotionEvent event) {
+        public final void onIVTouch(View v, MotionEvent event) {
             final int pointerCount = event.getPointerCount(), action = event.getAction();
             if (pointerCount == 1 && !multiTouch) {
                 onIVSingleTouch(v, event);
             } else if (pointerCount <= 2) {
                 switch (action & MotionEvent.ACTION_MASK) {
                     case MotionEvent.ACTION_MOVE -> {
-                        if (lastMerged == null) {
-                            break;
-                        }
+                        if (lastMerged == null) break;
                         onIVTouchWithZoomToolListener.onTouch(v, event);
                     }
                     case MotionEvent.ACTION_POINTER_DOWN -> {
                         if (!multiTouch) {
                             multiTouch = true;
-                            onNonPrimaryPointerDown();
-                            if (lastMerged == null) {
-                                mergeLayersEntire();
-                            }
+                            onStartMultiTouch();
+                            isShapeStopped = true;
+                            undo();
+                            if (lastMerged == null) mergeLayersEntire();
                         }
                         onIVTouchWithZoomToolListener.onTouch(v, event);
                     }
@@ -1367,13 +1361,29 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
             if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL) {
-                onFinalPointerUp();
                 multiTouch = false;
             }
         }
 
         public boolean isMultiTouch() {
             return multiTouch;
+        }
+
+        protected void undo() {
+            if (!dpPreview.isRecycled()) {
+                dpPreview.erase();
+                return;
+            }
+
+            final Bitmap bitmap = layer.history.getCurrent();
+            MainActivity.this.bitmap.recycle();
+            MainActivity.this.bitmap = bitmap;
+            layer.bitmap = bitmap;
+            canvas = new Canvas(bitmap);
+
+            eraseBitmapAndInvalidateView(previewBitmap, activityMain.canvas.ivPreview);
+            drawBitmapOntoView(true, true);
+            clearStatus();
         }
     }
 
@@ -1382,12 +1392,6 @@ public class MainActivity extends AppCompatActivity {
         private float maxRad;
         private int lastBX, lastBY;
         private VelocityTracker velocityTracker;
-
-        @Override
-        public void onNonPrimaryPointerDown() {
-            velocityTracker.recycle();
-            undoOrRedo(layer.history.getCurrent());
-        }
 
         @Override
         public void onIVSingleTouch(View v, MotionEvent event) {
@@ -1438,6 +1442,11 @@ public class MainActivity extends AppCompatActivity {
                     clearStatus();
                 }
             }
+        }
+
+        @Override
+        protected void onStartMultiTouch() {
+            velocityTracker.recycle();
         }
     };
 
@@ -1576,10 +1585,6 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint({"ClickableViewAccessibility", "StringFormatMatches"})
     private final View.OnTouchListener onIVTouchWithImpreciseEyedropperListener = new OnIVMultiTouchListener() {
         @Override
-        public void onNonPrimaryPointerDown() {
-        }
-
-        @Override
         public void onIVSingleTouch(View v, MotionEvent event) {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN, MotionEvent.ACTION_MOVE -> {
@@ -1596,13 +1601,13 @@ public class MainActivity extends AppCompatActivity {
                 case MotionEvent.ACTION_CANCEL, MotionEvent.ACTION_UP -> clearStatus();
             }
         }
+
+        @Override
+        protected void undo() {
+        }
     };
 
     private final View.OnTouchListener onIVTouchWithPreciseEyedropperListener = new OnIVMultiTouchListener() {
-        @Override
-        public void onNonPrimaryPointerDown() {
-        }
-
         @Override
         public void onIVSingleTouch(View v, MotionEvent event) {
             switch (event.getAction()) {
@@ -1620,6 +1625,10 @@ public class MainActivity extends AppCompatActivity {
                 case MotionEvent.ACTION_CANCEL, MotionEvent.ACTION_UP -> clearStatus();
             }
         }
+
+        @Override
+        public void undo() {
+        }
     };
 
     private View.OnTouchListener onIVTouchWithEyedropperListener;
@@ -1631,11 +1640,6 @@ public class MainActivity extends AppCompatActivity {
 
         @ColorLong
         private long color0;
-
-        @Override
-        public void onFinalPointerUp() {
-            paint.setShader(null);
-        }
 
         @Override
         public void onIVSingleTouch(View v, MotionEvent event) {
@@ -1687,14 +1691,19 @@ public class MainActivity extends AppCompatActivity {
                     break;
             }
         }
+
+        @Override
+        public void onStartMultiTouch() {
+            paint.setShader(null);
+        }
     };
 
     @SuppressLint("ClickableViewAccessibility")
-    private final View.OnTouchListener onIVTouchWithImpreciseMagicEraserListener = new OnIVTouchListener() {
+    private final View.OnTouchListener onIVTouchWithImpreciseMagicEraserListener = new OnIVMultiTouchListener() {
         private float lastX, lastY;
 
         @Override
-        public void onIVTouch(View v, MotionEvent event) {
+        public void onIVSingleTouch(View v, MotionEvent event) {
             final float x = event.getX(), y = event.getY();
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN -> {
@@ -1981,39 +1990,38 @@ public class MainActivity extends AppCompatActivity {
             }
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
-                    createFilterPreview();
+                    createEditPreview();
 
                 case MotionEvent.ACTION_MOVE: {
                     final float x = event.getX(), y = event.getY();
                     final int bx = toBitmapX(x), by = toBitmapY(y);
                     final int w = selection.width(), h = selection.height();
-                    final Bitmap bm = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
-                    final Canvas cv = new Canvas(bm);
                     final int wh = w >> 1, hh = h >> 1; // h - Half
-                    cv.drawBitmap(bitmap,
-                            new Rect(bx - wh, by - hh, bx + w - wh, by + h - hh),
-                            new Rect(0, 0, w, h),
-                            PAINT_SRC);
-                    final Bitmap rect = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
-                    new Canvas(rect).drawRect(radius, radius, w - radius, h - radius, paint);
-                    cv.drawBitmap(rect, 0.0f, 0.0f, patcher);
-                    rect.recycle();
-                    filterPreview.reset();
-                    filterPreview.drawBitmap(bm);
-                    bm.recycle();
-                    drawBitmapOntoView(filterPreview.getEntire(), selection);
+                    editPreview.reset();
+                    final RectF rect = new RectF(selection);
+                    rect.inset(radius, radius);
+                    editPreview.getCanvas().drawBitmap(bitmap,
+                            new Rect(bx - wh, by - hh, bx + w - wh, by + h - hh), rect, paint);
+                    drawBitmapOntoView(editPreview.getEntire(), selection);
                     activityMain.tvStatus.setText(getString(R.string.coordinates, bx, by));
                     break;
                 }
                 case MotionEvent.ACTION_UP:
                 case MotionEvent.ACTION_CANCEL:
-                    drawFilterPreviewIntoImage();
-                    filterPreview.recycle();
-                    filterPreview = null;
+                    drawEditPreviewIntoImage();
+                    editPreview.recycle();
+                    editPreview = null;
                     addToHistory();
                     clearStatus();
                     break;
             }
+        }
+
+        @Override
+        protected void undo() {
+            editPreview.recycle();
+            editPreview = null;
+            clearStatus();
         }
     };
 
@@ -2103,11 +2111,11 @@ public class MainActivity extends AppCompatActivity {
     };
 
     @SuppressLint("ClickableViewAccessibility")
-    private final View.OnTouchListener onIVTouchWithRulerListener = new OnIVTouchListener() {
+    private final View.OnTouchListener onIVTouchWithRulerListener = new OnIVMultiTouchListener() {
         private int shapeStartX, shapeStartY;
 
         @Override
-        public void onIVTouch(View v, MotionEvent event) {
+        public void onIVSingleTouch(View v, MotionEvent event) {
             final float x = event.getX(), y = event.getY();
             final float halfScale = scale / 2.0f;
             final int bx = toBitmapX(x + halfScale), by = toBitmapY(y + halfScale);
@@ -2137,6 +2145,13 @@ public class MainActivity extends AppCompatActivity {
                     }
                     break;
             }
+        }
+
+        @Override
+        protected void undo() {
+            ruler.enabled = false;
+            eraseBitmapAndInvalidateView(previewBitmap, activityMain.canvas.ivPreview);
+            clearStatus();
         }
     };
 
@@ -2191,11 +2206,11 @@ public class MainActivity extends AppCompatActivity {
     };
 
     @SuppressLint("ClickableViewAccessibility")
-    private final View.OnTouchListener onIVTouchWithTextListener = new OnIVTouchListener() {
+    private final View.OnTouchListener onIVTouchWithTextListener = new OnIVMultiTouchListener() {
         private float dx, dy;
 
         @Override
-        public void onIVTouch(View v, MotionEvent event) {
+        public void onIVSingleTouch(View v, MotionEvent event) {
             if (isEditingText) {
 
                 switch (event.getAction()) {
@@ -2231,6 +2246,10 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
             }
+        }
+
+        @Override
+        protected void undo() {
         }
     };
 
@@ -2662,7 +2681,7 @@ public class MainActivity extends AppCompatActivity {
     private View.OnTouchListener onIVTouchWithTransformerListener = onIVTouchWithTTListener;
 
     @SuppressLint({"ClickableViewAccessibility"})
-    private final View.OnTouchListener onIVTouchWithZoomToolListener = new OnIVTouchListener() {
+    private final OnIVTouchListener onIVTouchWithZoomToolListener = new OnIVTouchListener() {
         private float dx, dy;
         private float lastPivotX, lastPivotY;
         private double lastDiagonal;
@@ -2736,8 +2755,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     };
-
-    private View.OnTouchListener onIVTouchListener = onIVTouchWithPencilListener;
 
     @SuppressLint("NonConstantResourceId")
     private final MaterialButtonToggleGroup.OnButtonCheckedListener onToolButtonCheckedListener = (group, checkedId, isChecked) -> {
@@ -2920,7 +2937,6 @@ public class MainActivity extends AppCompatActivity {
             case R.id.b_mesh -> onIVTouchWithMTListener;
             default -> null;
         };
-        onIVTouchListener = onIVTouchWithTransformerListener;
         if (activityMain.btgZoom.getCheckedButtonId() != R.id.b_zoom) {
             activityMain.canvas.flIv.setOnTouchListener(onIVTouchWithTransformerListener);
         }
@@ -2928,11 +2944,7 @@ public class MainActivity extends AppCompatActivity {
 
     @SuppressLint("ClickableViewAccessibility")
     private final MaterialButtonToggleGroup.OnButtonCheckedListener onZoomToolButtonCheckedListener = (group, checkedId, isChecked) -> {
-        if (isChecked) {
-            activityMain.canvas.flIv.setOnTouchListener(onIVTouchWithZoomToolListener);
-        } else {
-            activityMain.canvas.flIv.setOnTouchListener(onIVTouchListener);
-        }
+        isZoomingEnabled = isChecked;
     };
 
     private final CompoundButton.OnCheckedChangeListener onMagicEraserStyleCBCheckedChangeListener = (buttonView, isChecked) -> {
@@ -2941,7 +2953,6 @@ public class MainActivity extends AppCompatActivity {
         onIVTouchWithMagicEraserListener = isChecked
                 ? onIVTouchWithPreciseMagicEraserListener
                 : onIVTouchWithImpreciseMagicEraserListener;
-        onIVTouchListener = onIVTouchWithMagicEraserListener;
         if (activityMain.btgZoom.getCheckedButtonId() != R.id.b_zoom) {
             activityMain.canvas.flIv.setOnTouchListener(onIVTouchWithMagicEraserListener);
         }
@@ -3207,14 +3218,14 @@ public class MainActivity extends AppCompatActivity {
         addLayer(project, frame, bm, position, level, left, top, true, getString(R.string.layer), true);
     }
 
-    private void createFilterPreview() {
-        if (filterPreview != null) {
-            filterPreview.recycle();
+    private void createEditPreview() {
+        if (editPreview != null) {
+            editPreview.recycle();
         }
         if (!hasSelection) {
             selectAll();
         }
-        filterPreview = new FilterPreview(bitmap, selection);
+        editPreview = new EditPreview(bitmap, selection);
     }
 
     private void createTransformer() {
@@ -3250,6 +3261,7 @@ public class MainActivity extends AppCompatActivity {
         for (int i = frame.layers.size() - 1; i >= 0; --i) {
             deleteLayer(frame, i);
         }
+        frame.recycleThumbnail();
         project.frames.remove(position);
     }
 
@@ -3552,23 +3564,22 @@ public class MainActivity extends AppCompatActivity {
         activityMain.canvas.ivPreview.invalidate();
     }
 
-    private void drawFilterPreviewIntoImage() {
-        canvas.drawBitmap(filterPreview.getEntire(), 0.0f, 0.0f, PAINT_BITMAP);
+    private void drawEditPreviewIntoImage() {
+        canvas.drawBitmap(editPreview.getEntire(), 0.0f, 0.0f, PAINT_BITMAP);
         drawBitmapOntoView(true);
     }
 
-    private void drawFilterPreviewOntoView() {
-        drawFilterPreviewOntoView(false);
+    private void drawEditPreviewOntoView() {
+        drawEditPreviewOntoView(false);
     }
 
-    private void drawFilterPreviewOntoView(final boolean wait) {
-        drawBitmapOntoView(filterPreview.getEntire(), selection, wait);
+    private void drawEditPreviewOntoView(final boolean wait) {
+        drawBitmapOntoView(editPreview.getEntire(), selection, wait);
     }
 
     private void drawFloatingLayersIntoImage() {
         drawTransformerIntoImage();
         drawTextIntoImage();
-        drawSoftStrokesIntoSelection();
     }
 
     private void drawGridOntoView() {
@@ -3769,40 +3780,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         activityMain.canvas.ivSelection.invalidate();
-    }
-
-    private void drawSoftStrokesIntoSelection() {
-        if (!isWritingSoftStrokes || !hasSelection) {
-            return;
-        }
-        isWritingSoftStrokes = false;
-        if (softStrokesActionMode != null) {
-            softStrokesActionMode.finish();
-            softStrokesActionMode = null;
-        }
-        final Rect src = new Rect(0, 0, viewWidth, viewHeight);
-        final RectF dst = new RectF();
-        final float width = selection.width(), height = selection.height();
-        final float scaleW = width / viewWidth, scaleH = height / viewHeight;
-        if (scaleW < scaleH) {
-            dst.left = selection.left;
-            dst.top = selection.top + selection.height() / 2.0f - viewHeight * scaleW / 2.0f;
-            dst.right = selection.right;
-            dst.bottom = dst.top + viewHeight * scaleW;
-        } else if (scaleW > scaleH) {
-            dst.left = selection.left + selection.width() / 2.0f - viewWidth * scaleH / 2.0f;
-            dst.top = selection.top;
-            dst.right = dst.left + viewWidth * scaleH;
-            dst.bottom = selection.bottom;
-        } else {
-            dst.set(selection);
-        }
-        canvas.drawBitmap(previewBitmap, src, dst, PAINT_SRC_OVER);
-        final Rect r = new Rect();
-        dst.roundOut(r);
-        drawBitmapOntoView(r, true);
-        eraseBitmapAndInvalidateView(previewBitmap, activityMain.canvas.ivPreview);
-        addToHistory();
     }
 
     private void drawTextIntoImage() {
@@ -4957,141 +4934,141 @@ public class MainActivity extends AppCompatActivity {
                     break;
                 }
                 drawFloatingLayersIntoImage();
-                createFilterPreview();
+                createEditPreview();
                 new FillWithRefDialog(this, ref.bm())
                         .setOnChangeListener(onFillWithRefTileModeChangeListener)
-                        .setOnPositiveButtonClickListener(onImagePreviewPBClickListener)
-                        .setOnCancelListener(onImagePreviewCancelListener)
+                        .setOnPositiveButtonClickListener(onEditPreviewPBClickListener)
+                        .setOnCancelListener(onEditPreviewCancelListener)
                         .setOnDismissListener(dialog -> paint.setShader(null))
                         .show();
                 clearStatus();
             }
             case R.id.i_filter_color_balance -> {
                 drawFloatingLayersIntoImage();
-                createFilterPreview();
+                createEditPreview();
                 new ColorBalanceDialog(this)
                         .setOnColorBalanceChangeListener(onFilterLightingChangedListener)
-                        .setOnPositiveButtonClickListener(onImagePreviewPBClickListener)
-                        .setOnCancelListener(onImagePreviewCancelListener)
+                        .setOnPositiveButtonClickListener(onEditPreviewPBClickListener)
+                        .setOnCancelListener(onEditPreviewCancelListener)
                         .show();
                 clearStatus();
             }
             case R.id.i_filter_color_matrix -> {
                 drawFloatingLayersIntoImage();
-                createFilterPreview();
+                createEditPreview();
                 new ColorMatrixManager(this,
                         onFilterColorMatrixChangedListener,
-                        onImagePreviewPBClickListener,
-                        onImagePreviewCancelListener)
+                        onEditPreviewPBClickListener,
+                        onEditPreviewCancelListener)
                         .show();
                 clearStatus();
             }
             case R.id.i_filter_contrast -> {
                 drawFloatingLayersIntoImage();
-                createFilterPreview();
+                createEditPreview();
                 new SliderDialog(this)
                         .setIcon(item.getIcon()).setTitle(R.string.contrast)
                         .setValueFrom(-1.0f).setValueTo(10.0f).setValue(1.0f)
                         .setOnChangeListener(onFilterContrastSliderChangeListener)
-                        .setOnApplyListener(onImagePreviewPBClickListener)
-                        .setOnCancelListener(onImagePreviewCancelListener)
+                        .setOnApplyListener(onEditPreviewPBClickListener)
+                        .setOnCancelListener(onEditPreviewCancelListener)
                         .show();
                 clearStatus();
             }
             case R.id.i_filter_curves -> {
                 drawFloatingLayersIntoImage();
-                createFilterPreview();
+                createEditPreview();
                 new CurvesDialog(this)
-                        .setSource(filterPreview.getPixels())
+                        .setSource(editPreview.getPixels())
                         .setOnCurvesChangeListener(onFilterCurvesChangedListener)
-                        .setOnPositiveButtonClickListener(onImagePreviewPBClickListener)
-                        .setOnCancelListener(onImagePreviewCancelListener)
+                        .setOnPositiveButtonClickListener(onEditPreviewPBClickListener)
+                        .setOnCancelListener(onEditPreviewCancelListener)
                         .show();
                 clearStatus();
             }
             case R.id.i_filter_hsv -> {
                 drawFloatingLayersIntoImage();
-                createFilterPreview();
+                createEditPreview();
                 new HsvDialog(this)
                         .setOnHsvChangeListener(onFilterHsvChangedListener)
-                        .setOnPositiveButtonClickListener(onImagePreviewPBClickListener)
-                        .setOnCancelListener(onImagePreviewCancelListener)
+                        .setOnPositiveButtonClickListener(onEditPreviewPBClickListener)
+                        .setOnCancelListener(onEditPreviewCancelListener)
                         .show();
                 clearStatus();
             }
             case R.id.i_filter_hue_to_alpha -> {
                 drawFloatingLayersIntoImage();
-                createFilterPreview();
+                createEditPreview();
                 new SliderDialog(this).setTitle(R.string.hue).setValueFrom(0.0f).setValueTo(360.0f).setValue(0.0f)
                         .setOnChangeListener(onFilterHToASliderChangeListener)
-                        .setOnApplyListener(onImagePreviewPBClickListener)
-                        .setOnCancelListener(onImagePreviewCancelListener)
+                        .setOnApplyListener(onEditPreviewPBClickListener)
+                        .setOnCancelListener(onEditPreviewCancelListener)
                         .show();
                 onFilterHToASliderChangeListener.onChange(null, 0, true);
             }
             case R.id.i_filter_levels -> {
                 drawFloatingLayersIntoImage();
-                createFilterPreview();
+                createEditPreview();
                 new LevelsDialog(this)
                         .setOnLevelsChangeListener(onFilterLevelsChangedListener)
-                        .setOnPositiveButtonClickListener(onImagePreviewPBClickListener)
-                        .setOnCancelListener(onImagePreviewCancelListener)
+                        .setOnPositiveButtonClickListener(onEditPreviewPBClickListener)
+                        .setOnCancelListener(onEditPreviewCancelListener)
                         .show()
-                        .drawHistogram(filterPreview.getPixels());
+                        .drawHistogram(editPreview.getPixels());
                 clearStatus();
             }
             case R.id.i_filter_lighting -> {
                 drawFloatingLayersIntoImage();
-                createFilterPreview();
+                createEditPreview();
                 new LightingDialog(this)
                         .setOnLightingChangeListener(onFilterLightingChangedListener)
-                        .setOnPositiveButtonClickListener(onImagePreviewPBClickListener)
-                        .setOnCancelListener(onImagePreviewCancelListener)
+                        .setOnPositiveButtonClickListener(onEditPreviewPBClickListener)
+                        .setOnCancelListener(onEditPreviewCancelListener)
                         .show();
                 clearStatus();
             }
             case R.id.i_filter_lightness -> {
                 drawFloatingLayersIntoImage();
-                createFilterPreview();
+                createEditPreview();
                 new SliderDialog(this)
                         .setIcon(item.getIcon()).setTitle(R.string.lightness)
                         .setValueFrom(-0xFF).setValueTo(0xFF).setValue(0).setStepSize(1.0f)
                         .setOnChangeListener(onFilterLightnessSliderChangeListener)
-                        .setOnApplyListener(onImagePreviewPBClickListener)
-                        .setOnCancelListener(onImagePreviewCancelListener)
+                        .setOnApplyListener(onEditPreviewPBClickListener)
+                        .setOnCancelListener(onEditPreviewCancelListener)
                         .show();
                 clearStatus();
             }
             case R.id.i_filter_posterize -> {
                 drawFloatingLayersIntoImage();
-                createFilterPreview();
+                createEditPreview();
                 new SliderDialog(this).setTitle(R.string.posterize)
                         .setValueFrom(0x02).setValueTo(0xFF).setValue(0xFF).setStepSize(1.0f)
                         .setOnChangeListener(onFilterPosterizationSliderChangeListener)
-                        .setOnApplyListener(onImagePreviewPBClickListener)
-                        .setOnCancelListener(onImagePreviewCancelListener)
+                        .setOnApplyListener(onEditPreviewPBClickListener)
+                        .setOnCancelListener(onEditPreviewCancelListener)
                         .show();
                 clearStatus();
             }
             case R.id.i_filter_saturation -> {
                 drawFloatingLayersIntoImage();
-                createFilterPreview();
+                createEditPreview();
                 new SliderDialog(this).setTitle(R.string.saturation).setValueFrom(-1.0f).setValueTo(10.0f).setValue(1.0f)
                         .setOnChangeListener(onFilterSaturationSliderChangeListener)
-                        .setOnApplyListener(onImagePreviewPBClickListener)
-                        .setOnCancelListener(onImagePreviewCancelListener)
+                        .setOnApplyListener(onEditPreviewPBClickListener)
+                        .setOnCancelListener(onEditPreviewCancelListener)
                         .show();
                 clearStatus();
             }
             case R.id.i_filter_threshold -> {
                 drawFloatingLayersIntoImage();
-                createFilterPreview();
+                createEditPreview();
                 new SliderDialog(this)
                         .setIcon(item.getIcon()).setTitle(R.string.threshold)
                         .setValueFrom(0x00).setValueTo(0xFF).setValue(0x80).setStepSize(1.0f)
                         .setOnChangeListener(onFilterThresholdSliderChangeListener)
-                        .setOnApplyListener(onImagePreviewPBClickListener)
-                        .setOnCancelListener(onImagePreviewCancelListener)
+                        .setOnApplyListener(onEditPreviewPBClickListener)
+                        .setOnCancelListener(onEditPreviewCancelListener)
                         .show();
                 onFilterThresholdSliderChangeListener.onChange(null, 0x80, true);
                 clearStatus();
@@ -5100,23 +5077,25 @@ public class MainActivity extends AppCompatActivity {
             case R.id.i_flip_vertically -> scale(1.0f, -1.0f);
             case R.id.i_frame_list -> {
                 project.frameAdapter.notifyDataSetChanged();
+                project.frames.forEach(Frame::createThumbnail);
 
                 bsdFrameList = new BottomSheetDialog(this);
                 bsdFrameList.setTitle(R.string.frames);
                 bsdFrameList.setContentView(frameList.getRoot());
                 bsdFrameList.setOnDismissListener(dialog -> {
                     ((ViewGroup) frameList.getRoot().getParent()).removeAllViews();
+                    project.frames.forEach(Frame::recycleThumbnail);
                     bsdFrameList = null;
                 });
                 bsdFrameList.show();
             }
             case R.id.i_generate_noise -> {
                 drawFloatingLayersIntoImage();
-                createFilterPreview();
+                createEditPreview();
                 new NoiseGenerator(this)
                         .setOnPropChangedListener(onNoisePropChangedListener)
-                        .setOnConfirmListener(onImagePreviewPBClickListener)
-                        .setOnCancelListener(onImagePreviewCancelListener)
+                        .setOnConfirmListener(onEditPreviewPBClickListener)
+                        .setOnCancelListener(onEditPreviewCancelListener)
                         .show();
                 clearStatus();
             }
@@ -5223,14 +5202,14 @@ public class MainActivity extends AppCompatActivity {
             }
             case R.id.i_transform -> {
                 drawFloatingLayersIntoImage();
-                createFilterPreview();
+                createEditPreview();
                 new MatrixManager(this,
                         onMatrixChangedListener,
-                        onImagePreviewPBClickListener,
+                        onEditPreviewPBClickListener,
                         dialog -> {
                             drawBitmapOntoView(true);
-                            filterPreview.recycle();
-                            filterPreview = null;
+                            editPreview.recycle();
+                            editPreview = null;
                             clearStatus();
                         })
                         .show();
@@ -5310,7 +5289,6 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
         activityMain.btgZoom.uncheck(R.id.b_zoom);
-        this.onIVTouchListener = onTouchIVListener;
         activityMain.canvas.flIv.setOnTouchListener(onTouchIVListener);
         hideToolOptions();
         isShapeStopped = true;
@@ -5442,8 +5420,8 @@ public class MainActivity extends AppCompatActivity {
         transformer.recycle();
         ref.recycle();
         brush.recycleAll();
-        if (filterPreview != null) {
-            filterPreview.recycle();
+        if (editPreview != null) {
+            editPreview.recycle();
         }
         recycleBitmap(chessboard);
         recycleBitmap(chessboardBitmap);
@@ -5742,7 +5720,6 @@ public class MainActivity extends AppCompatActivity {
         onIVTouchWithEyedropperListener = Settings.INST.argbColorType()
                 ? onIVTouchWithPreciseEyedropperListener : onIVTouchWithImpreciseEyedropperListener;
         if (activityMain != null && activityMain.tools.btgTools.getCheckedButtonId() == R.id.b_eyedropper) {
-            onIVTouchListener = onIVTouchWithEyedropperListener;
             if (activityMain.btgZoom.getCheckedButtonId() != R.id.b_zoom) {
                 activityMain.canvas.flIv.setOnTouchListener(onIVTouchWithEyedropperListener);
             }

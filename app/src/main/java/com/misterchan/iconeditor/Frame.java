@@ -20,6 +20,7 @@ public class Frame {
         }
     };
 
+    private Bitmap thumbnail;
     public int delay;
     public int selectedLayerIndex = 0;
     public LayerTree layerTree;
@@ -30,12 +31,26 @@ public class Frame {
         layerTree = Layers.computeLayerTree(layers);
     }
 
+    public synchronized void createThumbnail() {
+        if (thumbnail != null && !thumbnail.isRecycled()) {
+            thumbnail.recycle();
+        }
+        thumbnail = Layers.mergeLayers(layerTree);
+    }
+
     public Layer getBackgroundLayer() {
         return layers.get(layers.size() - 1);
     }
 
     public Layer getSelectedLayer() {
         return layers.get(selectedLayerIndex);
+    }
+
+    public synchronized Bitmap getThumbnail() {
+        if (thumbnail == null || thumbnail.isRecycled()) {
+            createThumbnail();
+        }
+        return thumbnail;
     }
 
     public int group() {
@@ -80,5 +95,12 @@ public class Frame {
         final Bitmap background = getBackgroundLayer().bitmap;
         return Layers.mergeLayers(Layers.computeLayerTree(refLayers),
                 new Rect(0, 0, background.getWidth(), background.getHeight()), false);
+    }
+
+    public synchronized void recycleThumbnail() {
+        if (thumbnail != null) {
+            if (!thumbnail.isRecycled()) thumbnail.recycle();
+            thumbnail = null;
+        }
     }
 }

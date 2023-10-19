@@ -48,7 +48,6 @@ public class CurvesDialog {
     private ImageView ivHistogram;
     private int prevBX, prevBY;
     private int selectedCompIndex;
-    private int[] srcPixels;
     private OnCurvesChangedListener listener;
     private final Paint normalPaint = new Paint();
 
@@ -65,6 +64,9 @@ public class CurvesDialog {
     @ColorInt
     @Size(5)
     private final int[] histColors = new int[5];
+
+    @ColorInt
+    private int[] srcPixels;
 
     /**
      * <table>
@@ -293,7 +295,7 @@ public class CurvesDialog {
         return this;
     }
 
-    public CurvesDialog setSource(int[] pixels) {
+    public CurvesDialog setSource(@ColorInt int[] pixels) {
         srcPixels = pixels;
         return this;
     }

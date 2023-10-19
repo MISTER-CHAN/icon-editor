@@ -110,7 +110,7 @@ public class QualityManager {
             sQuality.setValue(quality);
             sQuality.addOnChangeListener((OnSliderValueChangeListener) (slider, value) -> {
                 quality = (int) value;
-                tietQuality.setText(String.valueOf(value));
+                tietQuality.setText(String.valueOf(quality));
             });
             tietQuality.setText(String.valueOf(quality));
             tietQuality.addTextChangedListener((AfterTextChangedListener) s -> {

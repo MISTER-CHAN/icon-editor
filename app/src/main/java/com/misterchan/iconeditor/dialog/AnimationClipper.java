@@ -30,22 +30,17 @@ public class AnimationClipper {
     private final AlertDialog.Builder builder;
     private ImageView iv;
     private int from, to;
-    private final List<Bitmap> frames;
+    private final List<Frame> frames;
 
     public AnimationClipper(Context context, Project project, OnConfirmListener listener) {
-        frames = new ArrayList<>();
-
         builder = new MaterialAlertDialogBuilder(context)
                 .setIcon(R.drawable.ic_content_cut).setTitle(R.string.clip)
                 .setView(R.layout.animation_clipper)
                 .setPositiveButton(R.string.ok, (dialog, which) ->
                         listener.onConfirm(from, to))
-                .setNegativeButton(R.string.cancel, null)
-                .setOnDismissListener(dialog -> frames.forEach(Bitmap::recycle));
+                .setNegativeButton(R.string.cancel, null);
 
-        for (final Frame f : project.frames) {
-            frames.add(Layers.mergeLayers(f.layerTree));
-        }
+        frames = project.frames;
     }
 
     public AnimationClipper show() {
@@ -55,7 +50,7 @@ public class AnimationClipper {
 
         final AlertDialog dialog = builder.show();
 
-        final Bitmap firstFrame = frames.get(0);
+        final Bitmap firstFrame = frames.get(0).getThumbnail();
         final int lastPos = frames.size() - 1;
         final int width = firstFrame.getWidth(), height = firstFrame.getHeight();
 
@@ -75,12 +70,12 @@ public class AnimationClipper {
                 final List<Float> values = slider.getValues();
                 from = values.get(inclusive ? 0 : 1).intValue();
                 to = values.get(inclusive ? 1 : 0).intValue();
-                iv.setImageBitmap(frames.get((int) value));
+                iv.setImageBitmap(frames.get((int) value).getThumbnail());
             }
 
             @Override
             public void onStartTrackingTouch(@NonNull RangeSlider slider) {
-                iv.setImageBitmap(frames.get(slider.getValues().get(slider.getFocusedThumbIndex()).intValue()));
+                iv.setImageBitmap(frames.get(slider.getValues().get(slider.getFocusedThumbIndex()).intValue()).getThumbnail());
             }
         };
         rs.addOnChangeListener(oscl);
@@ -93,7 +88,7 @@ public class AnimationClipper {
             flIv.setLayoutParams(lp);
         });
 
-        iv.setImageBitmap(frames.get(0));
+        iv.setImageBitmap(firstFrame);
 
         return this;
     }
