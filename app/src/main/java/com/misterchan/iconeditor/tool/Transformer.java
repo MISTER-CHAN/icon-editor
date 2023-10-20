@@ -142,6 +142,7 @@ public class Transformer implements FloatingLayer {
         cv.drawBitmap(src, 0.0f, 0.0f, paint);
         bitmap.recycle();
         bitmap = bm;
+        canvas = new Canvas(bm);
         return r;
     }
 

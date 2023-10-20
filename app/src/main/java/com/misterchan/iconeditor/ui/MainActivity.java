@@ -47,6 +47,7 @@ import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.PickVisualMediaRequest;
@@ -1173,6 +1174,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
     private final CellGridManager.OnApplyListener onCellGridApplyListener = this::drawGridOntoView;
 
     private final ImageSizeManager.OnApplyListener onImageSizeApplyListener = (width, height, transform) -> {
+        drawFloatingLayersIntoImage();
         if (layer == frame.getBackgroundLayer()) {
             for (final Frame f : project.frames) {
                 resizeImage(f, f.getBackgroundLayer(), width, height, transform, null, 0, 0);
@@ -2880,10 +2882,10 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         activityMain.optionsTransformer.cbLar.setVisibility(checkedId == R.id.b_scale ? View.VISIBLE : View.GONE);
         activityMain.optionsTransformer.llMesh.setVisibility(checkedId == R.id.b_mesh ? View.VISIBLE : View.GONE);
         if (hasSelection) {
+            transformer.apply();
             if (checkedId == R.id.b_mesh) {
                 createTransformerMesh();
             } else {
-                transformer.apply();
                 transformer.mesh = null;
             }
             drawSelectionOntoView();
@@ -3955,11 +3957,6 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         final TabLayout.Tab t = activityMain.tlProjectList.newTab().setText(project.getTitle()).setTag(project);
         project.tab = t;
         activityMain.tlProjectList.addTab(t, position, false);
-    }
-
-    @Override
-    public void onBackPressed() {
-        moveTaskToBack(true);
     }
 
     @Override
@@ -5084,21 +5081,15 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
             case R.id.i_select_all -> {
                 selectAll();
                 hasSelection = true;
-                switch (activityMain.tools.btgTools.getCheckedButtonId()) {
-                    case R.id.b_transformer -> {
-                        if (activityMain.optionsTransformer.btgTransformer.getCheckedButtonId() == R.id.b_mesh) {
-                            createTransformerMesh();
-                        }
-                    }
+                if (activityMain.tools.btgTools.getCheckedButtonId() == R.id.b_transformer
+                        && activityMain.optionsTransformer.btgTransformer.getCheckedButtonId() == R.id.b_mesh) {
+                    createTransformerMesh();
                 }
                 drawSelectionOntoView();
                 clearStatus();
             }
             case R.id.i_settings -> startActivity(new Intent(this, SettingsActivity.class));
-            case R.id.i_size -> {
-                drawFloatingLayersIntoImage();
-                new ImageSizeManager(this, bitmap, onImageSizeApplyListener).show();
-            }
+            case R.id.i_size -> new ImageSizeManager(this, bitmap, onImageSizeApplyListener).show();
             case R.id.i_transform -> {
                 drawFloatingLayersIntoImage();
                 createEditPreview();
@@ -5320,9 +5311,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         transformer.recycle();
         ref.recycle();
         brush.recycleAll();
-        if (editPreview != null) {
-            editPreview.recycle();
-        }
+        if (editPreview != null) editPreview.recycle();
         BitmapUtils.recycle(chessboard);
         BitmapUtils.recycle(chessboardBitmap);
         BitmapUtils.recycle(clipboard);
@@ -5336,9 +5325,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
     }
 
     private void recycleTransformer() {
-        if (transformer.isRecycled()) {
-            return;
-        }
+        if (transformer.isRecycled()) return;
         transformer.recycle();
         if (transformerActionMode != null) {
             transformerActionMode.finish();
@@ -5353,9 +5340,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                 layer.bitmap.getConfig(), layer.bitmap.hasAlpha(), layer.bitmap.getColorSpace());
         final Canvas cv = new Canvas(bm);
         if (scaleType != null) {
-            if (newImage == null) {
-                newImage = layer.bitmap;
-            }
+            if (newImage == null) newImage = layer.bitmap;
             switch (scaleType) {
                 case STRETCH -> cv.drawBitmap(newImage,
                         new Rect(0, 0, layer.bitmap.getWidth(), layer.bitmap.getHeight()),
@@ -5392,7 +5377,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
             drawGridOntoView();
             drawSelectionOntoView();
 
-            clearStatus(); // Prevent from displaying old size
+            clearStatus(); // Prevent from displaying the old size
         }
     }
 
@@ -5419,9 +5404,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
             drawGridOntoView();
         } else {
             if (transformer.isRecycled()) {
-                if (!hasSelection) {
-                    selectAll();
-                }
+                if (!hasSelection) selectAll();
                 final int left = selection.r.left, top = selection.r.top, width = selection.r.width(), height = selection.r.height();
                 final Bitmap bm = Bitmap.createBitmap(bitmap, left, top, width, height);
                 final Matrix matrix = new Matrix();
@@ -5508,9 +5491,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
 
     private void scale(float sx, float sy) {
         if (transformer.isRecycled()) {
-            if (!hasSelection) {
-                selectAll();
-            }
+            if (!hasSelection) selectAll();
             final int left = selection.r.left, top = selection.r.top, width = selection.r.width(), height = selection.r.height();
             final Bitmap bm = Bitmap.createBitmap(bitmap, left, top, width, height);
             final Matrix matrix = new Matrix();
