@@ -7,15 +7,9 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 
-public class DrawingPrimitivePreview implements FloatingLayer {
-    private static final Paint PAINT_CLEAR = new Paint() {
-        {
-            setAntiAlias(false);
-            setBlendMode(BlendMode.CLEAR);
-            setFilterBitmap(false);
-        }
-    };
+import com.misterchan.iconeditor.util.BitmapUtils;
 
+public class DrawingPrimitivePreview implements FloatingLayer {
     private Bitmap bitmap;
     private Canvas canvas;
 
@@ -25,7 +19,7 @@ public class DrawingPrimitivePreview implements FloatingLayer {
     }
 
     public void erase(Rect rect) {
-        canvas.drawRect(rect, PAINT_CLEAR);
+        canvas.drawRect(rect, BitmapUtils.PAINT_CLEAR);
     }
 
     @Override

@@ -12,21 +12,6 @@ import java.util.List;
 import java.util.Stack;
 
 public class Layers {
-    private static final Paint PAINT_SRC = new Paint() {
-        {
-            setAntiAlias(false);
-            setBlendMode(BlendMode.SRC);
-            setFilterBitmap(false);
-        }
-    };
-
-    private static final Paint PAINT_SRC_OVER = new Paint() {
-        {
-            setAntiAlias(false);
-            setFilterBitmap(false);
-        }
-    };
-
     private static void addFilters(Bitmap bitmap, Layer layer) {
         addFilters(bitmap, new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight()), layer);
     }
@@ -109,7 +94,7 @@ public class Layers {
                 top.bitmap.getConfig(), top.bitmap.hasAlpha(), top.bitmap.getColorSpace());
         final Bitmap lBm = bottom.bitmap;
         final Canvas uCv = new Canvas(uBm), lCv = new Canvas(lBm);
-        uCv.drawBitmap(top.passBelow ? lBm : top.bitmap, 0.0f, 0.0f, PAINT_SRC);
+        uCv.drawBitmap(top.passBelow ? lBm : top.bitmap, 0.0f, 0.0f, BitmapUtils.PAINT_SRC);
         if (top.filter != null) {
             addFilters(uBm, top);
         }
@@ -187,7 +172,7 @@ public class Layers {
                         }
                     }
 
-                    final Paint paint = node != backgroundNode || node.isRoot || base != null ? layer.paint : PAINT_SRC;
+                    final Paint paint = node != backgroundNode || node.isRoot || base != null ? layer.paint : BitmapUtils.PAINT_SRC;
                     if (layer.clipToBelow) {
                         pixels = BitmapUtils.getPixels(bitmap, dst);
                     }
@@ -196,8 +181,8 @@ public class Layers {
                             final Bitmap bmExtra = Bitmap.createBitmap(intW, intH, Bitmap.Config.ARGB_8888); // Intersection bitmap
                             final Canvas cvExtra = new Canvas(bmExtra);
                             try {
-                                cvExtra.drawBitmap(specifiedLayerBm, src, intRel, PAINT_SRC);
-                                cvExtra.drawBitmap(extraLayer.getBitmap(), extraSrc, extraDst, PAINT_SRC_OVER);
+                                cvExtra.drawBitmap(specifiedLayerBm, src, intRel, BitmapUtils.PAINT_SRC);
+                                cvExtra.drawBitmap(extraLayer.getBitmap(), extraSrc, extraDst, BitmapUtils.PAINT_SRC_OVER);
                                 canvas.drawBitmap(bmExtra, intRel, dst, paint);
                             } finally {
                                 bmExtra.recycle();

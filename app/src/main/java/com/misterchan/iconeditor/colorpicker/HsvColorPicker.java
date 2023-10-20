@@ -30,6 +30,7 @@ import com.misterchan.iconeditor.R;
 import com.misterchan.iconeditor.Settings;
 import com.misterchan.iconeditor.listener.AfterTextChangedListener;
 import com.misterchan.iconeditor.listener.OnSliderValueChangeListener;
+import com.misterchan.iconeditor.util.BitmapUtils;
 
 class HsvColorPicker extends ColorPicker {
     private static final float THUMB_RADIUS = 20.0f;
@@ -50,6 +51,8 @@ class HsvColorPicker extends ColorPicker {
     private ImageView ivHue, ivSatVal;
     private final int alphaRadix;
     private int hueImageW, hueImageH, satValImageW, satValImageH;
+    private final Paint huePaint = new Paint(BitmapUtils.PAINT_SRC);
+    private final Paint satValPaint = new Paint(BitmapUtils.PAINT_SRC);
     private Shader valShader;
     private Slider sAlpha;
     private Slider sHue, sSaturation, sValue;
@@ -59,22 +62,6 @@ class HsvColorPicker extends ColorPicker {
 
     @Size(3)
     private final float[] hsv = new float[3], hue = {0.0f, 1.0f, 1.0f};
-
-    private final Paint huePaint = new Paint() {
-        {
-            setAntiAlias(false);
-            setBlendMode(BlendMode.SRC);
-            setFilterBitmap(false);
-        }
-    };
-
-    private final Paint satValPaint = new Paint() {
-        {
-            setAntiAlias(false);
-            setBlendMode(BlendMode.SRC);
-            setFilterBitmap(false);
-        }
-    };
 
     private HsvColorPicker(Context context, final OnColorPickListener onColorPickListener, @ColorLong final Long oldColor) {
         this(context, R.string.convert_hsv_to_rgb, onColorPickListener, oldColor, 0);

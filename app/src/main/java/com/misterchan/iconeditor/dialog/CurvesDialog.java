@@ -16,7 +16,6 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.IntRange;
@@ -29,6 +28,7 @@ import com.google.android.material.tabs.TabLayout;
 import com.misterchan.iconeditor.Color;
 import com.misterchan.iconeditor.Settings;
 import com.misterchan.iconeditor.R;
+import com.misterchan.iconeditor.util.BitmapUtils;
 
 import java.util.function.Function;
 
@@ -90,12 +90,7 @@ public class CurvesDialog {
         }
     };
 
-    private final Paint histPaint = new Paint() {
-        {
-            setAntiAlias(false);
-            setBlendMode(BlendMode.SRC);
-        }
-    };
+    private final Paint histPaint = new Paint(BitmapUtils.PAINT_SRC);
 
     {
         for (int i = 0x00; i <= 0xFF; ++i) {

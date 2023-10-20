@@ -7,19 +7,12 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 
 import com.misterchan.iconeditor.ui.LayerAdapter;
+import com.misterchan.iconeditor.util.BitmapUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Frame {
-    private static final Paint PAINT_SRC = new Paint() {
-        {
-            setAntiAlias(false);
-            setBlendMode(BlendMode.SRC);
-            setFilterBitmap(false);
-        }
-    };
-
     private Bitmap thumbnail;
     public int delay;
     public int selectedLayerIndex = 0;
@@ -88,7 +81,7 @@ public class Frame {
                 final Layer layer = refLayers.get(0);
                 final Bitmap src = layer.bitmap, background = getBackgroundLayer().bitmap;
                 final Bitmap dst = Bitmap.createBitmap(background.getWidth(), background.getHeight(), Bitmap.Config.ARGB_8888);
-                new Canvas(dst).drawBitmap(src, layer.left, layer.top, PAINT_SRC);
+                new Canvas(dst).drawBitmap(src, layer.left, layer.top, BitmapUtils.PAINT_SRC);
                 return dst;
             }
         }
@@ -99,7 +92,7 @@ public class Frame {
 
     public synchronized void recycleThumbnail() {
         if (thumbnail != null) {
-            if (!thumbnail.isRecycled()) thumbnail.recycle();
+            thumbnail.recycle();
             thumbnail = null;
         }
     }

@@ -10,16 +10,9 @@ import android.graphics.RectF;
 
 import com.misterchan.iconeditor.Color;
 import com.misterchan.iconeditor.FloatingLayer;
+import com.misterchan.iconeditor.util.BitmapUtils;
 
 public class Transformer implements FloatingLayer {
-
-    private final Paint PAINT_SRC = new Paint() {
-        {
-            setAntiAlias(false);
-            setBlendMode(BlendMode.SRC);
-            setFilterBitmap(false);
-        }
-    };
 
     public static class Mesh {
         public final int width, height;
@@ -48,7 +41,7 @@ public class Transformer implements FloatingLayer {
         if (isRecycled()) {
             return;
         }
-        new Canvas(src).drawBitmap(bitmap, 0.0f, 0.0f, PAINT_SRC);
+        src = BitmapUtils.createBitmap(bitmap);
     }
 
     public void createMesh(int width, int height) {
@@ -98,7 +91,7 @@ public class Transformer implements FloatingLayer {
     }
 
     public void reset() {
-        canvas.drawBitmap(src, 0.0f, 0.0f, PAINT_SRC);
+        canvas.drawBitmap(src, 0.0f, 0.0f, BitmapUtils.PAINT_SRC);
     }
 
     public void rotate(float degrees, boolean filter, boolean antiAlias) {
@@ -119,13 +112,13 @@ public class Transformer implements FloatingLayer {
         src = bitmap;
         this.bitmap = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
         canvas = new Canvas(this.bitmap);
-        canvas.drawBitmap(bitmap, 0.0f, 0.0f, PAINT_SRC);
+        canvas.drawBitmap(bitmap, 0.0f, 0.0f, BitmapUtils.PAINT_SRC);
         this.rect = rect;
     }
 
-    public void stretch(int width, int height, boolean filter, boolean antiAlias) {
+    public void stretch(boolean filter, boolean antiAlias) {
         final Matrix matrix = new Matrix();
-        matrix.setScale((float) width / (float) src.getWidth(), (float) height / (float) src.getHeight());
+        matrix.setScale((float) rect.width() / (float) src.getWidth(), (float) rect.height() / (float) src.getHeight());
         transform(matrix, filter, antiAlias);
     }
 

@@ -15,30 +15,6 @@ import androidx.annotation.Size;
 import com.misterchan.iconeditor.util.BitmapUtils;
 
 public class EditPreview {
-
-    private static final Paint PAINT_CLEAR = new Paint() {
-        {
-            setAntiAlias(false);
-            setBlendMode(BlendMode.CLEAR);
-            setFilterBitmap(false);
-        }
-    };
-
-    private static final Paint PAINT_SRC = new Paint() {
-        {
-            setAntiAlias(false);
-            setBlendMode(BlendMode.SRC);
-            setFilterBitmap(false);
-        }
-    };
-
-    private static final Paint PAINT = new Paint() {
-        {
-            setAntiAlias(false);
-            setFilterBitmap(false);
-        }
-    };
-
     private Bitmap bitmap;
     private Bitmap bm;
     private final Bitmap src;
@@ -56,7 +32,7 @@ public class EditPreview {
         bm = Bitmap.createBitmap(w, h, bitmap.getConfig(), true, bitmap.getColorSpace());
         canvas = new Canvas(this.bitmap);
         cv = new Canvas(bm);
-        cv.drawBitmap(bitmap, rect, new RectF(0.0f, 0.0f, w, h), PAINT_SRC);
+        cv.drawBitmap(bitmap, rect, new RectF(0.0f, 0.0f, w, h), BitmapUtils.PAINT_SRC);
         pixels = new int[w * h];
         bm.getPixels(pixels, 0, w, 0, 0, w, h);
         this.rect = rect;
@@ -84,11 +60,11 @@ public class EditPreview {
     }
 
     public void clearFilters() {
-        canvas.drawBitmap(bm, rect.left, rect.top, PAINT_SRC);
+        canvas.drawBitmap(bm, rect.left, rect.top, BitmapUtils.PAINT_SRC);
     }
 
     public void drawBitmap(Bitmap b) {
-        canvas.drawBitmap(b, rect.left, rect.top, PAINT);
+        canvas.drawBitmap(b, rect.left, rect.top, BitmapUtils.PAINT_SRC_OVER);
     }
 
     public void drawColor(@ColorInt int color, BlendMode blendMode) {
@@ -161,7 +137,7 @@ public class EditPreview {
     }
 
     public void reset() {
-        canvas.drawBitmap(bm, rect.left, rect.top, PAINT_SRC);
+        canvas.drawBitmap(bm, rect.left, rect.top, BitmapUtils.PAINT_SRC);
     }
 
     public void setPixels(@ColorInt int[] pixels, int width, int height) {
@@ -175,9 +151,9 @@ public class EditPreview {
     }
 
     public void transform(Matrix matrix) {
-        canvas.drawBitmap(src, 0.0f, 0.0f, PAINT_SRC);
-        canvas.drawRect(rect, PAINT_CLEAR);
+        canvas.drawBitmap(src, 0.0f, 0.0f, BitmapUtils.PAINT_SRC);
+        canvas.drawRect(rect, BitmapUtils.PAINT_CLEAR);
         matrix.postTranslate(rect.left, rect.top);
-        canvas.drawBitmap(bm, matrix, PAINT_SRC);
+        canvas.drawBitmap(bm, matrix, BitmapUtils.PAINT_SRC);
     }
 }

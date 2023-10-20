@@ -22,10 +22,25 @@ import java.util.Queue;
 import java.util.Random;
 
 public class BitmapUtils {
-    private static final Paint PAINT = new Paint() {
+    public static final Paint PAINT_CLEAR = new Paint() {
+        {
+            setAntiAlias(false);
+            setBlendMode(BlendMode.CLEAR);
+            setFilterBitmap(false);
+        }
+    };
+
+    public static final Paint PAINT_SRC = new Paint() {
         {
             setAntiAlias(false);
             setBlendMode(BlendMode.SRC);
+            setFilterBitmap(false);
+        }
+    };
+
+    public static final Paint PAINT_SRC_OVER = new Paint() {
+        {
+            setAntiAlias(false);
             setFilterBitmap(false);
         }
     };
@@ -165,9 +180,9 @@ public class BitmapUtils {
         final Bitmap dst = Bitmap.createBitmap(w, h, config, hasAlpha, colorSpace);
         final Canvas dstCv = new Canvas(dst);
         if (rect != null) {
-            dstCv.drawBitmap(src, rect, new Rect(0, 0, w, h), PAINT);
+            dstCv.drawBitmap(src, rect, new Rect(0, 0, w, h), PAINT_SRC);
         } else {
-            dstCv.drawBitmap(src, 0.0f, 0.0f, PAINT);
+            dstCv.drawBitmap(src, 0.0f, 0.0f, PAINT_SRC);
         }
         return dst;
     }
@@ -362,6 +377,12 @@ public class BitmapUtils {
                     ob = Math.round(ib / 255.0f * (level - 1.0f)) * 0xFF / (level - 1);
 
             dst[i] = src[i] & Color.BLACK | Color.rgb(or, og, ob);
+        }
+    }
+
+    public static void recycle(Bitmap bitmap) {
+        if (bitmap != null) {
+            bitmap.recycle();
         }
     }
 

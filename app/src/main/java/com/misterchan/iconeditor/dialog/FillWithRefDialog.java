@@ -4,9 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
-import android.graphics.BlendMode;
 import android.graphics.Canvas;
-import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.Shader;
 import android.view.Gravity;
@@ -20,16 +18,9 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.slider.Slider;
 import com.misterchan.iconeditor.R;
 import com.misterchan.iconeditor.listener.OnSliderChangeListener;
+import com.misterchan.iconeditor.util.BitmapUtils;
 
 public class FillWithRefDialog {
-    private static final Paint PAINT = new Paint() {
-        {
-            setAntiAlias(false);
-            setBlendMode(BlendMode.SRC);
-            setFilterBitmap(false);
-        }
-    };
-
     public interface OnChangeListener {
         void onChange(Bitmap bitmap, Shader.TileMode tileMode, boolean stopped);
     }
@@ -66,7 +57,7 @@ public class FillWithRefDialog {
             dw = dh * sw / sh;
         }
         dst = Bitmap.createBitmap(dw, dh, Bitmap.Config.ARGB_8888);
-        new Canvas(dst).drawBitmap(src, srcRect, new Rect(0, 0, dw, dh), PAINT);
+        new Canvas(dst).drawBitmap(src, srcRect, new Rect(0, 0, dw, dh), BitmapUtils.PAINT_SRC);
         onChange(stopped);
     };
 
