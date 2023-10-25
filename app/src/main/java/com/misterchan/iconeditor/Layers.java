@@ -5,6 +5,7 @@ import android.graphics.BlendMode;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.util.Log;
 
 import com.misterchan.iconeditor.util.BitmapUtils;
 
@@ -94,7 +95,7 @@ public class Layers {
                 top.bitmap.getConfig(), top.bitmap.hasAlpha(), top.bitmap.getColorSpace());
         final Bitmap lBm = bottom.bitmap;
         final Canvas uCv = new Canvas(uBm), lCv = new Canvas(lBm);
-        uCv.drawBitmap(top.passBelow ? lBm : top.bitmap, 0.0f, 0.0f, BitmapUtils.PAINT_SRC);
+        uCv.drawBitmap(top.bitmap, 0.0f, 0.0f, BitmapUtils.PAINT_SRC);
         if (top.filter != null) {
             addFilters(uBm, top);
         }
@@ -108,12 +109,12 @@ public class Layers {
     }
 
     public static Bitmap mergeLayers(final LayerTree tree, final Rect rect, final boolean skipInvisible) {
-        return mergeLayers(tree, rect, null, null, skipInvisible, null, null, null);
+        return mergeLayers(tree, rect, null, skipInvisible, null, null, null);
     }
 
     public static Bitmap mergeLayers(final LayerTree tree, final Rect rect,
                                      final Layer specifiedLayer, final Bitmap specifiedLayerBm, final FloatingLayer extraLayer) {
-        return mergeLayers(tree, rect, null, null, true, specifiedLayer, specifiedLayerBm, extraLayer);
+        return mergeLayers(tree, rect, null, true, specifiedLayer, specifiedLayerBm, extraLayer);
     }
 
     /**
@@ -123,14 +124,13 @@ public class Layers {
      * @throws RuntimeException if any bitmap being drawn is recycled as this method is not thread-safe
      */
     public static Bitmap mergeLayers(final LayerTree tree, final Rect rect,
-                                     final Bitmap base, final Paint basePaint,
-                                     final boolean skipInvisible,
+                                     final Bitmap baseBm, final boolean skipInvisible,
                                      final Layer specifiedLayer, final Bitmap specifiedLayerBm, final FloatingLayer extraLayer) throws RuntimeException {
         final LayerTree.Node backgroundNode = tree.getBackground();
         final Bitmap bitmap = Bitmap.createBitmap(rect.width(), rect.height(), Bitmap.Config.ARGB_8888);
         final Canvas canvas = new Canvas(bitmap);
-        if (base != null) {
-            canvas.drawBitmap(base, 0.0f, 0.0f, basePaint);
+        if (baseBm != null) {
+            canvas.drawBitmap(baseBm, 0.0f, 0.0f, BitmapUtils.PAINT_SRC);
         }
 
         try {
@@ -172,32 +172,46 @@ public class Layers {
                         }
                     }
 
-                    final Paint paint = node != backgroundNode || node.isRoot || base != null ? layer.paint : BitmapUtils.PAINT_SRC;
+                    final boolean isSubtreeChild = node != backgroundNode || node.isRoot;
+                    final Paint paint = !isSubtreeChild && baseBm == null ? BitmapUtils.PAINT_SRC : layer.paint;
                     if (layer.clipToBelow) {
                         pixels = BitmapUtils.getPixels(bitmap, dst);
                     }
-                    if (layer == specifiedLayer) {
-                        if (extraDst != null) {
-                            final Bitmap bmExtra = Bitmap.createBitmap(intW, intH, Bitmap.Config.ARGB_8888); // Intersection bitmap
-                            final Canvas cvExtra = new Canvas(bmExtra);
-                            try {
-                                cvExtra.drawBitmap(specifiedLayerBm, src, intRel, BitmapUtils.PAINT_SRC);
-                                cvExtra.drawBitmap(extraLayer.getBitmap(), extraSrc, extraDst, BitmapUtils.PAINT_SRC_OVER);
-                                canvas.drawBitmap(bmExtra, intRel, dst, paint);
-                            } finally {
-                                bmExtra.recycle();
+                    {
+                        final boolean hasFilter = layer.filter != null && isSubtreeChild;
+                        final boolean hasExtra = layer == specifiedLayer && extraDst != null;
+                        final Bitmap bm = hasFilter || hasExtra ? Bitmap.createBitmap(intW, intH, Bitmap.Config.ARGB_8888) : null;
+                        final Canvas cv = bm != null ? new Canvas(bm) : canvas;
+                        final Rect d = bm != null ? intRel : dst;
+                        final Paint p = hasFilter ? BitmapUtils.PAINT_SRC_OVER : paint;
+                        try {
+                            if (hasFilter) {
+                                cv.drawBitmap(bitmap, dst, intRel, BitmapUtils.PAINT_SRC);
                             }
-                        } else {
-                            canvas.drawBitmap(specifiedLayerBm, src, dst, paint);
+                            if (layer == specifiedLayer) {
+                                if (extraDst != null) {
+                                    cv.drawBitmap(specifiedLayerBm, src, intRel, hasFilter ? p : BitmapUtils.PAINT_SRC);
+                                    cv.drawBitmap(extraLayer.getBitmap(), extraSrc, extraDst, BitmapUtils.PAINT_SRC_OVER);
+                                } else {
+                                    cv.drawBitmap(specifiedLayerBm, src, d, p);
+                                }
+                            } else {
+                                cv.drawBitmap(layer.bitmap, src, d, p);
+                            }
+                        } catch (final RuntimeException e) {
+                            if (bm != null) bm.recycle();
+                            throw e;
                         }
-                    } else {
-                        canvas.drawBitmap(layer.bitmap, src, dst, paint);
+                        if (hasFilter) {
+                            addFilters(bm, layer);
+                        }
+                        if (bm != null) {
+                            canvas.drawBitmap(bm, intRel, dst, paint);
+                            bm.recycle();
+                        }
                     }
                     if (layer.colorRange.enabled) {
                         BitmapUtils.selectByColorRange(bitmap, dst, layer.colorRange);
-                    }
-                    if (layer.filter != null) {
-                        addFilters(bitmap, dst, layer);
                     }
                     if (layer.clipToBelow) {
                         BitmapUtils.clip(bitmap, dst, pixels);
@@ -206,16 +220,11 @@ public class Layers {
                     if (layer.clipToBelow) {
                         pixels = BitmapUtils.getPixels(bitmap, rect);
                     }
-                    final Bitmap mergedChildren;
-                    if (layer.passBelow) {
-                        mergedChildren = mergeLayers(children, rect, bitmap, layer.paint,
-                                skipInvisible, specifiedLayer, specifiedLayerBm, extraLayer);
-                        BitmapUtils.fillInBlank(mergedChildren, bitmap);
-                    } else {
-                        mergedChildren = mergeLayers(children, rect, null, null,
-                                skipInvisible, specifiedLayer, specifiedLayerBm, extraLayer);
-                        canvas.drawBitmap(mergedChildren, 0.0f, 0.0f, layer.paint);
-                    }
+                    final Bitmap mergedChildren = mergeLayers(children, rect,
+                            layer.filter != null && !node.isRoot ? bitmap : null,
+                            skipInvisible, specifiedLayer, specifiedLayerBm, extraLayer);
+                    addFilters(mergedChildren, layer);
+                    canvas.drawBitmap(mergedChildren, 0.0f, 0.0f, layer.paint);
                     mergedChildren.recycle();
                     if (layer.clipToBelow) {
                         BitmapUtils.clip(bitmap, rect, pixels);

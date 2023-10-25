@@ -340,14 +340,6 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         }
     };
 
-    private final Paint patcher = new Paint() {
-        {
-            setBlendMode(BlendMode.DST_IN);
-            setColor(Color.BLACK);
-            setStyle(Style.FILL_AND_STROKE);
-        }
-    };
-
     private final Paint rulerPaint = new Paint() {
         {
             setColor(Color.GRAY);
@@ -1043,7 +1035,6 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
 
         menu.findItem(R.id.i_layer_clipping).setChecked(layer.clipToBelow);
         menu.findItem(R.id.i_layer_level_up).setEnabled(layer.getLevel() > 0);
-        menu.findItem(R.id.i_layer_pass_below).setChecked(layer.passBelow);
         menu.findItem(R.id.i_layer_reference).setChecked(layer.reference);
 
         menu.findItem(layer.filter == null ? R.id.i_layer_filter_none : switch (layer.filter) {
@@ -4217,24 +4208,6 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                 }
                 addLayer(frame, l, frame.selectedLayerIndex, true);
             }
-            case R.id.i_layer_add_filter_layer -> {
-                final Layer l = new Layer();
-                l.bitmap = Bitmap.createBitmap(
-                        hasSelection ? selection.r.width() : bitmap.getWidth(),
-                        hasSelection ? selection.r.height() : bitmap.getHeight(),
-                        bitmap.getConfig(), true, bitmap.getColorSpace());
-                l.name = getString(R.string.filter_noun);
-                l.setLevel(Settings.INST.newLayerLevel() ? layer.getLevel() : 0);
-                l.paint.setBlendMode(BlendMode.SRC_OVER);
-                l.passBelow = true;
-                if (Settings.INST.newLayerLevel() || hasSelection) {
-                    l.moveBy(layer.left, layer.top);
-                    if (hasSelection) {
-                        l.moveBy(selection.r.left, selection.r.top);
-                    }
-                }
-                addLayer(frame, l, frame.selectedLayerIndex, true);
-            }
             case R.id.i_layer_alpha -> {
                 if (ssdLayerList != null) {
                     ssdLayerList.dismiss();
@@ -4305,7 +4278,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
             case R.id.i_layer_create_clipping_mask -> {
                 switch (layer.paint.getBlendMode()) {
                     case SRC_OVER, SRC_ATOP ->
-                            layer.paint.setBlendMode(layer.passBelow ? BlendMode.SRC_OVER : BlendMode.SRC_ATOP);
+                            layer.paint.setBlendMode(BlendMode.SRC_ATOP);
                     default -> layer.clipToBelow = true;
                 }
                 Layers.levelDown(frame.layers, frame.selectedLayerIndex);
@@ -4599,12 +4572,6 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                     createLayer(bg.getWidth(), bg.getHeight(), bg.getConfig(), bg.getColorSpace(),
                             0, 0, 0, frame.selectedLayerIndex);
                 }
-            }
-            case R.id.i_layer_pass_below -> {
-                final boolean checked = !item.isChecked();
-                item.setChecked(checked);
-                layer.passBelow = checked;
-                drawBitmapOntoView(true);
             }
             case R.id.i_layer_reference -> {
                 final boolean checked = !item.isChecked();

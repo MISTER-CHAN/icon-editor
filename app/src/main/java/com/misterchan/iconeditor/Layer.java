@@ -26,7 +26,6 @@ public class Layer {
     }
 
     public boolean clipToBelow = false;
-    public boolean passBelow = false;
     public boolean reference = false;
     public boolean visible = true;
     public Bitmap bitmap;
@@ -62,7 +61,6 @@ public class Layer {
     }
 
     public Layer(Layer layer, Bitmap bitmap, String name) {
-        passBelow = layer.passBelow;
         reference = layer.reference;
         visible = layer.visible;
         this.bitmap = bitmap;

@@ -178,6 +178,12 @@
             </menu>
         </item>
         <item
+            android:id="@+id/i_layer_clipping"
+            android:checkable="true"
+            android:icon="@drawable/ic_content_cut"
+            android:iconTint="?attr/colorOnSurfaceVariant"
+            android:title="@string/clip_to_layers_below" />
+        <item
             android:icon="@drawable/ic_filter"
             android:iconTint="?attr/colorOnSurfaceVariant"
             android:title="@string/filters">
@@ -301,16 +307,5 @@
             android:checkable="true"
             android:icon="@drawable/ic_void"
             android:title="@string/reference" />
-        <item
-            android:id="@+id/i_layer_clipping"
-            android:checkable="true"
-            android:icon="@drawable/ic_content_cut"
-            android:iconTint="?attr/colorOnSurfaceVariant"
-            android:title="@string/clip_to_layers_below" />
-        <item
-            android:id="@+id/i_layer_pass_below"
-            android:checkable="true"
-            android:icon="@drawable/ic_void"
-            android:title="@string/pass_layers_below" />
     </group>
 </menu>

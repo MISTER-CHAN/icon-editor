@@ -1,5 +1,6 @@
 package com.misterchan.iconeditor.colorpicker;
 
+import android.annotation.SuppressLint;
 import android.text.method.DigitsKeyListener;
 import android.text.method.KeyListener;
 import android.view.View;
@@ -7,8 +8,11 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.GridLayout;
 
 import androidx.annotation.ColorInt;
+import androidx.annotation.ColorLong;
+import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
 
+import com.misterchan.iconeditor.Color;
 import com.misterchan.iconeditor.R;
 
 public abstract class ColorPicker {
@@ -32,6 +36,24 @@ public abstract class ColorPicker {
 
     @ColorInt
     protected long newColor, oldColor;
+
+    @SuppressLint("NonConstantResourceId")
+    protected void deployNeutralFunction(final OnColorPickListener onColorPickListener,
+                                         @ColorLong final Long oldColor, @StringRes int neutralFunction) {
+        if (oldColor != null) {
+            this.oldColor = oldColor;
+            if (neutralFunction != 0) {
+                dialogBuilder.setNeutralButton(neutralFunction, (dialog, which) -> {
+                    switch (neutralFunction) {
+                        case R.string.swap -> onColorPickListener.onPick(null, newColor);
+                        case R.string.delete -> onColorPickListener.onPick(oldColor, null);
+                    }
+                });
+            }
+        } else {
+            this.oldColor = Color.BLACK;
+        }
+    }
 
     protected static void showExtraComp(GridLayout gl) {
         setChildVisibilities(gl, GL_POS_EXTRA_BEGIN, GL_POS_EXTRA_END, View.VISIBLE);

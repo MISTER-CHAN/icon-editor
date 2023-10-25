@@ -10,8 +10,13 @@ public class Color extends android.graphics.Color {
     }
 
     @ColorInt
-    public static int argb(@IntRange(from = 0, to = 255) int alpha, @ColorInt int rgb) {
+    public static int argb(@IntRange(from = 0x00, to = 0xFF) int alpha, @ColorInt int rgb) {
         return alpha << 24 | rgb;
+    }
+
+    @IntRange(from = 0x00, to = 0xFF)
+    public static int brightness(@ColorInt int color) {
+        return Math.max(Math.max(red(color), green(color)), blue(color));
     }
 
     @Size(3)
@@ -66,14 +71,22 @@ public class Color extends android.graphics.Color {
         };
     }
 
+    @ColorInt
+    public static int inheritRgb(@ColorInt int src, @ColorInt int dst) {
+        return src & Color.BLACK | dst & 0x00FFFFFF;
+    }
+
+    @ColorInt
+    public static int inheritRgb(@ColorInt int src,
+                                 @IntRange(from = 0x00, to = 0xFF) int red,
+                                 @IntRange(from = 0x00, to = 0xFF) int green,
+                                 @IntRange(from = 0x00, to = 0xFF) int blue) {
+        return src & Color.BLACK | rgb(red, green, blue);
+    }
+
     @FloatRange(from = 0.0f, to = 1.0f)
     public static float luminance(@ColorInt int color) {
         return (0.2126f * red(color) + 0.7152f * green(color) + 0.0722f * blue(color)) / 255.0f;
-    }
-
-    @IntRange(from = 0x00, to = 0xFF)
-    public static int luminosity(@ColorInt int color) {
-        return Math.max(Math.max(red(color), green(color)), blue(color));
     }
 
     public static boolean matches(@ColorInt int c0, @ColorInt int color, int tolerance) {
@@ -88,9 +101,9 @@ public class Color extends android.graphics.Color {
     }
 
     @ColorInt
-    public static int rgb(@IntRange(from = 0, to = 255) int red,
-                          @IntRange(from = 0, to = 255) int green,
-                          @IntRange(from = 0, to = 255) int blue) {
+    public static int rgb(@IntRange(from = 0x00, to = 0xFF) int red,
+                          @IntRange(from = 0x00, to = 0xFF) int green,
+                          @IntRange(from = 0x00, to = 0xFF) int blue) {
         return red << 16 | green << 8 | blue;
     }
 

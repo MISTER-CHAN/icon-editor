@@ -32,7 +32,6 @@ public class RgbColorPicker extends ColorPicker {
     private TextInputEditText tietAlpha;
     private TextInputEditText tietRed, tietGreen, tietBlue;
 
-    @SuppressLint("NonConstantResourceId")
     private RgbColorPicker(Context context, @StringRes int titleId,
                            final OnColorPickListener onColorPickListener,
                            @ColorLong final Long oldColor, @StringRes int neutralFunction) {
@@ -44,20 +43,7 @@ public class RgbColorPicker extends ColorPicker {
                 .setTitle(titleId)
                 .setView(R.layout.color_picker_rgb);
 
-        if (oldColor != null) {
-            this.oldColor = oldColor;
-            if (neutralFunction != 0) {
-                dialogBuilder.setNeutralButton(neutralFunction, (dialog, which) -> {
-                    switch (neutralFunction) {
-                        case R.string.swap -> onColorPickListener.onPick(null, newColor);
-                        case R.string.delete -> onColorPickListener.onPick(oldColor, null);
-                    }
-                });
-            }
-        } else {
-            this.oldColor = Color.BLACK;
-        }
-
+        deployNeutralFunction(onColorPickListener, oldColor, neutralFunction);
         type = Settings.INST.argbColorType();
         format = type ? null : Settings.INST.argbCompFormat();
         radix = type ? 10 : Settings.INST.argbCompRadix();

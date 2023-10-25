@@ -76,16 +76,7 @@ class HsvColorPicker extends ColorPicker {
                 .setTitle(titleId)
                 .setView(R.layout.color_picker_hsv);
 
-        if (oldColor != null) {
-            this.oldColor = oldColor;
-            if (neutralFunction != 0) {
-                dialogBuilder.setNeutralButton(neutralFunction,
-                        (dialog, which) -> onColorPickListener.onPick(oldColor, null));
-            }
-        } else {
-            this.oldColor = Color.BLACK;
-        }
-
+        deployNeutralFunction(onColorPickListener, oldColor, neutralFunction);
         hasAlpha = Settings.INST.pickInHsv();
         type = Settings.INST.argbColorType();
         alphaFormat = type ? null : Settings.INST.argbCompFormat();

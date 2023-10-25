@@ -5,7 +5,6 @@ import android.graphics.BlendMode;
 import android.graphics.Canvas;
 import android.graphics.ColorSpace;
 import android.graphics.Paint;
-import android.graphics.Point;
 import android.graphics.Rect;
 
 import androidx.annotation.ColorInt;
@@ -16,6 +15,7 @@ import androidx.annotation.Size;
 
 import com.misterchan.iconeditor.Color;
 import com.misterchan.iconeditor.ColorRange;
+import com.misterchan.iconeditor.ImmPoint;
 
 import java.util.LinkedList;
 import java.util.Queue;
@@ -51,12 +51,11 @@ public class BitmapUtils {
     public static void addLightingColorFilter(@ColorInt final int[] src, @ColorInt final int[] dst,
                                               final float mul, final float add) {
         for (int i = 0; i < src.length; ++i) {
-            final int r = Color.red(src[i]), g = Color.green(src[i]), b = Color.blue(src[i]),
-                    a = src[i] & Color.BLACK;
+            final int r = Color.red(src[i]), g = Color.green(src[i]), b = Color.blue(src[i]);
             final int r_ = Color.sat((int) (r * mul + add));
             final int g_ = Color.sat((int) (g * mul + add));
             final int b_ = Color.sat((int) (b * mul + add));
-            dst[i] = a | Color.rgb(r_, g_, b_);
+            dst[i] = Color.inheritRgb(src[i], r_, g_, b_);
         }
     }
 
@@ -143,7 +142,7 @@ public class BitmapUtils {
                 if (tolerance == 0 ?
                         Color.rgb(px) == Color.rgb(pixel) :
                         Color.matches(pixel, tolerance, px)) {
-                    pixels[i] = px & Color.BLACK | Color.rgb(color);
+                    pixels[i] = Color.inheritRgb(px, color);
                 }
             } else {
                 if (tolerance == 0 ?
@@ -157,12 +156,12 @@ public class BitmapUtils {
         dst.setPixels(pixels, 0, w, rect.left, rect.top, w, h);
     }
 
-    public static void clip(final Bitmap srcBm, final Rect srcRect, final int[] dst) {
+    public static void clip(final Bitmap srcBm, final Rect srcRect, @ColorInt final int[] dst) {
         final int w = srcBm.getWidth(), h = srcBm.getHeight();
         final int[] src = new int[w * h];
         srcBm.getPixels(src, 0, w, srcRect.left, srcRect.top, w, h);
         for (int i = 0; i < src.length; ++i) {
-            src[i] = dst[i] & Color.BLACK | Color.rgb(src[i]);
+            src[i] = Color.inheritRgb(dst[i], src[i]);
         }
         srcBm.setPixels(src, 0, w, srcRect.left, srcRect.top, w, h);
     }
@@ -225,24 +224,24 @@ public class BitmapUtils {
             dst.getPixels(dstPixels, 0, w, rect.left, rect.top, w, h);
         }
 //      final long a = System.currentTimeMillis();
-        final Queue<Point> queue = new LinkedList<>();
+        final Queue<ImmPoint> queue = new LinkedList<>();
         final boolean[] visited = new boolean[area];
-        queue.offer(new Point(x, y));
-        Point point;
+        queue.offer(new ImmPoint(x, y));
+        ImmPoint point;
         while ((point = queue.poll()) != null) {
-            final int i = (point.y - rect.top) * w + (point.x - rect.left);
+            final int i = (point.y() - rect.top) * w + (point.x() - rect.left);
             if (visited[i]) {
                 continue;
             }
             visited[i] = true;
             final int px = srcPixels[i];
-            boolean match;
-            int newColor;
+            final boolean match;
+            final int newColor;
             if (ignoreAlpha) {
                 match = tolerance == 0
                         ? Color.rgb(px) == Color.rgb(pixel)
                         : Color.matches(pixel, px, tolerance);
-                newColor = px & Color.BLACK | Color.rgb(color);
+                newColor = Color.inheritRgb(px, color);
             } else {
                 match = tolerance == 0 ?
                         px == pixel :
@@ -255,18 +254,17 @@ public class BitmapUtils {
                 if (src != dst) {
                     dstPixels[i] = newColor;
                 }
-                if (rect.left <= point.x - 1 && !visited[i - 1])
-                    queue.offer(new Point(point.x - 1, point.y));
-                if (rect.top <= point.y - 1 && !visited[i - w])
-                    queue.offer(new Point(point.x, point.y - 1));
-                if (point.x + 1 < rect.right && !visited[i + 1])
-                    queue.offer(new Point(point.x + 1, point.y));
-                if (point.y + 1 < rect.bottom && !visited[i + w])
-                    queue.offer(new Point(point.x, point.y + 1));
+                if (rect.left <= point.x() - 1 && !visited[i - 1])
+                    queue.offer(new ImmPoint(point.x() - 1, point.y()));
+                if (rect.top <= point.y() - 1 && !visited[i - w])
+                    queue.offer(new ImmPoint(point.x(), point.y() - 1));
+                if (point.x() + 1 < rect.right && !visited[i + 1])
+                    queue.offer(new ImmPoint(point.x() + 1, point.y()));
+                if (point.y() + 1 < rect.bottom && !visited[i + w])
+                    queue.offer(new ImmPoint(point.x(), point.y() + 1));
             }
         }
 //      final long b = System.currentTimeMillis();
-//      Toast.makeText(this, String.valueOf(b - a), Toast.LENGTH_SHORT).show();
         dst.setPixels(dstPixels, 0, w, rect.left, rect.top, w, h);
     }
 
@@ -353,7 +351,7 @@ public class BitmapUtils {
         src.getPixels(srcPixels, 0, w, 0, 0, w, h);
         dst.getPixels(dstPixels, 0, w, 0, 0, w, h);
         for (int i = 0; i < area; ++i) {
-            dstPixels[i] = srcPixels[i] & Color.BLACK | Color.rgb(dstPixels[i]);
+            dstPixels[i] = Color.inheritRgb(srcPixels[i], dstPixels[i]);
         }
         dst.setPixels(dstPixels, 0, w, 0, 0, w, h);
     }
@@ -376,7 +374,7 @@ public class BitmapUtils {
                     og = Math.round(ig / 255.0f * (level - 1.0f)) * 0xFF / (level - 1),
                     ob = Math.round(ib / 255.0f * (level - 1.0f)) * 0xFF / (level - 1);
 
-            dst[i] = src[i] & Color.BLACK | Color.rgb(or, og, ob);
+            dst[i] = Color.inheritRgb(src[i], or, og, ob);
         }
     }
 
@@ -478,7 +476,7 @@ public class BitmapUtils {
             final float hue = Color.hue(pixel);
             final float smaller = Math.min(op, hue), greater = Math.max(op, hue);
             final float majorArc = Math.max(greater - smaller, 360.0f + smaller - greater);
-            dst[i] = (int) ((majorArc - 180.0f) / 180.0f * 0xFF) << 24 | Color.rgb(pixel);
+            dst[i] = Color.argb((int) ((majorArc - 180.0f) / 180.0f * 0xFF), Color.rgb(pixel));
         }
     }
 
@@ -491,7 +489,7 @@ public class BitmapUtils {
             hsv[0] = (hsv[0] + deltaHSV[0] + 360.0f) % 360.0f;
             hsv[1] = Color.sat(hsv[1] + deltaHSV[1]);
             hsv[2] = Color.sat(hsv[2] + deltaHSV[2]);
-            dst[i] = pixel & Color.BLACK | Color.HSVToColor(hsv);
+            dst[i] = Color.inheritRgb(pixel, Color.HSVToColor(hsv));
         }
     }
 
