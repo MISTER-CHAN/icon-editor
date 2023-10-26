@@ -152,7 +152,7 @@ public class Layers {
                 final Rect dst = new Rect(0, 0, rect.width(), rect.height());
                 final int dstLeft = -rect.left + left, dstTop = -rect.top + top; // Layer location relative to background layer subset
                 dst.intersect(dstLeft, dstTop, dstLeft + bmW, dstTop + bmH);
-                final int intW = dst.width(), intH = dst.height(); // Intersection size, src size == dst size
+                final int intW = src.width(), intH = src.height(); // Intersection size, src size == dst size
                 final Rect intRel = new Rect(0, 0, intW, intH); // Intersection relative rectangle
                 if (children == null) {
                     Rect extraSrc = null, extraDst = null; // Intersection between intersection and extra layer
