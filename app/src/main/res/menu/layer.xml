@@ -291,10 +291,6 @@
                         android:icon="@drawable/ic_void"
                         android:title="@string/fast_create_clipping_mask" />
                     <item
-                        android:id="@+id/i_layer_add_filter_layer"
-                        android:icon="@drawable/ic_void"
-                        android:title="@string/fast_add_filter_layer" />
-                    <item
                         android:id="@+id/i_layer_create_group"
                         android:icon="@drawable/ic_create_new_folder"
                         android:iconTint="?attr/colorOnSurfaceVariant"
