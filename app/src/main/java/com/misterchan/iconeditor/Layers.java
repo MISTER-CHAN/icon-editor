@@ -172,31 +172,31 @@ public class Layers {
                         }
                     }
 
-                    final boolean isSubtreeChild = node != backgroundNode || node.isRoot;
-                    final Paint paint = !isSubtreeChild && baseBm == null ? BitmapUtils.PAINT_SRC : layer.paint;
                     if (layer.clipToBelow) {
                         pixels = BitmapUtils.getPixels(bitmap, dst);
                     }
                     {
+                        final boolean isSubtreeChild = node != backgroundNode || node.isRoot;
+                        final Paint paint = isSubtreeChild ? layer.paint
+                                : baseBm != null ? BitmapUtils.PAINT_SRC_OVER : BitmapUtils.PAINT_SRC;
                         final boolean hasFilter = layer.filter != null && isSubtreeChild;
                         final boolean hasExtra = layer == specifiedLayer && extraDst != null;
                         final Bitmap bm = hasFilter || hasExtra ? Bitmap.createBitmap(intW, intH, Bitmap.Config.ARGB_8888) : null;
                         final Canvas cv = bm != null ? new Canvas(bm) : canvas;
                         final Rect d = bm != null ? intRel : dst;
-                        final Paint p = hasFilter ? BitmapUtils.PAINT_SRC_OVER : paint;
                         try {
                             if (hasFilter) {
                                 cv.drawBitmap(bitmap, dst, intRel, BitmapUtils.PAINT_SRC);
                             }
                             if (layer == specifiedLayer) {
                                 if (extraDst != null) {
-                                    cv.drawBitmap(specifiedLayerBm, src, intRel, hasFilter ? p : BitmapUtils.PAINT_SRC);
+                                    cv.drawBitmap(specifiedLayerBm, src, intRel, hasFilter ? BitmapUtils.PAINT_SRC_OVER : BitmapUtils.PAINT_SRC);
                                     cv.drawBitmap(extraLayer.getBitmap(), extraSrc, extraDst, BitmapUtils.PAINT_SRC_OVER);
                                 } else {
-                                    cv.drawBitmap(specifiedLayerBm, src, d, p);
+                                    cv.drawBitmap(specifiedLayerBm, src, d, paint);
                                 }
                             } else {
-                                cv.drawBitmap(layer.bitmap, src, d, p);
+                                cv.drawBitmap(layer.bitmap, src, d, paint);
                             }
                         } catch (final RuntimeException e) {
                             if (bm != null) bm.recycle();
