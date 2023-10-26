@@ -36,7 +36,7 @@ public class BitmapConfigModifier {
             case RGBA_1010102 -> 8;
         };
         new MaterialAlertDialogBuilder(context)
-                .setTitle(R.string.config)
+                .setTitle(R.string.configuration)
                 .setSingleChoiceItems(R.array.bitmap_configs, checkedItem, (dialog, which) -> {
                     bcm.config = VALUES[which];
                 })

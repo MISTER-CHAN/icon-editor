@@ -211,7 +211,7 @@
                         <item
                             android:id="@+id/i_image_config"
                             android:icon="@drawable/ic_void"
-                            android:title="@string/config" />
+                            android:title="@string/configuration" />
                         <item
                             android:id="@+id/i_image_has_alpha"
                             android:checkable="true"

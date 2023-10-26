@@ -31,7 +31,6 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Looper;
 import android.os.MessageQueue;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -47,7 +46,6 @@ import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.PickVisualMediaRequest;
@@ -77,6 +75,9 @@ import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+import com.misterchan.iconeditor.databinding.ActivityMainBinding;
+import com.misterchan.iconeditor.databinding.FrameListBinding;
+import com.misterchan.iconeditor.databinding.LayerListBinding;
 import com.misterchan.iconeditor.dialog.BitmapConfigModifier;
 import com.misterchan.iconeditor.tool.BrushTool;
 import com.misterchan.iconeditor.CellGrid;
@@ -99,9 +100,6 @@ import com.misterchan.iconeditor.tool.Shape;
 import com.misterchan.iconeditor.tool.TextTool;
 import com.misterchan.iconeditor.tool.Transformer;
 import com.misterchan.iconeditor.colorpicker.RgbColorPicker;
-import com.misterchan.iconeditor.databinding.ActivityMainBinding;
-import com.misterchan.iconeditor.databinding.FrameListBinding;
-import com.misterchan.iconeditor.databinding.LayerListBinding;
 import com.misterchan.iconeditor.dialog.AnimationClipper;
 import com.misterchan.iconeditor.dialog.CellGridManager;
 import com.misterchan.iconeditor.dialog.ColorBalanceDialog;
@@ -4992,7 +4990,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
             }
             case R.id.i_information -> {
                 final StringBuilder message = new StringBuilder()
-                        .append(getString(R.string.config)).append('\n').append(bitmap.getConfig()).append("\n\n")
+                        .append(getString(R.string.configuration)).append('\n').append(bitmap.getConfig()).append("\n\n")
                         .append(getString(R.string.has_alpha)).append('\n').append(bitmap.hasAlpha()).append("\n\n")
                         .append(getString(R.string.color_space)).append('\n').append(bitmap.getColorSpace());
                 new MaterialAlertDialogBuilder(this)

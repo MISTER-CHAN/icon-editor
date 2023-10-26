@@ -109,12 +109,12 @@ public class Layers {
     }
 
     public static Bitmap mergeLayers(final LayerTree tree, final Rect rect, final boolean skipInvisible) {
-        return mergeLayers(tree, rect, null, skipInvisible, null, null, null);
+        return mergeLayers(tree, rect, null, null,0, 0,  skipInvisible, null, null, null);
     }
 
     public static Bitmap mergeLayers(final LayerTree tree, final Rect rect,
                                      final Layer specifiedLayer, final Bitmap specifiedLayerBm, final FloatingLayer extraLayer) {
-        return mergeLayers(tree, rect, null, true, specifiedLayer, specifiedLayerBm, extraLayer);
+        return mergeLayers(tree, rect, null, null, 0, 0, true, specifiedLayer, specifiedLayerBm, extraLayer);
     }
 
     /**
@@ -123,14 +123,14 @@ public class Layers {
      * @param extraLayer       The extra layer to draw over the specified layer
      * @throws RuntimeException if any bitmap being drawn is recycled as this method is not thread-safe
      */
-    public static Bitmap mergeLayers(final LayerTree tree, final Rect rect,
-                                     final Bitmap baseBm, final boolean skipInvisible,
+    public static Bitmap mergeLayers(final LayerTree tree, final Rect rect, final Bitmap baseBm, final Rect baseRect,
+                                     final int bLeft, final int bTop, final boolean skipInvisible,
                                      final Layer specifiedLayer, final Bitmap specifiedLayerBm, final FloatingLayer extraLayer) throws RuntimeException {
         final LayerTree.Node backgroundNode = tree.getBackground();
         final Bitmap bitmap = Bitmap.createBitmap(rect.width(), rect.height(), Bitmap.Config.ARGB_8888);
         final Canvas canvas = new Canvas(bitmap);
         if (baseBm != null) {
-            canvas.drawBitmap(baseBm, 0.0f, 0.0f, BitmapUtils.PAINT_SRC);
+            canvas.drawBitmap(baseBm, baseRect, new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight()), BitmapUtils.PAINT_SRC);
         }
 
         try {
@@ -141,29 +141,29 @@ public class Layers {
                 }
                 final LayerTree children = node.children;
                 int[] pixels = null;
+                final int bmW = layer.bitmap.getWidth(), bmH = layer.bitmap.getHeight();
+                final int left = layer.left - bLeft, top = layer.top - bTop;
+                // Rectangle src and dst are intersection between background layer subset and current layer
+                final Rect src = new Rect(0, 0, bmW, bmH);
+                final int srcOrigLeft = -left, srcOrigTop = -top; // Origin location relative to layer
+                if (!src.intersect(srcOrigLeft + rect.left, srcOrigTop + rect.top, srcOrigLeft + rect.right, srcOrigTop + rect.bottom)) {
+                    continue; // No intersection
+                }
+                final Rect dst = new Rect(0, 0, rect.width(), rect.height());
+                final int dstLeft = -rect.left + left, dstTop = -rect.top + top; // Layer location relative to background layer subset
+                dst.intersect(dstLeft, dstTop, dstLeft + bmW, dstTop + bmH);
+                final int intW = dst.width(), intH = dst.height(); // Intersection size, src size == dst size
+                final Rect intRel = new Rect(0, 0, intW, intH); // Intersection relative rectangle
                 if (children == null) {
-                    final int bmW = layer.bitmap.getWidth(), bmH = layer.bitmap.getHeight();
-                    // Rectangle src and dst are intersection between background layer subset and current layer
-                    final Rect src = new Rect(0, 0, bmW, bmH);
-                    final int srcOrigLeft = -layer.left, srcOrigTop = -layer.top; // Origin location relative to layer
-                    if (!src.intersect(srcOrigLeft + rect.left, srcOrigTop + rect.top, srcOrigLeft + rect.right, srcOrigTop + rect.bottom)) {
-                        continue; // No intersection
-                    }
-                    final Rect dst = new Rect(0, 0, rect.width(), rect.height());
-                    final int dstLeft = -rect.left + layer.left, dstTop = -rect.top + layer.top; // Layer location relative to background layer subset
-                    dst.intersect(dstLeft, dstTop, dstLeft + bmW, dstTop + bmH);
-                    final int intW = src.width(), intH = src.height(); // Intersection size, src size == dst size
-                    final Rect intRel = new Rect(0, 0, intW, intH); // Intersection relative rectangle
-
                     Rect extraSrc = null, extraDst = null; // Intersection between intersection and extra layer
                     if (layer == specifiedLayer && extraLayer != null) {
                         if (extraLayer.hasRect()) {
                             final int w = extraLayer.getWidth(), h = extraLayer.getHeight();
                             extraSrc = new Rect(0, 0, w, h);
-                            final int sol = -extraLayer.getLeft() - layer.left + rect.left, sot = -extraLayer.getTop() - layer.top + rect.top; // Origin location relative to extra layer
+                            final int sol = -extraLayer.getLeft() - left + rect.left, sot = -extraLayer.getTop() - top + rect.top; // Origin location relative to extra layer
                             if (extraSrc.intersect(sol + dst.left, sot + dst.top, sol + dst.right, sot + dst.bottom)) {
                                 extraDst = new Rect(intRel);
-                                final int dl = -dst.left - rect.left + layer.left + extraLayer.getLeft(), dt = -dst.top - rect.top + layer.top + extraLayer.getTop(); // Extra location relative to intersection
+                                final int dl = -dst.left - rect.left + left + extraLayer.getLeft(), dt = -dst.top - rect.top + top + extraLayer.getTop(); // Extra location relative to intersection
                                 extraDst.intersect(dl, dt, dl + w, dt + h);
                             }
                         } else {
@@ -218,23 +218,19 @@ public class Layers {
                     }
                 } else {
                     if (layer.clipToBelow) {
-                        pixels = BitmapUtils.getPixels(bitmap, rect);
+                        pixels = BitmapUtils.getPixels(bitmap, dst);
                     }
-                    final Bitmap mergedChildren = mergeLayers(children, rect,
-                            layer.filter != null && !node.isRoot ? bitmap : null,
+                    final boolean passBm = layer.filter != null && !node.isRoot;
+                    final Bitmap mergedChildren = mergeLayers(children, src,
+                            passBm ? bitmap : null, passBm ? dst : null, layer.left, layer.top,
                             skipInvisible, specifiedLayer, specifiedLayerBm, extraLayer);
                     if (layer.filter != null) {
-                        final Rect dst = new Rect(0, 0, rect.width(), rect.height());
-                        final int dstLeft = -rect.left + layer.left, dstTop = -rect.top + layer.top; // Layer location relative to background layer subset
-                        // If there is an intersection between background layer subset and current layer
-                        if (dst.intersect(dstLeft, dstTop, dstLeft + layer.bitmap.getWidth(), dstTop + layer.bitmap.getHeight())) {
-                            addFilters(mergedChildren, dst, layer);
-                        }
+                        addFilters(mergedChildren, layer);
                     }
-                    canvas.drawBitmap(mergedChildren, 0.0f, 0.0f, layer.paint);
+                    canvas.drawBitmap(mergedChildren, intRel, dst, layer.paint);
                     mergedChildren.recycle();
                     if (layer.clipToBelow) {
-                        BitmapUtils.clip(bitmap, rect, pixels);
+                        BitmapUtils.clip(bitmap, dst, pixels);
                     }
                 }
             }

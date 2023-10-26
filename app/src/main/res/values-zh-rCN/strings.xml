@@ -55,7 +55,7 @@
     <string name="color_space">色彩空间</string>
     <string name="color_type">颜色类型</string>
     <string name="component_numeral_system">组件进位制</string>
-    <string name="config">配置</string>
+    <string name="configuration">配置</string>
     <string name="contiguous">连续</string>
     <string name="contrast">对比度</string>
     <string name="conversions">转换</string>
