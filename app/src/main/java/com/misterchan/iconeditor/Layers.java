@@ -226,6 +226,7 @@ public class Layers {
                     if (layer.filter != null) {
                         final Rect dst = new Rect(0, 0, rect.width(), rect.height());
                         final int dstLeft = -rect.left + layer.left, dstTop = -rect.top + layer.top; // Layer location relative to background layer subset
+                        // If there is an intersection between background layer subset and current layer
                         if (dst.intersect(dstLeft, dstTop, dstLeft + layer.bitmap.getWidth(), dstTop + layer.bitmap.getHeight())) {
                             addFilters(mergedChildren, dst, layer);
                         }
