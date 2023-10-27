@@ -109,12 +109,12 @@ public class Layers {
     }
 
     public static Bitmap mergeLayers(final LayerTree tree, final Rect rect, final boolean skipInvisible) {
-        return mergeLayers(tree, rect, null, null,0, 0,  skipInvisible, null, null, null);
+        return mergeLayers(tree, rect, null, null, skipInvisible, null, null, null);
     }
 
     public static Bitmap mergeLayers(final LayerTree tree, final Rect rect,
                                      final Layer specifiedLayer, final Bitmap specifiedLayerBm, final FloatingLayer extraLayer) {
-        return mergeLayers(tree, rect, null, null, 0, 0, true, specifiedLayer, specifiedLayerBm, extraLayer);
+        return mergeLayers(tree, rect, null, null, true, specifiedLayer, specifiedLayerBm, extraLayer);
     }
 
     /**
@@ -123,8 +123,8 @@ public class Layers {
      * @param extraLayer       The extra layer to draw over the specified layer
      * @throws RuntimeException if any bitmap being drawn is recycled as this method is not thread-safe
      */
-    public static Bitmap mergeLayers(final LayerTree tree, final Rect rect, final Bitmap baseBm, final Rect baseRect,
-                                     final int bLeft, final int bTop, final boolean skipInvisible,
+    public static Bitmap mergeLayers(final LayerTree tree, final Rect rect,
+                                     final Bitmap baseBm, final Rect baseRect, final boolean skipInvisible,
                                      final Layer specifiedLayer, final Bitmap specifiedLayerBm, final FloatingLayer extraLayer) throws RuntimeException {
         final LayerTree.Node backgroundNode = tree.getBackground();
         final Bitmap bitmap = Bitmap.createBitmap(rect.width(), rect.height(), Bitmap.Config.ARGB_8888);
@@ -142,7 +142,8 @@ public class Layers {
                 final LayerTree children = node.children;
                 int[] pixels = null;
                 final int bmW = layer.bitmap.getWidth(), bmH = layer.bitmap.getHeight();
-                final int left = layer.left - bLeft, top = layer.top - bTop;
+                final int left = backgroundNode.isRoot ? layer.left : layer.left - backgroundNode.layer.left,
+                        top = backgroundNode.isRoot ? layer.top : layer.top - backgroundNode.layer.top;
                 // Rectangle src and dst are intersection between background layer subset and current layer
                 final Rect src = new Rect(0, 0, bmW, bmH);
                 final int srcOrigLeft = -left, srcOrigTop = -top; // Origin location relative to layer
@@ -222,7 +223,7 @@ public class Layers {
                     }
                     final boolean passBm = layer.filter != null && !node.isRoot;
                     final Bitmap mergedChildren = mergeLayers(children, src,
-                            passBm ? bitmap : null, passBm ? dst : null, layer.left, layer.top,
+                            passBm ? bitmap : null, passBm ? dst : null,
                             skipInvisible, specifiedLayer, specifiedLayerBm, extraLayer);
                     if (layer.filter != null) {
                         addFilters(mergedChildren, layer);
