@@ -64,11 +64,13 @@
     <string name="convert_from_lab">由 CIE L*a*b* 轉換</string>
     <string name="convert_from_xyy">由 CIE xyY 轉換</string>
     <string name="convert_from_xyz">由 CIE XYZ 轉換</string>
+    <string name="convert_from_yuv">由 YUV 轉換</string>
     <string name="convert_cmyk_to_rgb">轉換 CMYK 至 RGB</string>
     <string name="convert_hsv_to_rgb">轉換 HSV 至 RGB</string>
     <string name="convert_lab_to_rgb">轉換 CIE L*a*b* 至 RGB</string>
     <string name="convert_xyy_to_rgb">轉換 CIE xyY 至 RGB</string>
     <string name="convert_xyz_to_rgb">轉換 CIE XYZ 至 RGB</string>
+    <string name="convert_yuv_to_rgb">轉換 YUV 至 RGB</string>
     <string name="copy_noun">副本</string>
     <string name="copy_verb">複製</string>
     <string name="crop">裁剪</string>
@@ -105,10 +107,6 @@
     <string name="eyedropper">滴管</string>
     <string name="failed">失敗</string>
     <string name="fast">快速</string>
-    <string name="fast_add_filter_layer">快速新增濾鏡圖層</string>
-    <string name="fast_add_layer_mask">快速新增圖層遮罩</string>
-    <string name="fast_create_clipping_mask">快速建立剪裁遮罩</string>
-    <string name="fast_create_group">快速建立組</string>
     <string name="file">檔案</string>
     <string name="file_name">檔案名</string>
     <string name="fill">塡充</string>
@@ -187,6 +185,7 @@
     <string name="mirror">鏡</string>
     <string name="monospace">等寬</string>
     <string name="more">更多</string>
+    <string name="more_color_pickers">更多拾色器</string>
     <string name="move_layer">移動圖層</string>
     <string name="move_to_first">移到首位</string>
     <string name="new_">新建</string>
@@ -195,7 +194,6 @@
     <string name="no_repeats">無重複</string>
     <string name="none">無</string>
     <string name="normal">正常</string>
-    <string name="not_public_format"><strike>非公有格式</strike></string>
     <string name="not_supported_file_type">不支援之檔案類型</string>
     <string name="null_">空</string>
     <string name="offset">偏移量</string>
@@ -227,6 +225,9 @@
     <string name="preferences">偏好</string>
     <string name="properties">屬性</string>
     <string name="quality">品質</string>
+    <string name="quick_add_layer_mask">快速新增圖層遮罩</string>
+    <string name="quick_create_clipping_mask">快速建立剪裁遮罩</string>
+    <string name="quick_group">快速建立組</string>
     <string name="random">隨機</string>
     <string name="range">範圍</string>
     <string name="rectangle">矩形</string>
@@ -322,6 +323,7 @@
     <string name="underlined">底線</string>
     <string name="undo">撤回</string>
     <string name="unify_delays">統一延遲</string>
+    <string name="unknown"><strike>未知</strike></string>
     <string name="untitled">無標題</string>
     <string name="version">版本（發布日期）</string>
     <string name="vertical">垂直</string>
@@ -360,7 +362,7 @@
     <string name="multiply">乘</string>
     <string name="hue">色相</string>
     <string name="color">顏色</string>
-    <string name="luminosity">明度</string>
+    <string name="luminosity">光度</string>
 
     <!-- Locales -->
     <string name="en">英文</string>

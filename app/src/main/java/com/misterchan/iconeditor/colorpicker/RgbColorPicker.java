@@ -1,9 +1,10 @@
 package com.misterchan.iconeditor.colorpicker;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.ColorSpace;
 import android.view.View;
+import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.ColorInt;
@@ -109,6 +110,9 @@ public class RgbColorPicker extends ColorPicker {
         dialog.findViewById(R.id.b_hsv).setOnClickListener(v ->
                 HsvColorPicker.make(context, l, newColor).show());
 
+        dialog.findViewById(R.id.b_yuv).setOnClickListener(v ->
+                YuvColorPicker.make(context, l, newColor).show());
+
         dialog.findViewById(R.id.b_lab).setOnClickListener(v ->
                 LabColorPicker.make(context, l, newColor).show());
 
@@ -117,6 +121,13 @@ public class RgbColorPicker extends ColorPicker {
 
         dialog.findViewById(R.id.b_xyy).setOnClickListener(v ->
                 XyYColorPicker.make(context, l, newColor).show());
+
+        final Button bMoreColorPickers = dialog.findViewById(R.id.b_more);
+        final LinearLayout lMoreColorPickers = dialog.findViewById(R.id.ll_more);
+        bMoreColorPickers.setOnClickListener(v -> {
+            v.setVisibility(View.GONE);
+            lMoreColorPickers.setVisibility(View.VISIBLE);
+        });
     }
 
     @Override

@@ -2,7 +2,7 @@
 
     <!-- Bitmap Configs -->
     <string-array name="bitmap_configs">
-        <item>@string/not_public_format</item>
+        <item>@string/unknown</item>
         <item>@string/alpha_8</item>
         <item>@string/gray_8</item>
         <item>@string/rgb_565</item>

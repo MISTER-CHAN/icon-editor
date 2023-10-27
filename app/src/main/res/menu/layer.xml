@@ -61,7 +61,7 @@
             android:title="@string/blend_mode">
             <menu>
                 <group
-                    android:id="@+id/g_blend_mode_0_12"
+                    android:id="@+id/g_blend_mode_0_11"
                     android:checkableBehavior="single">
                     <item
                         android:id="@+id/i_layer_blend_mode_clear"
@@ -99,13 +99,13 @@
                     <item
                         android:id="@+id/i_layer_blend_mode_xor"
                         android:title="@string/xor" />
+                </group>
+                <group
+                    android:id="@+id/g_blend_mode_12_15"
+                    android:checkableBehavior="single">
                     <item
                         android:id="@+id/i_layer_blend_mode_plus"
                         android:title="@string/plus" />
-                </group>
-                <group
-                    android:id="@+id/g_blend_mode_13_15"
-                    android:checkableBehavior="single">
                     <item
                         android:id="@+id/i_layer_blend_mode_modulate"
                         android:title="@string/modulate" />
@@ -285,16 +285,16 @@
                     <item
                         android:id="@+id/i_layer_add_layer_mask"
                         android:icon="@drawable/ic_void"
-                        android:title="@string/fast_add_layer_mask" />
+                        android:title="@string/quick_add_layer_mask" />
                     <item
                         android:id="@+id/i_layer_create_clipping_mask"
                         android:icon="@drawable/ic_void"
-                        android:title="@string/fast_create_clipping_mask" />
+                        android:title="@string/quick_create_clipping_mask" />
                     <item
-                        android:id="@+id/i_layer_create_group"
+                        android:id="@+id/i_layer_group"
                         android:icon="@drawable/ic_create_new_folder"
                         android:iconTint="?attr/colorOnSurfaceVariant"
-                        android:title="@string/fast_create_group" />
+                        android:title="@string/quick_group" />
                 </group>
             </menu>
         </item>

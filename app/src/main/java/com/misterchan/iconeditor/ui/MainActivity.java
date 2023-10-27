@@ -4284,22 +4284,6 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                 frame.layerAdapter.notifyLayerTreeChanged();
                 drawBitmapOntoView(true);
             }
-            case R.id.i_layer_create_group -> {
-                if (!layer.visible) {
-                    break;
-                }
-                final int pos = frame.group();
-                final Bitmap bg = frame.getBackgroundLayer().bitmap;
-                final Bitmap bm = Bitmap.createBitmap(bg.getWidth(), bg.getHeight(), bg.getConfig(), bg.hasAlpha(), bg.getColorSpace());
-                addLayer(project, frame, bm, pos, frame.layers.get(pos - 1).getLevel() - 1, getString(R.string.group), false);
-                frame.computeLayerTree();
-                layerList.rvLayerList.post(() -> {
-                    frame.layerAdapter.notifyItemInserted(pos);
-                    frame.layerAdapter.notifyItemRangeChanged(pos + 1, frame.layers.size() - pos - 1);
-                    layerList.rvLayerList.post(frame.layerAdapter::notifyLayerTreeChanged);
-                });
-                drawBitmapOntoView(true);
-            }
             case R.id.i_layer_delete -> closeLayer(frame.selectedLayerIndex);
             case R.id.i_layer_delete_invisible -> {
                 for (int i = frame.layers.size() - 1; i >= 0; --i) {
@@ -4501,6 +4485,22 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                         .setOnApplyListener(null)
                         .show();
                 activityMain.tvStatus.setText(getString(R.string.state_threshold, (int) threshold));
+            }
+            case R.id.i_layer_group -> {
+                if (!layer.visible) {
+                    break;
+                }
+                final int pos = frame.group();
+                final Bitmap bg = frame.getBackgroundLayer().bitmap;
+                final Bitmap bm = Bitmap.createBitmap(bg.getWidth(), bg.getHeight(), bg.getConfig(), bg.hasAlpha(), bg.getColorSpace());
+                addLayer(project, frame, bm, pos, frame.layers.get(pos - 1).getLevel() - 1, getString(R.string.group), false);
+                frame.computeLayerTree();
+                layerList.rvLayerList.post(() -> {
+                    frame.layerAdapter.notifyItemInserted(pos);
+                    frame.layerAdapter.notifyItemRangeChanged(pos + 1, frame.layers.size() - pos - 1);
+                    layerList.rvLayerList.post(frame.layerAdapter::notifyLayerTreeChanged);
+                });
+                drawBitmapOntoView(true);
             }
             case R.id.i_layer_level_down -> {
                 layer.levelDown();

@@ -71,11 +71,13 @@
     <string name="convert_from_lab">Convert from CIE L*a*b*</string>
     <string name="convert_from_xyy">Convert from CIE xyY</string>
     <string name="convert_from_xyz">Convert from CIE XYZ</string>
+    <string name="convert_from_yuv">Convert from YUV</string>
     <string name="convert_cmyk_to_rgb">Convert CMYK to RGB</string>
     <string name="convert_hsv_to_rgb">Convert HSV to RGB</string>
     <string name="convert_lab_to_rgb">Convert CIE L*a*b* to RGB</string>
     <string name="convert_xyy_to_rgb">Convert CIE xyY to RGB</string>
     <string name="convert_xyz_to_rgb">Convert CIE XYZ to RGB</string>
+    <string name="convert_yuv_to_rgb">Convert YUV to RGB</string>
     <string name="coordinates" translatable="false">(%d, %d)</string>
     <string name="copy_noun">Copy</string>
     <string name="copy_verb">Copy</string>
@@ -114,10 +116,6 @@
     <string name="eyedropper">Eyedropper</string>
     <string name="failed">Failed</string>
     <string name="fast">Fast</string>
-    <string name="fast_add_filter_layer">Fast Add a Filter Layer</string>
-    <string name="fast_add_layer_mask">Fast Add a Layer Mask</string>
-    <string name="fast_create_clipping_mask">Fast Create Clipping Mask</string>
-    <string name="fast_create_group">Fast Create a Group</string>
     <string name="file">File</string>
     <string name="file_name">File name</string>
     <string name="fill">Fill</string>
@@ -209,6 +207,7 @@
     <string name="mister_chan" translatable="false">MISTER_CHAN</string>
     <string name="monospace">Monospace</string>
     <string name="more">More</string>
+    <string name="more_color_pickers">More Color Pickers</string>
     <string name="move_layer">Move Layer</string>
     <string name="move_to_first">Move to the First</string>
     <string name="new_">New</string>
@@ -218,7 +217,6 @@
     <string name="no_repeats">No Repeats</string>
     <string name="none">None</string>
     <string name="normal">Normal</string>
-    <string name="not_public_format"><strike>Not a Public Format</strike></string>
     <string name="not_supported_file_type">Not supported file type</string>
     <string name="null_">Null</string>
     <string name="offset">Offset</string>
@@ -253,6 +251,9 @@
     <string name="preferences">Preferences</string>
     <string name="properties">Properties</string>
     <string name="quality">Quality</string>
+    <string name="quick_add_layer_mask">Quick Add a Layer Mask</string>
+    <string name="quick_create_clipping_mask">Quick Create Clipping Mask</string>
+    <string name="quick_group">Quick Group</string>
     <string name="r" translatable="false">R</string>
     <string name="random">Random</string>
     <string name="range">Range</string>
@@ -354,9 +355,11 @@
     <string name="tutorial_merge_as_hidden">Tutorial</string>
     <string name="two_seventy_degrees" translatable="false">270°</string>
     <string name="typeface">Typeface</string>
+    <string name="u" translatable="false">U</string>
     <string name="underlined">Underlined</string>
     <string name="undo">Undo</string>
     <string name="unify_delays">Unify Delays</string>
+    <string name="unknown"><strike>Not a Public Format</strike></string>
     <string name="untitled">Untitled</string>
     <string name="v" translatable="false">V</string>
     <string name="version">Version (Release Date)</string>

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:orientation="vertical">
@@ -19,23 +20,47 @@
         android:text="@string/convert_from_hsv" />
 
     <Button
-        android:id="@+id/b_lab"
+        android:id="@+id/b_more"
         style="@style/Widget.IconEditor.Button.TextButton.Dense"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/convert_from_lab" />
+        android:text="@string/more_color_pickers"
+        app:icon="@drawable/ic_expand_more"
+        app:iconTint="?attr/colorOnSurfaceVariant" />
 
-    <Button
-        android:id="@+id/b_xyz"
-        style="@style/Widget.IconEditor.Button.TextButton.Dense"
+    <LinearLayout
+        android:id="@+id/ll_more"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/convert_from_xyz" />
+        android:orientation="vertical"
+        android:visibility="gone">
 
-    <Button
-        android:id="@+id/b_xyy"
-        style="@style/Widget.IconEditor.Button.TextButton.Dense"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/convert_from_xyy" />
+        <Button
+            android:id="@+id/b_yuv"
+            style="@style/Widget.IconEditor.Button.TextButton.Dense"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/convert_from_yuv" />
+
+        <Button
+            android:id="@+id/b_lab"
+            style="@style/Widget.IconEditor.Button.TextButton.Dense"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/convert_from_lab" />
+
+        <Button
+            android:id="@+id/b_xyz"
+            style="@style/Widget.IconEditor.Button.TextButton.Dense"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/convert_from_xyz" />
+
+        <Button
+            android:id="@+id/b_xyy"
+            style="@style/Widget.IconEditor.Button.TextButton.Dense"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/convert_from_xyy" />
+    </LinearLayout>
 </LinearLayout>
