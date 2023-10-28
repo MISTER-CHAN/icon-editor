@@ -4055,9 +4055,11 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                 return true;
             };
             activityMain.tools.bBrush.setOnLongClickListener(onToolLongClickListener);
+//          activityMain.tools.bBucketFill.setOnLongClickListener(onToolLongClickListener);
             activityMain.tools.bCircle.setOnLongClickListener(onToolLongClickListener);
             activityMain.tools.bEraser.setOnLongClickListener(onToolLongClickListener);
             activityMain.tools.bEyedropper.setOnLongClickListener(onToolLongClickListener);
+//          activityMain.tools.bGradient.setOnLongClickListener(onToolLongClickListener);
             activityMain.tools.bGradientLine.setOnLongClickListener(onToolLongClickListener);
             activityMain.tools.bLine.setOnLongClickListener(onToolLongClickListener);
             activityMain.tools.bMagicEraser.setOnLongClickListener(onToolLongClickListener);

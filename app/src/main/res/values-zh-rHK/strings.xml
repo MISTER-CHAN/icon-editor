@@ -126,6 +126,7 @@
     <string name="fuzziness">容差</string>
     <string name="general">一般</string>
     <string name="generate_noise">生成噪音</string>
+    <string name="gradient">漸變</string>
     <string name="gradient_line">漸變線</string>
     <string name="group">組</string>
     <string name="hardware"><strike>硬件</strike></string>

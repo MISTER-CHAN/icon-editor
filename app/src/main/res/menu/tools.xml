@@ -32,4 +32,11 @@
         <item android:title="@string/circle" />
         <item android:title="@string/gradient_line" />
     </group>
+    <group
+        android:id="@+id/g_fill"
+        android:checkableBehavior="single"
+        android:visible="false">
+        <item android:title="@string/bucket_fill" />
+        <item android:title="@string/gradient" />
+    </group>
 </menu>

@@ -43,6 +43,10 @@ class ToolSelector {
                 menuGroupId = R.id.g_shape;
                 toolButtons = new TextView[]{tools.bLine, tools.bRect, tools.bOval, tools.bCircle, tools.bGradientLine};
             }
+            case R.id.b_bucket_fill, R.id.b_gradient -> {
+                menuGroupId = R.id.g_fill;
+                toolButtons = new TextView[]{tools.bBucketFill, tools.bGradient};
+            }
             default -> {
                 return;
             }

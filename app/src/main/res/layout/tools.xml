@@ -146,6 +146,16 @@
         android:text="@string/bucket_fill" />
 
     <Button
+        android:id="@+id/b_gradient"
+        style="@style/Widget.IconEditor.Button.OutlinedButton.Dense"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/gradient_line"
+        android:visibility="gone"
+        app:icon="@drawable/ic_expand_more"
+        app:iconTint="?attr/colorOnSurfaceVariant" />
+
+    <Button
         android:id="@+id/b_text"
         style="@style/Widget.IconEditor.Button.OutlinedButton.Dense"
         android:layout_width="wrap_content"
