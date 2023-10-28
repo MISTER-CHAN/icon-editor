@@ -243,7 +243,7 @@
                         android:id="@+id/i_layer_filter_lighting"
                         android:icon="@drawable/ic_void"
                         android:iconTint="?attr/colorOnSurfaceVariant"
-                        android:title="@string/channel_lighting" />
+                        android:title="@string/lighting" />
                     <item
                         android:id="@+id/i_layer_filter_color_matrix"
                         android:icon="@drawable/ic_void"

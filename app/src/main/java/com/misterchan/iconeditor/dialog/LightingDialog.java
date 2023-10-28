@@ -3,15 +3,20 @@ package com.misterchan.iconeditor.dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.view.Gravity;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.FrameLayout;
 
+import androidx.annotation.ColorInt;
 import androidx.annotation.Size;
 import androidx.appcompat.app.AlertDialog;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.slider.Slider;
+import com.misterchan.iconeditor.Color;
 import com.misterchan.iconeditor.R;
+import com.misterchan.iconeditor.colorpicker.RgbColorPicker;
 import com.misterchan.iconeditor.listener.OnSliderChangeListener;
 
 public class LightingDialog {
@@ -21,6 +26,7 @@ public class LightingDialog {
     }
 
     private final AlertDialog.Builder builder;
+    private final Context context;
     private OnLightingChangedListener onLightingChangeListener;
 
     @Size(8)
@@ -31,27 +37,20 @@ public class LightingDialog {
     }
 
     public LightingDialog(Context context, float[] defaultLighting) {
+        this.context = context;
         builder = new MaterialAlertDialogBuilder(context)
-                .setView(R.layout.channel_lighting);
+                .setTitle(R.string.lighting)
+                .setView(R.layout.lighting);
 
         if (defaultLighting == null) {
             lighting = new float[]{1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f};
         } else {
             lighting = defaultLighting;
             for (int i = 0; i < lighting.length; i += 2) {
-                lighting[i] = Math.min(Math.max(lighting[i], 0.0f), 2.0f);
-                lighting[i + 1] = Math.min(Math.max(Math.round(lighting[i + 1]), -0xFF), 0xFF);
+                lighting[i] = Math.min(Math.max(lighting[i], 0.0f), 1.0f);
+                lighting[i + 1] = Math.min(Math.max(Math.round(lighting[i + 1]), 0x00), 0xFF);
             }
         }
-    }
-
-    private void setElement(Slider slider, float e, boolean stopped) {
-        setElement(slider.getTag().toString().charAt(0) - '0', e, stopped);
-    }
-
-    private void setElement(int index, float e, boolean stopped) {
-        lighting[index] = e;
-        onLightingChangeListener.onChanged(lighting, stopped);
     }
 
     public LightingDialog setOnCancelListener(DialogInterface.OnCancelListener listener) {
@@ -80,41 +79,31 @@ public class LightingDialog {
         lp.gravity = Gravity.BOTTOM;
         window.setAttributes(lp);
 
-        final Slider sRedMul = dialog.findViewById(R.id.s_red_mul);
-        final Slider sRedAdd = dialog.findViewById(R.id.s_red_add);
-        final Slider sGreenMul = dialog.findViewById(R.id.s_green_mul);
-        final Slider sGreenAdd = dialog.findViewById(R.id.s_green_add);
-        final Slider sBlueMul = dialog.findViewById(R.id.s_blue_mul);
-        final Slider sBlueAdd = dialog.findViewById(R.id.s_blue_add);
-        final Slider sAlphaMul = dialog.findViewById(R.id.s_alpha_mul);
-        final Slider sAlphaAdd = dialog.findViewById(R.id.s_alpha_add);
+        final FrameLayout flMul = dialog.findViewById(R.id.l_mul);
+        final FrameLayout flAdd = dialog.findViewById(R.id.l_add);
+        final View vMul = flMul.findViewById(R.id.v_color);
+        final View vAdd = flAdd.findViewById(R.id.v_color);
 
-        sRedMul.setValue(lighting[0]);
-        sRedAdd.setValue(lighting[1]);
-        sGreenMul.setValue(lighting[2]);
-        sGreenAdd.setValue(lighting[3]);
-        sBlueMul.setValue(lighting[4]);
-        sBlueAdd.setValue(lighting[5]);
-        sAlphaMul.setValue(lighting[6]);
-        sAlphaAdd.setValue(lighting[7]);
+        vMul.setBackgroundColor(Color.argb(lighting[6], lighting[0], lighting[2], lighting[4]));
+        vAdd.setBackgroundColor(Color.argb((int) lighting[7], (int) lighting[1], (int) lighting[3], (int) lighting[5]));
 
-        final OnSliderChangeListener l = this::setElement;
+        flMul.setOnClickListener(v -> RgbColorPicker.make(context, R.string.slope, (oldColor, newColor) -> {
+            lighting[0] = Color.red(newColor);
+            lighting[2] = Color.green(newColor);
+            lighting[4] = Color.blue(newColor);
+            lighting[6] = Color.alpha(newColor);
+            vMul.setBackgroundColor(Color.toArgb(newColor));
+            onLightingChangeListener.onChanged(lighting, true);
+        }, Color.pack(lighting[0], lighting[2], lighting[4], lighting[6])).show());
 
-        sRedMul.addOnChangeListener(l);
-        sRedMul.addOnSliderTouchListener(l);
-        sRedAdd.addOnChangeListener(l);
-        sRedAdd.addOnSliderTouchListener(l);
-        sGreenMul.addOnChangeListener(l);
-        sGreenMul.addOnSliderTouchListener(l);
-        sGreenAdd.addOnChangeListener(l);
-        sGreenAdd.addOnSliderTouchListener(l);
-        sBlueMul.addOnChangeListener(l);
-        sBlueMul.addOnSliderTouchListener(l);
-        sBlueAdd.addOnChangeListener(l);
-        sBlueAdd.addOnSliderTouchListener(l);
-        sAlphaMul.addOnChangeListener(l);
-        sAlphaMul.addOnSliderTouchListener(l);
-        sAlphaAdd.addOnChangeListener(l);
-        sAlphaAdd.addOnSliderTouchListener(l);
+        flAdd.setOnClickListener(v -> RgbColorPicker.make(context, R.string.offset, (oldColor, newColor) -> {
+            @ColorInt final int newColorInt = Color.toArgb(newColor);
+            lighting[1] = Color.red(newColorInt);
+            lighting[3] = Color.green(newColorInt);
+            lighting[5] = Color.blue(newColorInt);
+            lighting[7] = Color.alpha(newColorInt);
+            vAdd.setBackgroundColor(Color.toArgb(newColor));
+            onLightingChangeListener.onChanged(lighting, true);
+        }, Color.pack(Color.argb((int) lighting[7], (int) lighting[1], (int) lighting[3], (int) lighting[5]))).show());
     }
 }

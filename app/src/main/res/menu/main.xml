@@ -272,7 +272,7 @@
                         <item
                             android:id="@+id/i_filter_lighting"
                             android:icon="@drawable/ic_void"
-                            android:title="@string/channel_lighting" />
+                            android:title="@string/lighting" />
                         <item
                             android:id="@+id/i_filter_color_matrix"
                             android:icon="@drawable/ic_void"

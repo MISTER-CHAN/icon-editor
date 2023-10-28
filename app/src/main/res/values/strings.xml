@@ -38,7 +38,6 @@
     <string name="cell_grid">Cell Grid</string>
     <string name="center">Center</string>
     <string name="channels">Channels</string>
-    <string name="channel_lighting">Channel Lighting</string>
     <string name="channel_mixer">Channel Mixer</string>
     <string name="check_for_updates">Check for Updates</string>
     <string name="check_for_updates_in_system_browser">Check for updates in system browser</string>
@@ -178,6 +177,8 @@
     <string name="level_of_new_layer">Level of New Layer</string>
     <string name="level_up">Level up</string>
     <string name="levels">Levels</string>
+    <string name="lighting">Lighting</string>
+    <string name="lighting_where">Where\n𝑪 – Source color\n𝑪\' – Result color</string>
     <string name="lightness">Lightness</string>
     <string name="line">Line</string>
     <string name="locale">Locale</string>
@@ -298,6 +299,7 @@
     <string name="show_timeline">Show Timeline</string>
     <string name="simple_fast">Simple Fast</string>
     <string name="size">Size</string>
+    <string name="slope">Slope</string>
     <string name="soft_brush">Soft Brush</string>
     <string name="softness">Softness</string>
     <string name="source">Source</string>
@@ -416,15 +418,19 @@
     <string name="color">Color</string>
     <string name="luminosity">Luminosity</string>
 
-    <!-- Matrix -->
-    <string name="eq" translatable="false">＝</string>
-    <string name="x_y_1" translatable="false">𝑥\n𝑦\n1</string>
-    <string name="xp_yp_zp" translatable="false">𝑥\'\n𝑦\'\n𝑧\'</string>
-    <string name="rp_gp_bp_ap" translatable="false">𝑅\'\n𝐺\'\n𝐵\'\n𝐴\'</string>
-    <string name="r_g_b_a_1" translatable="false">𝑅\n𝐺\n𝐵\n𝐴\n1</string>
+    <!-- Lighting -->
+    <string name="cp_eq" translatable="false">𝑪\' =&#xA0;</string>
+    <string name="times_c_plus" translatable="false">&#xA0;× 𝑪 +&#xA0;</string>
 
     <!-- Locales -->
     <string name="en">English</string>
     <string name="zh_cn">Chinese (China)</string>
     <string name="zh_hk">Chinese (Hong Kong)</string>
+
+    <!-- Matrix -->
+    <string name="eq" translatable="false">&#xA0;=&#xA0;</string>
+    <string name="x_y_1" translatable="false">𝑥\n𝑦\n1</string>
+    <string name="xp_yp_zp" translatable="false">𝑥\'\n𝑦\'\n𝑧\'</string>
+    <string name="rp_gp_bp_ap" translatable="false">𝑅\'\n𝐺\'\n𝐵\'\n𝐴\'</string>
+    <string name="r_g_b_a_1" translatable="false">𝑅\n𝐺\n𝐵\n𝐴\n1</string>
 </resources>

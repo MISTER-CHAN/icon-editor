@@ -177,15 +177,15 @@ public class Layers {
                         pixels = BitmapUtils.getPixels(bitmap, dst);
                     }
                     {
-                        final boolean isSubtreeChild = node != backgroundNode || node.isRoot;
-                        final boolean hasFilter = layer.filter != null && isSubtreeChild;
+                        final boolean isSubtreeRoot = node == backgroundNode && !node.isRoot;
+                        final boolean hasFilter = layer.filter != null && !isSubtreeRoot;
                         final boolean hasExtra = layer == specifiedLayer && extraDst != null;
                         final Bitmap bm = hasFilter || hasExtra ? Bitmap.createBitmap(intW, intH, Bitmap.Config.ARGB_8888) : null;
                         final Canvas cv = bm != null ? new Canvas(bm) : canvas;
                         final Rect d = bm != null ? intRel : dst;
-                        final Paint paint = isSubtreeChild
-                                ? bm != null ? BitmapUtils.PAINT_SRC_OVER : layer.paint
-                                : baseBm != null ? BitmapUtils.PAINT_SRC_OVER : BitmapUtils.PAINT_SRC;
+                        final Paint paint = isSubtreeRoot
+                                ? baseBm != null ? BitmapUtils.PAINT_SRC_OVER : BitmapUtils.PAINT_SRC
+                                : bm != null ? BitmapUtils.PAINT_SRC_OVER : layer.paint;
                         try {
                             if (hasFilter) {
                                 cv.drawBitmap(bitmap, dst, intRel, BitmapUtils.PAINT_SRC);

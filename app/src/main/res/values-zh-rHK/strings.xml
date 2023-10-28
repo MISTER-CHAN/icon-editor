@@ -31,7 +31,6 @@
     <string name="cell_grid">網格</string>
     <string name="center">中</string>
     <string name="channels">通道</string>
-    <string name="channel_lighting">通道照明</string>
     <string name="channel_mixer">通道混合器</string>
     <string name="check_for_updates">檢査更新</string>
     <string name="check_for_updates_in_system_browser">以系統瀏覽器檢査更新</string>
@@ -160,6 +159,8 @@
     <string name="level_of_new_layer">新圖層級別</string>
     <string name="level_up">升級</string>
     <string name="levels">色階</string>
+    <string name="lighting">照明</string>
+    <string name="lighting_where">其中\n𝑪 – 來源顏色\n𝑪\' – 結果顏色</string>
     <string name="lightness">明度</string>
     <string name="line">直線</string>
     <string name="locale">地區</string>
@@ -270,6 +271,7 @@
     <string name="show_timeline">顯示時間線</string>
     <string name="simple_fast">簡單快速</string>
     <string name="size">尺寸</string>
+    <string name="slope">斜率</string>
     <string name="soft_brush">軟筆</string>
     <string name="softness">軟度</string>
     <string name="source">來源</string>
