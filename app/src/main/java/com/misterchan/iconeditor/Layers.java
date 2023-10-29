@@ -185,7 +185,7 @@ public class Layers {
                         final Rect d = bm != null ? intRel : dst;
                         final Paint paint = isSubtreeRoot
                                 ? baseBm != null ? BitmapUtils.PAINT_SRC_OVER : BitmapUtils.PAINT_SRC
-                                : bm != null ? BitmapUtils.PAINT_SRC_OVER : layer.paint;
+                                : layer.paint;
                         try {
                             if (hasFilter) {
                                 cv.drawBitmap(bitmap, dst, intRel, BitmapUtils.PAINT_SRC);
