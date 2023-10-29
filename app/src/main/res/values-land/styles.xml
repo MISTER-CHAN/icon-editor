@@ -4,6 +4,7 @@
     <style name="Widget_IconEditor_ButtonToggleGroup_ToolOptions" parent="Widget_IconEditor_LinearLayout_ToolOptions">
         <item name="android:layout_gravity">center_horizontal</item>
         <item name="android:layout_marginVertical">2dp</item>
+        <item name="android:gravity">center_horizontal</item>
     </style>
 
     <style name="Widget_IconEditor_Inclusion_ItemColor">

@@ -4,10 +4,19 @@
     <style name="MaterialAlertDialog.IconEditor.Insetless" parent="MaterialAlertDialog.Material3">
         <item name="backgroundInsetTop">16dp</item>
         <item name="backgroundInsetBottom">16dp</item>
+        <item name="tint">?attr/colorOnSurfaceVariant</item>
+    </style>
+
+    <style name="MaterialAlertDialog.IconEditor.Title.Icon" parent="MaterialAlertDialog.Material3.Title.Icon">
+        <item name="android:tint">?attr/colorOnSurfaceVariant</item>
     </style>
 
     <style name="Widget.IconEditor.ActionMode" parent="Widget.Material3.ActionMode">
         <item name="background">?attr/colorSurface</item>
+    </style>
+
+    <style name="Widget_IconEditor_ActionMode_CloseButton">
+        <item name="android:tint">?attr/colorOnSurfaceVariant</item>
     </style>
 
     <style name="Widget.IconEditor.Button.OutlinedButton.Dense" parent="Widget.Material3.Button.OutlinedButton">
@@ -29,6 +38,7 @@
     <style name="Widget_IconEditor_ButtonToggleGroup_ToolOptions" parent="Widget_IconEditor_LinearLayout_ToolOptions">
         <item name="android:layout_gravity">center_vertical</item>
         <item name="android:layout_marginHorizontal">2dp</item>
+        <item name="android:gravity">center_vertical</item>
     </style>
 
     <style name="Widget_IconEditor_Inclusion_ItemColor">

@@ -63,6 +63,19 @@
         <item>@string/stable</item>
     </string-array>
 
+    <!-- Gradient Colors -->
+    <string-array name="gradient_colors">
+        <item>@string/paints</item>
+        <item>@string/palette</item>
+    </string-array>
+
+    <!-- Gradient Types -->
+    <string-array name="gradient_types">
+        <item>@string/linear</item>
+        <item>@string/radial</item>
+        <item>@string/sweep</item>
+    </string-array>
+
     <!-- Level of New Layer Preference -->
     <string-array name="nll_entries">
         <item>@string/top_level</item>

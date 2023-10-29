@@ -21,7 +21,7 @@
             android:textAppearance="?android:attr/textAppearanceMedium" />
 
         <include
-            android:id="@+id/l_mul"
+            android:id="@+id/mul"
             layout="@layout/item_color" />
 
         <TextView
@@ -32,7 +32,7 @@
             android:textAppearance="?android:attr/textAppearanceMedium" />
 
         <include
-            android:id="@+id/l_add"
+            android:id="@+id/add"
             layout="@layout/item_color" />
     </LinearLayout>
 

@@ -123,10 +123,10 @@ public class RgbColorPicker extends ColorPicker {
                 XyYColorPicker.make(context, l, newColor).show());
 
         final Button bMoreColorPickers = dialog.findViewById(R.id.b_more);
-        final LinearLayout lMoreColorPickers = dialog.findViewById(R.id.ll_more);
+        final LinearLayout llMoreColorPickers = dialog.findViewById(R.id.ll_more);
         bMoreColorPickers.setOnClickListener(v -> {
             v.setVisibility(View.GONE);
-            lMoreColorPickers.setVisibility(View.VISIBLE);
+            llMoreColorPickers.setVisibility(View.VISIBLE);
         });
     }
 

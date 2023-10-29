@@ -185,6 +185,17 @@
                 </ScrollView>
 
                 <ScrollView
+                    android:id="@+id/sv_options_gradient"
+                    style="@style/Widget_IconEditor_ScrollView_ToolOptions"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent">
+
+                    <include
+                        android:id="@+id/options_gradient"
+                        layout="@layout/options_gradient" />
+                </ScrollView>
+
+                <ScrollView
                     android:id="@+id/sv_options_gradient_line"
                     style="@style/Widget_IconEditor_ScrollView_ToolOptions"
                     android:layout_width="wrap_content"

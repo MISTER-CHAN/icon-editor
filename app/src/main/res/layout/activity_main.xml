@@ -105,6 +105,17 @@
                 </HorizontalScrollView>
 
                 <HorizontalScrollView
+                    android:id="@+id/sv_options_gradient"
+                    style="@style/Widget_IconEditor_ScrollView_ToolOptions"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <include
+                        android:id="@+id/options_gradient"
+                        layout="@layout/options_gradient" />
+                </HorizontalScrollView>
+
+                <HorizontalScrollView
                     android:id="@+id/sv_options_gradient_line"
                     style="@style/Widget_IconEditor_ScrollView_ToolOptions"
                     android:layout_width="match_parent"

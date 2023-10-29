@@ -53,6 +53,7 @@
     <string name="color_replace">顏色取代</string>
     <string name="color_space">色彩空間</string>
     <string name="color_type">顏色類型</string>
+    <string name="colors_">顏色：</string>
     <string name="component_numeral_system">元件進位制</string>
     <string name="configuration">配置</string>
     <string name="contiguous">連續</string>
@@ -164,6 +165,7 @@
     <string name="lighting_where">其中\n𝑪 – 來源顏色\n𝑪\' – 結果顏色</string>
     <string name="lightness">明度</string>
     <string name="line">直線</string>
+    <string name="linear">線性</string>
     <string name="locale">地區</string>
     <string name="lock_aspect_ratio">鎖定寬高比</string>
     <string name="long_integer">長整數</string>
@@ -206,6 +208,7 @@
     <string name="output">輸出</string>
     <string name="oval">橢圓</string>
     <string name="paint">畫筆</string>
+    <string name="paints">畫筆</string>
     <string name="palette">調色板</string>
     <string name="pass_layers_below">傳遞底下圖層</string>
     <string name="paste">貼上</string>
@@ -230,6 +233,7 @@
     <string name="quick_add_layer_mask">快速新增圖層遮罩</string>
     <string name="quick_create_clipping_mask">快速建立剪裁遮罩</string>
     <string name="quick_group">快速建立組</string>
+    <string name="radial">徑向</string>
     <string name="random">隨機</string>
     <string name="range">範圍</string>
     <string name="rectangle">矩形</string>
@@ -305,6 +309,7 @@
     <string name="subpixel">子像素</string>
     <string name="swap">交換</string>
     <string name="swatch">顏色</string>
+    <string name="sweep">掃描</string>
     <string name="synchronously_draw_image_and_ui">同步繪畫圖像與用戶介面</string>
     <string name="text">文本</string>
     <string name="there_are_frames_invalid_which_are">有 %s 幀無效，其位置爲\n%s\n\n可能原因爲\n- 尺寸異於首幀\n- 配置爲非 ARGB_8888</string>
@@ -322,6 +327,7 @@
     <string name="transition">過渡</string>
     <string name="translate">平移</string>
     <string name="tutorial_merge_as_hidden">Tutorial</string>
+    <string name="type_">類型：</string>
     <string name="typeface">字型</string>
     <string name="underlined">底線</string>
     <string name="undo">撤回</string>

@@ -3,11 +3,15 @@
     <style name="Theme.IconEditor" parent="Theme.Material3.DayNight">
         <!-- Customize your theme here. -->
         <item name="actionBarStyle">@style/Widget.Material3.ActionBar.Solid</item>
+        <item name="actionModeCloseButtonStyle">
+            @style/Widget_IconEditor_ActionMode_CloseButton
+        </item>
         <item name="actionModeCloseDrawable">@drawable/ic_close</item>
         <item name="actionModeStyle">@style/Widget.IconEditor.ActionMode</item>
         <item name="materialAlertDialogTheme">
             @style/ThemeOverlay.IconEditor.MaterialAlertDialog.Insetless
         </item>
+        <item name="preferenceTheme">@style/Theme_IconEditor_Preference</item>
         <item name="toolbarStyle">@style/Widget.Material3.Toolbar.Surface</item>
         <item name="windowActionModeOverlay">true</item>
     </style>
@@ -17,8 +21,15 @@
         <item name="windowNoTitle">true</item>
     </style>
 
+    <style name="Theme_IconEditor_Preference" parent="PreferenceThemeOverlay">
+        <item name="android:tint">?attr/colorOnSurfaceVariant</item>
+    </style>
+
     <style name="ThemeOverlay.IconEditor.MaterialAlertDialog.Insetless" parent="ThemeOverlay.Material3.MaterialAlertDialog">
         <item name="alertDialogStyle">@style/MaterialAlertDialog.IconEditor.Insetless</item>
+        <item name="materialAlertDialogTitleIconStyle">
+            @style/MaterialAlertDialog.IconEditor.Title.Icon
+        </item>
     </style>
 
     <style name="ThemeOverlay.IconEditor.MaterialAlertDialog.Insetless.Square" parent="ThemeOverlay.IconEditor.MaterialAlertDialog.Insetless">

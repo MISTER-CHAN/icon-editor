@@ -3,9 +3,9 @@ package com.misterchan.iconeditor.ui;
 import android.annotation.SuppressLint;
 import android.content.ClipData;
 import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -39,6 +39,7 @@ import android.view.VelocityTracker;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -75,11 +76,6 @@ import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
-import com.misterchan.iconeditor.databinding.ActivityMainBinding;
-import com.misterchan.iconeditor.databinding.FrameListBinding;
-import com.misterchan.iconeditor.databinding.LayerListBinding;
-import com.misterchan.iconeditor.dialog.BitmapConfigModifier;
-import com.misterchan.iconeditor.tool.BrushTool;
 import com.misterchan.iconeditor.CellGrid;
 import com.misterchan.iconeditor.Color;
 import com.misterchan.iconeditor.DrawingPrimitivePreview;
@@ -92,15 +88,13 @@ import com.misterchan.iconeditor.Layers;
 import com.misterchan.iconeditor.Project;
 import com.misterchan.iconeditor.R;
 import com.misterchan.iconeditor.Reference;
-import com.misterchan.iconeditor.tool.MagicEraser;
-import com.misterchan.iconeditor.tool.Ruler;
 import com.misterchan.iconeditor.Settings;
-import com.misterchan.iconeditor.tool.SelectionTool;
-import com.misterchan.iconeditor.tool.Shape;
-import com.misterchan.iconeditor.tool.TextTool;
-import com.misterchan.iconeditor.tool.Transformer;
 import com.misterchan.iconeditor.colorpicker.RgbColorPicker;
+import com.misterchan.iconeditor.databinding.ActivityMainBinding;
+import com.misterchan.iconeditor.databinding.FrameListBinding;
+import com.misterchan.iconeditor.databinding.LayerListBinding;
 import com.misterchan.iconeditor.dialog.AnimationClipper;
+import com.misterchan.iconeditor.dialog.BitmapConfigModifier;
 import com.misterchan.iconeditor.dialog.CellGridManager;
 import com.misterchan.iconeditor.dialog.ColorBalanceDialog;
 import com.misterchan.iconeditor.dialog.ColorMatrixManager;
@@ -121,19 +115,27 @@ import com.misterchan.iconeditor.dialog.NoiseGenerator;
 import com.misterchan.iconeditor.dialog.QualityManager;
 import com.misterchan.iconeditor.dialog.SliderDialog;
 import com.misterchan.iconeditor.listener.AfterTextChangedListener;
+import com.misterchan.iconeditor.listener.OnAdapterViewItemSelectedListener;
 import com.misterchan.iconeditor.listener.OnButtonCheckedListener;
 import com.misterchan.iconeditor.listener.OnSliderChangeListener;
+import com.misterchan.iconeditor.tool.BrushTool;
+import com.misterchan.iconeditor.tool.Gradient;
+import com.misterchan.iconeditor.tool.MagicEraser;
+import com.misterchan.iconeditor.tool.Ruler;
+import com.misterchan.iconeditor.tool.SelectionTool;
+import com.misterchan.iconeditor.tool.Shape;
+import com.misterchan.iconeditor.tool.TextTool;
+import com.misterchan.iconeditor.tool.Transformer;
 import com.misterchan.iconeditor.util.BitmapUtils;
 import com.misterchan.iconeditor.util.CanvasUtils;
-import com.misterchan.iconeditor.util.RunnableRunnable;
 import com.misterchan.iconeditor.util.FileUtils;
+import com.misterchan.iconeditor.util.RunnableRunnable;
 import com.waynejo.androidndkgif.GifDecoder;
 import com.waynejo.androidndkgif.GifEncoder;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 
@@ -255,13 +257,14 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
     private float translationX, translationY;
     private Frame frame;
     private FrameListBinding frameList;
+    private final Gradient gradient = new Gradient();
     private InputMethodManager inputMethodManager;
     private int rulerHHeight, rulerVWidth;
     private int threshold;
     private int viewWidth, viewHeight;
     private Layer layer;
     private LayerListBinding layerList;
-    private LinkedList<Long> palette;
+    private List<Long> palette;
     private List<Project> projects;
     private final MagicEraser magEr = new MagicEraser();
     private MenuItem miFrameList;
@@ -638,7 +641,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
     private final View.OnClickListener onAddSwatchButtonClickListener = v ->
             RgbColorPicker.make(this, R.string.add,
                             (oldColor, newColor) -> {
-                                palette.offerFirst(newColor);
+                                palette.add(0, newColor);
                                 colorAdapter.notifyItemInserted(0);
                             },
                             paint.getColorLong())
@@ -758,6 +761,23 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         layer.deltaHsv = deltaHsv;
         drawBitmapOntoView(stopped);
         activityMain.tvStatus.setText(getString(R.string.state_hsv, deltaHsv[0], deltaHsv[1], deltaHsv[2]));
+    };
+
+    private final AdapterView.OnItemSelectedListener onGradientColorsSpinnerItemSelectedListener = (OnAdapterViewItemSelectedListener) (parent, view, position, id) -> {
+        gradient.colors = switch (position) {
+            case 0 -> Gradient.Colors.PAINTS;
+            case 1 -> Gradient.Colors.PALETTE;
+            default -> Gradient.Colors.PAINTS;
+        };
+    };
+
+    private final AdapterView.OnItemSelectedListener onGradientTypeSpinnerItemSelectedListener = (OnAdapterViewItemSelectedListener) (parent, view, position, id) -> {
+        gradient.type = switch (position) {
+            case 0 -> Gradient.Type.LINEAR;
+            case 1 -> Gradient.Type.RADIAL;
+            case 2 -> Gradient.Type.SWEEP;
+            default -> Gradient.Type.LINEAR;
+        };
     };
 
     private final LevelsDialog.OnLevelsChangedListener onFilterLevelsChangedListener = (inputShadows, inputHighlights, outputShadows, outputHighlights, stopped) -> {
@@ -1583,8 +1603,67 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
 
     private View.OnTouchListener onIVTouchWithEyedropperListener;
 
-    @SuppressLint({"ClickableViewAccessibility", "SetTextI18n"})
     private final View.OnTouchListener onIVTouchWithGradientListener = new OnIVMultiTouchListener() {
+        private int shapeStartX, shapeStartY;
+
+        @ColorLong
+        private long[] lastCopiedPalette;
+
+        @Override
+        public void onIVSingleTouch(View v, MotionEvent event) {
+            final float x = event.getX(), y = event.getY();
+            final int bx = toBitmapX(x), by = toBitmapY(y);
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    if (isShapeStopped) {
+                        isShapeStopped = false;
+                        dpPreview.getCanvas().drawPoint(bx + 0.5f, by + 0.5f, paint);
+                        drawBitmapOntoView(bx, by, bx + 1, by + 1);
+                        if (gradient.colors == Gradient.Colors.PALETTE) {
+                            lastCopiedPalette = new long[palette.size()];
+                            for (int i = 0; i < palette.size(); ++i) {
+                                lastCopiedPalette[i] = palette.get(i);
+                            }
+                        }
+                        shapeStartX = bx;
+                        shapeStartY = by;
+                        activityMain.tvStatus.setText(getString(R.string.coordinates, bx, by));
+                        break;
+                    }
+                case MotionEvent.ACTION_MOVE: {
+                    if (bx == shapeStartX && by == shapeStartY) break;
+                    paint.setShader(gradient.createShader(shapeStartX, shapeStartY, bx, by, switch (gradient.colors) {
+                        case PAINTS -> new long[]{paint.getColorLong(), eraser.getColorLong()};
+                        case PALETTE -> lastCopiedPalette;
+                    }));
+                    dpPreview.erase();
+                    dpPreview.getCanvas().drawPaint(paint);
+                    drawBitmapOntoView();
+                    activityMain.tvStatus.setText(getString(R.string.state_start_stop,
+                            shapeStartX, shapeStartY, bx, by));
+                    break;
+                }
+                case MotionEvent.ACTION_UP:
+                case MotionEvent.ACTION_CANCEL:
+                    if (bx == shapeStartX && by == shapeStartY) break;
+                    isShapeStopped = true;
+                    canvas.drawPaint(paint);
+                    dpPreview.erase();
+                    drawBitmapOntoView(true);
+                    addToHistory();
+                    clearStatus();
+                    break;
+            }
+        }
+
+        @Override
+        public void onStartMultiTouch() {
+            paint.setShader(null);
+        }
+    };
+
+    @SuppressLint({"ClickableViewAccessibility", "SetTextI18n"})
+    private final View.OnTouchListener onIVTouchWithGradientLineListener = new OnIVMultiTouchListener() {
         private int shapeStartX, shapeStartY;
         private Rect lastRect;
 
@@ -1597,7 +1676,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
             final int bx = toBitmapX(x), by = toBitmapY(y);
             final Bitmap src = !ref.recycled() ? ref.bm() : bitmap;
             switch (event.getAction()) {
-                case MotionEvent.ACTION_DOWN: {
+                case MotionEvent.ACTION_DOWN:
                     if (isShapeStopped) {
                         isShapeStopped = false;
                         dpPreview.getCanvas().drawPoint(bx + 0.5f, by + 0.5f, paint);
@@ -1609,7 +1688,6 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                         activityMain.tvStatus.setText(getString(R.string.coordinates, bx, by));
                         break;
                     }
-                }
                 case MotionEvent.ACTION_MOVE: {
                     paint.setShader(new LinearGradient(shapeStartX, shapeStartY, bx, by,
                             color0,
@@ -2745,16 +2823,19 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                     onToolChanged(onIVTouchWithEyedropperListener, activityMain.svOptionsEyedropper);
                 }
             }
+            case R.id.b_gradient -> {
+                if (isChecked) {
+                    onToolChanged(onIVTouchWithGradientListener, activityMain.svOptionsGradient);
+                    dpPreview.setBitmap(bitmap.getWidth(), bitmap.getHeight());
+                }
+            }
             case R.id.b_gradient_line -> {
                 if (isChecked) {
-                    onToolChanged(onIVTouchWithGradientListener, activityMain.svOptionsGradientLine);
-                    paint.setBlendMode(BlendMode.SRC);
+                    onToolChanged(onIVTouchWithGradientLineListener, activityMain.svOptionsGradientLine);
                     activityMain.optionsGradientLine.cbAntiAlias.setChecked(antiAlias);
                     activityMain.optionsGradientLine.tietBlurRadius.setText(String.valueOf(blurRadius));
                     activityMain.optionsGradientLine.tietStrokeWidth.setText(String.valueOf(strokeWidth));
                     dpPreview.setBitmap(bitmap.getWidth(), bitmap.getHeight());
-                } else {
-                    paint.setBlendMode(BlendMode.SRC_OVER);
                 }
             }
             case R.id.b_magic_eraser -> {
@@ -3032,6 +3113,23 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
 
     private void addToHistory(Layer layer) {
         layer.history.add(layer.bitmap);
+    }
+
+    @Override
+    protected void attachBaseContext(Context newBase) {
+        // Locale
+        final String loc = PreferenceManager.getDefaultSharedPreferences(newBase).getString(Settings.KEY_LOC, "def");
+        if (!"def".equals(loc)) {
+            final int i = loc.indexOf('_');
+            final Locale locale = i == -1
+                    ? new Locale(loc)
+                    : new Locale(loc.substring(0, i), loc.substring(i + 1));
+            final Configuration configuration = newBase.getResources().getConfiguration();
+            configuration.setLocale(locale);
+            Locale.setDefault(locale);
+            newBase.createConfigurationContext(configuration);
+        }
+        super.attachBaseContext(newBase);
     }
 
     private void calculateBackgroundSizeOnView() {
@@ -3740,6 +3838,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
     }
 
     private static void eraseBitmap(Bitmap bitmap) {
+        if (bitmap == null) return;
         bitmap.eraseColor(Color.TRANSPARENT);
     }
 
@@ -3954,23 +4053,8 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         super.onCreate(savedInstanceState);
 
         // Preferences
-        final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         Settings.INST.mainActivity = this;
-        Settings.INST.update(preferences);
-
-        // Locale
-        final String loc = preferences.getString(Settings.KEY_LOC, "def");
-        if (!"def".equals(loc)) {
-            final int i = loc.indexOf('_');
-            final Locale locale = i == -1
-                    ? new Locale(loc)
-                    : new Locale(loc.substring(0, i), loc.substring(i + 1));
-            final Resources resources = getResources();
-            final Configuration configuration = resources.getConfiguration();
-            configuration.setLocale(locale);
-            Locale.setDefault(locale);
-            resources.updateConfiguration(configuration, resources.getDisplayMetrics());
-        }
+        Settings.INST.update(PreferenceManager.getDefaultSharedPreferences(this));
 
         final boolean isLandscape = getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
 
@@ -4018,6 +4102,8 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         activityMain.canvas.ivRulerH.setOnTouchListener(onTouchRulerHListener);
         activityMain.canvas.ivRulerV.setOnTouchListener(onTouchRulerVListener);
         activityMain.rvSwatches.setItemAnimator(new DefaultItemAnimator());
+        activityMain.optionsGradient.sColors.setOnItemSelectedListener(onGradientColorsSpinnerItemSelectedListener);
+        activityMain.optionsGradient.sType.setOnItemSelectedListener(onGradientTypeSpinnerItemSelectedListener);
         activityMain.tlProjectList.addOnTabSelectedListener(onProjTabSelectedListener);
         activityMain.optionsBrush.tietSoftness.addTextChangedListener(onSoftnessETTextChangedListener);
         activityMain.optionsBrush.tietStrokeWidth.addTextChangedListener(onSoftStrokeWidthETTextChangedListener);
@@ -4055,11 +4141,11 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                 return true;
             };
             activityMain.tools.bBrush.setOnLongClickListener(onToolLongClickListener);
-//          activityMain.tools.bBucketFill.setOnLongClickListener(onToolLongClickListener);
+            activityMain.tools.bBucketFill.setOnLongClickListener(onToolLongClickListener);
             activityMain.tools.bCircle.setOnLongClickListener(onToolLongClickListener);
             activityMain.tools.bEraser.setOnLongClickListener(onToolLongClickListener);
             activityMain.tools.bEyedropper.setOnLongClickListener(onToolLongClickListener);
-//          activityMain.tools.bGradient.setOnLongClickListener(onToolLongClickListener);
+            activityMain.tools.bGradient.setOnLongClickListener(onToolLongClickListener);
             activityMain.tools.bGradientLine.setOnLongClickListener(onToolLongClickListener);
             activityMain.tools.bLine.setOnLongClickListener(onToolLongClickListener);
             activityMain.tools.bMagicEraser.setOnLongClickListener(onToolLongClickListener);
@@ -4277,8 +4363,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
             }
             case R.id.i_layer_create_clipping_mask -> {
                 switch (layer.paint.getBlendMode()) {
-                    case SRC_OVER, SRC_ATOP ->
-                            layer.paint.setBlendMode(BlendMode.SRC_ATOP);
+                    case SRC_OVER, SRC_ATOP -> layer.paint.setBlendMode(BlendMode.SRC_ATOP);
                     default -> layer.clipToBelow = true;
                 }
                 Layers.levelDown(frame.layers, frame.selectedLayerIndex);
@@ -4581,6 +4666,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
             }
             case R.id.i_layer_rename -> {
                 final AlertDialog dialog = new MaterialAlertDialogBuilder(this)
+                        .setIcon(R.drawable.ic_drive_file_rename_outline)
                         .setNegativeButton(R.string.cancel, null)
                         .setPositiveButton(R.string.ok, onLayerNameApplyListener)
                         .setTitle(R.string.rename)
@@ -4996,6 +5082,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                         .append(getString(R.string.has_alpha)).append('\n').append(bitmap.hasAlpha()).append("\n\n")
                         .append(getString(R.string.color_space)).append('\n').append(bitmap.getColorSpace());
                 new MaterialAlertDialogBuilder(this)
+                        .setIcon(R.drawable.ic_info)
                         .setTitle(R.string.information)
                         .setMessage(message)
                         .setPositiveButton(R.string.ok, null)
@@ -5158,6 +5245,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         eraseBitmapAndInvalidateView(previewBitmap, activityMain.canvas.ivPreview);
         paint.setAntiAlias(antiAlias);
         setBlurRadius(paint, blurRadius);
+        paint.setShader(null);
         paint.setStyle(style);
     }
 

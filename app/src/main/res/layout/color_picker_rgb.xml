@@ -22,9 +22,7 @@
             android:orientation="vertical"
             android:paddingHorizontal="12dp">
 
-            <include
-                android:id="@+id/l_other_color_pickers"
-                layout="@layout/other_color_pickers" />
+            <include layout="@layout/other_color_pickers" />
 
             <include layout="@layout/color_space" />
         </LinearLayout>

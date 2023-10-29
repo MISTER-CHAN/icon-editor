@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@style/Widget_IconEditor_LinearLayout_ToolOptions"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="2dp"
+        android:text="@string/type_" />
+
+    <Spinner
+        android:id="@+id/s_type"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="2dp"
+        android:entries="@array/gradient_types" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="2dp"
+        android:text="@string/colors_" />
+
+    <Spinner
+        android:id="@+id/s_colors"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="2dp"
+        android:entries="@array/gradient_colors" />
+</LinearLayout>

@@ -13,11 +13,9 @@ import androidx.annotation.Size;
 import androidx.appcompat.app.AlertDialog;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.android.material.slider.Slider;
 import com.misterchan.iconeditor.Color;
 import com.misterchan.iconeditor.R;
 import com.misterchan.iconeditor.colorpicker.RgbColorPicker;
-import com.misterchan.iconeditor.listener.OnSliderChangeListener;
 
 public class LightingDialog {
 
@@ -79,8 +77,8 @@ public class LightingDialog {
         lp.gravity = Gravity.BOTTOM;
         window.setAttributes(lp);
 
-        final FrameLayout flMul = dialog.findViewById(R.id.l_mul);
-        final FrameLayout flAdd = dialog.findViewById(R.id.l_add);
+        final FrameLayout flMul = dialog.findViewById(R.id.mul);
+        final FrameLayout flAdd = dialog.findViewById(R.id.add);
         final View vMul = flMul.findViewById(R.id.v_color);
         final View vAdd = flAdd.findViewById(R.id.v_color);
 

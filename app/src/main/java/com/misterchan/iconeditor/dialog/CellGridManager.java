@@ -2,9 +2,12 @@ package com.misterchan.iconeditor.dialog;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.graphics.drawable.Drawable;
+import android.util.TypedValue;
 import android.widget.CheckBox;
 
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.content.res.AppCompatResources;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputEditText;

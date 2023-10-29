@@ -60,6 +60,7 @@
     <string name="color_replace">Color Replace</string>
     <string name="color_space">Color Space</string>
     <string name="color_type">Color Type</string>
+    <string name="colors_">Colors:</string>
     <string name="component_numeral_system">Component Numeral System</string>
     <string name="configuration">Configuration</string>
     <string name="contiguous">Contiguous</string>
@@ -182,6 +183,7 @@
     <string name="lighting_where">Where\n𝑪 – Source color\n𝑪\' – Result color</string>
     <string name="lightness">Lightness</string>
     <string name="line">Line</string>
+    <string name="linear">Linear</string>
     <string name="locale">Locale</string>
     <string name="lock_aspect_ratio">Lock Aspect Ratio</string>
     <string name="long_integer">Long Integer</string>
@@ -231,6 +233,7 @@
     <string name="output">Output</string>
     <string name="oval">Oval</string>
     <string name="paint">Paint</string>
+    <string name="paints">Paints\'</string>
     <string name="palette">Palette</string>
     <string name="pass_layers_below">Pass Layers below</string>
     <string name="paste">Paste</string>
@@ -257,6 +260,7 @@
     <string name="quick_create_clipping_mask">Quick Create Clipping Mask</string>
     <string name="quick_group">Quick Group</string>
     <string name="r" translatable="false">R</string>
+    <string name="radial">Radial</string>
     <string name="random">Random</string>
     <string name="range">Range</string>
     <string name="rectangle">Rectangle</string>
@@ -339,6 +343,7 @@
     <string name="subpixel">Subpixel</string>
     <string name="swap">Swap</string>
     <string name="swatch">Swatch</string>
+    <string name="sweep">Sweep</string>
     <string name="synchronously_draw_image_and_ui">Synchronously draw image and U.I.</string>
     <string name="text">Text</string>
     <string name="there_are_frames_invalid_which_are">There are %d frames invalid whose positions are\n%s\n\nPossible reasons are\n- The sizes differ from the first frame\'s\n- The configs are not ARGB_8888</string>
@@ -357,6 +362,7 @@
     <string name="translate">Translate</string>
     <string name="tutorial_merge_as_hidden">Tutorial</string>
     <string name="two_seventy_degrees" translatable="false">270°</string>
+    <string name="type_">Type:</string>
     <string name="typeface">Typeface</string>
     <string name="u" translatable="false">U</string>
     <string name="underlined">Underlined</string>
