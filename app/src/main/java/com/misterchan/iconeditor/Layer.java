@@ -22,6 +22,7 @@ public class Layer {
         LIGHTING,
         LIGHTNESS,
         SATURATION,
+        SELECTED_BY_CR,
         THRESHOLD
     }
 

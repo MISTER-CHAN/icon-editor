@@ -1,21 +1,27 @@
 package com.misterchan.iconeditor.util;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BlendMode;
 import android.graphics.Canvas;
 import android.graphics.ColorSpace;
 import android.graphics.Paint;
+import android.graphics.Point;
 import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
+import android.util.Log;
 
 import androidx.annotation.ColorInt;
+import androidx.annotation.DrawableRes;
 import androidx.annotation.FloatRange;
 import androidx.annotation.IntRange;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.Size;
+import androidx.core.content.ContextCompat;
 
 import com.misterchan.iconeditor.Color;
 import com.misterchan.iconeditor.ColorRange;
-import com.misterchan.iconeditor.ImmPoint;
 
 import java.util.LinkedList;
 import java.util.Queue;
@@ -121,21 +127,34 @@ public class BitmapUtils {
         }
     }
 
-    public static void bucketFill(final Bitmap src, final Bitmap dst, Rect rect,
+    public static void bucketFill(final Bitmap src, Rect srcRect, final Bitmap dst, Rect dstRect,
                                   final int x, final int y, @ColorInt final int color,
                                   final boolean ignoreAlpha, final int tolerance) {
-        if (rect == null) {
-            rect = new Rect(0, 0, src.getWidth(), src.getHeight());
-        } else if (!(rect.left <= x && x < rect.right && rect.top <= y && y < rect.bottom)) {
+        if (dstRect == null) {
+            dstRect = new Rect(0, 0, dst.getWidth(), dst.getHeight());
+        }
+        final int w = dstRect.width(), h = dstRect.height();
+        if (srcRect == null) {
+            srcRect = src == dst ? dstRect : new Rect(0, 0, src.getWidth(), src.getHeight());
+        }
+        if (src != dst && (srcRect.width() != w || srcRect.height() != h)) {
             return;
+        }
+        if (!(dstRect.left <= x && x < dstRect.right && dstRect.top <= y && y < dstRect.bottom)) {
+            return;
+        }
+        if (src != dst) {
+            final int srcX = x + srcRect.left - dstRect.left, srcY = y + srcRect.top - dstRect.top;
+            if (!(dstRect.left <= srcX && srcX < dstRect.right && dstRect.top <= srcY && srcY < dstRect.bottom)) {
+                return;
+            }
         }
         final int pixel = src.getPixel(x, y);
         if (pixel == color && tolerance == 0) {
             return;
         }
-        final int w = rect.right - rect.left, h = rect.bottom - rect.top;
         final int[] pixels = new int[w * h];
-        src.getPixels(pixels, 0, w, rect.left, rect.top, w, h);
+        src.getPixels(pixels, 0, w, srcRect.left, srcRect.top, w, h);
         for (int i = 0; i < pixels.length; ++i) {
             final int px = pixels[i];
             if (ignoreAlpha) {
@@ -153,7 +172,7 @@ public class BitmapUtils {
                 }
             }
         }
-        dst.setPixels(pixels, 0, w, rect.left, rect.top, w, h);
+        dst.setPixels(pixels, 0, w, dstRect.left, dstRect.top, w, h);
     }
 
     public static void clip(final Bitmap srcBm, final Rect srcRect, @ColorInt final int[] dst) {
@@ -186,6 +205,15 @@ public class BitmapUtils {
         return dst;
     }
 
+    public static Bitmap drawableToBitmap(@NonNull Context context, @DrawableRes int id) {
+        final Drawable drawable = ContextCompat.getDrawable(context, id);
+        final Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+        final Canvas canvas = new Canvas(bitmap);
+        drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+        drawable.draw(canvas);
+        return bitmap;
+    }
+
     private static Bitmap edgeDetection(final Bitmap bitmap) {
         return null;
     }
@@ -205,31 +233,44 @@ public class BitmapUtils {
         dst.setPixels(dstPixels, 0, w, 0, 0, w, h);
     }
 
-    public static void floodFill(final Bitmap src, final Bitmap dst, Rect rect,
+    public static void floodFill(final Bitmap src, Rect srcRect, final Bitmap dst, Rect dstRect,
                                  final int x, final int y, @ColorInt final int color,
                                  final boolean ignoreAlpha, final int tolerance) {
-        if (rect == null) {
-            rect = new Rect(0, 0, src.getWidth(), src.getHeight());
-        } else if (!(rect.left <= x && x < rect.right && rect.top <= y && y < rect.bottom)) {
+        if (dstRect == null) {
+            dstRect = new Rect(0, 0, dst.getWidth(), dst.getHeight());
+        }
+        final int w = dstRect.width(), h = dstRect.height(), area = w * h;
+        if (srcRect == null) {
+            srcRect = src == dst ? dstRect : new Rect(0, 0, src.getWidth(), src.getHeight());
+        }
+        if (src != dst && (srcRect.width() != w || srcRect.height() != h)) {
             return;
+        }
+        if (!(dstRect.left <= x && x < dstRect.right && dstRect.top <= y && y < dstRect.bottom)) {
+            return;
+        }
+        if (src != dst) {
+            final int srcX = x + srcRect.left - dstRect.left, srcY = y + srcRect.top - dstRect.top;
+            if (!(srcRect.left <= srcX && srcX < srcRect.right && srcRect.top <= srcY && srcY < srcRect.bottom)) {
+                return;
+            }
         }
         final int pixel = src.getPixel(x, y);
         if (pixel == color && tolerance == 0) {
             return;
         }
-        final int w = rect.width(), h = rect.height(), area = w * h;
         final int[] srcPixels = new int[area], dstPixels = src == dst ? srcPixels : new int[area];
-        src.getPixels(srcPixels, 0, w, rect.left, rect.top, w, h);
+        src.getPixels(srcPixels, 0, w, srcRect.left, srcRect.top, w, h);
         if (src != dst) {
-            dst.getPixels(dstPixels, 0, w, rect.left, rect.top, w, h);
+            dst.getPixels(dstPixels, 0, w, dstRect.left, dstRect.top, w, h);
         }
 //      final long a = System.currentTimeMillis();
-        final Queue<ImmPoint> queue = new LinkedList<>();
+        final Queue<Point> queue = new LinkedList<>();
         final boolean[] visited = new boolean[area];
-        queue.offer(new ImmPoint(x, y));
-        ImmPoint point;
+        queue.offer(new Point(x, y));
+        Point point;
         while ((point = queue.poll()) != null) {
-            final int i = (point.y() - rect.top) * w + (point.x() - rect.left);
+            final int i = (point.y - dstRect.top) * w + (point.x - dstRect.left);
             if (visited[i]) {
                 continue;
             }
@@ -254,18 +295,18 @@ public class BitmapUtils {
                 if (src != dst) {
                     dstPixels[i] = newColor;
                 }
-                if (rect.left <= point.x() - 1 && !visited[i - 1])
-                    queue.offer(new ImmPoint(point.x() - 1, point.y()));
-                if (rect.top <= point.y() - 1 && !visited[i - w])
-                    queue.offer(new ImmPoint(point.x(), point.y() - 1));
-                if (point.x() + 1 < rect.right && !visited[i + 1])
-                    queue.offer(new ImmPoint(point.x() + 1, point.y()));
-                if (point.y() + 1 < rect.bottom && !visited[i + w])
-                    queue.offer(new ImmPoint(point.x(), point.y() + 1));
+                if (dstRect.left <= point.x - 1 && !visited[i - 1])
+                    queue.offer(new Point(point.x - 1, point.y));
+                if (dstRect.top <= point.y - 1 && !visited[i - w])
+                    queue.offer(new Point(point.x, point.y - 1));
+                if (point.x + 1 < dstRect.right && !visited[i + 1])
+                    queue.offer(new Point(point.x + 1, point.y));
+                if (point.y + 1 < dstRect.bottom && !visited[i + w])
+                    queue.offer(new Point(point.x, point.y + 1));
             }
         }
 //      final long b = System.currentTimeMillis();
-        dst.setPixels(dstPixels, 0, w, rect.left, rect.top, w, h);
+        dst.setPixels(dstPixels, 0, w, dstRect.left, dstRect.top, w, h);
     }
 
     public static void generateNoise(@ColorInt final int[] pixels, @ColorInt final int color,
@@ -419,6 +460,9 @@ public class BitmapUtils {
     }
 
     public static void selectByColorRange(final Bitmap bitmap, @Nullable final Rect rect, final ColorRange cr) {
+        if (!cr.enabled) {
+            return;
+        }
         final int w = rect != null ? rect.width() : bitmap.getWidth(), h = rect != null ? rect.height() : bitmap.getHeight();
         final int[] pixels = new int[w * h];
         final int x = rect != null ? rect.left : 0, y = rect != null ? rect.top : 0;

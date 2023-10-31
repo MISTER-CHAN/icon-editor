@@ -16,7 +16,7 @@
     </style>
 
     <style name="Widget_IconEditor_ActionMode_CloseButton">
-        <item name="android:tint">?attr/colorOnSurfaceVariant</item>
+        <item name="android:tint">?attr/colorOnSurface</item>
     </style>
 
     <style name="Widget.IconEditor.Button.OutlinedButton.Dense" parent="Widget.Material3.Button.OutlinedButton">

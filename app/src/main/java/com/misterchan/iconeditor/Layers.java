@@ -7,6 +7,8 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.Log;
 
+import androidx.annotation.ColorInt;
+
 import com.misterchan.iconeditor.util.BitmapUtils;
 
 import java.util.List;
@@ -28,6 +30,7 @@ public class Layers {
                     BitmapUtils.addColorMatrixColorFilter(bitmap, rect, layer.colorMatrix.getArray());
             case CURVES -> BitmapUtils.applyCurves(bitmap, rect, layer.curves);
             case HSV -> BitmapUtils.shiftHsv(bitmap, rect, layer.deltaHsv);
+            case SELECTED_BY_CR -> BitmapUtils.selectByColorRange(bitmap, rect, layer.colorRange);
         }
     }
 
@@ -140,7 +143,6 @@ public class Layers {
                     continue;
                 }
                 final LayerTree children = node.children;
-                int[] pixels = null;
                 final int bmW = layer.bitmap.getWidth(), bmH = layer.bitmap.getHeight();
                 final int left = backgroundNode.isRoot ? layer.left : layer.left - backgroundNode.layer.left,
                         top = backgroundNode.isRoot ? layer.top : layer.top - backgroundNode.layer.top;
@@ -173,55 +175,46 @@ public class Layers {
                         }
                     }
 
-                    if (layer.clipToBelow) {
-                        pixels = BitmapUtils.getPixels(bitmap, dst);
-                    }
-                    {
-                        final boolean isSubtreeRoot = node == backgroundNode && !node.isRoot;
-                        final boolean hasFilter = layer.filter != null && !isSubtreeRoot;
-                        final boolean hasExtra = layer == specifiedLayer && extraDst != null;
-                        final Bitmap bm = hasFilter || hasExtra ? Bitmap.createBitmap(intW, intH, Bitmap.Config.ARGB_8888) : null;
-                        final Canvas cv = bm != null ? new Canvas(bm) : canvas;
-                        final Rect d = bm != null ? intRel : dst;
-                        final Paint paint = isSubtreeRoot
-                                ? baseBm != null ? BitmapUtils.PAINT_SRC_OVER : BitmapUtils.PAINT_SRC
-                                : layer.paint;
-                        try {
-                            if (hasFilter) {
-                                cv.drawBitmap(bitmap, dst, intRel, BitmapUtils.PAINT_SRC);
-                            }
-                            if (layer == specifiedLayer) {
-                                if (extraDst != null) {
-                                    cv.drawBitmap(specifiedLayerBm, src, intRel, hasFilter ? BitmapUtils.PAINT_SRC_OVER : BitmapUtils.PAINT_SRC);
-                                    cv.drawBitmap(extraLayer.getBitmap(), extraSrc, extraDst, BitmapUtils.PAINT_SRC_OVER);
-                                } else {
-                                    cv.drawBitmap(specifiedLayerBm, src, d, paint);
-                                }
-                            } else {
-                                cv.drawBitmap(layer.bitmap, src, d, paint);
-                            }
-                        } catch (final RuntimeException e) {
-                            if (bm != null) bm.recycle();
-                            throw e;
-                        }
+                    final boolean isSubtreeRoot = node == backgroundNode && !node.isRoot;
+                    @ColorInt final int[] pixels = layer.clipToBelow && !isSubtreeRoot ? BitmapUtils.getPixels(bitmap, dst) : null;
+                    final boolean hasFilter = layer.filter != null && !isSubtreeRoot;
+                    final boolean hasExtra = layer == specifiedLayer && extraDst != null;
+                    final Bitmap bm = hasFilter || hasExtra ? Bitmap.createBitmap(intW, intH, Bitmap.Config.ARGB_8888) : null;
+                    final Canvas cv = bm != null ? new Canvas(bm) : canvas;
+                    final Rect d = bm != null ? intRel : dst;
+                    final Paint paint = isSubtreeRoot
+                            ? baseBm != null ? BitmapUtils.PAINT_SRC_OVER : BitmapUtils.PAINT_SRC
+                            : layer.paint;
+                    try {
                         if (hasFilter) {
-                            addFilters(bm, layer);
+                            cv.drawBitmap(bitmap, dst, intRel, BitmapUtils.PAINT_SRC);
                         }
-                        if (bm != null) {
-                            canvas.drawBitmap(bm, intRel, dst, paint);
-                            bm.recycle();
+                        if (layer == specifiedLayer) {
+                            if (extraDst != null) {
+                                cv.drawBitmap(specifiedLayerBm, src, intRel, hasFilter ? BitmapUtils.PAINT_SRC_OVER : BitmapUtils.PAINT_SRC);
+                                cv.drawBitmap(extraLayer.getBitmap(), extraSrc, extraDst, BitmapUtils.PAINT_SRC_OVER);
+                            } else {
+                                cv.drawBitmap(specifiedLayerBm, src, d, paint);
+                            }
+                        } else {
+                            cv.drawBitmap(layer.bitmap, src, d, paint);
                         }
+                    } catch (final RuntimeException e) {
+                        if (bm != null) bm.recycle();
+                        throw e;
                     }
-                    if (layer.colorRange.enabled) {
-                        BitmapUtils.selectByColorRange(bitmap, dst, layer.colorRange);
+                    if (hasFilter) {
+                        addFilters(bm, layer);
                     }
-                    if (layer.clipToBelow) {
+                    if (bm != null) {
+                        canvas.drawBitmap(bm, intRel, dst, paint);
+                        bm.recycle();
+                    }
+                    if (layer.clipToBelow && !isSubtreeRoot) {
                         BitmapUtils.clip(bitmap, dst, pixels);
                     }
                 } else {
-                    if (layer.clipToBelow) {
-                        pixels = BitmapUtils.getPixels(bitmap, dst);
-                    }
+                    @ColorInt final int[] pixels = layer.clipToBelow ? BitmapUtils.getPixels(bitmap, dst) : null;
                     final boolean passBm = layer.filter != null && !node.isRoot;
                     final Bitmap mergedChildren = mergeLayers(children, src,
                             passBm ? bitmap : null, passBm ? dst : null,

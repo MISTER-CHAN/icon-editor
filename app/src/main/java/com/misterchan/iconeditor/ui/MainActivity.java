@@ -31,6 +31,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Looper;
 import android.os.MessageQueue;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -1065,6 +1066,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
             case LIGHTING -> R.id.i_layer_filter_lighting;
             case LIGHTNESS -> R.id.i_layer_filter_lightness;
             case SATURATION -> R.id.i_layer_filter_saturation;
+            case SELECTED_BY_CR -> R.id.i_layer_filter_selected_by_cr;
             case THRESHOLD -> R.id.i_layer_filter_threshold;
         }).setChecked(true);
 
@@ -1432,19 +1434,25 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                         break;
                     }
                     final Bitmap src = !ref.recycled() ? ref.bm() : bitmap;
-                    final Rect rect = hasSelection ? selection.r : null;
+                    final Rect dstRect = hasSelection ? selection.r : null;
+                    final Rect srcRect = src == bitmap ? dstRect
+                            : hasSelection ? new Rect(selection.r) : new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight());
+                    if (src != bitmap) {
+                        srcRect.offset(layer.left, layer.top);
+                        if (!srcRect.intersect(0, 0, src.getWidth(), src.getHeight())) break;
+                    }
                     runOrStart(() -> {
                         if (activityMain.optionsBucketFill.cbContiguous.isChecked()) {
-                            BitmapUtils.floodFill(src, bitmap, rect, bx, by, paint.getColor(),
+                            BitmapUtils.floodFill(src, srcRect, bitmap, dstRect, bx, by, paint.getColor(),
                                     activityMain.optionsBucketFill.cbIgnoreAlpha.isChecked(), threshold);
                         } else {
-                            BitmapUtils.bucketFill(src, bitmap, rect, bx, by, paint.getColor(),
+                            BitmapUtils.bucketFill(src, srcRect, bitmap, dstRect, bx, by, paint.getColor(),
                                     activityMain.optionsBucketFill.cbIgnoreAlpha.isChecked(), threshold);
                         }
-                        if (rect == null) {
+                        if (dstRect == null) {
                             drawBitmapOntoView(true);
                         } else {
-                            drawBitmapOntoView(rect, true);
+                            drawBitmapOntoView(dstRect, true);
                         }
                         addToHistory();
                     }, true);
@@ -1903,7 +1911,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                                 relative = new Rect(0, 0, width, height);
                         cv.drawBitmap(ref.bm(), absolute, relative, PAINT_SRC_IN);
                         final Bitmap bThr = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_4444); // Threshold
-                        BitmapUtils.floodFill(bm, bThr, hasSelection ? selection.r : null,
+                        BitmapUtils.floodFill(bm, null, bThr, null,
                                 relativeX, relativeY, Color.BLACK, true, threshold);
                         bm.recycle();
                         cLine.drawBitmap(bThr, 0.0f, 0.0f, PAINT_DST_IN);
@@ -2153,7 +2161,6 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                         isShapeStopped = false;
                         ruler.enabled = false;
                         eraseBitmapAndInvalidateView(previewBitmap, activityMain.canvas.ivPreview);
-                        drawPointOntoView(bx, by);
                         shapeStartX = bx;
                         shapeStartY = by;
                         activityMain.tvStatus.setText(getString(R.string.coordinates, bx, by));
@@ -3302,15 +3309,6 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         projects.remove(position);
     }
 
-    private Bitmap drawableToBitmap(@DrawableRes int id) {
-        final Drawable drawable = ContextCompat.getDrawable(this, id);
-        final Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
-        final Canvas canvas = new Canvas(bitmap);
-        drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
-        drawable.draw(canvas);
-        return bitmap;
-    }
-
     private void drawAfterTransformingView(boolean doNotMerge) {
         if (doNotMerge) {
             drawBitmapLastOntoView(false);
@@ -3339,9 +3337,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
 
     private void drawBitmapOntoCanvas(Canvas canvas, Bitmap bitmap, float translX,
                                       float translY, Rect vs) {
-        if (vs.isEmpty()) {
-            return;
-        }
+        if (vs.isEmpty()) return;
         final RectF svs = getVisibleSubsetOfView(vs, translX, translY);
         try {
             canvas.drawBitmap(bitmap, vs, svs, isScaledMuch() ? PAINT_BITMAP : bitmapPaint);
@@ -4184,7 +4180,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         activityMain.rvSwatches.setAdapter(colorAdapter);
         ItemMovableAdapter.createItemMoveHelper(null).attachToRecyclerView(activityMain.rvSwatches);
 
-        brush.setBrush(drawableToBitmap(R.drawable.brush_tip_shape));
+        brush.setBrush(BitmapUtils.drawableToBitmap(this, R.drawable.brush_tip_shape));
 
         if (isLandscape) {
             final LinearLayout ll = activityMain.llTl;
@@ -4548,6 +4544,16 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                         .show();
                 activityMain.tvStatus.setText(getString(R.string.state_saturation, sat));
             }
+            case R.id.i_layer_filter_selected_by_cr -> {
+                ssdLayerList.dismiss();
+                if (!item.isChecked()) {
+                    layer.filter = Layer.Filter.SELECTED_BY_CR;
+                    drawBitmapOntoView(true);
+                }
+                new ColorRangeDialog(this, layer.colorRange)
+                        .setOnColorRangeChangeListener(onLayerColorRangeChangedListener)
+                        .show();
+            }
             case R.id.i_layer_filter_threshold -> {
                 ssdLayerList.dismiss();
                 if (!item.isChecked()) {
@@ -4680,14 +4686,6 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                 tiet.setText(layer.name);
                 til.setHint(R.string.layer_name);
                 dialog.findViewById(R.id.s_file_type).setVisibility(View.GONE);
-            }
-            case R.id.i_layer_select_by_color_range -> {
-                if (ssdLayerList != null) {
-                    ssdLayerList.dismiss();
-                }
-                new ColorRangeDialog(this, layer.colorRange)
-                        .setOnColorRangeChangeListener(onLayerColorRangeChangedListener)
-                        .show();
             }
         }
         return true;

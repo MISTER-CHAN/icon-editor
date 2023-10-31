@@ -164,7 +164,7 @@
     <string name="lighting">照明</string>
     <string name="lighting_where">其中\n𝑪 – 來源顏色\n𝑪\' – 結果顏色</string>
     <string name="lightness">明度</string>
-    <string name="line">直線</string>
+    <string name="line">線</string>
     <string name="linear">線性</string>
     <string name="locale">地區</string>
     <string name="lock_aspect_ratio">鎖定寬高比</string>

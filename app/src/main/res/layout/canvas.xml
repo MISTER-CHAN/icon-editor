@@ -19,7 +19,7 @@
         android:layout_height="22dp"
         android:background="?android:attr/colorBackground"
         android:elevation="8dp"
-        android:scaleType="centerCrop"
+        android:scaleType="matrix"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/v_ruler"
         app:layout_constraintTop_toTopOf="parent" />
@@ -30,7 +30,7 @@
         android:layout_height="0dp"
         android:background="?android:attr/colorBackground"
         android:elevation="8dp"
-        android:scaleType="centerCrop"
+        android:scaleType="matrix"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/v_ruler" />
@@ -48,25 +48,25 @@
             android:id="@+id/iv_chessboard"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:scaleType="center" />
+            android:scaleType="matrix" />
 
         <ImageView
             android:id="@+id/iv"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:scaleType="centerCrop" />
+            android:scaleType="matrix" />
 
         <ImageView
             android:id="@+id/iv_preview"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:scaleType="centerCrop" />
+            android:scaleType="matrix" />
 
         <ImageView
             android:id="@+id/iv_grid"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:scaleType="centerCrop" />
+            android:scaleType="matrix" />
 
         <ImageView
             android:id="@+id/iv_selection"

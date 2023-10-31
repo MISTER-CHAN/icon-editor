@@ -258,13 +258,14 @@
                         android:icon="@drawable/ic_filter_b_and_w"
                         android:iconTint="?attr/colorOnSurfaceVariant"
                         android:title="@string/threshold" />
+                    <item
+                        android:id="@+id/i_layer_filter_selected_by_cr"
+                        android:icon="@drawable/ic_void"
+                        android:iconTint="?attr/colorOnSurfaceVariant"
+                        android:title="@string/color_range" />
                 </group>
             </menu>
         </item>
-        <item
-            android:id="@+id/i_layer_select_by_color_range"
-            android:icon="@drawable/ic_void"
-            android:title="@string/select_by_color_range" />
         <item
             android:icon="@drawable/ic_void"
             android:title="@string/level">
