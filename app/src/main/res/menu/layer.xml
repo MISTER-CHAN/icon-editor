@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <group android:id="@+id/layer_edit">
+    <group android:id="@+id/g_layer_edit">
         <item
             android:id="@+id/i_layer_new"
             android:icon="@drawable/ic_add"

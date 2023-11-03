@@ -1,32 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item
-        android:id="@+id/i_frame_new"
-        android:icon="@drawable/ic_add"
-        android:iconTint="?attr/colorOnSurfaceVariant"
-        android:title="@string/new_" />
-    <item
-        android:id="@+id/i_frame_duplicate"
-        android:icon="@drawable/ic_content_copy"
-        android:iconTint="?attr/colorOnSurfaceVariant"
-        android:title="@string/duplicate" />
-    <item
-        android:id="@+id/i_frame_delay"
-        android:icon="@drawable/ic_access_time"
-        android:iconTint="?attr/colorOnSurfaceVariant"
-        android:title="@string/delay" />
-    <item
-        android:id="@+id/i_frame_unify_delays"
-        android:icon="@drawable/ic_void"
-        android:title="@string/unify_delays" />
-    <item
-        android:id="@+id/i_frame_clip"
-        android:icon="@drawable/ic_content_cut"
-        android:iconTint="?attr/colorOnSurfaceVariant"
-        android:title="@string/clip" />
-    <item
-        android:id="@+id/i_frame_delete"
-        android:icon="@drawable/ic_delete"
-        android:iconTint="?attr/colorOnSurfaceVariant"
-        android:title="@string/delete" />
+    <group android:id="@+id/g_frame_edit">
+        <item
+            android:id="@+id/i_frame_new"
+            android:icon="@drawable/ic_add"
+            android:iconTint="?attr/colorOnSurfaceVariant"
+            android:title="@string/new_" />
+        <item
+            android:id="@+id/i_frame_duplicate"
+            android:icon="@drawable/ic_content_copy"
+            android:iconTint="?attr/colorOnSurfaceVariant"
+            android:title="@string/duplicate" />
+        <item
+            android:id="@+id/i_frame_delete"
+            android:icon="@drawable/ic_delete"
+            android:iconTint="?attr/colorOnSurfaceVariant"
+            android:title="@string/delete" />
+    </group>
+    <group android:id="@+id/g_frame_manage">
+        <item
+            android:id="@+id/i_frame_delay"
+            android:icon="@drawable/ic_access_time"
+            android:iconTint="?attr/colorOnSurfaceVariant"
+            android:title="@string/delay" />
+        <item
+            android:id="@+id/i_frame_unify_delays"
+            android:icon="@drawable/ic_void"
+            android:title="@string/unify_delays" />
+        <item
+            android:id="@+id/i_frame_onion_skins"
+            android:icon="@drawable/ic_void"
+            android:title="@string/onion_skins" />
+        <item
+            android:id="@+id/i_frame_clip"
+            android:icon="@drawable/ic_content_cut"
+            android:iconTint="?attr/colorOnSurfaceVariant"
+            android:title="@string/clip" />
+    </group>
 </menu>

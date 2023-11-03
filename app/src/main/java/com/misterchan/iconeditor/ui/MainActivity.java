@@ -25,13 +25,11 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Shader;
 import android.graphics.Typeface;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Looper;
 import android.os.MessageQueue;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -53,13 +51,11 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.ColorLong;
-import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.view.ActionMode;
-import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.core.view.MenuCompat;
 import androidx.core.view.OneShotPreDrawListener;
@@ -326,6 +322,12 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
             setColor(Color.MAGENTA);
             setStrokeWidth(2.0f);
             setTextSize(24.0f);
+        }
+    };
+
+    private final Paint onionSkinPaint = new Paint() {
+        {
+            setAntiAlias(false);
         }
     };
 
@@ -1013,6 +1015,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
 
     private final ItemMovableAdapter.OnItemSelectedListener onFrameItemSelectedListener = (view, position) -> {
         final int unselectedPos = project.selectedFrameIndex;
+        project.frames.get(unselectedPos).updateThumbnail();
         selectFrame(position);
         frameList.rvFrameList.post(() -> {
             project.frameAdapter.notifyItemChanged(unselectedPos, FrameAdapter.Payload.SELECTED);
@@ -1189,6 +1192,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         if (layer == frame.getBackgroundLayer()) {
             for (final Frame f : project.frames) {
                 resizeImage(f, f.getBackgroundLayer(), width, height, transform, null, 0, 0);
+                f.updateThumbnail();
             }
         } else {
             resizeImage(frame, layer, width, height, transform, null, 0, 0);
@@ -2498,6 +2502,23 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         private float centerX, centerY;
         private float dlpbLeft, dlpbTop, dlpbRight, dlpbBottom; // Distances from last point to bound
 
+        private boolean dragMarqueeBound(float viewX, float viewY) {
+            final boolean hasDragged = selection.dragMarqueeBound(viewX, viewY, scale);
+            if (activityMain.optionsTransformer.cbLar.isChecked()) {
+                if (selection.marqBoundBeingDragged == SelectionTool.Position.LEFT || selection.marqBoundBeingDragged == SelectionTool.Position.RIGHT) {
+                    final float halfHeight = selection.r.width() / aspectRatio / 2.0f;
+                    selection.r.top = (int) (centerY - halfHeight);
+                    selection.r.bottom = (int) (centerY + halfHeight);
+                } else if (selection.marqBoundBeingDragged == SelectionTool.Position.TOP || selection.marqBoundBeingDragged == SelectionTool.Position.BOTTOM) {
+                    final float halfWidth = selection.r.height() * aspectRatio / 2.0f;
+                    selection.r.left = (int) (centerX - halfWidth);
+                    selection.r.right = (int) (centerX + halfWidth);
+                }
+            }
+            drawSelectionOntoView(true);
+            return hasDragged;
+        }
+
         @Override
         public void onIVTouch(View v, MotionEvent event) {
             if (!hasSelection) {
@@ -2507,13 +2528,9 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                 case 1 -> {
                     switch (event.getAction()) {
                         case MotionEvent.ACTION_DOWN -> {
-                            if (selection.r.isEmpty()) {
-                                break;
-                            }
+                            if (selection.r.isEmpty()) break;
                             final float x = event.getX(), y = event.getY();
-                            if (transformer.isRecycled()) {
-                                createTransformer();
-                            }
+                            if (transformer.isRecycled()) createTransformer();
                             drawSelectionOntoView(false);
                             if (selection.marqBoundBeingDragged == null) {
                                 if (selection.checkDraggingMarqueeBound(x, y) != null) {
@@ -2526,37 +2543,26 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                                             getString(selection.marqBoundBeingDragged.name)));
                                 }
                             } else {
-                                hasDraggedBound |= stretchByDraggedMarqueeBound(x, y);
+                                hasDraggedBound |= dragMarqueeBound(x, y);
                                 activityMain.tvStatus.setText(getString(R.string.state_left_top,
                                         selection.r.left, selection.r.top));
                             }
                         }
                         case MotionEvent.ACTION_MOVE -> {
-                            if (transformer.isRecycled()) {
-                                break;
-                            }
+                            if (transformer.isRecycled()) break;
                             final float x = event.getX(), y = event.getY();
                             if (selection.marqBoundBeingDragged != null) {
-                                hasDraggedBound |= stretchByDraggedMarqueeBound(x, y);
+                                hasDraggedBound |= dragMarqueeBound(x, y);
                                 activityMain.tvStatus.setText(getString(R.string.state_size,
                                         selection.r.width(), selection.r.height()));
                             }
                         }
                         case MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                            if (transformer.isRecycled()) {
-                                break;
-                            }
+                            if (transformer.isRecycled()) break;
                             if (selection.marqBoundBeingDragged != null && hasDraggedBound) {
                                 selection.marqBoundBeingDragged = null;
                                 hasDraggedBound = false;
-                                final int w = selection.r.width(), h = selection.r.height();
-                                if (w > 0 && h > 0) {
-                                    transformer.stretch(activityMain.optionsTransformer.cbFilter.isChecked(), antiAlias);
-                                    selection.r.sort();
-                                } else {
-                                    selection.r.right = selection.r.left + transformer.getWidth();
-                                    selection.r.bottom = selection.r.top + transformer.getHeight();
-                                }
+                                stretch();
                                 drawBitmapOntoView(true);
                                 drawSelectionOntoView(false);
                             }
@@ -2628,8 +2634,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                                     selection.r.width(), selection.r.height()));
                         }
                         case MotionEvent.ACTION_POINTER_UP -> {
-                            transformer.stretch(activityMain.optionsTransformer.cbFilter.isChecked(), antiAlias);
-                            selection.r.sort();
+                            stretch();
                             drawBitmapOntoView(true);
                             drawSelectionOntoView();
                         }
@@ -2638,21 +2643,17 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
             }
         }
 
-        private boolean stretchByDraggedMarqueeBound(float viewX, float viewY) {
-            final boolean hasDragged = selection.dragMarqueeBound(viewX, viewY, scale);
-            if (activityMain.optionsTransformer.cbLar.isChecked()) {
-                if (selection.marqBoundBeingDragged == SelectionTool.Position.LEFT || selection.marqBoundBeingDragged == SelectionTool.Position.RIGHT) {
-                    final float halfHeight = selection.r.width() / aspectRatio / 2.0f;
-                    selection.r.top = (int) (centerY - halfHeight);
-                    selection.r.bottom = (int) (centerY + halfHeight);
-                } else if (selection.marqBoundBeingDragged == SelectionTool.Position.TOP || selection.marqBoundBeingDragged == SelectionTool.Position.BOTTOM) {
-                    final float halfWidth = selection.r.height() * aspectRatio / 2.0f;
-                    selection.r.left = (int) (centerX - halfWidth);
-                    selection.r.right = (int) (centerX + halfWidth);
-                }
+        private void stretch() {
+            if (selection.r.left != selection.r.right && selection.r.top != selection.r.bottom) {
+                transformer.stretch(activityMain.optionsTransformer.cbFilter.isChecked(), antiAlias);
+                selection.r.sort();
+            } else {
+                final int w = transformer.getWidth(), h = transformer.getHeight();
+                selection.r.left = selection.r.centerX() - (w >> 1);
+                selection.r.top = selection.r.centerY() - (h >> 1);
+                selection.r.right = selection.r.left + w;
+                selection.r.bottom = selection.r.top + h;
             }
-            drawSelectionOntoView(true);
-            return hasDragged;
         }
     };
 
@@ -3335,8 +3336,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         drawBitmapOntoCanvas(canvas, bitmap, translX, translY, vs);
     }
 
-    private void drawBitmapOntoCanvas(Canvas canvas, Bitmap bitmap, float translX,
-                                      float translY, Rect vs) {
+    private void drawBitmapOntoCanvas(Canvas canvas, Bitmap bitmap, float translX, float translY, Rect vs) {
         if (vs.isEmpty()) return;
         final RectF svs = getVisibleSubsetOfView(vs, translX, translY);
         try {
@@ -3569,8 +3569,24 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
     private void drawGridOntoView() {
         eraseBitmap(gridBitmap);
 
-        final float left = toViewX(0), top = toViewY(0);
+        if (project.frames.size() > 1 && project.onionSkins > 0) onionSkins:{
+            final Rect vs = getVisibleSubset(translationX, translationY, bitmap.getWidth(), bitmap.getHeight());
+            if (vs.isEmpty()) break onionSkins;
+            final RectF svs = getVisibleSubsetOfView(vs, translationX, translationY);
+            for (int i = 1; i <= Math.min(project.onionSkins, 8); ++i) {
+                onionSkinPaint.setAlpha(Math.round((float) Math.pow(2, -i) * 0xFF));
+                if (project.selectedFrameIndex >= i) {
+                    gridCanvas.drawBitmap(project.frames.get(project.selectedFrameIndex - i).getThumbnail(),
+                            vs, svs, onionSkinPaint);
+                }
+                if (project.selectedFrameIndex < project.frames.size() - i) {
+                    gridCanvas.drawBitmap(project.frames.get(project.selectedFrameIndex + i).getThumbnail(),
+                            vs, svs, onionSkinPaint);
+                }
+            }
+        }
 
+        final float left = toViewX(0), top = toViewY(0);
         float l = left >= 0.0f ? left : left % scale,
                 t = top >= 0.0f ? top : top % scale,
                 r = Math.min(left + toScaled(bitmap.getWidth()), viewWidth),
@@ -3609,13 +3625,9 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                 } else {
                     while (true) {
                         gridCanvas.drawLine(x, t, x, b, PAINT_CELL_GRID);
-                        if ((x += scaledSizeX) >= r) {
-                            break;
-                        }
+                        if ((x += scaledSizeX) >= r) break;
                         gridCanvas.drawLine(x, t, x, b, PAINT_CELL_GRID);
-                        if ((x += scaledSpacingX) >= r) {
-                            break;
-                        }
+                        if ((x += scaledSpacingX) >= r) break;
                     }
                 }
             }
@@ -3633,13 +3645,9 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                 } else {
                     while (true) {
                         gridCanvas.drawLine(l, y, r, y, PAINT_CELL_GRID);
-                        if ((y += scaledSizeY) >= b) {
-                            break;
-                        }
+                        if ((y += scaledSizeY) >= b) break;
                         gridCanvas.drawLine(l, y, r, y, PAINT_CELL_GRID);
-                        if ((y += scaledSpacingY) >= b) {
-                            break;
-                        }
+                        if ((y += scaledSpacingY) >= b) break;
                     }
                 }
             }
@@ -4251,6 +4259,15 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                 selectFrame(pos);
             }
             case R.id.i_frame_new -> createFrame();
+            case R.id.i_frame_onion_skins -> {
+                new EditNumberDialog(this)
+                        .setTitle(R.string.onion_skins)
+                        .setOnApplyListener(number -> {
+                            project.onionSkins = number;
+                            drawGridOntoView();
+                        })
+                        .show(project.onionSkins);
+            }
             case R.id.i_frame_unify_delays -> {
                 new EditNumberDialog(this)
                         .setIcon(R.drawable.ic_access_time).setTitle(R.string.delay)
@@ -5024,14 +5041,13 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
             case R.id.i_flip_vertically -> scale(1.0f, -1.0f);
             case R.id.i_frame_list -> {
                 project.frameAdapter.notifyDataSetChanged();
-                project.frames.forEach(Frame::createThumbnail);
+                frame.createThumbnail();
 
                 bsdFrameList = new BottomSheetDialog(this);
                 bsdFrameList.setTitle(R.string.frames);
                 bsdFrameList.setContentView(frameList.getRoot());
                 bsdFrameList.setOnDismissListener(dialog -> {
                     ((ViewGroup) frameList.getRoot().getParent()).removeAllViews();
-                    project.frames.forEach(Frame::recycleThumbnail);
                     bsdFrameList = null;
                 });
                 bsdFrameList.show();
@@ -5076,6 +5092,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
             }
             case R.id.i_information -> {
                 final StringBuilder message = new StringBuilder()
+                        .append(getString(R.string.size)).append('\n').append(bitmap.getWidth()).append(" × ").append(bitmap.getHeight()).append("\n\n")
                         .append(getString(R.string.configuration)).append('\n').append(bitmap.getConfig()).append("\n\n")
                         .append(getString(R.string.has_alpha)).append('\n').append(bitmap.hasAlpha()).append("\n\n")
                         .append(getString(R.string.color_space)).append('\n').append(bitmap.getColorSpace());
@@ -5658,8 +5675,10 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
 
     public void setFilterBitmap(boolean filterBitmap) {
         bitmapPaint.setFilterBitmap(filterBitmap);
+        onionSkinPaint.setFilterBitmap(filterBitmap);
         if (!hasNotLoaded) {
             drawBitmapOntoView(true);
+            if (project.onionSkins > 0) drawGridOntoView();
         }
     }
 

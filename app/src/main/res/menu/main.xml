@@ -176,7 +176,7 @@
                                     </menu>
                                 </item>
                                 <item
-                                    android:icon="@drawable/ic_rotate_90_degrees_ccw"
+                                    android:icon="@drawable/ic_rotate_90_degrees_cw"
                                     android:title="@string/rotate"
                                     app:iconTint="?attr/colorOnSurfaceVariant">
                                     <menu>

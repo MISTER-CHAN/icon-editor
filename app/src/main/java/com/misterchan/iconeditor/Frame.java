@@ -96,4 +96,12 @@ public class Frame {
             thumbnail = null;
         }
     }
+
+    public synchronized void updateThumbnail() {
+        if (thumbnail == null || thumbnail.isRecycled()) {
+            return;
+        }
+        thumbnail.recycle();
+        thumbnail = Layers.mergeLayers(layerTree);
+    }
 }

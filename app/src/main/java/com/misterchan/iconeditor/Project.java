@@ -23,6 +23,7 @@ public class Project {
     public final List<Frame> frames = new ArrayList<>();
     public GifEncoder.EncodingType gifEncodingType;
     public FileType fileType;
+    public int onionSkins = 1;
     public int quality = -1;
     public String filePath;
     private String title;

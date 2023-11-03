@@ -52,6 +52,10 @@ public class EditNumberDialog {
         return this;
     }
 
+    public void show(int defaultNumber) {
+        show(defaultNumber, null);
+    }
+
     public void show(int defaultNumber, CharSequence suffixText) {
         final AlertDialog dialog = builder.show();
 
@@ -59,6 +63,7 @@ public class EditNumberDialog {
         final TextInputLayout til = dialog.findViewById(R.id.til);
 
         tiet.setText(String.valueOf(defaultNumber));
-        til.setSuffixText(suffixText);
+
+        if (suffixText != null) til.setSuffixText(suffixText);
     }
 }
