@@ -64,10 +64,10 @@ public class CellGridManager {
         final int sizeX, sizeY, spacingX, spacingY, offsetX, offsetY;
 
         try {
-            sizeX = Integer.parseInt(tietSizeX.getText().toString());
-            sizeY = Integer.parseInt(tietSizeY.getText().toString());
-            spacingX = Integer.parseInt(tietSpacingX.getText().toString());
-            spacingY = Integer.parseInt(tietSpacingY.getText().toString());
+            sizeX = Integer.parseUnsignedInt(tietSizeX.getText().toString());
+            sizeY = Integer.parseUnsignedInt(tietSizeY.getText().toString());
+            spacingX = Integer.parseUnsignedInt(tietSpacingX.getText().toString());
+            spacingY = Integer.parseUnsignedInt(tietSpacingY.getText().toString());
             offsetX = Integer.parseInt(tietOffsetX.getText().toString());
             offsetY = Integer.parseInt(tietOffsetY.getText().toString());
         } catch (NumberFormatException e) {

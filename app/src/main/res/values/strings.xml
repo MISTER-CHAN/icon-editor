@@ -11,6 +11,7 @@
     <string name="anti_alias">Anti-alias</string>
     <string name="app_name">Icon Editor</string>
     <string name="app_name_abbrev" translatable="false">I.E.</string>
+    <string name="apply_to_each_frame">Apply to Each Frame</string>
     <string name="argb_color_picker">ARGB Color Picker</string>
     <string name="around_r">Around R</string>
     <string name="around_g">Around G</string>
@@ -47,7 +48,7 @@
     <string name="clear_destination">Clear Destination</string>
     <string name="clear_guides">Clear Guides</string>
     <string name="clip">Clip</string>
-    <string name="clip_to_layers_below">Clip to Layers below</string>
+    <string name="clip_to_layers_below">Clip</string>
     <string name="clone">Clone</string>
     <string name="clone_as_new">Clone as New</string>
     <string name="cloner">Cloner</string>
@@ -156,7 +157,10 @@
     <string name="homepage">Homepage</string>
     <string name="horizontal">Horizontally</string>
     <string name="horizontally">Horizontally</string>
+    <string name="hs" translatable="false">HS</string>
+    <string name="hsl" translatable="false">HSL</string>
     <string name="hsv" translatable="false">HSV</string>
+    <string name="hue_saturation">Hue, Saturation</string>
     <string name="hue_to_alpha">Hue to Alpha</string>
     <string name="ignore_alpha">Ignore Alpha</string>
     <string name="image">Image</string>
@@ -168,6 +172,7 @@
     <string name="invert">Invert</string>
     <string name="italic">Italic</string>
     <string name="k" translatable="false">K</string>
+    <string name="l" translatable="false">L</string>
     <string name="l_" translatable="false">L*</string>
     <string name="language">Language</string>
     <string name="layer">Layer</string>
@@ -320,7 +325,7 @@
     <string name="state_eyedropper_precise" translatable="false">(%d, %d) A: %s, R: %s, G: %s, B: %s</string>
     <string name="state_from_to_size">From: (%d, %d), To: (%d, %d), Size: %d × %d"</string>
     <string name="state_from_to_size_1">From: (%d, %d), To: (%d, %d), Size: 1 × 1"</string>
-    <string name="state_hsv" translatable="false">H: %+.0f°, S: %+.2f, V: %+.2f</string>
+    <string name="state_hs" translatable="false">H: %+.0f°, S: %+.2f, %c: %+.2f</string>
     <string name="state_hue">Hue：%.0f°</string>
     <string name="state_invert">Invert: %.1f</string>
     <string name="state_left_top">Left: %d, Top: %d</string>

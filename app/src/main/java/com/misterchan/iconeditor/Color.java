@@ -19,6 +19,36 @@ public class Color extends android.graphics.Color {
         return Math.max(Math.max(red(color), green(color)), blue(color));
     }
 
+    @ColorInt
+    public static int clipped(@ColorInt int dst, @ColorInt int src) {
+        return dst & Color.BLACK | src & 0x00FFFFFF;
+    }
+
+    @ColorInt
+    public static int clipped(@ColorInt int dst,
+                              @IntRange(from = 0x00, to = 0xFF) int red,
+                              @IntRange(from = 0x00, to = 0xFF) int green,
+                              @IntRange(from = 0x00, to = 0xFF) int blue) {
+        return dst & Color.BLACK | rgb(red, green, blue);
+    }
+
+    @Size(3)
+    public static void colorToHSL(@ColorInt int color, @Size(3) float[] hsl) {
+        final float r = red(color) / 255.0f, g = green(color) / 255.0f, b = blue(color) / 255.0f;
+        final float max = Math.max(Math.max(r, g), b), min = Math.min(Math.min(r, g), b);
+        if (max == min) {
+            hsl[0] = 0.0f;
+        } else if (max == r) {
+            hsl[0] = 60.0f * (g - b) / (max - min) + (g >= b ? 0.0f : 360.0f);
+        } else if (max == g) {
+            hsl[0] = 60.0f * (b - r) / (max - min) + 120.0f;
+        } else if (max == b) {
+            hsl[0] = 60.0f * (r - g) / (max - min) + 240.0f;
+        }
+        hsl[2] = (max + min) / 2.0f;
+        hsl[1] = hsl[2] == 0.0f || max == min ? 0.0f : hsl[2] <= 0.5f ? (max - min) / (max + min) : (max - min) / (2.0f - max - min);
+    }
+
     @Size(3)
     public static void colorToHSV(@ColorInt int color, @Size(3) float[] hsv) {
         final float r = red(color) / 255.0f, g = green(color) / 255.0f, b = blue(color) / 255.0f;
@@ -52,14 +82,39 @@ public class Color extends android.graphics.Color {
     }
 
     @ColorInt
+    public static int HSLToColor(@Size(3) float[] hsl) {
+        final float h = hsl[0], s = hsl[1], l = hsl[2];
+        final float c = (1.0f - Math.abs(2.0f * l - 1.0f)) * s;
+        final float h_ = h / 60.0f;
+        final float x = c * (1.0f - Math.abs(h_ % 2.0f - 1.0f));
+        @ColorInt final int color = switch ((int) h_) {
+            case 0 -> argb(0.0f, c, x, 0.0f);
+            case 1 -> argb(0.0f, x, c, 0.0f);
+            case 2 -> argb(0.0f, 0.0f, c, x);
+            case 3 -> argb(0.0f, 0.0f, x, c);
+            case 4 -> argb(0.0f, x, 0.0f, c);
+            case 5 -> argb(0.0f, c, 0.0f, x);
+            default -> TRANSPARENT;
+        };
+        final int m = (int) ((l - c / 2.0f) * 0xFF);
+        return color + m * 0x010101;
+    }
+
+    @Size(3)
+    public static void HSLToHSV(@Size(3) float[] comps) {
+        final float l = comps[2];
+        comps[2] += comps[1] * Math.min(l, 1.0f - l);
+        comps[1] = comps[2] == 0.0f ? 0.0f : 2.0f * (1.0f - l / comps[2]);
+    }
+
+    @ColorInt
     public static int HSVToColor(@Size(3) float[] hsv) {
-        float h = hsv[0], s = hsv[1], v = hsv[2];
+        final float h = hsv[0], s = hsv[1], v = hsv[2];
         final int hi = (int) (h / 60.0f);
         final float f = h / 60.0f - hi;
         final float p = sat(v * (1.0f - s));
         final float q = sat(v * (1.0f - f * s));
         final float t = sat(v * (1.0f - (1.0f - f) * s));
-        v = sat(v);
         return switch (hi) {
             case 0 -> argb(0.0f, v, t, p);
             case 1 -> argb(0.0f, q, v, p);
@@ -71,17 +126,11 @@ public class Color extends android.graphics.Color {
         };
     }
 
-    @ColorInt
-    public static int inheritRgb(@ColorInt int src, @ColorInt int dst) {
-        return src & Color.BLACK | dst & 0x00FFFFFF;
-    }
-
-    @ColorInt
-    public static int inheritRgb(@ColorInt int src,
-                                 @IntRange(from = 0x00, to = 0xFF) int red,
-                                 @IntRange(from = 0x00, to = 0xFF) int green,
-                                 @IntRange(from = 0x00, to = 0xFF) int blue) {
-        return src & Color.BLACK | rgb(red, green, blue);
+    @Size(3)
+    public static void HSVToHSL(@Size(3) float[] comps) {
+        final float v = comps[2];
+        comps[2] = v * (1.0f - comps[1] / 2.0f);
+        comps[1] = comps[2] == 0.0f || comps[2] == 1.0f ? 0.0f : (v - comps[2]) / Math.min(comps[2], 1.0f - comps[2]);
     }
 
     @FloatRange(from = 0.0f, to = 1.0f)

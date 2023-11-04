@@ -102,7 +102,7 @@ import com.misterchan.iconeditor.dialog.EditNumberDialog;
 import com.misterchan.iconeditor.dialog.FillWithRefDialog;
 import com.misterchan.iconeditor.dialog.GuideEditor;
 import com.misterchan.iconeditor.dialog.HiddenImageMaker;
-import com.misterchan.iconeditor.dialog.HsvDialog;
+import com.misterchan.iconeditor.dialog.HsDialog;
 import com.misterchan.iconeditor.dialog.ImageSizeManager;
 import com.misterchan.iconeditor.dialog.LevelsDialog;
 import com.misterchan.iconeditor.dialog.LightingDialog;
@@ -745,25 +745,27 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         bitmap.recycle();
     };
 
-    private final HsvDialog.OnHsvChangedListener onFilterHsvChangedListener = (deltaHsv, stopped) -> {
+    @SuppressLint("StringFormatMatches")
+    private final HsDialog.OnChangedListener onFilterHsChangedListener = (deltaHs, stopped) -> {
         runOrStart(() -> {
-            if (deltaHsv[0] == 0.0f && deltaHsv[1] == 0.0f && deltaHsv[2] == 0.0f) {
+            if (deltaHs[0][0] == 0.0f && deltaHs[0][1] == 0.0f && deltaHs[0][2] == 0.0f) {
                 editPreview.clearFilters();
             } else {
                 final int w = editPreview.getWidth(), h = editPreview.getHeight();
                 final int[] src = editPreview.getPixels(), dst = new int[w * h];
-                BitmapUtils.shiftHsv(src, dst, deltaHsv);
+                BitmapUtils.shiftHs(src, dst, deltaHs);
                 editPreview.setPixels(dst, w, h);
             }
             drawEditPreviewOntoView(stopped);
         }, stopped);
-        activityMain.tvStatus.setText(getString(R.string.state_hsv, deltaHsv[0], deltaHsv[1], deltaHsv[2]));
+        showStateHs(deltaHs);
     };
 
-    private final HsvDialog.OnHsvChangedListener onLayerHsvChangedListener = (deltaHsv, stopped) -> {
-        layer.deltaHsv = deltaHsv;
+    @SuppressLint("StringFormatMatches")
+    private final HsDialog.OnChangedListener onLayerHsChangedListener = (deltaHs, stopped) -> {
+        layer.deltaHs = deltaHs;
         drawBitmapOntoView(stopped);
-        activityMain.tvStatus.setText(getString(R.string.state_hsv, deltaHsv[0], deltaHsv[1], deltaHsv[2]));
+        showStateHs(deltaHs);
     };
 
     private final AdapterView.OnItemSelectedListener onGradientColorsSpinnerItemSelectedListener = (OnAdapterViewItemSelectedListener) (parent, view, position, id) -> {
@@ -1059,12 +1061,15 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         menu.findItem(R.id.i_layer_level_up).setEnabled(layer.getLevel() > 0);
         menu.findItem(R.id.i_layer_reference).setChecked(layer.reference);
 
+        menu.findItem(R.id.i_layer_blend_mode).getSubMenu()
+                .getItem(layer.paint.getBlendMode().ordinal()).setChecked(true);
+
         menu.findItem(layer.filter == null ? R.id.i_layer_filter_none : switch (layer.filter) {
             case COLOR_BALANCE -> R.id.i_layer_filter_color_balance;
             case COLOR_MATRIX -> R.id.i_layer_filter_color_matrix;
             case CONTRAST -> R.id.i_layer_filter_contrast;
             case CURVES -> R.id.i_layer_filter_curves;
-            case HSV -> R.id.i_layer_filter_hsv;
+            case HS -> R.id.i_layer_filter_hs;
             case LEVELS -> R.id.i_layer_filter_levels;
             case LIGHTING -> R.id.i_layer_filter_lighting;
             case LIGHTNESS -> R.id.i_layer_filter_lightness;
@@ -1072,9 +1077,6 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
             case SELECTED_BY_CR -> R.id.i_layer_filter_selected_by_cr;
             case THRESHOLD -> R.id.i_layer_filter_threshold;
         }).setChecked(true);
-
-        menu.findItem(R.id.i_blend_mode).getSubMenu()
-                .getItem(layer.paint.getBlendMode().ordinal()).setChecked(true);
     };
 
     private final TabLayout.OnTabSelectedListener onProjTabSelectedListener = new TabLayout.OnTabSelectedListener() {
@@ -1087,6 +1089,14 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
             translationX = project.translationX;
             translationY = project.translationY;
             scale = project.scale;
+
+            if (hasSelection) {
+                final Bitmap unselected = frame.getBackgroundLayer().bitmap;
+                final Bitmap selected = project.getFirstFrame().getBackgroundLayer().bitmap;
+                if (selected.getWidth() != unselected.getWidth() || selected.getHeight() != unselected.getHeight()) {
+                    hasSelection = false;
+                }
+            }
 
             selectFrame(project.selectedFrameIndex);
         }
@@ -3570,7 +3580,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
             if (vs.isEmpty()) break onionSkins;
             final RectF svs = getVisibleSubsetOfView(vs, translationX, translationY);
             for (int i = 1; i <= Math.min(project.onionSkins, 8); ++i) {
-                onionSkinPaint.setAlpha(Math.round((float) Math.pow(2, -i) * 0xFF));
+                onionSkinPaint.setAlpha(Math.round((float) Math.pow(2.0, -i) * 0xFF));
                 if (project.selectedFrameIndex >= i) {
                     gridCanvas.drawBitmap(project.frames.get(project.selectedFrameIndex - i).getThumbnail(),
                             vs, svs, onionSkinPaint);
@@ -3583,15 +3593,13 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         }
 
         final float left = toViewX(0), top = toViewY(0);
-        float l = left >= 0.0f ? left : left % scale,
-                t = top >= 0.0f ? top : top % scale,
-                r = Math.min(left + toScaled(bitmap.getWidth()), viewWidth),
-                b = Math.min(top + toScaled(bitmap.getHeight()), viewHeight);
+        final float l = left >= 0.0f ? left : left % scale, t = top >= 0.0f ? top : top % scale,
+                r = Math.min(left + toScaled(bitmap.getWidth()), viewWidth), b = Math.min(top + toScaled(bitmap.getHeight()), viewHeight);
         if (isScaledMuch()) {
-            for (float x = l; x < r; x += scale) {
+            for (float x = l; x <= r; x += scale) {
                 gridCanvas.drawLine(x, t, x, b, PAINT_GRID);
             }
-            for (float y = t; y < b; y += scale) {
+            for (float y = t; y <= b; y += scale) {
                 gridCanvas.drawLine(l, y, r, y, PAINT_GRID);
             }
         }
@@ -3608,43 +3616,39 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         final CellGrid cellGrid = layer.cellGrid;
         if (cellGrid.enabled) {
             if (cellGrid.sizeX > 1) {
-                final float scaledSizeX = toScaled(cellGrid.sizeX),
-                        scaledSpacingX = toScaled(cellGrid.spacingX);
-                l = (left >= 0.0f ? left : left % (scaledSizeX + scaledSpacingX)) + toScaled(cellGrid.offsetX);
-                t = Math.max(0.0f, top);
-                float x = l;
+                final float scaledSizeX = toScaled(cellGrid.sizeX), scaledSpacingX = toScaled(cellGrid.spacingX);
+                float x = (left >= 0.0f ? left : left % (scaledSizeX + scaledSpacingX))
+                        + toScaled(cellGrid.offsetX % (cellGrid.sizeX + cellGrid.spacingX));
+                if (x < left) x += scaledSizeX + scaledSpacingX;
                 if (cellGrid.spacingX <= 0) {
-                    while (x < r) {
+                    do {
                         gridCanvas.drawLine(x, t, x, b, PAINT_CELL_GRID);
-                        x += scaledSizeX;
-                    }
+                    } while ((x += scaledSizeX) <= r);
                 } else {
-                    while (true) {
+                    do {
                         gridCanvas.drawLine(x, t, x, b, PAINT_CELL_GRID);
-                        if ((x += scaledSizeX) >= r) break;
+                        if ((x += scaledSizeX) > r) break;
                         gridCanvas.drawLine(x, t, x, b, PAINT_CELL_GRID);
-                        if ((x += scaledSpacingX) >= r) break;
-                    }
+                        if ((x += scaledSpacingX) > r) break;
+                    } while (true);
                 }
             }
             if (cellGrid.sizeY > 1) {
-                final float scaledSizeY = toScaled(cellGrid.sizeY),
-                        scaledSpacingY = toScaled(cellGrid.spacingY);
-                t = (top >= 0.0f ? top : top % (scaledSizeY + scaledSpacingY)) + toScaled(cellGrid.offsetY);
-                l = Math.max(0.0f, left);
-                float y = t;
+                final float scaledSizeY = toScaled(cellGrid.sizeY), scaledSpacingY = toScaled(cellGrid.spacingY);
+                float y = (top >= 0.0f ? top : top % (scaledSizeY + scaledSpacingY))
+                        + toScaled(cellGrid.offsetY % (cellGrid.sizeY + cellGrid.spacingY));
+                if (y < top) y += scaledSizeY + scaledSpacingY;
                 if (cellGrid.spacingY <= 0) {
-                    while (y < b) {
+                    do {
                         gridCanvas.drawLine(l, y, r, y, PAINT_CELL_GRID);
-                        y += scaledSizeY;
-                    }
+                    } while ((y += scaledSizeY) <= b);
                 } else {
-                    while (true) {
+                    do {
                         gridCanvas.drawLine(l, y, r, y, PAINT_CELL_GRID);
-                        if ((y += scaledSizeY) >= b) break;
+                        if ((y += scaledSizeY) > b) break;
                         gridCanvas.drawLine(l, y, r, y, PAINT_CELL_GRID);
-                        if ((y += scaledSpacingY) >= b) break;
-                    }
+                        if ((y += scaledSpacingY) > b) break;
+                    } while (true);
                 }
             }
         }
@@ -4236,6 +4240,11 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                             frameList.rvFrameList.post(() ->
                                     project.frameAdapter.notifyItemChanged(project.selectedFrameIndex, FrameAdapter.Payload.DELAY));
                         })
+                        .setNeutralButton(R.string.apply_to_each_frame, number -> {
+                            project.frames.forEach(f -> f.delay = number);
+                            frameList.rvFrameList.post(() ->
+                                    project.frameAdapter.notifyItemRangeChanged(0, project.frames.size(), FrameAdapter.Payload.DELAY));
+                        })
                         .show(frame.delay, "ms");
             }
             case R.id.i_frame_delete -> closeFrame(project.selectedFrameIndex);
@@ -4263,16 +4272,6 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                             drawGridOntoView();
                         })
                         .show(project.onionSkins);
-            }
-            case R.id.i_frame_unify_delays -> {
-                new EditNumberDialog(this)
-                        .setIcon(R.drawable.ic_access_time).setTitle(R.string.delay)
-                        .setOnApplyListener(number -> {
-                            project.frames.forEach(f -> f.delay = number);
-                            frameList.rvFrameList.post(() ->
-                                    project.frameAdapter.notifyItemRangeChanged(0, project.frames.size(), FrameAdapter.Payload.DELAY));
-                        })
-                        .show(frame.delay, "ms");
             }
         }
         return true;
@@ -4473,19 +4472,18 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                         .show();
                 clearStatus();
             }
-            case R.id.i_layer_filter_hsv -> {
+            case R.id.i_layer_filter_hs -> {
                 ssdLayerList.dismiss();
                 if (!item.isChecked()) {
-                    if (layer.deltaHsv == null) layer.initDeltaHsv();
-                    layer.filter = Layer.Filter.HSV;
+                    if (layer.deltaHs == null) layer.initDeltaHs();
+                    layer.filter = Layer.Filter.HS;
                     drawBitmapOntoView(true);
                 }
-                new HsvDialog(this, layer.deltaHsv)
-                        .setOnHsvChangeListener(onLayerHsvChangedListener)
+                new HsDialog(this, layer.deltaHs)
+                        .setOnChangeListener(onLayerHsChangedListener)
                         .setOnPositiveButtonClickListener(null)
                         .show();
-                activityMain.tvStatus.setText(getString(R.string.state_hsv,
-                        layer.deltaHsv[0], layer.deltaHsv[1], layer.deltaHsv[2]));
+                showStateHs(layer.deltaHs);
             }
             case R.id.i_layer_filter_levels -> {
                 ssdLayerList.dismiss();
@@ -4946,11 +4944,11 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                         .show();
                 clearStatus();
             }
-            case R.id.i_filter_hsv -> {
+            case R.id.i_filter_hs -> {
                 drawFloatingLayersIntoImage();
                 createEditPreview();
-                new HsvDialog(this)
-                        .setOnHsvChangeListener(onFilterHsvChangedListener)
+                new HsDialog(this)
+                        .setOnChangeListener(onFilterHsChangedListener)
                         .setOnPositiveButtonClickListener(onEditPreviewPBClickListener)
                         .setOnCancelListener(onEditPreviewCancelListener)
                         .show();
@@ -5336,6 +5334,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                         frames[i] = newFrame;
                         frames[i].computeLayerTree();
                     }
+                    proj.onionSkins = 0;
                     selectProject(projects.size() - 1);
                 } else {
                     addProject(bm, projects.size(), name, path, type, null);
@@ -5404,14 +5403,12 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         if (scaleType != null) {
             if (newImage == null) newImage = layer.bitmap;
             switch (scaleType) {
-                case STRETCH -> cv.drawBitmap(newImage,
-                        new Rect(0, 0, layer.bitmap.getWidth(), layer.bitmap.getHeight()),
-                        new RectF(0.0f, 0.0f, width, height),
-                        PAINT_BITMAP);
-                case STRETCH_FILTER -> cv.drawBitmap(newImage,
-                        new Rect(0, 0, layer.bitmap.getWidth(), layer.bitmap.getHeight()),
-                        new RectF(0.0f, 0.0f, width, height),
-                        PAINT_SRC);
+                case STRETCH, STRETCH_FILTER -> {
+                    cv.drawBitmap(newImage,
+                            new Rect(0, 0, layer.bitmap.getWidth(), layer.bitmap.getHeight()),
+                            new RectF(0.0f, 0.0f, width, height),
+                            scaleType == ImageSizeManager.ScaleType.STRETCH_FILTER ? PAINT_SRC : PAINT_BITMAP);
+                }
                 case CROP -> cv.drawBitmap(newImage, 0.0f, 0.0f, PAINT_BITMAP);
             }
         }
@@ -5747,6 +5744,13 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
             selection.r.bottom = fromY + 1;
         }
         drawSelectionOntoView();
+    }
+
+    private void showStateHs(float[][] deltaHs) {
+        activityMain.tvStatus.setText(getString(R.string.state_hs, deltaHs[0][0], deltaHs[0][1], switch ((int) deltaHs[1][0]) {
+            default -> 'V';
+            case 1 -> 'L';
+        }, deltaHs[0][2]));
     }
 
     private void spotPoint(float x, float y, String text) {

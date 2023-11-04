@@ -56,7 +56,7 @@
             android:iconTint="?attr/colorOnSurfaceVariant"
             android:title="@string/alpha" />
         <item
-            android:id="@+id/i_blend_mode"
+            android:id="@+id/i_layer_blend_mode"
             android:icon="@drawable/ic_void"
             android:title="@string/blend_mode">
             <menu>
@@ -184,6 +184,7 @@
             android:iconTint="?attr/colorOnSurfaceVariant"
             android:title="@string/clip_to_layers_below" />
         <item
+            android:id="@+id/i_layer_filter"
             android:icon="@drawable/ic_filter"
             android:iconTint="?attr/colorOnSurfaceVariant"
             android:title="@string/filters">
@@ -230,10 +231,10 @@
                         android:iconTint="?attr/colorOnSurfaceVariant"
                         android:title="@string/saturation" />
                     <item
-                        android:id="@+id/i_layer_filter_hsv"
+                        android:id="@+id/i_layer_filter_hs"
                         android:icon="@drawable/ic_void"
                         android:iconTint="?attr/colorOnSurfaceVariant"
-                        android:title="@string/hsv" />
+                        android:title="@string/hs" />
                     <item
                         android:id="@+id/i_layer_filter_color_balance"
                         android:icon="@drawable/ic_balance"

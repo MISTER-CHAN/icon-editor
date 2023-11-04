@@ -1,11 +1,9 @@
 package com.misterchan.iconeditor;
 
 import android.graphics.Bitmap;
-import android.graphics.BlendMode;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import android.util.Log;
 
 import androidx.annotation.ColorInt;
 
@@ -29,7 +27,7 @@ public class Layers {
             case COLOR_MATRIX, SATURATION, THRESHOLD ->
                     BitmapUtils.addColorMatrixColorFilter(bitmap, rect, layer.colorMatrix.getArray());
             case CURVES -> BitmapUtils.applyCurves(bitmap, rect, layer.curves);
-            case HSV -> BitmapUtils.shiftHsv(bitmap, rect, layer.deltaHsv);
+            case HS -> BitmapUtils.shiftHs(bitmap, rect, layer.deltaHs);
             case SELECTED_BY_CR -> BitmapUtils.selectByColorRange(bitmap, rect, layer.colorRange);
         }
     }

@@ -24,10 +24,6 @@
             android:iconTint="?attr/colorOnSurfaceVariant"
             android:title="@string/delay" />
         <item
-            android:id="@+id/i_frame_unify_delays"
-            android:icon="@drawable/ic_void"
-            android:title="@string/unify_delays" />
-        <item
             android:id="@+id/i_frame_onion_skins"
             android:icon="@drawable/ic_void"
             android:title="@string/onion_skins" />

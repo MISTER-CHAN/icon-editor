@@ -7,6 +7,7 @@
     <string name="all_layers">全部圖層</string>
     <string name="anti_alias">抗鋸齒</string>
     <string name="app_name">Icon Editor</string>
+    <string name="apply_to_each_frame">套用至每幀</string>
     <string name="argb_color_picker">ARGB 拾色器</string>
     <string name="around_r">繞 R 軸</string>
     <string name="around_g">繞 G 軸</string>
@@ -40,7 +41,7 @@
     <string name="clear_destination">淸除目標</string>
     <string name="clear_guides">淸除參考線</string>
     <string name="clip">剪輯</string>
-    <string name="clip_to_layers_below">剪裁至底下圖層</string>
+    <string name="clip_to_layers_below">剪裁</string>
     <string name="clone">克隆</string>
     <string name="clone_as_new">克隆爲新圖像</string>
     <string name="cloner">克隆筆</string>
@@ -141,6 +142,7 @@
     <string name="homepage">主頁</string>
     <string name="horizontal">水平</string>
     <string name="horizontally">水平</string>
+    <string name="hue_saturation">色相、飽和度</string>
     <string name="hue_to_alpha">色相轉 Alpha</string>
     <string name="ignore_alpha">忽略 Alpha</string>
     <string name="image">圖像</string>

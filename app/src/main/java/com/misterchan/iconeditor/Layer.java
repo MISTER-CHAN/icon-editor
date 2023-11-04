@@ -17,7 +17,7 @@ public class Layer {
         COLOR_MATRIX,
         CONTRAST,
         CURVES,
-        HSV,
+        HS,
         LEVELS,
         LIGHTING,
         LIGHTNESS,
@@ -40,14 +40,14 @@ public class Layer {
     public int left = 0, top = 0;
     public String name;
 
-    @Size(3)
-    public float[] deltaHsv;
-
     @Size(8)
     public float[] lighting;
 
     @Size(5)
     public int[][] curves;
+
+    @Size(2)
+    public float[][] deltaHs;
 
     public final Paint paint;
 
@@ -71,7 +71,7 @@ public class Layer {
         top = layer.top;
         this.name = name;
         if (layer.colorMatrix != null) colorMatrix.set(layer.colorMatrix);
-        if (layer.deltaHsv != null) deltaHsv = Arrays.copyOf(layer.deltaHsv, 3);
+        if (layer.deltaHs != null) deltaHs = Arrays.copyOf(layer.deltaHs, 3);
         if (layer.curves != null) curves = Arrays.copyOf(layer.curves, 5);
         paint = new Paint(layer.paint);
     }
@@ -91,8 +91,8 @@ public class Layer {
                 curves[i][j] = j;
     }
 
-    public void initDeltaHsv() {
-        deltaHsv = new float[]{0.0f, 0.0f, 0.0f};
+    public void initDeltaHs() {
+        deltaHs = new float[][]{{0.0f, 0.0f, 0.0f}, {1.0f}};
     }
 
     public void initLighting() {

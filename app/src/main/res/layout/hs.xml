@@ -1,9 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp">
+
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tl_comps"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:backgroundTint="@android:color/transparent"
+        android:elevation="1dp"
+        app:tabMode="scrollable">
+
+        <com.google.android.material.tabs.TabItem
+            android:id="@+id/ti_hsv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/hsv" />
+
+        <com.google.android.material.tabs.TabItem
+            android:id="@+id/ti_hsl"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/hsl" />
+    </com.google.android.material.tabs.TabLayout>
 
     <GridLayout
         android:layout_width="match_parent"
@@ -41,12 +63,13 @@
             android:valueTo="1" />
 
         <TextView
+            android:id="@+id/tv_comp_2"
             android:layout_gravity="center_vertical"
             android:layout_margin="8dp"
             android:text="@string/v" />
 
         <com.google.android.material.slider.Slider
-            android:id="@+id/s_value"
+            android:id="@+id/s_comp_2"
             android:layout_width="0dp"
             android:layout_gravity="center_vertical|fill_horizontal"
             android:tag="2"

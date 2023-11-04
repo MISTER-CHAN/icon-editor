@@ -261,9 +261,9 @@
                             android:icon="@drawable/ic_void"
                             android:title="@string/saturation" />
                         <item
-                            android:id="@+id/i_filter_hsv"
+                            android:id="@+id/i_filter_hs"
                             android:icon="@drawable/ic_void"
-                            android:title="@string/hsv" />
+                            android:title="@string/hs" />
                         <item
                             android:id="@+id/i_filter_color_balance"
                             android:icon="@drawable/ic_balance"

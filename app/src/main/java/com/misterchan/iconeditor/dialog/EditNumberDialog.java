@@ -37,6 +37,16 @@ public class EditNumberDialog {
         return this;
     }
 
+    public EditNumberDialog setNeutralButton(@StringRes int textId, OnPositiveButtonClickListener listener) {
+        builder.setNeutralButton(textId, (dialog, which) -> {
+            try {
+                listener.onClick(Integer.parseUnsignedInt(tiet.getText().toString()));
+            } catch (NumberFormatException e) {
+            }
+        });
+        return this;
+    }
+
     public EditNumberDialog setOnApplyListener(OnPositiveButtonClickListener listener) {
         builder.setPositiveButton(R.string.ok, (dialog, which) -> {
             try {

@@ -103,7 +103,7 @@
                 android:layout_height="wrap_content"
                 android:backgroundTint="@android:color/transparent"
                 android:hint="@string/x"
-                android:inputType="number"
+                android:inputType="numberSigned"
                 android:textAlignment="textEnd" />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -118,7 +118,7 @@
                 android:layout_height="wrap_content"
                 android:backgroundTint="@android:color/transparent"
                 android:hint="@string/y"
-                android:inputType="number"
+                android:inputType="numberSigned"
                 android:textAlignment="textEnd" />
         </com.google.android.material.textfield.TextInputLayout>
     </GridLayout>

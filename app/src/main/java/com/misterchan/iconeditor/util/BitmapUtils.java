@@ -9,7 +9,6 @@ import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
-import android.util.Log;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.DrawableRes;
@@ -61,7 +60,7 @@ public class BitmapUtils {
             final int r_ = Color.sat((int) (r * mul + add));
             final int g_ = Color.sat((int) (g * mul + add));
             final int b_ = Color.sat((int) (b * mul + add));
-            dst[i] = Color.inheritRgb(src[i], r_, g_, b_);
+            dst[i] = Color.clipped(src[i], r_, g_, b_);
         }
     }
 
@@ -77,8 +76,7 @@ public class BitmapUtils {
     public static void addLightingColorFilter(@ColorInt final int[] src, @ColorInt final int[] dst,
                                               @Size(8) final float[] lighting) {
         for (int i = 0; i < src.length; ++i) {
-            final int r = Color.red(src[i]), g = Color.green(src[i]), b = Color.blue(src[i]),
-                    a = Color.alpha(src[i]);
+            final int r = Color.red(src[i]), g = Color.green(src[i]), b = Color.blue(src[i]), a = Color.alpha(src[i]);
             final int r_ = Color.sat((int) (r * lighting[0] + lighting[1]));
             final int g_ = Color.sat((int) (g * lighting[2] + lighting[3]));
             final int b_ = Color.sat((int) (b * lighting[4] + lighting[5]));
@@ -99,8 +97,7 @@ public class BitmapUtils {
     public static void addColorMatrixColorFilter(@ColorInt final int[] src, @ColorInt final int[] dst,
                                                  @Size(20) final float[] colorMatrix) {
         for (int i = 0; i < src.length; ++i) {
-            final int r = Color.red(src[i]), g = Color.green(src[i]), b = Color.blue(src[i]),
-                    a = Color.alpha(src[i]);
+            final int r = Color.red(src[i]), g = Color.green(src[i]), b = Color.blue(src[i]), a = Color.alpha(src[i]);
             final int r_ = Color.sat((int) (r * colorMatrix[0] + g * colorMatrix[1] + b * colorMatrix[2] + a * colorMatrix[3] + colorMatrix[4]));
             final int g_ = Color.sat((int) (r * colorMatrix[5] + g * colorMatrix[6] + b * colorMatrix[7] + a * colorMatrix[8] + colorMatrix[9]));
             final int b_ = Color.sat((int) (r * colorMatrix[10] + g * colorMatrix[11] + b * colorMatrix[12] + a * colorMatrix[13] + colorMatrix[14]));
@@ -161,7 +158,7 @@ public class BitmapUtils {
                 if (tolerance == 0 ?
                         Color.rgb(px) == Color.rgb(pixel) :
                         Color.matches(pixel, tolerance, px)) {
-                    pixels[i] = Color.inheritRgb(px, color);
+                    pixels[i] = Color.clipped(px, color);
                 }
             } else {
                 if (tolerance == 0 ?
@@ -175,14 +172,14 @@ public class BitmapUtils {
         dst.setPixels(pixels, 0, w, dstRect.left, dstRect.top, w, h);
     }
 
-    public static void clip(final Bitmap srcBm, final Rect srcRect, @ColorInt final int[] dst) {
-        final int w = srcBm.getWidth(), h = srcBm.getHeight();
-        final int[] src = new int[w * h];
-        srcBm.getPixels(src, 0, w, srcRect.left, srcRect.top, w, h);
-        for (int i = 0; i < src.length; ++i) {
-            src[i] = Color.inheritRgb(dst[i], src[i]);
+    public static void clip(final Bitmap bitmap, final Rect rect, @ColorInt final int[] base) {
+        final int w = bitmap.getWidth(), h = bitmap.getHeight();
+        final int[] pixels = new int[w * h];
+        bitmap.getPixels(pixels, 0, w, rect.left, rect.top, w, h);
+        for (int i = 0; i < pixels.length; ++i) {
+            pixels[i] = Color.clipped(base[i], pixels[i]);
         }
-        srcBm.setPixels(src, 0, w, srcRect.left, srcRect.top, w, h);
+        bitmap.setPixels(pixels, 0, w, rect.left, rect.top, w, h);
     }
 
     public static Bitmap createBitmap(Bitmap src) {
@@ -197,6 +194,9 @@ public class BitmapUtils {
         return createBitmap(src, rect, Bitmap.Config.ARGB_8888, true, ColorSpace.get(ColorSpace.Named.SRGB));
     }
 
+    /**
+     * A more simple way to create a bitmap.
+     */
     public static Bitmap createBitmap(Bitmap src, @Nullable Rect rect, Bitmap.Config config, boolean hasAlpha, ColorSpace colorSpace) {
         final int w = rect != null ? rect.width() : src.getWidth(), h = rect != null ? rect.height() : src.getHeight();
         final Bitmap dst = Bitmap.createBitmap(w, h, config, hasAlpha, colorSpace);
@@ -286,7 +286,7 @@ public class BitmapUtils {
                 match = tolerance == 0
                         ? Color.rgb(px) == Color.rgb(pixel)
                         : Color.matches(pixel, px, tolerance);
-                newColor = Color.inheritRgb(px, color);
+                newColor = Color.clipped(px, color);
             } else {
                 match = tolerance == 0 ?
                         px == pixel :
@@ -396,7 +396,7 @@ public class BitmapUtils {
         src.getPixels(srcPixels, 0, w, 0, 0, w, h);
         dst.getPixels(dstPixels, 0, w, 0, 0, w, h);
         for (int i = 0; i < area; ++i) {
-            dstPixels[i] = Color.inheritRgb(srcPixels[i], dstPixels[i]);
+            dstPixels[i] = Color.clipped(srcPixels[i], dstPixels[i]);
         }
         dst.setPixels(dstPixels, 0, w, 0, 0, w, h);
     }
@@ -419,7 +419,7 @@ public class BitmapUtils {
                     og = Math.round(ig / 255.0f * (level - 1.0f)) * 0xFF / (level - 1),
                     ob = Math.round(ib / 255.0f * (level - 1.0f)) * 0xFF / (level - 1);
 
-            dst[i] = Color.inheritRgb(src[i], or, og, ob);
+            dst[i] = Color.clipped(src[i], or, og, ob);
         }
     }
 
@@ -506,10 +506,10 @@ public class BitmapUtils {
 
     private static void scaleAlpha(Bitmap bitmap) {
         final int w = bitmap.getWidth(), h = bitmap.getHeight();
-        final int[] pixels = new int[w * h];
+        @ColorInt final int[] pixels = new int[w * h];
         bitmap.getPixels(pixels, 0, w, 0, 0, w, h);
         for (int i = 0; i < pixels.length; ++i) {
-            if (Color.alpha(pixels[i]) > 0x00) {
+            if (pixels[i] > 0x00FFFFFF) {
                 pixels[i] |= Color.BLACK;
             }
         }
@@ -528,24 +528,31 @@ public class BitmapUtils {
         }
     }
 
-    public static void shiftHsv(@ColorInt final int[] src, @ColorInt final int[] dst,
-                                @Size(3) final float[] deltaHSV) {
-        final float[] hsv = new float[3];
+    public static void shiftHs(@ColorInt final int[] src, @ColorInt final int[] dst,
+                               @Size(2) final float[][] deltaHs) {
+        final int cs = (int) deltaHs[1][0]; // Color space
+        final float[] hs = new float[3];
         for (int i = 0; i < src.length; ++i) {
             final int pixel = src[i];
-            Color.colorToHSV(pixel, hsv);
-            hsv[0] = (hsv[0] + deltaHSV[0] + 360.0f) % 360.0f;
-            hsv[1] = Color.sat(hsv[1] + deltaHSV[1]);
-            hsv[2] = Color.sat(hsv[2] + deltaHSV[2]);
-            dst[i] = Color.inheritRgb(pixel, Color.HSVToColor(hsv));
+            switch (cs) {
+                default -> Color.colorToHSV(pixel, hs);
+                case 1 -> Color.colorToHSL(pixel, hs);
+            }
+            hs[0] = (hs[0] + deltaHs[0][0] + 360.0f) % 360.0f;
+            hs[1] = Color.sat(hs[1] + deltaHs[0][1]);
+            hs[2] = Color.sat(hs[2] + deltaHs[0][2]);
+            dst[i] = Color.clipped(pixel, switch (cs) {
+                default -> Color.HSVToColor(hs);
+                case 1 -> Color.HSLToColor(hs);
+            });
         }
     }
 
-    public static void shiftHsv(final Bitmap bitmap, final Rect rect, @Size(3) final float[] deltaHSV) {
+    public static void shiftHs(final Bitmap bitmap, final Rect rect, @Size(2) final float[][] deltaHs) {
         final int w = rect.width(), h = rect.height();
         final int[] pixels = new int[w * h];
         bitmap.getPixels(pixels, 0, w, rect.left, rect.top, w, h);
-        shiftHsv(pixels, pixels, deltaHSV);
+        shiftHs(pixels, pixels, deltaHs);
         bitmap.setPixels(pixels, 0, w, rect.left, rect.top, w, h);
     }
 
