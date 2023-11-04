@@ -189,6 +189,10 @@ public class BitmapUtils {
         return createBitmap(src, null);
     }
 
+    public static Bitmap createBitmap(Bitmap src, int x, int y, int width, int height) {
+        return createBitmap(src, new Rect(x, y, x + width, y + height));
+    }
+
     public static Bitmap createBitmap(Bitmap src, @Nullable Rect rect) {
         return createBitmap(src, rect, Bitmap.Config.ARGB_8888, true, ColorSpace.get(ColorSpace.Named.SRGB));
     }

@@ -91,6 +91,11 @@ public class Transformer implements FloatingLayer {
     }
 
     public void reset() {
+        if (src.getWidth() != bitmap.getWidth() || src.getHeight() != bitmap.getHeight()) {
+            bitmap.recycle();
+            bitmap = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
+            canvas = new Canvas(bitmap);
+        }
         canvas.drawBitmap(src, 0.0f, 0.0f, BitmapUtils.PAINT_SRC);
     }
 
@@ -118,12 +123,12 @@ public class Transformer implements FloatingLayer {
 
     public void stretch(boolean filter, boolean antiAlias) {
         final Matrix matrix = new Matrix();
-        matrix.setScale((float) rect.width() / (float) src.getWidth(), (float) rect.height() / (float) src.getHeight());
+        matrix.setScale((float) rect.width() / (float) bitmap.getWidth(), (float) rect.height() / (float) bitmap.getHeight());
         transform(matrix, filter, antiAlias);
     }
 
     public RectF transform(Matrix matrix, boolean filter, boolean antiAlias) {
-        final RectF r = new RectF(0.0f, 0.0f, src.getWidth(), src.getHeight());
+        final RectF r = new RectF(0.0f, 0.0f, bitmap.getWidth(), bitmap.getHeight());
         matrix.mapRect(r);
         if (r.isEmpty()) {
             return null;
@@ -139,7 +144,7 @@ public class Transformer implements FloatingLayer {
         cv.setMatrix(matrix);
         paint.setAntiAlias(antiAlias);
         paint.setFilterBitmap(filter);
-        cv.drawBitmap(src, 0.0f, 0.0f, paint);
+        cv.drawBitmap(bitmap, 0.0f, 0.0f, paint);
         bitmap.recycle();
         bitmap = bm;
         canvas = new Canvas(bm);

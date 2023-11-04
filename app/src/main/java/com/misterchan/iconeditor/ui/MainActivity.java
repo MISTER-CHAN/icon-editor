@@ -1771,15 +1771,11 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                     final int width = right - left, height = bottom - top;
                     final Bitmap bLine = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
                     final Canvas cLine = new Canvas(bLine);
-                    cLine.drawLine(lastBX - left, lastBY - top,
-                            bx - left, by - top,
-                            paint);
+                    cLine.drawLine(lastBX - left, lastBY - top, bx - left, by - top, paint);
                     canvas.drawBitmap(bLine, left, top, PAINT_DST_OUT);
                     final Bitmap bm = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
                     new Canvas(bm).drawBitmap(ref.bm(),
-                            new Rect(left, top, right, bottom),
-                            new Rect(0, 0, width, height),
-                            PAINT_SRC);
+                            new Rect(left, top, right, bottom), new Rect(0, 0, width, height), PAINT_SRC);
                     BitmapUtils.removeBackground(bm, foregroundColor, backgroundColor);
                     cLine.drawBitmap(bm, 0.0f, 0.0f, PAINT_SRC_IN);
                     bm.recycle();
@@ -3249,7 +3245,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
     }
 
     private void createTransformer() {
-        final Bitmap bm = Bitmap.createBitmap(bitmap, selection.r.left, selection.r.top, selection.r.width(), selection.r.height());
+        final Bitmap bm = BitmapUtils.createBitmap(bitmap, selection.r.left, selection.r.top, selection.r.width(), selection.r.height());
         canvas.drawRect(selection.r.left, selection.r.top, selection.r.right, selection.r.bottom, eraser);
         createTransformer(bm);
     }
@@ -4721,8 +4717,8 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                 if (transformer.isRecycled()) {
                     drawFloatingLayersIntoImage();
                     final Bitmap bm = hasSelection
-                            ? Bitmap.createBitmap(bitmap, selection.r.left, selection.r.top, selection.r.width(), selection.r.height())
-                            : Bitmap.createBitmap(bitmap);
+                            ? BitmapUtils.createBitmap(bitmap, selection.r.left, selection.r.top, selection.r.width(), selection.r.height())
+                            : BitmapUtils.createBitmap(bitmap);
                     createTransformer(bm);
                     activityMain.tools.btgTools.check(R.id.b_transformer);
                     drawSelectionOntoView();
@@ -4742,7 +4738,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                 final Bitmap bm = hasSelection ?
                         transformer.isRecycled() ?
                                 Bitmap.createBitmap(bitmap, selection.r.left, selection.r.top, selection.r.width(), selection.r.height()) :
-                                Bitmap.createBitmap(transformer.getBitmap()) :
+                                BitmapUtils.createBitmap(transformer.getBitmap()) :
                         Bitmap.createBitmap(bitmap);
                 addProject(bm, activityMain.tlProjectList.getSelectedTabPosition() + 1, getString(R.string.copy_noun));
             }
@@ -4752,10 +4748,10 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                         clipboard.recycle();
                     }
                     clipboard = hasSelection
-                            ? Bitmap.createBitmap(bitmap, selection.r.left, selection.r.top, selection.r.width(), selection.r.height())
-                            : Bitmap.createBitmap(bitmap);
+                            ? BitmapUtils.createBitmap(bitmap, selection.r.left, selection.r.top, selection.r.width(), selection.r.height())
+                            : BitmapUtils.createBitmap(bitmap);
                 } else {
-                    clipboard = Bitmap.createBitmap(transformer.getBitmap());
+                    clipboard = BitmapUtils.createBitmap(transformer.getBitmap());
                 }
             }
             case R.id.i_crop -> {
@@ -4787,16 +4783,16 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                         clipboard.recycle();
                     }
                     if (hasSelection) {
-                        clipboard = Bitmap.createBitmap(bitmap, selection.r.left, selection.r.top,
-                                selection.r.width(), selection.r.height());
+                        clipboard = BitmapUtils.createBitmap(bitmap,
+                                selection.r.left, selection.r.top, selection.r.width(), selection.r.height());
                         canvas.drawRect(selection.r.left, selection.r.top, selection.r.right, selection.r.bottom, eraser);
                     } else {
-                        clipboard = Bitmap.createBitmap(bitmap);
+                        clipboard = BitmapUtils.createBitmap(bitmap);
                         canvas.drawColor(eraser.getColorLong(), BlendMode.SRC);
                     }
                     addToHistory();
                 } else {
-                    clipboard = Bitmap.createBitmap(transformer.getBitmap());
+                    clipboard = BitmapUtils.createBitmap(transformer.getBitmap());
                     recycleTransformer();
                 }
                 if (hasSelection) {
@@ -5117,9 +5113,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                 ssdLayerList.show();
             }
             case R.id.i_paste -> {
-                if (clipboard == null) {
-                    break;
-                }
+                if (clipboard == null) break;
                 drawFloatingLayersIntoImage();
 
                 boolean si = !hasSelection; // Is selection.r invisible
@@ -5134,15 +5128,13 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                 }
                 selection.r.right = selection.r.left + clipboard.getWidth();
                 selection.r.bottom = selection.r.top + clipboard.getHeight();
-                createTransformer(Bitmap.createBitmap(clipboard));
+                createTransformer(BitmapUtils.createBitmap(clipboard));
                 activityMain.tools.btgTools.check(R.id.b_transformer);
                 drawBitmapOntoView(selection.r);
                 drawSelectionOntoView();
             }
             case R.id.i_redo -> {
-                if (layer.history.canRedo()) {
-                    undoOrRedo(layer.history.redo());
-                }
+                if (layer.history.canRedo()) undoOrRedo(layer.history.redo());
             }
             case R.id.i_rotate_90 -> rotate(90.0f);
             case R.id.i_rotate_180 -> rotate(180.0f);
@@ -5899,7 +5891,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
 
     private void updateReference() {
         final Bitmap rb = frame.mergeReferenceLayers();
-        ref.set(rb != null ? rb : checkIfRequireRef() ? Bitmap.createBitmap(bitmap) : null);
+        ref.set(rb != null ? rb : checkIfRequireRef() ? BitmapUtils.createBitmap(bitmap) : null);
         if (activityMain.tools.btgTools.getCheckedButtonId() == R.id.b_brush && brush.tipShape == BrushTool.TipShape.REF) {
             brush.setToRef(ref.bm(), paint.getColorLong());
         }
