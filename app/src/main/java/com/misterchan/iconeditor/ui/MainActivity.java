@@ -1057,7 +1057,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         popupMenu.setOnMenuItemClickListener(this::onLayerOptionsItemSelected);
         popupMenu.show();
 
-        menu.findItem(R.id.i_layer_clipping).setChecked(layer.clipToBelow);
+        menu.findItem(R.id.i_layer_clipped).setChecked(layer.clipped);
         menu.findItem(R.id.i_layer_level_up).setEnabled(layer.getLevel() > 0);
         menu.findItem(R.id.i_layer_reference).setChecked(layer.reference);
 
@@ -4365,14 +4365,14 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                 });
                 drawBitmapOntoView(true);
             }
-            case R.id.i_layer_clipping -> {
-                layer.clipToBelow = !layer.clipToBelow;
+            case R.id.i_layer_clipped -> {
+                layer.clipped = !layer.clipped;
                 drawBitmapOntoView(true);
             }
             case R.id.i_layer_create_clipping_mask -> {
                 switch (layer.paint.getBlendMode()) {
                     case SRC_OVER, SRC_ATOP -> layer.paint.setBlendMode(BlendMode.SRC_ATOP);
-                    default -> layer.clipToBelow = true;
+                    default -> layer.clipped = true;
                 }
                 Layers.levelDown(frame.layers, frame.selectedLayerIndex);
                 frame.computeLayerTree();
@@ -4758,6 +4758,8 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                 }
                 drawFloatingLayersIntoImage();
                 final int width = selection.r.width(), height = selection.r.height();
+                translationX += toScaled(selection.r.left);
+                translationY += toScaled(selection.r.top);
                 if (layer == frame.getBackgroundLayer()) {
                     for (final Frame f : project.frames) {
                         final Layer bl = f.getBackgroundLayer();

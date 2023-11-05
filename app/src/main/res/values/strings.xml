@@ -48,7 +48,7 @@
     <string name="clear_destination">Clear Destination</string>
     <string name="clear_guides">Clear Guides</string>
     <string name="clip">Clip</string>
-    <string name="clip_to_layers_below">Clip</string>
+    <string name="clipped">Clipped</string>
     <string name="clone">Clone</string>
     <string name="clone_as_new">Clone as New</string>
     <string name="cloner">Cloner</string>

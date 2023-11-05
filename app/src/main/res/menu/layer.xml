@@ -178,11 +178,11 @@
             </menu>
         </item>
         <item
-            android:id="@+id/i_layer_clipping"
+            android:id="@+id/i_layer_clipped"
             android:checkable="true"
             android:icon="@drawable/ic_content_cut"
             android:iconTint="?attr/colorOnSurfaceVariant"
-            android:title="@string/clip_to_layers_below" />
+            android:title="@string/clipped" />
         <item
             android:id="@+id/i_layer_filter"
             android:icon="@drawable/ic_filter"

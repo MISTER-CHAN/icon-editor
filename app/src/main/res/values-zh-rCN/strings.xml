@@ -41,7 +41,7 @@
     <string name="clear_destination">清除目标</string>
     <string name="clear_guides">清除参考线</string>
     <string name="clip">剪辑</string>
-    <string name="clip_to_layers_below">剪贴</string>
+    <string name="clipped">剪贴</string>
     <string name="clone">克隆</string>
     <string name="clone_as_new">克隆为新图像</string>
     <string name="cloner">克隆笔</string>

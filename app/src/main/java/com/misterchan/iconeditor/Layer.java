@@ -26,7 +26,7 @@ public class Layer {
         THRESHOLD
     }
 
-    public boolean clipToBelow = false;
+    public boolean clipped = false;
     public boolean reference = false;
     public boolean visible = true;
     public Bitmap bitmap;
