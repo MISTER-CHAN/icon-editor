@@ -463,6 +463,18 @@ public class BitmapUtils {
         bitmap.setPixels(pixels, 0, w, 0, 0, w, h);
     }
 
+    private static void scaleAlpha(Bitmap bitmap) {
+        final int w = bitmap.getWidth(), h = bitmap.getHeight();
+        @ColorInt final int[] pixels = new int[w * h];
+        bitmap.getPixels(pixels, 0, w, 0, 0, w, h);
+        for (int i = 0; i < pixels.length; ++i) {
+            if (pixels[i] > 0x00FFFFFF) {
+                pixels[i] |= Color.BLACK;
+            }
+        }
+        bitmap.setPixels(pixels, 0, w, 0, 0, w, h);
+    }
+
     public static void selectByColorRange(final Bitmap bitmap, @Nullable final Rect rect, final ColorRange cr) {
         if (!cr.enabled) {
             return;
@@ -504,18 +516,6 @@ public class BitmapUtils {
         }
     }
 
-    private static void scaleAlpha(Bitmap bitmap) {
-        final int w = bitmap.getWidth(), h = bitmap.getHeight();
-        @ColorInt final int[] pixels = new int[w * h];
-        bitmap.getPixels(pixels, 0, w, 0, 0, w, h);
-        for (int i = 0; i < pixels.length; ++i) {
-            if (pixels[i] > 0x00FFFFFF) {
-                pixels[i] |= Color.BLACK;
-            }
-        }
-        bitmap.setPixels(pixels, 0, w, 0, 0, w, h);
-    }
-
     public static void setAlphaByHue(@ColorInt final int[] src, @ColorInt final int[] dst,
                                      final float opaquePoint) {
         final float op = opaquePoint % 360.0f;
@@ -529,8 +529,8 @@ public class BitmapUtils {
     }
 
     public static void shiftHs(@ColorInt final int[] src, @ColorInt final int[] dst,
-                               @Size(2) final float[][] deltaHs) {
-        final int cs = (int) deltaHs[1][0]; // Color space
+                               @Size(4) final float[] deltaHs) {
+        final int cs = (int) deltaHs[3]; // Color space
         final float[] hs = new float[3];
         for (int i = 0; i < src.length; ++i) {
             final int pixel = src[i];
@@ -538,9 +538,9 @@ public class BitmapUtils {
                 default -> Color.colorToHSV(pixel, hs);
                 case 1 -> Color.colorToHSL(pixel, hs);
             }
-            hs[0] = (hs[0] + deltaHs[0][0] + 360.0f) % 360.0f;
-            hs[1] = Color.sat(hs[1] + deltaHs[0][1]);
-            hs[2] = Color.sat(hs[2] + deltaHs[0][2]);
+            hs[0] = (hs[0] + deltaHs[0] + 360.0f) % 360.0f;
+            hs[1] = Color.sat(hs[1] + deltaHs[1]);
+            hs[2] = Color.sat(hs[2] + deltaHs[2]);
             dst[i] = Color.clipped(pixel, switch (cs) {
                 default -> Color.HSVToColor(hs);
                 case 1 -> Color.HSLToColor(hs);
@@ -548,7 +548,7 @@ public class BitmapUtils {
         }
     }
 
-    public static void shiftHs(final Bitmap bitmap, final Rect rect, @Size(2) final float[][] deltaHs) {
+    public static void shiftHs(final Bitmap bitmap, final Rect rect, @Size(4) final float[] deltaHs) {
         final int w = rect.width(), h = rect.height();
         final int[] pixels = new int[w * h];
         bitmap.getPixels(pixels, 0, w, rect.left, rect.top, w, h);

@@ -70,8 +70,8 @@ public class CurvesDialog {
 
     /**
      * <table>
-     *     <tr><th>Index</th><td>0</td><td>1</td><td>2</td><td>3</td><td>4</td></tr>
-     *     <tr><th>Curve</th><td>R &nbsp; &nbsp;</td><td>G &nbsp; &nbsp;</td><td>B &nbsp; &nbsp;</td><td>A &nbsp; &nbsp;</td><td>RGB Outputs</td></tr>
+     *     <tr><th>Index &nbsp;</th><td>0</td><td>1</td><td>2</td><td>3</td><td>4</td></tr>
+     *     <tr><th>Curve &nbsp;</th><td>R &nbsp; &nbsp;</td><td>G &nbsp; &nbsp;</td><td>B &nbsp; &nbsp;</td><td>A &nbsp; &nbsp;</td><td>RGB Outputs</td></tr>
      * </table>
      */
     @Size(5)

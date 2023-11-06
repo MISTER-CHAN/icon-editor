@@ -18,7 +18,7 @@ import com.misterchan.iconeditor.listener.OnSliderChangeListener;
 
 public class HsDialog {
     public interface OnChangedListener {
-        void onChanged(@Size(2) float[][] deltaHs, boolean stopped);
+        void onChanged(@Size(4) float[] deltaHs, boolean stopped);
     }
 
     private final AlertDialog.Builder builder;
@@ -26,28 +26,23 @@ public class HsDialog {
 
     /**
      * <table>
-     *     <tr><th>Index</th><td>0</td><td>1</td></tr>
-     *     <tr><th>Sub-array</th><td>Components</td><td><code>{</code>Color Space Number<code>}</code></td></tr>
-     * </table>
-     * Where
-     * <table>
-     *     <tr><th>Color Space Number</th><td>0</td><td>1</td></tr>
-     *     <tr><th>Color Space Name</th><td>HSV</td><td>HSL</td></tr>
+     *     <tr><th>Index &nbsp;</th><td>0 &#x2013; 2</td><td>3</td></tr>
+     *     <tr><th>Value &nbsp;</th><td>Components &nbsp;</td><td>(0: HSV | 1: HSL)</td></tr>
      * </table>
      */
-    @Size(2)
-    private final float[][] deltaHs;
+    @Size(4)
+    private final float[] deltaHs;
 
     public HsDialog(Context context) {
         this(context, null);
     }
 
-    public HsDialog(Context context, @Size(2) float[][] defaultDeltaHs) {
+    public HsDialog(Context context, @Size(4) float[] defaultDeltaHs) {
         builder = new MaterialAlertDialogBuilder(context)
                 .setTitle(R.string.hue_saturation)
                 .setView(R.layout.hs);
 
-        deltaHs = defaultDeltaHs != null ? defaultDeltaHs : new float[][]{{0.0f, 0.0f, 0.0f}, {1.0f}};
+        deltaHs = defaultDeltaHs != null ? defaultDeltaHs : new float[]{0.0f, 0.0f, 0.0f, 1.0f};
     }
 
     public HsDialog setOnCancelListener(DialogInterface.OnCancelListener listener) {
@@ -80,12 +75,12 @@ public class HsDialog {
         final Slider sComp2 = dialog.findViewById(R.id.s_comp_2);
         final TabLayout tlComps = dialog.findViewById(R.id.tl_comps);
         final TextView tvComp2 = dialog.findViewById(R.id.tv_comp_2);
-        final int cs = (int) deltaHs[1][0]; // Color space
+        final int cs = (int) deltaHs[3]; // Color space
         final OnSliderChangeListener l = this::update;
 
-        sHue.setValue(deltaHs[0][0]);
-        sSaturation.setValue(deltaHs[0][1]);
-        sComp2.setValue(deltaHs[0][2]);
+        sHue.setValue(deltaHs[0]);
+        sSaturation.setValue(deltaHs[1]);
+        sComp2.setValue(deltaHs[2]);
         sHue.addOnChangeListener(l);
         sHue.addOnSliderTouchListener(l);
         sSaturation.addOnChangeListener(l);
@@ -103,7 +98,7 @@ public class HsDialog {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
                 final int position = tab.getPosition();
-                deltaHs[1][0] = position;
+                deltaHs[3] = position;
                 tvComp2.setText(switch (position) {
                     default -> R.string.v;
                     case 1 -> R.string.l;
@@ -122,7 +117,7 @@ public class HsDialog {
     }
 
     private void update(Slider slider, float value, boolean stopped) {
-        deltaHs[0][slider.getTag().toString().charAt(0) - '0'] = value;
+        deltaHs[slider.getTag().toString().charAt(0) - '0'] = value;
         listener.onChanged(deltaHs, stopped);
     }
 }

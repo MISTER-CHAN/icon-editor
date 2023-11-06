@@ -53,6 +53,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.ColorLong;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.Size;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.view.ActionMode;
@@ -745,10 +746,9 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         bitmap.recycle();
     };
 
-    @SuppressLint("StringFormatMatches")
     private final HsDialog.OnChangedListener onFilterHsChangedListener = (deltaHs, stopped) -> {
         runOrStart(() -> {
-            if (deltaHs[0][0] == 0.0f && deltaHs[0][1] == 0.0f && deltaHs[0][2] == 0.0f) {
+            if (deltaHs[0] == 0.0f && deltaHs[1] == 0.0f && deltaHs[2] == 0.0f) {
                 editPreview.clearFilters();
             } else {
                 final int w = editPreview.getWidth(), h = editPreview.getHeight();
@@ -761,7 +761,6 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         showStateHs(deltaHs);
     };
 
-    @SuppressLint("StringFormatMatches")
     private final HsDialog.OnChangedListener onLayerHsChangedListener = (deltaHs, stopped) -> {
         layer.deltaHs = deltaHs;
         drawBitmapOntoView(stopped);
@@ -4758,9 +4757,9 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                 }
                 drawFloatingLayersIntoImage();
                 final int width = selection.r.width(), height = selection.r.height();
-                translationX += toScaled(selection.r.left);
-                translationY += toScaled(selection.r.top);
                 if (layer == frame.getBackgroundLayer()) {
+                    translationX += toScaled(selection.r.left);
+                    translationY += toScaled(selection.r.top);
                     for (final Frame f : project.frames) {
                         final Layer bl = f.getBackgroundLayer();
                         final Bitmap bm = Bitmap.createBitmap(bl.bitmap, selection.r.left, selection.r.top, width, height);
@@ -5748,11 +5747,12 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         drawSelectionOntoView();
     }
 
-    private void showStateHs(float[][] deltaHs) {
-        activityMain.tvStatus.setText(getString(R.string.state_hs, deltaHs[0][0], deltaHs[0][1], switch ((int) deltaHs[1][0]) {
+    @SuppressLint("StringFormatMatches")
+    private void showStateHs(@Size(4) float[] deltaHs) {
+        activityMain.tvStatus.setText(getString(R.string.state_hs, deltaHs[0], deltaHs[1], switch ((int) deltaHs[3]) {
             default -> 'V';
             case 1 -> 'L';
-        }, deltaHs[0][2]));
+        }, deltaHs[2]));
     }
 
     private void spotPoint(float x, float y, String text) {

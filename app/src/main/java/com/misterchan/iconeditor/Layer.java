@@ -46,8 +46,8 @@ public class Layer {
     @Size(5)
     public int[][] curves;
 
-    @Size(2)
-    public float[][] deltaHs;
+    @Size(4)
+    public float[] deltaHs;
 
     public final Paint paint;
 
@@ -92,7 +92,7 @@ public class Layer {
     }
 
     public void initDeltaHs() {
-        deltaHs = new float[][]{{0.0f, 0.0f, 0.0f}, {1.0f}};
+        deltaHs = new float[]{0.0f, 0.0f, 0.0f, 1.0f};
     }
 
     public void initLighting() {
