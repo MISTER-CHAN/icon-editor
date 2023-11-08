@@ -29,6 +29,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -136,6 +139,23 @@ public class FileUtils {
             gifEncoder.close();
         }
         MediaScannerConnection.scanFile(activity, new String[]{file.toString()}, null, null);
+    }
+
+    public static void prepareToLogExceptionMsg() {
+        final Thread.UncaughtExceptionHandler ueh = Thread.getDefaultUncaughtExceptionHandler();
+        Thread.setDefaultUncaughtExceptionHandler((t, e) -> {
+            try {
+                try (final OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream(Environment.getExternalStorageDirectory() + "/icon_editor/uncaught_exception.log"))) {
+                    final StringWriter sw = new StringWriter();
+                    final PrintWriter pw = new PrintWriter(sw);
+                    e.printStackTrace(pw);
+                    osw.write(sw.toString());
+                } catch (Exception ignored) {
+                }
+            } finally {
+                ueh.uncaughtException(t, e);
+            }
+        });
     }
 
     public static void save(Activity activity, Project project, int quality) {

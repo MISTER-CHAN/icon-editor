@@ -74,6 +74,7 @@ import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+import com.misterchan.iconeditor.BuildConfig;
 import com.misterchan.iconeditor.CellGrid;
 import com.misterchan.iconeditor.Color;
 import com.misterchan.iconeditor.DrawingPrimitivePreview;
@@ -1328,9 +1329,6 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
 
         public abstract void onIVSingleTouch(View v, MotionEvent event);
 
-        protected void onStartMultiTouch() {
-        }
-
         @Override
         public final void onIVTouch(View v, MotionEvent event) {
             final int pointerCount = event.getPointerCount(), action = event.getAction();
@@ -1351,8 +1349,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
             }
         }
 
-        public boolean isMultiTouch() {
-            return multiTouch;
+        protected void onStartMultiTouch() {
         }
 
         protected void undo() {
@@ -3476,7 +3473,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         }
 
         final Bitmap merged = Layers.mergeLayers(frame.layerTree, vs, layer, bitmap, getCurrentFloatingLayer());
-        if (onIVTouchListener instanceof final OnIVMultiTouchListener oml && oml.isMultiTouch()) {
+        if (onIVTouchListener instanceof final OnIVMultiTouchListener oml && oml.multiTouch) {
             merged.recycle();
             return;
         }
@@ -3506,7 +3503,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         }
 
         final Bitmap merged = Layers.mergeLayers(frame.layerTree, vs, layer, bitmap, getCurrentFloatingLayer());
-        if (onIVTouchListener instanceof final OnIVMultiTouchListener oml && oml.isMultiTouch()) {
+        if (onIVTouchListener instanceof final OnIVMultiTouchListener oml && oml.multiTouch) {
             merged.recycle();
             return;
         }
@@ -3916,7 +3913,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
     }
 
     private Rect getVisibleSubset() {
-        return getVisibleSubset(translationX, translationY, bitmap.getWidth(), bitmap.getHeight());
+        return getVisibleSubset(toViewX(0), toViewY(0), bitmap.getWidth(), bitmap.getHeight());
     }
 
     private Rect getVisibleSubset(float translX, float translY, int width, int height) {
@@ -4054,6 +4051,8 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
     @SuppressLint({"ClickableViewAccessibility", "NonConstantResourceId"})
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if (BuildConfig.DEBUG) FileUtils.prepareToLogExceptionMsg();
 
         // Preferences
         Settings.INST.mainActivity = this;
@@ -5115,7 +5114,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                 if (clipboard == null) break;
                 drawFloatingLayersIntoImage();
 
-                boolean si = !hasSelection; // Is selection.r invisible
+                boolean si = !hasSelection; // Is selection invisible
                 if (hasSelection) {
                     final Rect vs = getVisibleSubset();
                     si = !Rect.intersects(selection.r, vs);
