@@ -5411,7 +5411,6 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                              int offsetX, int offsetY) {
         final Bitmap bm = Bitmap.createBitmap(width, height,
                 layer.bitmap.getConfig(), layer.bitmap.hasAlpha(), layer.bitmap.getColorSpace());
-        bm.eraseColor(eraser.getColorLong());
         final Canvas cv = new Canvas(bm);
         if (scaleType != null) {
             if (newImage == null) newImage = layer.bitmap;
