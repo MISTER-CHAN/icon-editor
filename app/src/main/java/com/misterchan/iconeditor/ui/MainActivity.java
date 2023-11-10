@@ -1363,7 +1363,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
             }
 
             final Bitmap bitmap = layer.history.getCurrent();
-            synchronized (this) {
+            synchronized (MainActivity.this) {
                 MainActivity.this.bitmap.recycle();
                 MainActivity.this.bitmap = bitmap;
                 layer.bitmap = bitmap;
@@ -5411,6 +5411,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                              int offsetX, int offsetY) {
         final Bitmap bm = Bitmap.createBitmap(width, height,
                 layer.bitmap.getConfig(), layer.bitmap.hasAlpha(), layer.bitmap.getColorSpace());
+        bm.eraseColor(eraser.getColorLong());
         final Canvas cv = new Canvas(bm);
         if (scaleType != null) {
             if (newImage == null) newImage = layer.bitmap;
