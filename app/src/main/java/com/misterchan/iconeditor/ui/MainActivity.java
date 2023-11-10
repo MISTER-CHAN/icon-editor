@@ -3480,10 +3480,6 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         }
 
         final Bitmap merged = Layers.mergeLayers(frame.layerTree, vs, layer, bitmap, getCurrentFloatingLayer());
-//        if (onIVTouchListener instanceof final OnIVMultiTouchListener oml && oml.multiTouch) {
-//            merged.recycle();
-//            return;
-//        }
         final float translLeft = toViewXRel(left), translTop = toViewYRel(top);
         final Rect relative = new Rect(0, 0, vs.width(), vs.height());
         runOnUiThread(() -> {
@@ -3508,12 +3504,6 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         }
 
         final Bitmap merged = Layers.mergeLayers(frame.layerTree, vs, layer, bitmap, getCurrentFloatingLayer());
-//        if (onIVTouchListener instanceof final OnIVMultiTouchListener oml && oml.multiTouch) {
-//            merged.recycle();
-//            return;
-//        }
-//        BitmapUtils.recycle(lastMerged);
-//        lastMerged = null;
         final Rect relative = new Rect(0, 0, vs.width(), vs.height());
         runOnUiThread(() -> {
             if (eraseVisible) {
