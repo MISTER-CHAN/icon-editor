@@ -15,7 +15,7 @@
 
     <!-- Brush Tip Shapes -->
     <string-array name="brush_tip_shapes">
-        <item>@string/brush</item>
+        <item>@string/preset_brush</item>
         <item>@string/reference</item>
     </string-array>
 
@@ -36,13 +36,13 @@
         <item>10</item>
     </string-array>
 
-    <!-- Color Type Preference -->
-    <string-array name="type_entries">
+    <!-- Color Representation Preference -->
+    <string-array name="color_rep_entries">
         <item>@string/integer</item>
         <item>@string/long_integer</item>
     </string-array>
 
-    <string-array name="type_values">
+    <string-array name="color_rep_values">
         <item>i</item>
         <item>l</item>
     </string-array>

@@ -49,7 +49,7 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     public static class SettingsFragment extends PreferenceFragmentCompat {
-        private ListPreference lpAcr;
+        private ListPreference lpCir;
 
         @Override
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
@@ -57,10 +57,10 @@ public class SettingsActivity extends AppCompatActivity {
             final Context context = getContext();
             String versionName = null;
             final EditTextPreference etpHms = findPreference(Settings.KEY_HMS);
-            lpAcr = findPreference(Settings.KEY_ACR);
+            lpCir = findPreference(Settings.KEY_CIR);
             final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
 
-            lpAcr.setEnabled(!"l".equals(preferences.getString(Settings.KEY_ACT, "i")));
+            lpCir.setEnabled(!"l".equals(preferences.getString(Settings.KEY_CR, "i")));
 
             try {
                 versionName = context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionName;
@@ -68,8 +68,8 @@ public class SettingsActivity extends AppCompatActivity {
             }
             findPreference(Settings.KEY_CFU).setSummary(versionName);
 
-            findPreference(Settings.KEY_ACT).setOnPreferenceChangeListener((preference, newValue) -> {
-                lpAcr.setEnabled(!"l".equals(newValue));
+            findPreference(Settings.KEY_CR).setOnPreferenceChangeListener((preference, newValue) -> {
+                lpCir.setEnabled(!"l".equals(newValue));
                 return true;
             });
 

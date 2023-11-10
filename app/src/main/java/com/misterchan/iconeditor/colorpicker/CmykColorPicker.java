@@ -24,8 +24,8 @@ class CmykColorPicker extends ColorPicker {
     private TextInputEditText tietCyan, tietMagenta, tietYellow, tietKey;
 
     private CmykColorPicker(Context context, final OnColorPickListener onColorPickListener, @ColorLong final Long oldColor) {
-        format = Settings.INST.argbCompFormat();
-        radix = Settings.INST.argbCompRadix();
+        format = Settings.INST.colorIntCompFormat();
+        radix = Settings.INST.colorIntCompRadix();
         dialogBuilder = new MaterialAlertDialogBuilder(context)
                 .setNegativeButton(R.string.cancel, null)
                 .setPositiveButton(R.string.ok, (dialog, which) -> onColorPickListener.onPick(oldColor, newColor))

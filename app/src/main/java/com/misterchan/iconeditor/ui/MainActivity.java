@@ -137,6 +137,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.locks.Lock;
 
 public class MainActivity extends AppCompatActivity implements SelectionTool.CoordinateConversions {
 
@@ -670,9 +671,8 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         new MaterialAlertDialogBuilder(this).setTitle(R.string.tip_shape)
                 .setSingleChoiceItems(R.array.brush_tip_shapes, checkedItem, (dialog, which) -> {
                     brush.tipShape = switch (which) {
-                        case 0 -> BrushTool.TipShape.BRUSH;
+                        default -> BrushTool.TipShape.PRESET_BRUSH;
                         case 1 -> BrushTool.TipShape.REF;
-                        default -> BrushTool.TipShape.BRUSH;
                     };
                     updateBrush();
                 })
@@ -898,7 +898,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
             drawEditPreviewOntoView(stopped);
         }, stopped);
         activityMain.tvStatus.setText(String.format(
-                getString(R.string.state_posterization, Settings.INST.argbCompFormat()),
+                getString(R.string.state_posterization, Settings.INST.colorIntCompFormat()),
                 (int) value));
     };
 
@@ -944,7 +944,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         layer.paint.setAlpha((int) value);
         drawBitmapOntoView(stopped);
         activityMain.tvStatus.setText(String.format(
-                getString(R.string.state_alpha, Settings.INST.argbCompFormat()),
+                getString(R.string.state_alpha, Settings.INST.colorIntCompFormat()),
                 (int) value));
     };
 
@@ -1010,8 +1010,12 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         drawSelectionOntoView();
 
         layerList.rvLayerList.post(() -> {
-            frame.layerAdapter.notifyItemRangeChanged(Math.min(fromPos, toPos), Math.abs(toPos - fromPos) + 1);
-            layerList.rvLayerList.post(frame.layerAdapter::notifyLayerTreeChanged);
+            final int start = Math.min(fromPos, toPos), count = Math.abs(toPos - fromPos) + 1, stop = start + count, size = frame.layers.size();
+            frame.layerAdapter.notifyItemRangeChanged(start, count);
+            if (start > 0)
+                frame.layerAdapter.notifyItemRangeChanged(0, start, LayerAdapter.Payload.LEVEL);
+            if (stop < size)
+                frame.layerAdapter.notifyItemRangeChanged(stop, size - stop, LayerAdapter.Payload.LEVEL);
         });
     };
 
@@ -1044,7 +1048,6 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         layerList.rvLayerList.post(() -> {
             frame.layerAdapter.notifyItemChanged(unselectedPos, LayerAdapter.Payload.SELECTED);
             frame.layerAdapter.notifyItemChanged(position, LayerAdapter.Payload.SELECTED);
-            layerList.rvLayerList.post(frame.layerAdapter::notifyLayerTreeChanged);
         });
     };
 
@@ -1340,7 +1343,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                     onStartMultiTouch();
                     isShapeStopped = true;
                     undo();
-                    if (lastMerged == null) mergeLayersEntire();
+                    if (lastMerged == null || lastMerged.isRecycled()) mergeLayersEntire();
                 }
                 onIVTouchWithZoomToolListener.onIVTouch(v, event);
             }
@@ -1359,10 +1362,12 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
             }
 
             final Bitmap bitmap = layer.history.getCurrent();
-            MainActivity.this.bitmap.recycle();
-            MainActivity.this.bitmap = bitmap;
-            layer.bitmap = bitmap;
-            canvas = new Canvas(bitmap);
+            synchronized (this) {
+                MainActivity.this.bitmap.recycle();
+                MainActivity.this.bitmap = bitmap;
+                layer.bitmap = bitmap;
+                canvas = new Canvas(bitmap);
+            }
 
             eraseBitmapAndInvalidateView(previewBitmap, activityMain.canvas.ivPreview);
             clearStatus();
@@ -1583,7 +1588,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                     paint.setColor(color);
                     activityMain.vForegroundColor.setBackgroundColor(color);
                     activityMain.tvStatus.setText(String.format(
-                            getString(R.string.state_eyedropper_imprecise, Settings.INST.argbCompFormat()),
+                            getString(R.string.state_eyedropper_imprecise, Settings.INST.colorIntCompFormat()),
                             bx, by, Color.alpha(color), Color.red(color), Color.green(color), Color.blue(color)));
                 }
                 case MotionEvent.ACTION_CANCEL, MotionEvent.ACTION_UP -> clearStatus();
@@ -2731,9 +2736,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                             final float x = event.getX(), y = event.getY();
                             activityMain.tvStatus.setText(getString(R.string.coordinates,
                                     toBitmapX(x), toBitmapY(y)));
-                            if (lastMerged == null) {
-                                mergeLayersEntire();
-                            }
+                            if (lastMerged == null) mergeLayersEntire();
                             dx = x;
                             dy = y;
                         }
@@ -3068,12 +3071,12 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
             selectLayer(position);
             if (ssdLayerList != null) {
                 layerList.rvLayerList.post(() -> {
-                    if (frame.selectedLayerIndex < frame.layers.size() - 1) {
+                    if (frame.selectedLayerIndex < frame.layers.size() - 1)
                         frame.layerAdapter.notifyItemChanged(frame.selectedLayerIndex, LayerAdapter.Payload.SELECTED);
-                    }
                     frame.layerAdapter.notifyItemInserted(position);
                     frame.layerAdapter.notifyItemRangeChanged(position + 1, frame.layers.size() - position);
-                    layerList.rvLayerList.post(frame.layerAdapter::notifyLayerTreeChanged);
+                    if (position > 0)
+                        frame.layerAdapter.notifyItemRangeChanged(0, position, LayerAdapter.Payload.LEVEL);
                 });
             }
         }
@@ -3203,7 +3206,8 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
             layerList.rvLayerList.post(() -> {
                 frame.layerAdapter.notifyItemRemoved(position);
                 frame.layerAdapter.notifyItemRangeChanged(posToSelect, frame.layers.size() - posToSelect);
-                layerList.rvLayerList.post(frame.layerAdapter::notifyLayerTreeChanged);
+                if (position > 0)
+                    frame.layerAdapter.notifyItemRangeChanged(0, position, LayerAdapter.Payload.LEVEL);
             });
         } else {
             closeFrame(project.selectedFrameIndex);
@@ -3441,10 +3445,10 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                 background.getWidth(), background.getHeight());
 
         runOnUiThread(() -> {
+            if (lastMerged == null || lastMerged.isRecycled()) return;
             eraseBitmap(viewBitmap);
-            if (!vs.isEmpty()) {
+            if (!vs.isEmpty())
                 drawBitmapOntoCanvas(viewCanvas, lastMerged, translationX, translationY, vs);
-            }
             activityMain.canvas.iv.invalidate();
         });
     }
@@ -4313,7 +4317,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                         .setOnCancelListener(dialog -> clearStatus(), false)
                         .show();
                 activityMain.tvStatus.setText(String.format(
-                        getString(R.string.state_alpha, Settings.INST.argbCompFormat()),
+                        getString(R.string.state_alpha, Settings.INST.colorIntCompFormat()),
                         layer.paint.getAlpha()));
             }
             case R.id.i_layer_blend_mode_clear,
@@ -4374,7 +4378,9 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                 }
                 Layers.levelDown(frame.layers, frame.selectedLayerIndex);
                 frame.computeLayerTree();
-                frame.layerAdapter.notifyLayerTreeChanged();
+                layerList.rvLayerList.post(() -> {
+                    frame.layerAdapter.notifyItemRangeChanged(0, frame.layers.size(), LayerAdapter.Payload.LEVEL);
+                });
                 drawBitmapOntoView(true);
             }
             case R.id.i_layer_delete -> closeLayer(frame.selectedLayerIndex);
@@ -4389,15 +4395,12 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                     }
                 }
                 if (!layer.visible) {
-                    layerList.rvLayerList.post(() -> frame.layerAdapter.notifyDataSetChanged());
+                    layerList.rvLayerList.post(frame.layerAdapter::notifyDataSetChanged);
                     closeLayer(frame.selectedLayerIndex);
                 } else {
                     frame.computeLayerTree();
                     selectLayer(frame.selectedLayerIndex);
-                    layerList.rvLayerList.post(() -> {
-                        frame.layerAdapter.notifyDataSetChanged();
-                        layerList.rvLayerList.post(frame.layerAdapter::notifyLayerTreeChanged);
-                    });
+                    layerList.rvLayerList.post(frame.layerAdapter::notifyDataSetChanged);
                 }
             }
             case R.id.i_layer_duplicate -> {
@@ -4589,9 +4592,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                 activityMain.tvStatus.setText(getString(R.string.state_threshold, (int) threshold));
             }
             case R.id.i_layer_group -> {
-                if (!layer.visible) {
-                    break;
-                }
+                if (!layer.visible) break;
                 final int pos = frame.group();
                 final Bitmap bg = frame.getBackgroundLayer().bitmap;
                 final Bitmap bm = Bitmap.createBitmap(bg.getWidth(), bg.getHeight(), bg.getConfig(), bg.hasAlpha(), bg.getColorSpace());
@@ -4600,20 +4601,25 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                 layerList.rvLayerList.post(() -> {
                     frame.layerAdapter.notifyItemInserted(pos);
                     frame.layerAdapter.notifyItemRangeChanged(pos + 1, frame.layers.size() - pos - 1);
-                    layerList.rvLayerList.post(frame.layerAdapter::notifyLayerTreeChanged);
+                    if (pos > 0)
+                        frame.layerAdapter.notifyItemRangeChanged(0, pos, LayerAdapter.Payload.LEVEL);
                 });
                 drawBitmapOntoView(true);
             }
             case R.id.i_layer_level_down -> {
                 layer.levelDown();
                 frame.computeLayerTree();
-                frame.layerAdapter.notifyLayerTreeChanged();
+                layerList.rvLayerList.post(() -> {
+                    frame.layerAdapter.notifyItemRangeChanged(0, frame.layers.size(), LayerAdapter.Payload.LEVEL);
+                });
                 drawBitmapOntoView(true);
             }
             case R.id.i_layer_level_up -> {
                 layer.levelUp();
                 frame.computeLayerTree();
-                frame.layerAdapter.notifyLayerTreeChanged();
+                layerList.rvLayerList.post(() -> {
+                    frame.layerAdapter.notifyItemRangeChanged(0, frame.layers.size(), LayerAdapter.Payload.LEVEL);
+                });
                 drawBitmapOntoView(true);
             }
             case R.id.i_layer_merge_alpha -> {
@@ -4650,7 +4656,8 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                 layerList.rvLayerList.post(() -> {
                     frame.layerAdapter.notifyItemRemoved(pos);
                     frame.layerAdapter.notifyItemRangeChanged(pos, frame.layers.size() - pos);
-                    layerList.rvLayerList.post(frame.layerAdapter::notifyLayerTreeChanged);
+                    if (pos > 0)
+                        frame.layerAdapter.notifyItemRangeChanged(0, pos, LayerAdapter.Payload.LEVEL);
                 });
                 addToHistory();
             }
@@ -5099,7 +5106,6 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
             }
             case R.id.i_layer_list -> {
                 frame.layerAdapter.notifyDataSetChanged();
-                layerList.rvLayerList.post(frame.layerAdapter::notifyLayerTreeChanged);
 
                 ssdLayerList = new SideSheetDialog(this);
                 ssdLayerList.setTitle(R.string.layers);
@@ -5595,7 +5601,6 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
 
         selectLayer(frame.selectedLayerIndex);
         frame.layerAdapter.notifyDataSetChanged();
-        layerList.rvLayerList.post(frame.layerAdapter::notifyLayerTreeChanged);
     }
 
     @SuppressLint("NonConstantResourceId")
@@ -5651,7 +5656,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
 
     @SuppressLint("ClickableViewAccessibility")
     public void setArgbColorType() {
-        onIVTouchWithEyedropperListener = Settings.INST.argbColorType()
+        onIVTouchWithEyedropperListener = Settings.INST.colorRep()
                 ? onIVTouchWithPreciseEyedropperListener : onIVTouchWithImpreciseEyedropperListener;
         if (activityMain != null && activityMain.tools.btgTools.getCheckedButtonId() == R.id.b_eyedropper) {
             activityMain.canvas.flIv.setOnTouchListener(onIVTouchWithEyedropperListener);
@@ -5889,7 +5894,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
 
     private void updateBrush() {
         switch (brush.tipShape) {
-            case BRUSH -> brush.setToBrush(paint.getColorLong());
+            case PRESET_BRUSH -> brush.setToBrush(paint.getColorLong());
             case REF -> updateReference();
         }
     }

@@ -204,9 +204,9 @@ public class CurvesDialog {
         cv.drawLine(192.0f, 0.0f, 192.0f, 256.0f, normalPaint);
         cv.drawLine(256.0f, 0.0f, 256.0f, 256.0f, normalPaint);
 
-        final String format = Settings.INST.argbCompFormat();
-        final String min = Settings.INST.argbColorType() ? "Min" : String.format(format, 0x00);
-        final String max = Settings.INST.argbColorType() ? "Max" : String.format(format, 0xFF);
+        final String format = Settings.INST.colorIntCompFormat();
+        final String min = Settings.INST.colorRep() ? "Min" : String.format(format, 0x00);
+        final String max = Settings.INST.colorRep() ? "Max" : String.format(format, 0xFF);
         normalPaint.setTextAlign(Paint.Align.LEFT);
         cv.drawText(min, 0.0f, grid.getHeight(), normalPaint);
         cv.drawText(max, 0.0f, -normalPaint.getFontMetrics().ascent, normalPaint);

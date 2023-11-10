@@ -78,9 +78,9 @@ class HsvColorPicker extends ColorPicker {
 
         deployNeutralFunction(onColorPickListener, oldColor, neutralFunction);
         hasAlpha = Settings.INST.pickInHsv();
-        type = Settings.INST.argbColorType();
-        alphaFormat = type ? null : Settings.INST.argbCompFormat();
-        alphaRadix = type ? 10 : Settings.INST.argbCompRadix();
+        type = Settings.INST.colorRep();
+        alphaFormat = type ? null : Settings.INST.colorIntCompFormat();
+        alphaRadix = type ? 10 : Settings.INST.colorIntCompRadix();
     }
 
     private void drawHue() {

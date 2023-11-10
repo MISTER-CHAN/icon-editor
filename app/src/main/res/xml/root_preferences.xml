@@ -33,18 +33,18 @@
 
         <ListPreference
             app:defaultValue="i"
-            app:entries="@array/type_entries"
-            app:entryValues="@array/type_values"
-            app:key="act"
+            app:entries="@array/color_rep_entries"
+            app:entryValues="@array/color_rep_values"
+            app:key="cr"
             app:singleLineTitle="false"
-            app:title="@string/color_type"
+            app:title="@string/color_representation"
             app:useSimpleSummaryProvider="true" />
 
         <ListPreference
             app:defaultValue="16"
             app:entries="@array/radix_entries"
             app:entryValues="@array/radix_values"
-            app:key="acr"
+            app:key="cir"
             app:singleLineTitle="false"
             app:title="@string/component_numeral_system"
             app:useSimpleSummaryProvider="true" />

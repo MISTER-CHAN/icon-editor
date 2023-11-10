@@ -52,6 +52,7 @@
     <string name="color_picker">拾色器</string>
     <string name="color_range">颜色范围</string>
     <string name="color_replace">颜色替换</string>
+    <string name="color_representation">颜色表示</string>
     <string name="color_space">色彩空间</string>
     <string name="color_type">颜色类型</string>
     <string name="colors_">颜色：</string>
@@ -131,7 +132,6 @@
     <string name="gradient">渐变</string>
     <string name="gradient_line">渐变线</string>
     <string name="group">组</string>
-    <string name="hardware"><strike>硬件</strike></string>
     <string name="has_alpha">有 Alpha</string>
     <string name="height">高度</string>
     <string name="help">帮助</string>
@@ -231,6 +231,7 @@
     <string name="posterize">海报化</string>
     <string name="precise">精密</string>
     <string name="preferences">偏好</string>
+    <string name="preset_brush">预设笔刷</string>
     <string name="properties">属性</string>
     <string name="quality">品质</string>
     <string name="quick_add_layer_mask">快速添加图层蒙版</string>

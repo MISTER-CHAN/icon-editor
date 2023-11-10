@@ -17,11 +17,11 @@
     <string name="author">作者</string>
     <string name="automatic">自動</string>
     <string name="automatically_tell_has_alpha">自動吿知有 Alpha</string>
-    <string name="automatically_tell_bitmap_pixels_contain_alpha_values">自動向二進制位圖吿知像素包含 Alpha 値</string>
+    <string name="automatically_tell_bitmap_pixels_contain_alpha_values">自動向位圖吿知像素包含 Alpha 値</string>
     <string name="background">背景</string>
     <string name="background_color">底色</string>
     <string name="below_background">背景底下</string>
-    <string name="bitmap_opaque_can_take_faster_drawing_case">一個不透明二進制位圖具有更快繪畫速度</string>
+    <string name="bitmap_opaque_can_take_faster_drawing_case">一個不透明位圖具有更快繪畫速度</string>
     <string name="blend_mode">混合模式</string>
     <string name="blur_radius">模糊半徑</string>
     <string name="bold">粗體</string>
@@ -52,6 +52,7 @@
     <string name="color_picker">拾色器</string>
     <string name="color_range">顏色範圍</string>
     <string name="color_replace">顏色取代</string>
+    <string name="color_representation">顏色表示</string>
     <string name="color_space">色彩空間</string>
     <string name="color_type">顏色類型</string>
     <string name="colors_">顏色：</string>
@@ -131,7 +132,6 @@
     <string name="gradient">漸變</string>
     <string name="gradient_line">漸變線</string>
     <string name="group">組</string>
-    <string name="hardware"><strike>硬件</strike></string>
     <string name="has_alpha">有 Alpha</string>
     <string name="height">高度</string>
     <string name="help">幫助</string>
@@ -231,6 +231,7 @@
     <string name="posterize">海報化</string>
     <string name="precise">精密</string>
     <string name="preferences">偏好</string>
+    <string name="preset_brush">預設筆刷</string>
     <string name="properties">屬性</string>
     <string name="quality">品質</string>
     <string name="quick_add_layer_mask">快速新增圖層遮罩</string>

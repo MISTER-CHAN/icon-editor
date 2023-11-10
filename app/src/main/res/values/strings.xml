@@ -59,6 +59,7 @@
     <string name="color_picker">Color Picker</string>
     <string name="color_range">Color Range</string>
     <string name="color_replace">Color Replace</string>
+    <string name="color_representation">Color Representation</string>
     <string name="color_space">Color Space</string>
     <string name="color_type">Color Type</string>
     <string name="colors_">Colors:</string>
@@ -146,7 +147,6 @@
     <string name="h" translatable="false">H</string>
     <string name="h_max" translatable="false">H<sub>max</sub></string>
     <string name="h_min" translatable="false">H<sub>min</sub></string>
-    <string name="hardware"><strike>Hardware</strike></string>
     <string name="has_alpha">Has Alpha</string>
     <string name="height">Height</string>
     <string name="help">Help</string>
@@ -260,6 +260,7 @@
     <string name="posterize">Posterize</string>
     <string name="precise">Precise</string>
     <string name="preferences">Preferences</string>
+    <string name="preset_brush">Preset Brush</string>
     <string name="properties">Properties</string>
     <string name="quality">Quality</string>
     <string name="quick_add_layer_mask">Quick Add a Layer Mask</string>
@@ -395,13 +396,14 @@
     <string name="zoom">Zoom</string>
 
     <!-- Bitmap Configs -->
-    <string name="alpha_8" translatable="false">Alpha 8</string>
-    <string name="gray_8" translatable="false"><strike>Gray 8</strike></string>
-    <string name="rgb_565" translatable="false">RGB 565</string>
-    <string name="argb_4444" translatable="false">ARGB 4444</string>
-    <string name="argb_8888" translatable="false">ARGB 8888</string>
-    <string name="rgba_f16" translatable="false"><strike>RGBA F16</strike></string>
-    <string name="rgba_1010102" translatable="false"><strike>RGBA 1010102</strike></string>
+    <string name="alpha_8" translatable="false">Alpha_8</string>
+    <string name="gray_8" translatable="false"><strike>Gray_8</strike></string>
+    <string name="rgb_565" translatable="false">RGB_565</string>
+    <string name="argb_4444" translatable="false">ARGB_4444</string>
+    <string name="argb_8888" translatable="false">ARGB_8888</string>
+    <string name="rgba_f16" translatable="false"><strike>RGBA_F16</strike></string>
+    <string name="hardware" translatable="false"><strike>HARDWARE</strike></string>
+    <string name="rgba_1010102" translatable="false"><strike>RGBA_1010102</strike></string>
 
     <!-- Blend Modes -->
     <string name="destination">Destination</string>

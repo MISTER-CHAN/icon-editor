@@ -36,16 +36,19 @@ public class Layers {
         final Stack<LayerTree> stack = new Stack<>();
         LayerTree layerTree = new LayerTree();
         LayerTree.Node prev = layerTree.push(layers.get(layers.size() - 1), true);
+        prev.layer.displayingOperators = (prev.layer.getLevel() > 0 ? 0x1 : 0x0) << 30
+                | Math.max(0, prev.layer.getLevel() - 1);
 
         stack.push(layerTree);
         for (int i = layers.size() - 2; i >= 0; --i) {
-            final Layer l = layers.get(i);
+            final Layer layer = layers.get(i);
+            layer.displayingOperators = (layer.getLevel() > 0 ? 0x1 : 0x0) << 30;
 
             final Layer prevLayer = prev.layer;
-            final int levelDiff = l.getLevel() - prevLayer.getLevel();
+            final int levelDiff = layer.getLevel() - prevLayer.getLevel();
 
             if (levelDiff == 0) {
-                prev = stack.peek().push(l);
+                prev = stack.peek().push(layer);
 
             } else if (levelDiff > 0) {
                 LayerTree lt = null;
@@ -55,7 +58,8 @@ public class Layers {
                     prev = lt.push(prevLayer);
                     stack.push(lt);
                 }
-                prev = lt.push(l);
+                prevLayer.displayingOperators |= (prevLayer.getLevel() > 0 ? levelDiff : levelDiff - 1) << 20;
+                prev = lt.push(layer);
 
             } else /* if (levelDiff < 0) */ {
                 // If current level is lower than or equal to background's level
@@ -63,16 +67,19 @@ public class Layers {
                     for (int j = 0; j > levelDiff; --j) {
                         stack.pop();
                     }
-                    prev = stack.peek().push(l);
+                    prev = stack.peek().push(layer);
                 } else {
                     // Re-compute layer tree
                     stack.clear();
                     layerTree = stack.push(new LayerTree());
-                    prev = layerTree.push(l);
+                    prev = layerTree.push(layer);
                 }
+                prevLayer.displayingOperators |= (layer.getLevel() > 0 ? -levelDiff : -levelDiff - 1) << 10;
 
             }
         }
+        if (prev.layer.getLevel() > 1)
+            prev.layer.displayingOperators |= prev.layer.getLevel() - 1 << 10;
 
         return layerTree;
     }

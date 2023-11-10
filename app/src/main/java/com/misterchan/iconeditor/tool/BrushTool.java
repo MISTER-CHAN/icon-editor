@@ -10,7 +10,7 @@ import androidx.annotation.NonNull;
 
 public class BrushTool {
     public enum TipShape {
-        BRUSH, REF
+        PRESET_BRUSH, REF
     }
 
     private static final Paint PAINT = new Paint() {
@@ -23,7 +23,7 @@ public class BrushTool {
 
     private Bitmap src, dst, brush;
     public final Rect rect = new Rect();
-    public TipShape tipShape = TipShape.BRUSH;
+    public TipShape tipShape = TipShape.PRESET_BRUSH;
 
     public Bitmap bm() {
         return dst;
@@ -36,7 +36,7 @@ public class BrushTool {
     public void setToBrush(long color) {
         if (brush == null) return;
         set(brush, color);
-        tipShape = TipShape.BRUSH;
+        tipShape = TipShape.PRESET_BRUSH;
     }
 
     public void setToRef(Bitmap src, long color) {

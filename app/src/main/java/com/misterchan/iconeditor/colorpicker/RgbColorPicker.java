@@ -45,9 +45,9 @@ public class RgbColorPicker extends ColorPicker {
                 .setView(R.layout.color_picker_rgb);
 
         deployNeutralFunction(onColorPickListener, oldColor, neutralFunction);
-        type = Settings.INST.argbColorType();
-        format = type ? null : Settings.INST.argbCompFormat();
-        radix = type ? 10 : Settings.INST.argbCompRadix();
+        type = Settings.INST.colorRep();
+        format = type ? null : Settings.INST.colorIntCompFormat();
+        radix = type ? 10 : Settings.INST.colorIntCompRadix();
     }
 
     private void loadColor(@ColorInt int color, boolean hasAlpha) {

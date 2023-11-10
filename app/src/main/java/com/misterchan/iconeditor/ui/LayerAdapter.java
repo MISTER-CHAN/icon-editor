@@ -26,7 +26,7 @@ import java.util.List;
 public class LayerAdapter extends ItemMovableAdapter<LayerAdapter.ViewHolder> {
 
     public enum Payload {
-        NAME, SELECTED
+        LEVEL, NAME, SELECTED
     }
 
     protected static class ViewHolder extends RecyclerView.ViewHolder {
@@ -46,22 +46,43 @@ public class LayerAdapter extends ItemMovableAdapter<LayerAdapter.ViewHolder> {
     private CompoundButton.OnCheckedChangeListener ovcbccListener;
     private OnItemSelectedListener onItemSelectedListener;
     private OnItemSelectedListener onItemReselectedListener;
-    private RecyclerView recyclerView;
 
     {
         context = Settings.INST.mainActivity;
         final Resources resources = context.getResources();
         dim64Dip = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 64.0f, resources.getDisplayMetrics());
         final Resources.Theme theme = context.getTheme();
-        final TypedValue colorPrimaryTv = new TypedValue(), textColorPrimaryTv = new TypedValue();
-        theme.resolveAttribute(android.R.attr.colorPrimary, colorPrimaryTv, true);
-        theme.resolveAttribute(android.R.attr.textColorPrimary, textColorPrimaryTv, true);
-        colorPrimary = resources.getColor(colorPrimaryTv.resourceId, theme);
-        textColorPrimary = resources.getColor(textColorPrimaryTv.resourceId, theme);
+        final TypedValue colorPrimaryTV = new TypedValue(), textColorPrimaryTV = new TypedValue();
+        theme.resolveAttribute(android.R.attr.colorPrimary, colorPrimaryTV, true);
+        theme.resolveAttribute(android.R.attr.textColorPrimary, textColorPrimaryTV, true);
+        colorPrimary = resources.getColor(colorPrimaryTV.resourceId, theme);
+        textColorPrimary = resources.getColor(textColorPrimaryTV.resourceId, theme);
     }
 
     public LayerAdapter(Frame frame) {
         this.frame = frame;
+    }
+
+    private void displayOperators(ViewHolder holder, int operators) {
+        holder.binding.vLowerLevel.setVisibility(operators >> 30 > 0 ? View.VISIBLE : View.GONE);
+        holder.binding.llParentBg.removeAllViews();
+        for (int i = 0; i < (operators >> 20 & 0x3FF); ++i) {
+            final View v = LayoutInflater.from(context).inflate(R.layout.bracket, holder.binding.llParentBg, false);
+            v.setBackground(AppCompatResources.getDrawable(context, R.drawable.bracket_vert_open_np));
+            holder.binding.llParentBg.addView(v);
+        }
+        holder.binding.llFgLeaf.removeAllViews();
+        for (int i = 0; i < (operators >> 10 & 0x3FF); ++i) {
+            final View v = LayoutInflater.from(context).inflate(R.layout.bracket, holder.binding.llFgLeaf, false);
+            v.setBackground(AppCompatResources.getDrawable(context, R.drawable.bracket_vert_close_np));
+            holder.binding.llFgLeaf.addView(v);
+        }
+        holder.binding.llRoot.removeAllViews();
+        for (int i = 0; i < (operators & 0x3FF); ++i) {
+            final View v = LayoutInflater.from(context).inflate(R.layout.bracket, holder.binding.llRoot, false);
+            v.setBackground(AppCompatResources.getDrawable(context, R.drawable.bracket_vert_open_np));
+            holder.binding.llRoot.addView(v);
+        }
     }
 
     @Override
@@ -74,63 +95,6 @@ public class LayerAdapter extends ItemMovableAdapter<LayerAdapter.ViewHolder> {
         return frame.layers.size();
     }
 
-    public void notifyLayerTreeChanged() {
-        if (recyclerView == null) {
-            return;
-        }
-        Layer lastLayer = null;
-        ViewHolder lastHolder = null;
-        for (int i = frame.layers.size() - 1; i >= 0; --i) {
-            final Layer layer = frame.layers.get(i);
-            final ViewHolder holder = (ViewHolder) recyclerView.findViewHolderForAdapterPosition(i);
-            if (holder == null) {
-                return;
-            }
-
-            holder.binding.vLowerLevel.setVisibility(layer.getLevel() > 0 ? View.VISIBLE : View.GONE);
-            holder.binding.llRoot.removeAllViews();
-            holder.binding.llParentBg.removeAllViews();
-            holder.binding.llFgLeaf.removeAllViews();
-            if (lastLayer == null) {
-                for (int l = 0; l < layer.getLevel() - 1; ++l) {
-                    final View v = LayoutInflater.from(context).inflate(R.layout.bracket, holder.binding.llRoot, false);
-                    v.setBackground(AppCompatResources.getDrawable(context, R.drawable.bracket_vert_open_np));
-                    holder.binding.llRoot.addView(v);
-                }
-            } else {
-                final int levelDiff = layer.getLevel() - lastLayer.getLevel();
-                if (levelDiff > 0) {
-                    for (int l = 0; l < (lastLayer.getLevel() > 0 ? levelDiff : levelDiff - 1); ++l) {
-                        final View v = LayoutInflater.from(context).inflate(R.layout.bracket, lastHolder.binding.llParentBg, false);
-                        v.setBackground(AppCompatResources.getDrawable(context, R.drawable.bracket_vert_open_np));
-                        lastHolder.binding.llParentBg.addView(v);
-                    }
-                } else if (levelDiff < 0) {
-                    for (int l = 0; l < (layer.getLevel() > 0 ? -levelDiff : -levelDiff - 1); ++l) {
-                        final View v = LayoutInflater.from(context).inflate(R.layout.bracket, lastHolder.binding.llFgLeaf, false);
-                        v.setBackground(AppCompatResources.getDrawable(context, R.drawable.bracket_vert_close_np));
-                        lastHolder.binding.llFgLeaf.addView(v);
-                    }
-                }
-            }
-            lastLayer = layer;
-            lastHolder = holder;
-        }
-        if (lastLayer != null) {
-            for (int l = 0; l < lastLayer.getLevel() - 1; ++l) {
-                final View v = LayoutInflater.from(context).inflate(R.layout.bracket, lastHolder.binding.llFgLeaf, false);
-                v.setBackground(AppCompatResources.getDrawable(context, R.drawable.bracket_vert_close_np));
-                lastHolder.binding.llFgLeaf.addView(v);
-            }
-        }
-    }
-
-    @Override
-    public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
-        super.onAttachedToRecyclerView(recyclerView);
-        this.recyclerView = recyclerView;
-    }
-
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position, @NonNull List<Object> payloads) {
         if (payloads.isEmpty()) {
@@ -141,11 +105,10 @@ public class LayerAdapter extends ItemMovableAdapter<LayerAdapter.ViewHolder> {
             if (!(o instanceof final Payload payload)) {
                 continue;
             }
+            final Layer layer = frame.layers.get(position);
             switch (payload) {
-                case NAME -> {
-                    final Layer layer = frame.layers.get(position);
-                    holder.binding.tvName.setText(layer.name);
-                }
+                case LEVEL -> displayOperators(holder, layer.displayingOperators);
+                case NAME -> holder.binding.tvName.setText(layer.name);
                 case SELECTED -> setLayerSelected(holder, position);
             }
         }
@@ -180,6 +143,7 @@ public class LayerAdapter extends ItemMovableAdapter<LayerAdapter.ViewHolder> {
         holder.binding.ivThumbnail.setImageBitmap(layer.bitmap);
         holder.binding.tvName.setText(layer.name);
         setLayerSelected(holder, position);
+        displayOperators(holder, layer.displayingOperators);
     }
 
     @NonNull
@@ -187,12 +151,6 @@ public class LayerAdapter extends ItemMovableAdapter<LayerAdapter.ViewHolder> {
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         final ItemLayerBinding binding = ItemLayerBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
         return new LayerAdapter.ViewHolder(binding);
-    }
-
-    @Override
-    public void onDetachedFromRecyclerView(@NonNull RecyclerView recyclerView) {
-        super.onDetachedFromRecyclerView(recyclerView);
-        this.recyclerView = null;
     }
 
     private void setLayerSelected(ViewHolder holder, int position) {

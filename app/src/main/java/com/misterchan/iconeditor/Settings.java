@@ -10,10 +10,10 @@ public class Settings {
     private static final String FORMAT_02X = "%02X";
     private static final String FORMAT_D = "%d";
 
-    public static final String KEY_ACR = "acr"; // ARGB Color Int Component Radix
-    public static final String KEY_ACT = "act"; // ARGB Color Type
     private static final String KEY_ASHA = "asha"; // Automatically Set Has Alpha
     public static final String KEY_CFU = "cfu"; // Check for Updates
+    public static final String KEY_CIR = "cir"; // Color Int Component Radix
+    public static final String KEY_CR = "cr"; // Color Representation
     private static final String KEY_FB = "fb"; // Filter Bitmap
     public static final String KEY_FL = "fl"; // Frame List
     public static final String KEY_HMS = "hms"; // History Max Size
@@ -22,32 +22,32 @@ public class Settings {
     private static final String KEY_NLL = "nll"; // New Layer Level
     public static final String KEY_PIH = "pih"; // Pick in HSV
 
-    private boolean argbColorType = false;
     private boolean autoSetHasAlpha = false;
+    private boolean colorRep = false;
     private int historyMaxSize = 50;
     private boolean newLayerLevel = false;
     private boolean pickInHsv = false;
-    private int argbCompRadix = 16;
+    private int colorIntCompRadix = 16;
     public MainActivity mainActivity;
-    private String argbCompFormat = FORMAT_02X;
+    private String colorIntCompFormat = FORMAT_02X;
 
     private Settings() {
     }
 
-    public boolean argbColorType() {
-        return argbColorType;
-    }
-
-    public String argbCompFormat() {
-        return argbCompFormat;
-    }
-
-    public int argbCompRadix() {
-        return argbCompRadix;
-    }
-
     public boolean autoSetHasAlpha() {
         return autoSetHasAlpha;
+    }
+
+    public String colorIntCompFormat() {
+        return colorIntCompFormat;
+    }
+
+    public int colorIntCompRadix() {
+        return colorIntCompRadix;
+    }
+
+    public boolean colorRep() {
+        return colorRep;
     }
 
     public int historyMaxSize() {
@@ -63,8 +63,8 @@ public class Settings {
     }
 
     public void update(SharedPreferences preferences) {
-        update(preferences, KEY_ACR);
-        update(preferences, KEY_ACT);
+        update(preferences, KEY_CIR);
+        update(preferences, KEY_CR);
         update(preferences, KEY_ASHA);
         update(preferences, KEY_FB);
         update(preferences, KEY_HMS);
@@ -75,19 +75,19 @@ public class Settings {
 
     public void update(SharedPreferences preferences, String key) {
         switch (key) {
-            case KEY_ACR -> {
+            case KEY_ASHA -> autoSetHasAlpha = preferences.getBoolean(KEY_ASHA, false);
+            case KEY_CIR -> {
                 try {
-                    argbCompRadix = Integer.parseUnsignedInt(preferences.getString(KEY_ACR, "16"));
+                    colorIntCompRadix = Integer.parseUnsignedInt(preferences.getString(KEY_CIR, "16"));
                 } catch (NumberFormatException e) {
-                    argbCompRadix = 16;
+                    colorIntCompRadix = 16;
                 }
-                argbCompFormat = argbCompRadix == 16 ? FORMAT_02X : FORMAT_D;
+                colorIntCompFormat = colorIntCompRadix == 16 ? FORMAT_02X : FORMAT_D;
             }
-            case KEY_ACT -> {
-                argbColorType = "l".equals(preferences.getString(KEY_ACT, "i"));
+            case KEY_CR -> {
+                colorRep = "l".equals(preferences.getString(KEY_CR, "i"));
                 mainActivity.setArgbColorType();
             }
-            case KEY_ASHA -> autoSetHasAlpha = preferences.getBoolean(KEY_ASHA, false);
             case KEY_FB -> mainActivity.setFilterBitmap(preferences.getBoolean(KEY_FB, false));
             case KEY_FL ->
                     mainActivity.setFrameListMenuItemVisible(preferences.getBoolean(KEY_FL, false));

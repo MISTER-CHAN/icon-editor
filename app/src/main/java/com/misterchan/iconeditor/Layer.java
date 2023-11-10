@@ -43,11 +43,22 @@ public class Layer {
     @Size(8)
     public float[] lighting;
 
-    @Size(5)
-    public int[][] curves;
-
     @Size(4)
     public float[] deltaHs;
+
+    /**
+     * <table>
+     *     <tr><th>Operator &nbsp;</th><th>Bits</th></tr>
+     *     <tr><td>Root &nbsp;</td><td>10</td></tr>
+     *     <tr><td>Foreground Leaf &nbsp;</td><td>10</td></tr>
+     *     <tr><td>Parent Background &nbsp;</td><td>10</td></tr>
+     *     <tr><td>Lower Level &nbsp;</td><td>1</td></tr>
+     * </table>
+     */
+    public int displayingOperators;
+
+    @Size(5)
+    public int[][] curves;
 
     public final Paint paint;
 
