@@ -68,19 +68,19 @@ public class LayerAdapter extends ItemMovableAdapter<LayerAdapter.ViewHolder> {
         holder.binding.llParentBg.removeAllViews();
         for (int i = 0; i < (operators >> 20 & 0x3FF); ++i) {
             final View v = LayoutInflater.from(context).inflate(R.layout.bracket, holder.binding.llParentBg, false);
-            v.setBackground(AppCompatResources.getDrawable(context, R.drawable.bracket_vert_open_np));
+            v.setBackground(AppCompatResources.getDrawable(context, R.drawable.bracket_vert_open));
             holder.binding.llParentBg.addView(v);
         }
         holder.binding.llFgLeaf.removeAllViews();
         for (int i = 0; i < (operators >> 10 & 0x3FF); ++i) {
             final View v = LayoutInflater.from(context).inflate(R.layout.bracket, holder.binding.llFgLeaf, false);
-            v.setBackground(AppCompatResources.getDrawable(context, R.drawable.bracket_vert_close_np));
+            v.setBackground(AppCompatResources.getDrawable(context, R.drawable.bracket_vert_close));
             holder.binding.llFgLeaf.addView(v);
         }
         holder.binding.llRoot.removeAllViews();
         for (int i = 0; i < (operators & 0x3FF); ++i) {
             final View v = LayoutInflater.from(context).inflate(R.layout.bracket, holder.binding.llRoot, false);
-            v.setBackground(AppCompatResources.getDrawable(context, R.drawable.bracket_vert_open_np));
+            v.setBackground(AppCompatResources.getDrawable(context, R.drawable.bracket_vert_open));
             holder.binding.llRoot.addView(v);
         }
     }
