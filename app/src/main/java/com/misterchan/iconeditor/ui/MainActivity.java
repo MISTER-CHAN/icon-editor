@@ -137,7 +137,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.locks.Lock;
 
 public class MainActivity extends AppCompatActivity implements SelectionTool.CoordinateConversions {
 
@@ -1340,7 +1339,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
             } else if (pointerCount <= 2) {
                 if ((action & MotionEvent.ACTION_MASK) == MotionEvent.ACTION_POINTER_DOWN && !multiTouch) {
                     multiTouch = true;
-                    onStartMultiTouch();
+                    onMultiTouchBegin();
                     isShapeStopped = true;
                     undo();
                     if (lastMerged == null || lastMerged.isRecycled()) mergeLayersEntire();
@@ -1349,11 +1348,15 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
             }
             if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL) {
                 if (multiTouch) multiTouch = false;
-                else BitmapUtils.recycle(lastMerged);
+                else onTouchEnd();
             }
         }
 
-        protected void onStartMultiTouch() {
+        protected void onMultiTouchBegin() {
+        }
+
+        protected void onTouchEnd() {
+            BitmapUtils.recycle(lastMerged);
         }
 
         protected void undo() {
@@ -1432,7 +1435,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         }
 
         @Override
-        protected void onStartMultiTouch() {
+        protected void onMultiTouchBegin() {
             velocityTracker.recycle();
         }
     };
@@ -1680,7 +1683,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         }
 
         @Override
-        public void onStartMultiTouch() {
+        public void onMultiTouchBegin() {
             paint.setShader(null);
         }
     };
@@ -1744,7 +1747,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         }
 
         @Override
-        public void onStartMultiTouch() {
+        public void onMultiTouchBegin() {
             paint.setShader(null);
         }
     };
@@ -2021,6 +2024,10 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                     }
                 }
             }
+        }
+
+        @Override
+        protected void onTouchEnd() {
         }
 
         @Override
