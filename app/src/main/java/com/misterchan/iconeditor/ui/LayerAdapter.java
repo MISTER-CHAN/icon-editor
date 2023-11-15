@@ -23,7 +23,7 @@ import com.misterchan.iconeditor.listener.OnCBCheckedListener;
 
 import java.util.List;
 
-public class LayerAdapter extends ItemMovableAdapter<LayerAdapter.ViewHolder> {
+public class LayerAdapter extends MovableItemAdapter<LayerAdapter.ViewHolder> {
 
     public enum Payload {
         LEVEL, NAME, SELECTED

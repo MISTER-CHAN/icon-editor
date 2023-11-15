@@ -975,7 +975,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         onThresholdChangeListener.onChange(null, threshold, true);
     };
 
-    private final ItemMovableAdapter.OnItemMoveListener onFrameItemMoveListener = (fromPos, toPos) -> {
+    private final MovableItemAdapter.OnItemMoveListener onFrameItemMoveListener = (fromPos, toPos) -> {
         if (project.selectedFrameIndex == fromPos) {
             project.selectedFrameIndex = toPos;
         } else if (project.selectedFrameIndex == toPos) {
@@ -991,7 +991,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         });
     };
 
-    private final ItemMovableAdapter.OnItemMoveListener onLayerItemMoveListener = (fromPos, toPos) -> {
+    private final MovableItemAdapter.OnItemMoveListener onLayerItemMoveListener = (fromPos, toPos) -> {
         if (frame.selectedLayerIndex == fromPos) {
             frame.selectedLayerIndex = toPos;
         } else if (frame.selectedLayerIndex == toPos) {
@@ -1018,7 +1018,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         });
     };
 
-    private final ItemMovableAdapter.OnItemSelectedListener onFrameItemSelectedListener = (view, position) -> {
+    private final MovableItemAdapter.OnItemSelectedListener onFrameItemSelectedListener = (view, position) -> {
         final int unselectedPos = project.selectedFrameIndex;
         project.frames.get(unselectedPos).updateThumbnail();
         selectFrame(position);
@@ -1028,7 +1028,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         });
     };
 
-    private final ItemMovableAdapter.OnItemSelectedListener onFrameItemReselectedListener = (view, position) -> {
+    private final MovableItemAdapter.OnItemSelectedListener onFrameItemReselectedListener = (view, position) -> {
         final PopupMenu popupMenu = new PopupMenu(this, view);
         final Menu menu = popupMenu.getMenu();
         MenuCompat.setGroupDividerEnabled(menu, true);
@@ -1041,7 +1041,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
     };
 
     @SuppressLint("NonConstantResourceId")
-    private final ItemMovableAdapter.OnItemSelectedListener onLayerItemSelectedListener = (view, position) -> {
+    private final MovableItemAdapter.OnItemSelectedListener onLayerItemSelectedListener = (view, position) -> {
         final int unselectedPos = frame.selectedLayerIndex;
         selectLayer(position);
         layerList.rvLayerList.post(() -> {
@@ -1050,7 +1050,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         });
     };
 
-    private final ItemMovableAdapter.OnItemSelectedListener onLayerItemReselectedListener = (view, position) -> {
+    private final MovableItemAdapter.OnItemSelectedListener onLayerItemReselectedListener = (view, position) -> {
         final PopupMenu popupMenu = new PopupMenu(this, view);
         final Menu menu = popupMenu.getMenu();
         MenuCompat.setGroupDividerEnabled(menu, true);
@@ -4170,10 +4170,10 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         }
 
         frameList.rvFrameList.setItemAnimator(new DefaultItemAnimator());
-        ItemMovableAdapter.createItemMoveHelper(onFrameItemMoveListener).attachToRecyclerView(frameList.rvFrameList);
+        MovableItemAdapter.createItemMoveHelper(onFrameItemMoveListener).attachToRecyclerView(frameList.rvFrameList);
 
         layerList.rvLayerList.setItemAnimator(new DefaultItemAnimator());
-        ItemMovableAdapter.createItemMoveHelper(onLayerItemMoveListener).attachToRecyclerView(layerList.rvLayerList);
+        MovableItemAdapter.createItemMoveHelper(onLayerItemMoveListener).attachToRecyclerView(layerList.rvLayerList);
 
         activityMain.optionsBrush.tietSoftness.setText(String.valueOf(softness));
         activityMain.optionsEraser.tietBlurRadius.setText(String.valueOf(0.0f));
@@ -4195,7 +4195,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         colorAdapter = new ColorAdapter(palette);
         initColorAdapter();
         activityMain.rvSwatches.setAdapter(colorAdapter);
-        ItemMovableAdapter.createItemMoveHelper(null).attachToRecyclerView(activityMain.rvSwatches);
+        MovableItemAdapter.createItemMoveHelper(null).attachToRecyclerView(activityMain.rvSwatches);
 
         brush.setBrush(BitmapUtils.drawableToBitmap(this, R.drawable.brush_tip_shape));
 
@@ -5705,7 +5705,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         }
     }
 
-    private void setQuality(Project project, DirectorySelector.OnApplyFileNameCallback callback) {
+    private void setQuality(Project project, DirectorySelector.OnFileNameApplyCallback callback) {
         switch (project.fileType) {
             case PNG -> callback.onApply(project);
             case GIF -> {
@@ -5825,9 +5825,6 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         return translationX + (x + layer.left) * scale;
     }
 
-    /**
-     * @return The x coordinate on view.
-     */
     private float toViewX(float x) {
         return translationX + (x + layer.left) * scale;
     }
@@ -5843,9 +5840,6 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         return translationY + (y + layer.top) * scale;
     }
 
-    /**
-     * @return The y coordinate on view.
-     */
     private float toViewY(float y) {
         return translationY + (y + layer.top) * scale;
     }

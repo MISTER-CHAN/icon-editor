@@ -12,7 +12,7 @@ import com.misterchan.iconeditor.databinding.ItemColorBinding;
 
 import java.util.List;
 
-public class ColorAdapter extends ItemMovableAdapter<ColorAdapter.ViewHolder> {
+public class ColorAdapter extends MovableItemAdapter<ColorAdapter.ViewHolder> {
 
     public interface OnItemClickListener {
         void onItemClick(View view, Long color);

@@ -20,7 +20,7 @@ import com.misterchan.iconeditor.listener.OnCBCheckedListener;
 
 import java.util.List;
 
-public class FrameAdapter extends ItemMovableAdapter<FrameAdapter.ViewHolder> {
+public class FrameAdapter extends MovableItemAdapter<FrameAdapter.ViewHolder> {
 
     public enum Payload {
         DELAY, SELECTED

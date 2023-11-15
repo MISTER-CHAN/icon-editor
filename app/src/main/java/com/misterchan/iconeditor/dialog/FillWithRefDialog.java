@@ -28,7 +28,6 @@ public class FillWithRefDialog {
     private final AlertDialog.Builder builder;
     private Bitmap src, dst;
     private OnChangeListener listener;
-    private Rect srcRect;
     private Shader.TileMode tileMode = Shader.TileMode.REPEAT;
 
     @SuppressLint("NonConstantResourceId")
@@ -57,7 +56,7 @@ public class FillWithRefDialog {
             dw = dh * sw / sh;
         }
         dst = Bitmap.createBitmap(dw, dh, Bitmap.Config.ARGB_8888);
-        new Canvas(dst).drawBitmap(src, srcRect, new Rect(0, 0, dw, dh), BitmapUtils.PAINT_SRC);
+        new Canvas(dst).drawBitmap(src, null, new Rect(0, 0, dw, dh), BitmapUtils.PAINT_SRC);
         onChange(stopped);
     };
 
@@ -67,7 +66,6 @@ public class FillWithRefDialog {
                 .setView(R.layout.fill_with_ref);
 
         this.src = src;
-        srcRect = new Rect(0, 0, src.getWidth(), src.getHeight());
     }
 
     private void onChange(boolean stopped) {

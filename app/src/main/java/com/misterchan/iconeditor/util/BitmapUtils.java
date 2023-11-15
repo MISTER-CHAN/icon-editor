@@ -94,6 +94,9 @@ public class BitmapUtils {
         bitmap.setPixels(pixels, 0, w, rect.left, rect.top, w, h);
     }
 
+    /**
+     * A faster way to add a color matrix color filter.
+     */
     public static void addColorMatrixColorFilter(@ColorInt final int[] src, @ColorInt final int[] dst,
                                                  @Size(20) final float[] colorMatrix) {
         for (int i = 0; i < src.length; ++i) {
@@ -146,18 +149,18 @@ public class BitmapUtils {
                 return;
             }
         }
-        final int pixel = src.getPixel(x, y);
+        @ColorInt final int pixel = src.getPixel(x, y);
         if (pixel == color && tolerance == 0) {
             return;
         }
-        final int[] pixels = new int[w * h];
+        @ColorInt final int[] pixels = new int[w * h];
         src.getPixels(pixels, 0, w, srcRect.left, srcRect.top, w, h);
         for (int i = 0; i < pixels.length; ++i) {
             final int px = pixels[i];
             if (ignoreAlpha) {
                 if (tolerance == 0 ?
                         Color.rgb(px) == Color.rgb(pixel) :
-                        Color.matches(pixel, tolerance, px)) {
+                        Color.matches(pixel, px, tolerance)) {
                     pixels[i] = Color.clipped(px, color);
                 }
             } else {
@@ -259,11 +262,11 @@ public class BitmapUtils {
                 return;
             }
         }
-        final int pixel = src.getPixel(x, y);
+        @ColorInt final int pixel = src.getPixel(x, y);
         if (pixel == color && tolerance == 0) {
             return;
         }
-        final int[] srcPixels = new int[area], dstPixels = src == dst ? srcPixels : new int[area];
+        @ColorInt final int[] srcPixels = new int[area], dstPixels = src == dst ? srcPixels : new int[area];
         src.getPixels(srcPixels, 0, w, srcRect.left, srcRect.top, w, h);
         if (src != dst) {
             dst.getPixels(dstPixels, 0, w, dstRect.left, dstRect.top, w, h);
@@ -376,6 +379,7 @@ public class BitmapUtils {
         }
     }
 
+    @ColorInt
     public static int[] getPixels(final Bitmap bitmap) {
         final int w = bitmap.getWidth(), h = bitmap.getHeight();
         final int[] pixels = new int[w * h];
@@ -383,6 +387,7 @@ public class BitmapUtils {
         return pixels;
     }
 
+    @ColorInt
     public static int[] getPixels(final Bitmap bitmap, Rect rect) {
         final int w = rect.width(), h = rect.height();
         final int[] pixels = new int[w * h];

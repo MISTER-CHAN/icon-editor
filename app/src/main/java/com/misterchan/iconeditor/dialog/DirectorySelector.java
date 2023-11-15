@@ -26,7 +26,7 @@ import java.util.regex.Pattern;
 public class DirectorySelector {
     private static final Pattern PATTERN_TREE = Pattern.compile("^content://com\\.android\\.externalstorage\\.documents/tree/primary%3A(?<path>.*)$");
 
-    public interface OnApplyFileNameCallback {
+    public interface OnFileNameApplyCallback {
         void onApply(Project project);
     }
 
@@ -45,7 +45,7 @@ public class DirectorySelector {
     }
 
     private Context context;
-    private OnApplyFileNameCallback callback;
+    private OnFileNameApplyCallback callback;
     private String tree = "";
     private Project src, dst;
 
@@ -117,7 +117,7 @@ public class DirectorySelector {
         openDocTree = activity.registerForActivityResult(new ActivityResultContracts.OpenDocumentTree(), onDocTreeOpenedCallback);
     }
 
-    public void open(Project src, Project dst, OnApplyFileNameCallback callback) {
+    public void open(Project src, Project dst, OnFileNameApplyCallback callback) {
         this.callback = callback;
         this.src = src;
         this.dst = dst;

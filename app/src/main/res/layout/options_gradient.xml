@@ -8,6 +8,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="2dp"
+        android:labelFor="@id/s_type"
         android:text="@string/type_" />
 
     <Spinner
@@ -15,12 +16,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="2dp"
-        android:entries="@array/gradient_types" />
+        android:entries="@array/gradient_types"
+        android:minHeight="48dp" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="2dp"
+        android:labelFor="@id/s_colors"
         android:text="@string/colors_" />
 
     <Spinner
@@ -28,5 +31,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="2dp"
-        android:entries="@array/gradient_colors" />
+        android:entries="@array/gradient_colors"
+        android:minHeight="48dp" />
 </LinearLayout>

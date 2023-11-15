@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.Collections;
 import java.util.List;
 
-public abstract class ItemMovableAdapter<VH extends RecyclerView.ViewHolder> extends RecyclerView.Adapter<VH> {
+public abstract class MovableItemAdapter<VH extends RecyclerView.ViewHolder> extends RecyclerView.Adapter<VH> {
     private static final int DRAG_DIRS = ItemTouchHelper.UP | ItemTouchHelper.DOWN | ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT;
 
     public interface OnItemMoveListener {
@@ -52,7 +52,7 @@ public abstract class ItemMovableAdapter<VH extends RecyclerView.ViewHolder> ext
                 }
                 dragTo = targetPosition;
                 final RecyclerView.Adapter<?> adapter = recyclerView.getAdapter();
-                final List<?> data = ((ItemMovableAdapter<?>) adapter).getData();
+                final List<?> data = ((MovableItemAdapter<?>) adapter).getData();
                 for (int i = Math.min(position, targetPosition); i < Math.max(position, targetPosition); ++i) {
                     Collections.swap(data, i, i + 1);
                 }

@@ -84,5 +84,4 @@
             app:labelBehavior="gone"
             app:tickVisible="false" />
     </LinearLayout>
-
 </LinearLayout>
