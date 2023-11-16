@@ -213,7 +213,7 @@ public class Layers {
                         addFilters(bm != null ? bm : bitmap, layer);
                     }
                     if (bm != null) {
-                        canvas.drawBitmap(bm, intRel, dst, paint);
+                        canvas.drawBitmap(bm, null, dst, paint);
                         bm.recycle();
                     }
                     if (layer.clipped && !isSubtreeRoot) {
@@ -225,7 +225,7 @@ public class Layers {
                     final Bitmap mergedChildren = mergeLayers(children, src,
                             passBm ? bitmap : null, passBm ? dst : null,
                             skipInvisible, specifiedLayer, specifiedLayerBm, extraLayer);
-                    canvas.drawBitmap(mergedChildren, intRel, dst, layer.paint);
+                    canvas.drawBitmap(mergedChildren, null, dst, layer.paint);
                     mergedChildren.recycle();
                     if (layer.clipped) {
                         BitmapUtils.clip(bitmap, dst, pixels);

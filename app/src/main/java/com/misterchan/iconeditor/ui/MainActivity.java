@@ -76,7 +76,7 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.misterchan.iconeditor.BuildConfig;
 import com.misterchan.iconeditor.CellGrid;
-import com.misterchan.iconeditor.Color;
+import com.misterchan.iconeditor.util.Color;
 import com.misterchan.iconeditor.DrawingPrimitivePreview;
 import com.misterchan.iconeditor.EditPreview;
 import com.misterchan.iconeditor.FloatingLayer;
@@ -323,6 +323,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         {
             setColor(Color.MAGENTA);
             setStrokeWidth(2.0f);
+            setTextAlign(Align.CENTER);
             setTextSize(24.0f);
         }
     };
@@ -769,18 +770,16 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
 
     private final AdapterView.OnItemSelectedListener onGradientColorsSpinnerItemSelectedListener = (OnAdapterViewItemSelectedListener) (parent, view, position, id) -> {
         gradient.colors = switch (position) {
-            case 0 -> Gradient.Colors.PAINTS;
-            case 1 -> Gradient.Colors.PALETTE;
             default -> Gradient.Colors.PAINTS;
+            case 1 -> Gradient.Colors.PALETTE;
         };
     };
 
     private final AdapterView.OnItemSelectedListener onGradientTypeSpinnerItemSelectedListener = (OnAdapterViewItemSelectedListener) (parent, view, position, id) -> {
         gradient.type = switch (position) {
-            case 0 -> Gradient.Type.LINEAR;
+            default -> Gradient.Type.LINEAR;
             case 1 -> Gradient.Type.RADIAL;
             case 2 -> Gradient.Type.SWEEP;
-            default -> Gradient.Type.LINEAR;
         };
     };
 
@@ -1416,7 +1415,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                         final int lastBX = this.lastBX, lastBY = this.lastBY;
                         new Thread(() -> {
                             for (float r = lastRad, bx = lastBX, by = lastBY, s = 0.0f; s < stepCount; r += stepRad, bx += stepBX, by += stepBY, ++s) {
-                                canvas.drawBitmap(brush.bm(), brush.rect, new RectF(bx - r, by - r, bx + r, by + r), PAINT_SRC_OVER);
+                                canvas.drawBitmap(brush.bm(), null, new RectF(bx - r, by - r, bx + r, by + r), PAINT_SRC_OVER);
                             }
                             runOnUiThread(() -> drawBitmapOntoView(lastBX, lastBY, currBX, currBY, maxRad + blurRadius));
                         }).start();
@@ -3725,33 +3724,42 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
     private void drawSelectionOntoView(boolean showMargins) {
         eraseBitmap(selectionBitmap);
         if (hasSelection) {
-            final float left = Math.max(0.0f, toViewX(selection.r.left)),
-                    top = Math.max(0.0f, toViewY(selection.r.top)),
-                    right = Math.min(viewWidth, toViewX(selection.r.right)),
-                    bottom = Math.min(viewHeight, toViewY(selection.r.bottom));
+            final float left = Math.max(0.0f, toViewX(selection.r.left)), top = Math.max(0.0f, toViewY(selection.r.top)),
+                    right = Math.min(viewWidth, toViewX(selection.r.right)), bottom = Math.min(viewHeight, toViewY(selection.r.bottom));
             selectionCanvas.drawRect(left, top, right, bottom, selector);
             if (showMargins) {
-                final float viewImLeft = Math.max(0.0f, translationX),
-                        viewImTop = Math.max(0.0f, translationY),
-                        viewImRight = Math.min(viewWidth, translationX + backgroundScaledW),
-                        viewImBottom = Math.min(viewHeight, translationY + backgroundScaledH);
-                final float centerHorizontal = (left + right) / 2.0f,
-                        centerVertical = (top + bottom) / 2.0f;
+                final float viewImLeft = Math.max(0.0f, translationX), viewImTop = Math.max(0.0f, translationY),
+                        viewImRight = Math.min(viewWidth, translationX + backgroundScaledW), viewImBottom = Math.min(viewHeight, translationY + backgroundScaledH);
+                final String margLeft = String.valueOf(layer.left + selection.r.left), margTop = String.valueOf(layer.top + selection.r.top),
+                        margRight = String.valueOf(layer.left + bitmap.getWidth() - selection.r.right), margBottom = String.valueOf(layer.top + bitmap.getHeight() - selection.r.bottom);
+                final float centerHorizontal = (left + right) / 2.0f, centerVertical = (top + bottom) / 2.0f;
                 if (Math.max(left, viewImLeft) > 0.0f) {
                     selectionCanvas.drawLine(left, centerVertical, viewImLeft, centerVertical, marginPaint);
-                    selectionCanvas.drawText(String.valueOf(layer.left + selection.r.left), (viewImLeft + left) / 2.0f, centerVertical, marginPaint);
+                    selectionCanvas.drawText(margLeft, (viewImLeft + left) / 2.0f, centerVertical, marginPaint);
+                } else {
+                    marginPaint.setTextAlign(Paint.Align.LEFT);
+                    selectionCanvas.drawText(margLeft, 0.0f, centerVertical, marginPaint);
+                    marginPaint.setTextAlign(Paint.Align.CENTER);
                 }
                 if (Math.max(top, viewImTop) > 0.0f) {
                     selectionCanvas.drawLine(centerHorizontal, top, centerHorizontal, viewImTop, marginPaint);
-                    selectionCanvas.drawText(String.valueOf(layer.top + selection.r.top), centerHorizontal, (viewImTop + top) / 2.0f, marginPaint);
+                    selectionCanvas.drawText(margTop, centerHorizontal, (viewImTop + top) / 2.0f, marginPaint);
+                } else {
+                    selectionCanvas.drawText(margTop, centerHorizontal, -marginPaint.ascent(), marginPaint);
                 }
                 if (Math.min(right, viewImRight) < viewWidth) {
                     selectionCanvas.drawLine(right, centerVertical, viewImRight, centerVertical, marginPaint);
-                    selectionCanvas.drawText(String.valueOf(layer.left + bitmap.getWidth() - selection.r.right), (viewImRight + right) / 2.0f, centerVertical, marginPaint);
+                    selectionCanvas.drawText(margRight, (viewImRight + right) / 2.0f, centerVertical, marginPaint);
+                } else {
+                    marginPaint.setTextAlign(Paint.Align.RIGHT);
+                    selectionCanvas.drawText(margRight, viewWidth, centerVertical, marginPaint);
+                    marginPaint.setTextAlign(Paint.Align.CENTER);
                 }
                 if (Math.min(bottom, viewImBottom) < viewHeight) {
                     selectionCanvas.drawLine(centerHorizontal, bottom, centerHorizontal, viewImBottom, marginPaint);
-                    selectionCanvas.drawText(String.valueOf(layer.top + bitmap.getHeight() - selection.r.bottom), centerHorizontal, (viewImBottom + bottom) / 2.0f, marginPaint);
+                    selectionCanvas.drawText(margBottom, centerHorizontal, (viewImBottom + bottom) / 2.0f, marginPaint);
+                } else {
+                    selectionCanvas.drawText(margBottom, centerHorizontal, viewHeight, marginPaint);
                 }
             }
             if (transformer.mesh != null) {
@@ -4018,6 +4026,20 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         selectionCanvas = new Canvas(selectionBitmap);
         activityMain.canvas.ivSelection.setImageBitmap(selectionBitmap);
 
+        {
+            final ViewGroup.LayoutParams lpNeg = activityMain.vBlockerNeg.getLayoutParams(), lpPos = activityMain.vBlockerPos.getLayoutParams();
+            if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                lpNeg.width = activityMain.llCanvas.getLeft();
+                lpPos.width = activityMain.llTl.getHeight();
+            } else {
+                final View canvasView = activityMain.canvas.getRoot();
+                lpNeg.height = canvasView.getTop();
+                lpPos.height = activityMain.getRoot().getHeight() - lpNeg.height - canvasView.getHeight();
+            }
+            activityMain.vBlockerNeg.setLayoutParams(lpNeg);
+            activityMain.vBlockerPos.setLayoutParams(lpPos);
+        }
+
         if (projects.isEmpty()) {
             if (fileToOpen != null) {
                 openFile(fileToOpen);
@@ -4035,20 +4057,6 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                 }
             }
             selectProject(0);
-        }
-
-        {
-            final ViewGroup.LayoutParams lpNeg = activityMain.vBlockerNeg.getLayoutParams(), lpPos = activityMain.vBlockerPos.getLayoutParams();
-            if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
-                lpNeg.width = activityMain.llCanvas.getLeft();
-                lpPos.width = activityMain.llTl.getHeight();
-            } else {
-                final View canvasView = activityMain.canvas.getRoot();
-                lpNeg.height = canvasView.getTop();
-                lpPos.height = activityMain.getRoot().getHeight() - lpNeg.height - canvasView.getHeight();
-            }
-            activityMain.vBlockerNeg.setLayoutParams(lpNeg);
-            activityMain.vBlockerPos.setLayoutParams(lpPos);
         }
     }
 
@@ -4765,9 +4773,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                 }
             }
             case R.id.i_crop -> {
-                if (!hasSelection) {
-                    break;
-                }
+                if (!hasSelection) break;
                 drawFloatingLayersIntoImage();
                 final int width = selection.r.width(), height = selection.r.height();
                 if (layer == frame.getBackgroundLayer()) {
@@ -4791,9 +4797,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
             }
             case R.id.i_cut -> {
                 if (transformer.isRecycled()) {
-                    if (clipboard != null) {
-                        clipboard.recycle();
-                    }
+                    if (clipboard != null) clipboard.recycle();
                     if (hasSelection) {
                         clipboard = BitmapUtils.createBitmap(bitmap,
                                 selection.r.left, selection.r.top, selection.r.width(), selection.r.height());
@@ -4834,12 +4838,9 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
             case R.id.i_deselect -> {
                 drawFloatingLayersIntoImage();
                 hasSelection = false;
-                switch (activityMain.tools.btgTools.getCheckedButtonId()) {
-                    case R.id.b_transformer -> {
-                        if (activityMain.optionsTransformer.btgTransformer.getCheckedButtonId() == R.id.b_mesh) {
-                            transformer.mesh = null;
-                        }
-                    }
+                if (activityMain.tools.btgTools.getCheckedButtonId() == R.id.b_transformer
+                        && activityMain.optionsTransformer.btgTransformer.getCheckedButtonId() == R.id.b_mesh) {
+                    transformer.mesh = null;
                 }
                 eraseBitmapAndInvalidateView(selectionBitmap, activityMain.canvas.ivSelection);
                 clearStatus();
@@ -4873,14 +4874,10 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
             case R.id.i_file_open -> pickMedia();
             case R.id.i_file_open_from_clipboard -> {
                 final ClipboardManager clipboardManager = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-                if (!clipboardManager.hasPrimaryClip()) {
-                    break;
-                }
+                if (!clipboardManager.hasPrimaryClip()) break;
 
                 final ClipData clipData = clipboardManager.getPrimaryClip();
-                if (clipData == null || clipData.getItemCount() < 1) {
-                    break;
-                }
+                if (clipData == null || clipData.getItemCount() < 1) break;
 
                 openFile(clipData.getItemAt(0).getUri());
             }

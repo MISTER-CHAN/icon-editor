@@ -12,7 +12,7 @@ import androidx.annotation.ColorLong;
 import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
 
-import com.misterchan.iconeditor.Color;
+import com.misterchan.iconeditor.util.Color;
 import com.misterchan.iconeditor.R;
 
 public abstract class ColorPicker {

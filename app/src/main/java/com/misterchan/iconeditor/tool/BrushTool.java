@@ -22,7 +22,6 @@ public class BrushTool {
     };
 
     private Bitmap src, dst, brush;
-    public final Rect rect = new Rect();
     public TipShape tipShape = TipShape.PRESET_BRUSH;
 
     public Bitmap bm() {
@@ -58,8 +57,6 @@ public class BrushTool {
         new Canvas(dst).drawBitmap(src, 0.0f, 0.0f, PAINT);
         if (this.dst != null) this.dst.recycle();
         this.dst = dst;
-        rect.right = dst.getWidth();
-        rect.bottom = dst.getHeight();
     }
 
     public void recycle() {

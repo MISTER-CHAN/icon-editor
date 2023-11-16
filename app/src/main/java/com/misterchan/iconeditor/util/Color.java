@@ -1,4 +1,4 @@
-package com.misterchan.iconeditor;
+package com.misterchan.iconeditor.util;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.FloatRange;
@@ -36,34 +36,51 @@ public class Color extends android.graphics.Color {
     public static void colorToHSL(@ColorInt int color, @Size(3) float[] hsl) {
         final float r = red(color) / 255.0f, g = green(color) / 255.0f, b = blue(color) / 255.0f;
         final float max = Math.max(Math.max(r, g), b), min = Math.min(Math.min(r, g), b);
-        if (max == min) {
-            hsl[0] = 0.0f;
-        } else if (max == r) {
-            hsl[0] = 60.0f * (g - b) / (max - min) + (g >= b ? 0.0f : 360.0f);
-        } else if (max == g) {
-            hsl[0] = 60.0f * (b - r) / (max - min) + 120.0f;
-        } else if (max == b) {
-            hsl[0] = 60.0f * (r - g) / (max - min) + 240.0f;
-        }
         hsl[2] = (max + min) / 2.0f;
-        hsl[1] = hsl[2] == 0.0f || max == min ? 0.0f : hsl[2] <= 0.5f ? (max - min) / (max + min) : (max - min) / (2.0f - max - min);
+        if (max == min) {
+            hsl[0] = hsl[1] = 0.0f;
+        } else {
+            if (max == r) {
+                hsl[0] = 60.0f * (g - b) / (max - min) + (g >= b ? 0.0f : 360.0f);
+            } else if (max == g) {
+                hsl[0] = 60.0f * (b - r) / (max - min) + 120.0f;
+            } else if (max == b) {
+                hsl[0] = 60.0f * (r - g) / (max - min) + 240.0f;
+            }
+            hsl[1] = (max - min) / (1.0f - Math.abs(2.0f * hsl[2] - 1.0f));
+        }
     }
 
+    /**
+     * Override the method for a faster conversion.
+     */
     @Size(3)
     public static void colorToHSV(@ColorInt int color, @Size(3) float[] hsv) {
         final float r = red(color) / 255.0f, g = green(color) / 255.0f, b = blue(color) / 255.0f;
         final float max = Math.max(Math.max(r, g), b), min = Math.min(Math.min(r, g), b);
         if (max == min) {
-            hsv[0] = 0.0f;
-        } else if (max == r) {
-            hsv[0] = 60.0f * (g - b) / (max - min) + (g >= b ? 0.0f : 360.0f);
-        } else if (max == g) {
-            hsv[0] = 60.0f * (b - r) / (max - min) + 120.0f;
-        } else if (max == b) {
-            hsv[0] = 60.0f * (r - g) / (max - min) + 240.0f;
+            hsv[0] = hsv[1] = 0.0f;
+        } else {
+            if (max == r) {
+                hsv[0] = 60.0f * (g - b) / (max - min) + (g >= b ? 0.0f : 360.0f);
+            } else if (max == g) {
+                hsv[0] = 60.0f * (b - r) / (max - min) + 120.0f;
+            } else if (max == b) {
+                hsv[0] = 60.0f * (r - g) / (max - min) + 240.0f;
+            }
+            hsv[1] = 1.0f - min / max;
         }
-        hsv[1] = max == 0.0f ? 0.0f : 1.0f - min / max;
         hsv[2] = max;
+    }
+
+    @FloatRange(from = 0.0f, to = 1.0f)
+    public static float con(float a) {
+        return a <= 0.0f ? 0.0f : a >= 1.0f ? 1.0f : a;
+    }
+
+    @IntRange(from = 0x00, to = 0xFF)
+    public static int con(int a) {
+        return a <= 0x00 ? 0x00 : a >= 0xFF ? 0xFF : a;
     }
 
     @FloatRange(from = 0.0f, to = 360.0f, toInclusive = false)
@@ -96,25 +113,21 @@ public class Color extends android.graphics.Color {
             case 5 -> argb(0.0f, c, 0.0f, x);
             default -> TRANSPARENT;
         };
-        final int m = (int) ((l - c / 2.0f) * 0xFF);
-        return color + m * 0x010101;
+        final float m = l - 0.5f * c;
+        return color + (int) (m * 0xFF) * 0x010101;
     }
 
-    @Size(3)
-    public static void HSLToHSV(@Size(3) float[] comps) {
-        final float l = comps[2];
-        comps[2] += comps[1] * Math.min(l, 1.0f - l);
-        comps[1] = comps[2] == 0.0f ? 0.0f : 2.0f * (1.0f - l / comps[2]);
-    }
-
+    /**
+     * Override the method for a faster conversion.
+     */
     @ColorInt
     public static int HSVToColor(@Size(3) float[] hsv) {
         final float h = hsv[0], s = hsv[1], v = hsv[2];
         final int hi = (int) (h / 60.0f);
         final float f = h / 60.0f - hi;
-        final float p = sat(v * (1.0f - s));
-        final float q = sat(v * (1.0f - f * s));
-        final float t = sat(v * (1.0f - (1.0f - f) * s));
+        final float p = con(v * (1.0f - s));
+        final float q = con(v * (1.0f - f * s));
+        final float t = con(v * (1.0f - (1.0f - f) * s));
         return switch (hi) {
             case 0 -> argb(0.0f, v, t, p);
             case 1 -> argb(0.0f, q, v, p);
@@ -124,18 +137,6 @@ public class Color extends android.graphics.Color {
             case 5 -> argb(0.0f, v, p, q);
             default -> TRANSPARENT;
         };
-    }
-
-    @Size(3)
-    public static void HSVToHSL(@Size(3) float[] comps) {
-        final float v = comps[2];
-        comps[2] = v * (1.0f - comps[1] / 2.0f);
-        comps[1] = comps[2] == 0.0f || comps[2] == 1.0f ? 0.0f : (v - comps[2]) / Math.min(comps[2], 1.0f - comps[2]);
-    }
-
-    @FloatRange(from = 0.0f, to = 1.0f)
-    public static float luminance(@ColorInt int color) {
-        return (0.2126f * red(color) + 0.7152f * green(color) + 0.0722f * blue(color)) / 255.0f;
     }
 
     public static boolean matches(@ColorInt int c0, @ColorInt int color, int tolerance) {
@@ -154,15 +155,5 @@ public class Color extends android.graphics.Color {
                           @IntRange(from = 0x00, to = 0xFF) int green,
                           @IntRange(from = 0x00, to = 0xFF) int blue) {
         return red << 16 | green << 8 | blue;
-    }
-
-    @FloatRange(from = 0.0f, to = 1.0f)
-    public static float sat(float v) {
-        return v <= 0.0f ? 0.0f : v >= 1.0f ? 1.0f : v;
-    }
-
-    @IntRange(from = 0x00, to = 0xFF)
-    public static int sat(int v) {
-        return v <= 0x00 ? 0x00 : v >= 0xFF ? 0xFF : v;
     }
 }

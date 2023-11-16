@@ -1,6 +1,6 @@
 package com.misterchan.iconeditor.ui;
 
-import com.misterchan.iconeditor.Color;
+import com.misterchan.iconeditor.util.Color;
 import com.misterchan.iconeditor.Project;
 
 import java.util.ArrayList;

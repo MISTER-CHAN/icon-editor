@@ -8,7 +8,7 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
 
-import com.misterchan.iconeditor.Color;
+import com.misterchan.iconeditor.util.Color;
 import com.misterchan.iconeditor.FloatingLayer;
 import com.misterchan.iconeditor.util.BitmapUtils;
 

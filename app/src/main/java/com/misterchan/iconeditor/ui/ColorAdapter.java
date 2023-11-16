@@ -7,7 +7,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.misterchan.iconeditor.Color;
+import com.misterchan.iconeditor.util.Color;
 import com.misterchan.iconeditor.databinding.ItemColorBinding;
 
 import java.util.List;

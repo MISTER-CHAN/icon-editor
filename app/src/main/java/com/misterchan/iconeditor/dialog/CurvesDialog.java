@@ -25,7 +25,7 @@ import androidx.core.view.OneShotPreDrawListener;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.tabs.TabLayout;
-import com.misterchan.iconeditor.Color;
+import com.misterchan.iconeditor.util.Color;
 import com.misterchan.iconeditor.Settings;
 import com.misterchan.iconeditor.R;
 import com.misterchan.iconeditor.util.BitmapUtils;
