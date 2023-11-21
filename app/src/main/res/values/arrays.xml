@@ -25,26 +25,16 @@
         <item>true</item>
     </string-array>
 
-    <!-- Color Int Component Radix Preference -->
-    <string-array name="radix_entries">
+    <!-- Color Int Component Numeral Systems -->
+    <string-array name="color_int_comp_num_sys">
         <item>@string/hex</item>
         <item>@string/dec</item>
     </string-array>
 
-    <string-array name="radix_values">
-        <item>16</item>
-        <item>10</item>
-    </string-array>
-
-    <!-- Color Representation Preference -->
-    <string-array name="color_rep_entries">
+    <!-- Color Representations -->
+    <string-array name="color_rep">
         <item>@string/integer</item>
         <item>@string/long_integer</item>
-    </string-array>
-
-    <string-array name="color_rep_values">
-        <item>i</item>
-        <item>l</item>
     </string-array>
 
     <!-- File Types -->

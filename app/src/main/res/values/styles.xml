@@ -4,7 +4,6 @@
     <style name="MaterialAlertDialog.IconEditor.Insetless" parent="MaterialAlertDialog.Material3">
         <item name="backgroundInsetTop">16dp</item>
         <item name="backgroundInsetBottom">16dp</item>
-        <item name="tint">?attr/colorOnSurfaceVariant</item>
     </style>
 
     <style name="MaterialAlertDialog.IconEditor.Title.Icon" parent="MaterialAlertDialog.Material3.Title.Icon">
@@ -15,7 +14,7 @@
         <item name="background">?attr/colorSurface</item>
     </style>
 
-    <style name="Widget_IconEditor_ActionMode_CloseButton">
+    <style name="Widget_IconEditor_ActionMode_CloseButton" parent="">
         <item name="android:tint">?attr/colorOnSurface</item>
     </style>
 
@@ -64,6 +63,14 @@
         <item name="android:requiresFadingEdge">horizontal</item>
         <item name="android:scrollbars">none</item>
         <item name="android:visibility">invisible</item>
+    </style>
+
+    <style name="Widget.IconEditor.TabLayout" parent="Widget.Material3.TabLayout">
+        <item name="materialThemeOverlay">@style/ThemeOverlay.IconEditor.TabLayout</item>
+    </style>
+
+    <style name="Widget.IconEditor.TabLayout.Secondary" parent="Widget.Material3.TabLayout.Secondary">
+        <item name="materialThemeOverlay">@style/ThemeOverlay.IconEditor.TabLayout</item>
     </style>
 
     <style name="Widget.IconEditor.TextInputLayout.Dense" parent="Widget.Material3.TextInputLayout.FilledBox.Dense">

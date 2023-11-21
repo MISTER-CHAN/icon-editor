@@ -246,6 +246,7 @@
     <string name="reference">参照</string>
     <string name="rename">重命名</string>
     <string name="repeat">重复</string>
+    <string name="representation">表示</string>
     <string name="reset">重置</string>
     <string name="reset_this_curve">重置此曲线</string>
     <string name="reset_source">重置来源</string>

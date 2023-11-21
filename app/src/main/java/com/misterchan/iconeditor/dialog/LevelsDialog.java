@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -19,7 +20,6 @@ import androidx.appcompat.app.AlertDialog;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.slider.RangeSlider;
-import com.misterchan.iconeditor.util.Color;
 import com.misterchan.iconeditor.R;
 import com.misterchan.iconeditor.listener.OnCircularRSChangeListener;
 import com.misterchan.iconeditor.util.LightingToLevels;

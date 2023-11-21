@@ -7,6 +7,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BlendMode;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.TypedValue;
 import android.view.MotionEvent;
@@ -25,7 +26,7 @@ import androidx.core.view.OneShotPreDrawListener;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.tabs.TabLayout;
-import com.misterchan.iconeditor.util.Color;
+import com.misterchan.iconeditor.util.ColorUtils;
 import com.misterchan.iconeditor.Settings;
 import com.misterchan.iconeditor.R;
 import com.misterchan.iconeditor.util.BitmapUtils;
@@ -126,7 +127,7 @@ public class CurvesDialog {
         final int aHalf = Color.alpha(color) / 2 << 24;
         normalPaint.setColor(color);
         curveColors[3] = curveColors[4] = color;
-        histColors[3] = histColors[4] = aHalf | Color.rgb(color);
+        histColors[3] = histColors[4] = aHalf | ColorUtils.rgb(color);
         final int r = sat(Color.red(color) - 0x40) << 16,
                 g = sat(Color.green(color) - 0x40) << 8,
                 b = sat(Color.blue(color) - 0x40);

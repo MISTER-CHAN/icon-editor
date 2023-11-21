@@ -42,6 +42,9 @@
     <string name="channel_mixer">Channel Mixer</string>
     <string name="check_for_updates">Check for Updates</string>
     <string name="check_for_updates_in_system_browser">Check for updates in system browser</string>
+    <string name="cie_l_a_b_" translatable="false">CIE L*a*b*</string>
+    <string name="cie_xyz" translatable="false">CIE XYZ</string>
+    <string name="cie_xyy" translatable="false">CIE xyY</string>
     <string name="circle">Circle</string>
     <string name="clamp">Clamp</string>
     <string name="clear">Clear</string>
@@ -54,6 +57,7 @@
     <string name="cloner">Cloner</string>
     <string name="close">Close</string>
     <string name="close_others">Close Others</string>
+    <string name="cmyk" translatable="false">CMYK</string>
     <string name="color_balance">Color Balance</string>
     <string name="color_filter">Color Filter</string>
     <string name="color_picker">Color Picker</string>
@@ -63,7 +67,7 @@
     <string name="color_space">Color Space</string>
     <string name="color_type">Color Type</string>
     <string name="colors_">Colors:</string>
-    <string name="component_numeral_system">Component Numeral System</string>
+    <string name="component_numeral_system">Component\nNumeral System</string>
     <string name="configuration">Configuration</string>
     <string name="contiguous">Contiguous</string>
     <string name="contrast">Contrast</string>
@@ -276,9 +280,11 @@
     <string name="reference">Reference</string>
     <string name="rename">Rename</string>
     <string name="repeat">Repeat</string>
+    <string name="representation">Representation</string>
     <string name="reset">Reset</string>
     <string name="reset_source">Reset Source</string>
     <string name="reset_this_curve">Reset This Curve</string>
+    <string name="rgb" translatable="false">RGB</string>
     <string name="rgb_outputs">RGB Outputs</string>
     <string name="right">Right</string>
     <string name="rotate">Rotate</string>
@@ -391,6 +397,7 @@
     <string name="x_" translatable="false">x</string>
     <string name="y" translatable="false">Y</string>
     <string name="y_" translatable="false">y</string>
+    <string name="yuv" translatable="false">YUV</string>
     <string name="z" translatable="false">Z</string>
     <string name="zero" translatable="false">0</string>
     <string name="zoom">Zoom</string>

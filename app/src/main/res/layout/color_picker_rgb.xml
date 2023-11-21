@@ -1,30 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    style="@style/Widget_IconEditor_LinearLayout"
+<GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/gl"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:baselineAligned="false">
+    android:layout_marginHorizontal="24dp"
+    android:columnCount="2"
+    android:rowCount="3">
 
-    <include
-        layout="@layout/color_picker"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1" />
+    <TextView
+        android:id="@+id/s_color_rep_label"
+        android:layout_gravity="start|center_vertical"
+        android:labelFor="@id/s_color_rep"
+        android:text="@string/representation" />
 
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1">
+    <Spinner
+        android:id="@+id/s_color_rep"
+        android:layout_gravity="end|center_vertical"
+        android:layout_marginVertical="8dp"
+        android:entries="@array/color_rep"
+        android:minHeight="48dp" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingHorizontal="12dp">
+    <TextView
+        android:id="@+id/s_color_int_comp_num_sys_label"
+        android:layout_gravity="start|center_vertical"
+        android:labelFor="@id/s_color_int_comp_num_sys"
+        android:text="@string/component_numeral_system" />
 
-            <include layout="@layout/other_color_pickers" />
+    <Spinner
+        android:id="@+id/s_color_int_comp_num_sys"
+        android:layout_gravity="end|center_vertical"
+        android:layout_marginVertical="8dp"
+        android:entries="@array/color_int_comp_num_sys"
+        android:minHeight="48dp" />
 
-            <include layout="@layout/color_space" />
-        </LinearLayout>
-    </ScrollView>
-</LinearLayout>
+    <TextView
+        android:id="@+id/tv_color_space_label"
+        android:labelFor="@id/tv_color_space"
+        android:text="@string/color_space" />
+
+    <TextView
+        android:id="@+id/tv_color_space"
+        android:layout_width="0dp"
+        android:layout_gravity="end|fill_horizontal"
+        android:layout_marginVertical="8dp"
+        android:textAlignment="textEnd" />
+</GridLayout>

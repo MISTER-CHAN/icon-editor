@@ -2,6 +2,7 @@ package com.misterchan.iconeditor.dialog;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.graphics.Color;
 import android.view.Gravity;
 import android.view.View;
 import android.view.Window;
@@ -13,9 +14,8 @@ import androidx.annotation.Size;
 import androidx.appcompat.app.AlertDialog;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.misterchan.iconeditor.util.Color;
 import com.misterchan.iconeditor.R;
-import com.misterchan.iconeditor.colorpicker.RgbColorPicker;
+import com.misterchan.iconeditor.colorpicker.ColorPickerDialog;
 
 public class LightingDialog {
 
@@ -85,7 +85,7 @@ public class LightingDialog {
         vMul.setBackgroundColor(Color.argb(lighting[6], lighting[0], lighting[2], lighting[4]));
         vAdd.setBackgroundColor(Color.argb((int) lighting[7], (int) lighting[1], (int) lighting[3], (int) lighting[5]));
 
-        flMul.setOnClickListener(v -> RgbColorPicker.make(context, R.string.slope, (oldColor, newColor) -> {
+        flMul.setOnClickListener(v -> new ColorPickerDialog(context, R.string.slope, (oldColor, newColor) -> {
             lighting[0] = Color.red(newColor);
             lighting[2] = Color.green(newColor);
             lighting[4] = Color.blue(newColor);
@@ -94,7 +94,7 @@ public class LightingDialog {
             onLightingChangeListener.onChanged(lighting, true);
         }, Color.pack(lighting[0], lighting[2], lighting[4], lighting[6])).show());
 
-        flAdd.setOnClickListener(v -> RgbColorPicker.make(context, R.string.offset, (oldColor, newColor) -> {
+        flAdd.setOnClickListener(v -> new ColorPickerDialog(context, R.string.offset, (oldColor, newColor) -> {
             @ColorInt final int newColorInt = Color.toArgb(newColor);
             lighting[1] = Color.red(newColorInt);
             lighting[3] = Color.green(newColorInt);

@@ -29,35 +29,6 @@
 
     </PreferenceCategory>
 
-    <PreferenceCategory app:title="@string/argb_color_picker">
-
-        <ListPreference
-            app:defaultValue="i"
-            app:entries="@array/color_rep_entries"
-            app:entryValues="@array/color_rep_values"
-            app:key="cr"
-            app:singleLineTitle="false"
-            app:title="@string/color_representation"
-            app:useSimpleSummaryProvider="true" />
-
-        <ListPreference
-            app:defaultValue="16"
-            app:entries="@array/radix_entries"
-            app:entryValues="@array/radix_values"
-            app:key="cir"
-            app:singleLineTitle="false"
-            app:title="@string/component_numeral_system"
-            app:useSimpleSummaryProvider="true" />
-
-        <SwitchPreferenceCompat
-            app:defaultValue="false"
-            app:key="pih"
-            app:singleLineTitle="false"
-            app:summary="@string/pick_rgb_colors_in_hsv"
-            app:title="@string/pick_in_hsv" />
-
-    </PreferenceCategory>
-
     <PreferenceCategory app:title="@string/performance">
 
         <SwitchPreferenceCompat

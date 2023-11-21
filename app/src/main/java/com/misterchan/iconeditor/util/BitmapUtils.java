@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BlendMode;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.ColorSpace;
 import android.graphics.Paint;
 import android.graphics.Point;
@@ -56,10 +57,10 @@ public class BitmapUtils {
                                               final float mul, final float add) {
         for (int i = 0; i < src.length; ++i) {
             final int r = Color.red(src[i]), g = Color.green(src[i]), b = Color.blue(src[i]);
-            final int r_ = Color.con((int) (r * mul + add));
-            final int g_ = Color.con((int) (g * mul + add));
-            final int b_ = Color.con((int) (b * mul + add));
-            dst[i] = Color.clipped(src[i], r_, g_, b_);
+            final int r_ = ColorUtils.con((int) (r * mul + add));
+            final int g_ = ColorUtils.con((int) (g * mul + add));
+            final int b_ = ColorUtils.con((int) (b * mul + add));
+            dst[i] = ColorUtils.clipped(src[i], r_, g_, b_);
         }
     }
 
@@ -76,10 +77,10 @@ public class BitmapUtils {
                                               @Size(8) final float[] lighting) {
         for (int i = 0; i < src.length; ++i) {
             final int r = Color.red(src[i]), g = Color.green(src[i]), b = Color.blue(src[i]), a = Color.alpha(src[i]);
-            final int r_ = Color.con((int) (r * lighting[0] + lighting[1]));
-            final int g_ = Color.con((int) (g * lighting[2] + lighting[3]));
-            final int b_ = Color.con((int) (b * lighting[4] + lighting[5]));
-            final int a_ = Color.con((int) (a * lighting[6] + lighting[7]));
+            final int r_ = ColorUtils.con((int) (r * lighting[0] + lighting[1]));
+            final int g_ = ColorUtils.con((int) (g * lighting[2] + lighting[3]));
+            final int b_ = ColorUtils.con((int) (b * lighting[4] + lighting[5]));
+            final int a_ = ColorUtils.con((int) (a * lighting[6] + lighting[7]));
             dst[i] = Color.argb(a_, r_, g_, b_);
         }
     }
@@ -100,10 +101,10 @@ public class BitmapUtils {
                                                  @Size(20) final float[] colorMatrix) {
         for (int i = 0; i < src.length; ++i) {
             final int r = Color.red(src[i]), g = Color.green(src[i]), b = Color.blue(src[i]), a = Color.alpha(src[i]);
-            final int r_ = Color.con((int) (r * colorMatrix[0] + g * colorMatrix[1] + b * colorMatrix[2] + a * colorMatrix[3] + colorMatrix[4]));
-            final int g_ = Color.con((int) (r * colorMatrix[5] + g * colorMatrix[6] + b * colorMatrix[7] + a * colorMatrix[8] + colorMatrix[9]));
-            final int b_ = Color.con((int) (r * colorMatrix[10] + g * colorMatrix[11] + b * colorMatrix[12] + a * colorMatrix[13] + colorMatrix[14]));
-            final int a_ = Color.con((int) (r * colorMatrix[15] + g * colorMatrix[16] + b * colorMatrix[17] + a * colorMatrix[18] + colorMatrix[19]));
+            final int r_ = ColorUtils.con((int) (r * colorMatrix[0] + g * colorMatrix[1] + b * colorMatrix[2] + a * colorMatrix[3] + colorMatrix[4]));
+            final int g_ = ColorUtils.con((int) (r * colorMatrix[5] + g * colorMatrix[6] + b * colorMatrix[7] + a * colorMatrix[8] + colorMatrix[9]));
+            final int b_ = ColorUtils.con((int) (r * colorMatrix[10] + g * colorMatrix[11] + b * colorMatrix[12] + a * colorMatrix[13] + colorMatrix[14]));
+            final int a_ = ColorUtils.con((int) (r * colorMatrix[15] + g * colorMatrix[16] + b * colorMatrix[17] + a * colorMatrix[18] + colorMatrix[19]));
             dst[i] = Color.argb(a_, r_, g_, b_);
         }
     }
@@ -158,15 +159,15 @@ public class BitmapUtils {
             final int px = pixels[i];
             if (ignoreAlpha) {
                 if (tolerance == 0 ?
-                        Color.rgb(px) == Color.rgb(pixel) :
-                        Color.matches(pixel, px, tolerance)) {
-                    pixels[i] = Color.clipped(px, color);
+                        ColorUtils.rgb(px) == ColorUtils.rgb(pixel) :
+                        ColorUtils.matches(pixel, px, tolerance)) {
+                    pixels[i] = ColorUtils.clipped(px, color);
                 }
             } else {
                 if (tolerance == 0 ?
                         px == pixel :
                         Color.alpha(px) == Color.alpha(pixel)
-                                && Color.matches(pixel, px, tolerance)) {
+                                && ColorUtils.matches(pixel, px, tolerance)) {
                     pixels[i] = color;
                 }
             }
@@ -179,7 +180,7 @@ public class BitmapUtils {
         final int[] pixels = new int[w * h];
         bitmap.getPixels(pixels, 0, w, rect.left, rect.top, w, h);
         for (int i = 0; i < pixels.length; ++i) {
-            pixels[i] = Color.clipped(base[i], pixels[i]);
+            pixels[i] = ColorUtils.clipped(base[i], pixels[i]);
         }
         bitmap.setPixels(pixels, 0, w, rect.left, rect.top, w, h);
     }
@@ -286,14 +287,14 @@ public class BitmapUtils {
             final int newColor;
             if (ignoreAlpha) {
                 match = tolerance == 0
-                        ? Color.rgb(px) == Color.rgb(pixel)
-                        : Color.matches(pixel, px, tolerance);
-                newColor = Color.clipped(px, color);
+                        ? ColorUtils.rgb(px) == ColorUtils.rgb(pixel)
+                        : ColorUtils.matches(pixel, px, tolerance);
+                newColor = ColorUtils.clipped(px, color);
             } else {
                 match = tolerance == 0 ?
                         px == pixel :
                         Color.alpha(px) == Color.alpha(pixel)
-                                && Color.matches(pixel, px, tolerance);
+                                && ColorUtils.matches(pixel, px, tolerance);
                 newColor = color;
             }
             if (match) {
@@ -400,7 +401,7 @@ public class BitmapUtils {
         src.getPixels(srcPixels, 0, w, 0, 0, w, h);
         dst.getPixels(dstPixels, 0, w, 0, 0, w, h);
         for (int i = 0; i < area; ++i) {
-            dstPixels[i] = Color.clipped(srcPixels[i], dstPixels[i]);
+            dstPixels[i] = ColorUtils.clipped(srcPixels[i], dstPixels[i]);
         }
         dst.setPixels(dstPixels, 0, w, 0, 0, w, h);
     }
@@ -423,7 +424,7 @@ public class BitmapUtils {
                     og = Math.round(ig / 255.0f * (level - 1.0f)) * 0xFF / (level - 1),
                     ob = Math.round(ib / 255.0f * (level - 1.0f)) * 0xFF / (level - 1);
 
-            dst[i] = Color.clipped(src[i], or, og, ob);
+            dst[i] = ColorUtils.clipped(src[i], or, og, ob);
         }
     }
 
@@ -462,7 +463,7 @@ public class BitmapUtils {
                     + (dg == 0.0f ? 0.0f : (g - fa * bg) / dg * rg)
                     + (db == 0.0f ? 0.0f : (b - fa * bb) / db * rb);
 
-            pixels[i] = Color.argb(Color.con(a_), fr, fg, fb);
+            pixels[i] = Color.argb(ColorUtils.con(a_), fr, fg, fb);
         }
         bitmap.setPixels(pixels, 0, w, 0, 0, w, h);
     }
@@ -495,7 +496,7 @@ public class BitmapUtils {
                                           final ColorRange cr) {
         final float[] hsv = new float[3];
         for (int i = 0; i < src.length; ++i) {
-            Color.colorToHSV(src[i], hsv);
+            ColorUtils.colorToHSV(src[i], hsv);
             float a_ = 0.0f;
             final float ao3 = Color.alpha(src[i]) / 255.0f / 3.0f; // Alpha over 3
             float hi = 0.0f, ha = 0.0f; // Hue min and max
@@ -516,7 +517,7 @@ public class BitmapUtils {
             a_ += cr.transition > 0.0f
                     ? Math.min(Math.min(hsv[2] - (cr.cuboid[2] - cr.transition), (cr.cuboid[5] + cr.transition) - hsv[2]) / cr.transition, 1.0f) * ao3
                     : cr.cuboid[2] <= hsv[2] && hsv[2] <= cr.cuboid[5] ? ao3 : ao3 * -2;
-            dst[i] = Color.argb((int) (Math.max(a_, 0.0f) * 255.0f), Color.rgb(src[i]));
+            dst[i] = ColorUtils.argb((int) (Math.max(a_, 0.0f) * 255.0f), ColorUtils.rgb(src[i]));
         }
     }
 
@@ -525,10 +526,10 @@ public class BitmapUtils {
         final float op = opaquePoint % 360.0f;
         for (int i = 0; i < src.length; ++i) {
             final int pixel = src[i];
-            final float hue = Color.hue(pixel);
+            final float hue = ColorUtils.hue(pixel);
             final float smaller = Math.min(op, hue), greater = Math.max(op, hue);
             final float majorArc = Math.max(greater - smaller, 360.0f + smaller - greater);
-            dst[i] = Color.argb((int) ((majorArc - 180.0f) / 180.0f * 0xFF), Color.rgb(pixel));
+            dst[i] = ColorUtils.argb((int) ((majorArc - 180.0f) / 180.0f * 0xFF), ColorUtils.rgb(pixel));
         }
     }
 
@@ -553,11 +554,11 @@ public class BitmapUtils {
         final float[] hsl = new float[3];
         for (int i = 0; i < src.length; ++i) {
             final int pixel = src[i];
-            Color.colorToHSL(pixel, hsl);
+            ColorUtils.colorToHSL(pixel, hsl);
             hsl[0] = (hsl[0] + deltaHsl[0] + 360.0f) % 360.0f;
-            hsl[1] = Color.con(hsl[1] + deltaHsl[1]);
-            hsl[2] = Color.con(hsl[2] + deltaHsl[2]);
-            dst[i] = Color.clipped(pixel, Color.HSLToColor(hsl));
+            hsl[1] = ColorUtils.con(hsl[1] + deltaHsl[1]);
+            hsl[2] = ColorUtils.con(hsl[2] + deltaHsl[2]);
+            dst[i] = ColorUtils.clipped(pixel, ColorUtils.HSLToColor(hsl));
         }
     }
 
@@ -566,11 +567,11 @@ public class BitmapUtils {
         final float[] hsv = new float[3];
         for (int i = 0; i < src.length; ++i) {
             final int pixel = src[i];
-            Color.colorToHSV(pixel, hsv);
+            ColorUtils.colorToHSV(pixel, hsv);
             hsv[0] = (hsv[0] + deltaHsv[0] + 360.0f) % 360.0f;
-            hsv[1] = Color.con(hsv[1] + deltaHsv[1]);
-            hsv[2] = Color.con(hsv[2] + deltaHsv[2]);
-            dst[i] = Color.clipped(pixel, Color.HSVToColor(hsv));
+            hsv[1] = ColorUtils.con(hsv[1] + deltaHsv[1]);
+            hsv[2] = ColorUtils.con(hsv[2] + deltaHsv[2]);
+            dst[i] = ColorUtils.clipped(pixel, ColorUtils.HSVToColor(hsv));
         }
     }
 

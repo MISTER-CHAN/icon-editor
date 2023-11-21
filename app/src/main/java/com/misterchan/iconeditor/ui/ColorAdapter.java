@@ -1,5 +1,6 @@
 package com.misterchan.iconeditor.ui;
 
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -7,7 +8,6 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.misterchan.iconeditor.util.Color;
 import com.misterchan.iconeditor.databinding.ItemColorBinding;
 
 import java.util.List;

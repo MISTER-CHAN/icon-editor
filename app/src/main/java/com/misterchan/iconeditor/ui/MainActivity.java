@@ -14,6 +14,7 @@ import android.graphics.BitmapShader;
 import android.graphics.BlendMode;
 import android.graphics.BlurMaskFilter;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorSpace;
 import android.graphics.LinearGradient;
@@ -76,7 +77,7 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.misterchan.iconeditor.BuildConfig;
 import com.misterchan.iconeditor.CellGrid;
-import com.misterchan.iconeditor.util.Color;
+import com.misterchan.iconeditor.colorpicker.ColorPickerDialog;
 import com.misterchan.iconeditor.DrawingPrimitivePreview;
 import com.misterchan.iconeditor.EditPreview;
 import com.misterchan.iconeditor.FloatingLayer;
@@ -88,7 +89,6 @@ import com.misterchan.iconeditor.Project;
 import com.misterchan.iconeditor.R;
 import com.misterchan.iconeditor.Reference;
 import com.misterchan.iconeditor.Settings;
-import com.misterchan.iconeditor.colorpicker.RgbColorPicker;
 import com.misterchan.iconeditor.databinding.ActivityMainBinding;
 import com.misterchan.iconeditor.databinding.FrameListBinding;
 import com.misterchan.iconeditor.databinding.LayerListBinding;
@@ -472,21 +472,18 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
             final MenuItem miTypefaceItalic = menu.findItem(R.id.i_typeface_italic);
             final MenuItem miUnderlined = menu.findItem(R.id.i_underlined);
             final MenuItem miStrikeThru = menu.findItem(R.id.i_strike_thru);
-            final MenuItem miAlignLeft = menu.findItem(R.id.i_align_left);
-            final MenuItem miAlignCenter = menu.findItem(R.id.i_align_center);
-            final MenuItem miAlignRight = menu.findItem(R.id.i_align_right);
             final Typeface typeface = paint.getTypeface();
+
+            menu.findItem(switch (paint.getTextAlign()) {
+                case LEFT -> R.id.i_align_left;
+                case CENTER -> R.id.i_align_center;
+                case RIGHT -> R.id.i_align_right;
+            }).setChecked(true);
 
             miTypefaceBold.setChecked(typeface != null && typeface.isBold());
             miTypefaceItalic.setChecked(typeface != null && typeface.isItalic());
             miUnderlined.setChecked(paint.isUnderlineText());
             miStrikeThru.setChecked(paint.isStrikeThruText());
-
-            (switch (paint.getTextAlign()) {
-                case LEFT -> miAlignLeft;
-                case CENTER -> miAlignCenter;
-                case RIGHT -> miAlignRight;
-            }).setChecked(true);
 
             return true;
         }
@@ -645,25 +642,25 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
     };
 
     private final View.OnClickListener onAddSwatchButtonClickListener = v ->
-            RgbColorPicker.make(this, R.string.add,
-                            (oldColor, newColor) -> {
-                                palette.add(0, newColor);
-                                colorAdapter.notifyItemInserted(0);
-                            },
-                            paint.getColorLong())
+            new ColorPickerDialog(this, R.string.add,
+                    (oldColor, newColor) -> {
+                        palette.add(0, newColor);
+                        colorAdapter.notifyItemInserted(0);
+                    },
+                    paint.getColorLong())
                     .show();
 
     private final View.OnClickListener onBackgroundColorClickListener = v ->
-            RgbColorPicker.make(this, R.string.background_color,
-                            (oldColor, newColor) -> {
-                                if (oldColor != null) {
-                                    eraser.setColor(newColor);
-                                    activityMain.vBackgroundColor.setBackgroundColor(Color.toArgb(newColor));
-                                } else {
-                                    setPaintColor(newColor, paint.getColorLong());
-                                }
-                            },
-                            eraser.getColorLong(), R.string.swap)
+            new ColorPickerDialog(this, R.string.background_color,
+                    (oldColor, newColor) -> {
+                        if (oldColor != null) {
+                            eraser.setColor(newColor);
+                            activityMain.vBackgroundColor.setBackgroundColor(Color.toArgb(newColor));
+                        } else {
+                            setPaintColor(newColor, paint.getColorLong());
+                        }
+                    },
+                    eraser.getColorLong(), R.string.swap)
                     .show();
 
     private final View.OnClickListener onBrushTipShapeButtonClickListener = v -> {
@@ -686,17 +683,17 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
     };
 
     private final View.OnClickListener onForegroundColorClickListener = v ->
-            RgbColorPicker.make(this, R.string.foreground_color,
-                            (oldColor, newColor) -> {
-                                if (oldColor != null) {
-                                    paint.setColor(newColor);
-                                    activityMain.vForegroundColor.setBackgroundColor(Color.toArgb(newColor));
-                                    onPaintColorChanged();
-                                } else {
-                                    setPaintColor(eraser.getColorLong(), newColor);
-                                }
-                            },
-                            paint.getColorLong(), R.string.swap)
+            new ColorPickerDialog(this, R.string.foreground_color,
+                    (oldColor, newColor) -> {
+                        if (oldColor != null) {
+                            paint.setColor(newColor);
+                            activityMain.vForegroundColor.setBackgroundColor(Color.toArgb(newColor));
+                            onPaintColorChanged();
+                        } else {
+                            setPaintColor(eraser.getColorLong(), newColor);
+                        }
+                    },
+                    paint.getColorLong(), R.string.swap)
                     .show();
 
     private final ColorMatrixManager.OnMatrixElementsChangedListener onFilterColorMatrixChangedListener = matrix -> runOrStart(() -> {
@@ -1609,7 +1606,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                 case MotionEvent.ACTION_DOWN, MotionEvent.ACTION_MOVE -> {
                     final float x = event.getX(), y = event.getY();
                     final int bx = satX(bitmap, toBitmapX(x)), by = satY(bitmap, toBitmapY(y));
-                    final android.graphics.Color color = activityMain.optionsEyedropper.btgSrc.getCheckedButtonId() == R.id.b_all_layers
+                    final Color color = activityMain.optionsEyedropper.btgSrc.getCheckedButtonId() == R.id.b_all_layers
                             ? viewBitmap.getColor((int) x, (int) y) : bitmap.getColor(bx, by);
                     paint.setColor(color.pack());
                     activityMain.vForegroundColor.setBackgroundColor(color.toArgb());
@@ -3968,18 +3965,18 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
             onPaintColorChanged();
         });
         colorAdapter.setOnItemLongClickListener((view, color) -> {
-            RgbColorPicker.make(this, R.string.swatch,
-                            (oldColor, newColor) -> {
-                                final int index = palette.indexOf(oldColor);
-                                if (newColor != null) {
-                                    palette.set(index, newColor);
-                                    colorAdapter.notifyItemChanged(index);
-                                } else {
-                                    palette.remove(index);
-                                    colorAdapter.notifyItemRemoved(index);
-                                }
-                            },
-                            color, R.string.delete)
+            new ColorPickerDialog(this, R.string.swatch,
+                    (oldColor, newColor) -> {
+                        final int index = palette.indexOf(oldColor);
+                        if (newColor != null) {
+                            palette.set(index, newColor);
+                            colorAdapter.notifyItemChanged(index);
+                        } else {
+                            palette.remove(index);
+                            colorAdapter.notifyItemRemoved(index);
+                        }
+                    },
+                    color, R.string.delete)
                     .show();
             return true;
         });
@@ -4230,7 +4227,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         menu.setGroupDividerEnabled(true);
         miFrameList = menu.findItem(R.id.i_frame_list);
         miHasAlpha = menu.findItem(R.id.i_image_has_alpha);
-        Settings.INST.update(PreferenceManager.getDefaultSharedPreferences(this), Settings.KEY_FL);
+        Settings.INST.update(Settings.KEY_FL);
         return true;
     }
 
@@ -5657,17 +5654,17 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         }
     }
 
+    private void setBlurRadius(Paint paint, float f) {
+        paint.setMaskFilter(f > 0.0f ? new BlurMaskFilter(f, BlurMaskFilter.Blur.NORMAL) : null);
+    }
+
     @SuppressLint("ClickableViewAccessibility")
-    public void setArgbColorType() {
+    public void setColorRep() {
         onIVTouchWithEyedropperListener = Settings.INST.colorRep()
                 ? onIVTouchWithPreciseEyedropperListener : onIVTouchWithImpreciseEyedropperListener;
         if (activityMain != null && activityMain.tools.btgTools.getCheckedButtonId() == R.id.b_eyedropper) {
             activityMain.canvas.flIv.setOnTouchListener(onIVTouchWithEyedropperListener);
         }
-    }
-
-    private void setBlurRadius(Paint paint, float f) {
-        paint.setMaskFilter(f > 0.0f ? new BlurMaskFilter(f, BlurMaskFilter.Blur.NORMAL) : null);
     }
 
     public void setFilterBitmap(boolean filterBitmap) {

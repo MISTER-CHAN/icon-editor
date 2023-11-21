@@ -12,6 +12,8 @@
             @style/ThemeOverlay.IconEditor.MaterialAlertDialog.Insetless
         </item>
         <item name="preferenceTheme">@style/Theme_IconEditor_Preference</item>
+        <item name="tabStyle">@style/Widget.IconEditor.TabLayout</item>
+        <item name="tabSecondaryStyle">@style/Widget.IconEditor.TabLayout.Secondary</item>
         <item name="toolbarStyle">@style/Widget.Material3.Toolbar.Surface</item>
         <item name="windowActionModeOverlay">true</item>
     </style>
@@ -34,5 +36,9 @@
 
     <style name="ThemeOverlay.IconEditor.MaterialAlertDialog.Insetless.Square" parent="ThemeOverlay.IconEditor.MaterialAlertDialog.Insetless">
         <item name="shapeAppearanceOverlay">?attr/shapeAppearanceCornerSmall</item>
+    </style>
+
+    <style name="ThemeOverlay.IconEditor.TabLayout" parent="">
+        <item name="colorSurface">@android:color/transparent</item>
     </style>
 </resources>

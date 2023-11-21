@@ -1,205 +1,129 @@
 package com.misterchan.iconeditor.colorpicker;
 
-import android.content.Context;
+import android.graphics.Color;
 import android.graphics.ColorSpace;
+import android.text.method.KeyListener;
 import android.view.View;
-import android.widget.Button;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.ColorLong;
-import androidx.annotation.StringRes;
-import androidx.appcompat.app.AlertDialog;
+import androidx.annotation.IntRange;
+import androidx.annotation.Size;
 
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.android.material.slider.Slider;
-import com.google.android.material.textfield.TextInputEditText;
-import com.misterchan.iconeditor.util.Color;
-import com.misterchan.iconeditor.R;
 import com.misterchan.iconeditor.Settings;
-import com.misterchan.iconeditor.listener.AfterTextChangedListener;
-import com.misterchan.iconeditor.listener.OnSliderValueChangeListener;
+import com.misterchan.iconeditor.databinding.ColorPickerRgbBinding;
+import com.misterchan.iconeditor.listener.OnItemSelectedListener;
+import com.misterchan.iconeditor.util.ColorUtils;
 
-public class RgbColorPicker extends ColorPicker {
-
-    private final boolean type;
-    private ColorSpace colorSpace;
-    private final Context context;
-    private final int radix;
-    private Slider sAlpha;
-    private Slider sRed, sGreen, sBlue;
-    private final String format;
-    private TextInputEditText tietAlpha;
-    private TextInputEditText tietRed, tietGreen, tietBlue;
-
-    private RgbColorPicker(Context context, @StringRes int titleId,
-                           final OnColorPickListener onColorPickListener,
-                           @ColorLong final Long oldColor, @StringRes int neutralFunction) {
-        this.context = context;
-        dialogBuilder = new MaterialAlertDialogBuilder(context)
-                .setNegativeButton(R.string.cancel, null)
-                .setPositiveButton(R.string.ok,
-                        (dialog, which) -> onColorPickListener.onPick(oldColor, newColor))
-                .setTitle(titleId)
-                .setView(R.layout.color_picker_rgb);
-
-        deployNeutralFunction(onColorPickListener, oldColor, neutralFunction);
-        type = Settings.INST.colorRep();
-        format = type ? null : Settings.INST.colorIntCompFormat();
-        radix = type ? 10 : Settings.INST.colorIntCompRadix();
+class RgbColorPicker extends ColorPicker {
+    interface OnColorPickerChangeListener {
+        void onChange();
     }
 
-    private void loadColor(@ColorInt int color, boolean hasAlpha) {
-        if (hasAlpha) {
-            tietAlpha.setText(String.format(format, Color.alpha(color)));
-        }
-        tietRed.setText(String.format(format, Color.red(color)));
-        tietGreen.setText(String.format(format, Color.green(color)));
-        tietBlue.setText(String.format(format, Color.blue(color)));
-    }
+    private final boolean colorRep;
+    private final ColorSpace.Connector connector;
 
-    private void loadColor(@ColorLong long color, boolean hasAlpha) {
-        color = Color.convert(color, colorSpace);
-        if (hasAlpha) {
-            tietAlpha.setText(String.valueOf(Color.alpha(color)));
-        }
-        tietRed.setText(String.valueOf(Color.red(color)));
-        tietGreen.setText(String.valueOf(Color.green(color)));
-        tietBlue.setText(String.valueOf(Color.blue(color)));
-    }
+    @Size(3)
+    private final float[] rgb;
 
-    public static ColorPicker make(Context context, int titleId,
-                                   final OnColorPickListener onColorPickListener, @ColorLong final Long oldColor) {
-        return make(context, titleId, onColorPickListener, oldColor, 0);
-    }
+    @ColorInt
+    private int colorInt;
 
-    public static ColorPicker make(Context context, @StringRes int titleId,
-                                   final OnColorPickListener onColorPickListener,
-                                   @ColorLong final Long oldColor, @StringRes int neutralFunction) {
-        return Settings.INST.pickInHsv()
-                ? new HsvColorPicker(context, titleId, onColorPickListener, oldColor, neutralFunction)
-                : new RgbColorPicker(context, titleId, onColorPickListener, oldColor, neutralFunction);
-    }
+    @ColorLong
+    private long color;
 
-    private void onComponentChanged(String s, Slider slider) {
-        final float f;
-        try {
-            f = type ? Float.parseFloat(s) : Integer.parseUnsignedInt(s, radix);
-        } catch (NumberFormatException e) {
-            return;
-        }
-        if (!(slider.getValueFrom() <= f && f <= slider.getValueTo())) return;
-        slider.setValue(f);
-        final float av = sAlpha.getValue(), rv = sRed.getValue(), gv = sGreen.getValue(), bv = sBlue.getValue();
-        @ColorInt final int newColorInt;
-        if (type) {
-            newColor = Color.pack(rv, gv, bv, av, colorSpace);
-            newColorInt = Color.toArgb(newColor);
+    RgbColorPicker(long color, ColorPickerRgbBinding binding, OnColorPickerChangeListener cpl) {
+        colorRep = Settings.INST.colorRep();
+        ColorSpace colorSpace = Color.colorSpace(color);
+        connector = ColorSpace.connect(colorSpace);
+        float c0Min, c0Max, c1Min, c1Max, c2Min, c2Max;
+        int c0InputType, c1InputType, c2InputType;
+        if (colorRep) {
+            c0Min = colorSpace.getMinValue(0);
+            c0Max = colorSpace.getMaxValue(0);
+            c1Min = colorSpace.getMinValue(1);
+            c1Max = colorSpace.getMaxValue(1);
+            c2Min = colorSpace.getMinValue(2);
+            c2Max = colorSpace.getMaxValue(2);
         } else {
-            newColorInt = Color.argb((int) av, (int) rv, (int) gv, (int) bv);
-            newColor = Color.pack(newColorInt);
+            c0Min = c1Min = c2Min = 0.0f;
+            c0Max = c1Max = c2Max = 255.0f;
         }
-        vPreview.setBackgroundColor(newColorInt);
-    }
+        int radix = colorRep ? 10 : Settings.INST.colorIntCompRadix();
+        c0InputType = c1InputType = c2InputType = colorRep ? EDITOR_TYPE_NUM_DEC_SIGNED : radix <= 10 ? EDITOR_TYPE_NUM : 0;
+        KeyListener keyListener = colorRep ? null : radix == 16 ? KEY_LISTENER_HEX : null;
+        prop = new Properties(colorRep, false, "R", "G", "B",
+                c0Min, c0Max, c1Min, c1Max, c2Min, c2Max, c0InputType, c1InputType, c2InputType, keyListener);
 
-    private void showOtherColorPickers(AlertDialog dialog, OnColorPickListener l) {
-        dialog.findViewById(R.id.b_cmyk).setOnClickListener(v ->
-                CmykColorPicker.make(context, l, newColor).show());
+        binding.sColorIntCompNumSysLabel.setVisibility(colorRep ? View.GONE : View.VISIBLE);
+        binding.sColorIntCompNumSys.setVisibility(colorRep ? View.GONE : View.VISIBLE);
+        binding.tvColorSpaceLabel.setVisibility(colorRep ? View.VISIBLE : View.GONE);
+        binding.tvColorSpace.setVisibility(colorRep ? View.VISIBLE : View.GONE);
+        if (colorRep) {
+            binding.tvColorSpace.setText(colorSpace.toString());
+        } else {
+            binding.sColorIntCompNumSys.setSelection(Settings.INST.colorIntCompRadix() <= 10 ? 1 : 0);
+        }
+        if (cpl != null) {
+            binding.sColorRep.setSelection(colorRep ? 1 : 0);
+            binding.sColorRep.setOnItemSelectedListener((OnItemSelectedListener) (parent, view, position, id) -> {
+                Settings.INST.pref().edit().putBoolean(Settings.KEY_CR, position == 1).apply();
+                Settings.INST.update(Settings.KEY_CR);
+                cpl.onChange();
+            });
+            binding.sColorIntCompNumSys.setOnItemSelectedListener((OnItemSelectedListener) (parent, view, position, id) -> {
+                Settings.INST.pref().edit().putInt(Settings.KEY_CIR, position == 1 ? 10 : 16).apply();
+                Settings.INST.update(Settings.KEY_CIR);
+                cpl.onChange();
+            });
+        }
 
-        dialog.findViewById(R.id.b_hsv).setOnClickListener(v ->
-                HsvColorPicker.make(context, l, newColor).show());
-
-        dialog.findViewById(R.id.b_yuv).setOnClickListener(v ->
-                YuvColorPicker.make(context, l, newColor).show());
-
-        dialog.findViewById(R.id.b_lab).setOnClickListener(v ->
-                LabColorPicker.make(context, l, newColor).show());
-
-        dialog.findViewById(R.id.b_xyz).setOnClickListener(v ->
-                XyzColorPicker.make(context, l, newColor).show());
-
-        dialog.findViewById(R.id.b_xyy).setOnClickListener(v ->
-                XyYColorPicker.make(context, l, newColor).show());
-
-        final Button bMoreColorPickers = dialog.findViewById(R.id.b_more);
-        final LinearLayout llMoreColorPickers = dialog.findViewById(R.id.ll_more);
-        bMoreColorPickers.setOnClickListener(v -> {
-            v.setVisibility(View.GONE);
-            llMoreColorPickers.setVisibility(View.VISIBLE);
-        });
+        this.color = color;
+        colorInt = Color.toArgb(color);
+        rgb = colorRep ? new float[]{Color.red(color), Color.green(color), Color.blue(color)} : null;
     }
 
     @Override
-    public void show() {
-        final AlertDialog dialog = dialogBuilder.show();
+    long color() {
+        return color;
+    }
 
-        sAlpha = dialog.findViewById(R.id.s_alpha);
-        sRed = dialog.findViewById(R.id.s_comp_0);
-        sGreen = dialog.findViewById(R.id.s_comp_1);
-        sBlue = dialog.findViewById(R.id.s_comp_2);
-        tietAlpha = dialog.findViewById(R.id.tiet_alpha);
-        tietRed = dialog.findViewById(R.id.tiet_comp_0);
-        tietGreen = dialog.findViewById(R.id.tiet_comp_1);
-        tietBlue = dialog.findViewById(R.id.tiet_comp_2);
-        vPreview = dialog.findViewById(R.id.v_color);
+    @Override
+    int colorInt() {
+        return colorInt;
+    }
 
-        if (type) {
-            colorSpace = Color.colorSpace(oldColor);
+    @Override
+    float getComponent(int index) {
+        return colorRep ? rgb[index] : colorInt >> (2 - index) * 8 & 0xFF;
+    }
 
-            dialog.findViewById(R.id.ll_color_space).setVisibility(View.VISIBLE);
-            sAlpha.setValueFrom(colorSpace.getMinValue(3));
-            sAlpha.setValueTo(colorSpace.getMaxValue(3));
-            sRed.setValueFrom(colorSpace.getMinValue(0));
-            sRed.setValueTo(colorSpace.getMaxValue(0));
-            sGreen.setValueFrom(colorSpace.getMinValue(1));
-            sGreen.setValueTo(colorSpace.getMaxValue(1));
-            sBlue.setValueFrom(colorSpace.getMinValue(2));
-            sBlue.setValueTo(colorSpace.getMaxValue(2));
-            tietAlpha.setInputType(ColorPicker.EDITOR_TYPE_NUM_DEC);
-            tietRed.setInputType(ColorPicker.EDITOR_TYPE_NUM_DEC_SIGNED);
-            tietGreen.setInputType(ColorPicker.EDITOR_TYPE_NUM_DEC_SIGNED);
-            tietBlue.setInputType(ColorPicker.EDITOR_TYPE_NUM_DEC_SIGNED);
-            ((TextView) dialog.findViewById(R.id.tv_color_space)).setText(colorSpace.toString());
+    @Override
+    void setAlpha(float a) {
+        if (colorRep) {
+            color = ColorUtils.setAlpha(color, a);
         } else {
-            sAlpha.setStepSize(1.0f);
-            sRed.setStepSize(1.0f);
-            sGreen.setStepSize(1.0f);
-            sBlue.setStepSize(1.0f);
-            if (radix <= 10) {
-                tietAlpha.setInputType(ColorPicker.EDITOR_TYPE_NUM);
-                tietRed.setInputType(ColorPicker.EDITOR_TYPE_NUM);
-                tietGreen.setInputType(ColorPicker.EDITOR_TYPE_NUM);
-                tietBlue.setInputType(ColorPicker.EDITOR_TYPE_NUM);
-            } else if (radix == 16) {
-                tietAlpha.setKeyListener(ColorPicker.KEY_LISTENER_HEX);
-                tietRed.setKeyListener(ColorPicker.KEY_LISTENER_HEX);
-                tietGreen.setKeyListener(ColorPicker.KEY_LISTENER_HEX);
-                tietBlue.setKeyListener(ColorPicker.KEY_LISTENER_HEX);
-            }
+            colorInt = ColorUtils.setAlpha(colorInt, (int) a);
         }
+        setColor();
+    }
 
-        sAlpha.addOnChangeListener((OnSliderValueChangeListener) (slider, value) -> tietAlpha.setText(type ? String.valueOf(value) : String.format(format, (int) value)));
-        sRed.addOnChangeListener((OnSliderValueChangeListener) (slider, value) -> tietRed.setText(type ? String.valueOf(value) : String.format(format, (int) value)));
-        sGreen.addOnChangeListener((OnSliderValueChangeListener) (slider, value) -> tietGreen.setText(type ? String.valueOf(value) : String.format(format, (int) value)));
-        sBlue.addOnChangeListener((OnSliderValueChangeListener) (slider, value) -> tietBlue.setText(type ? String.valueOf(value) : String.format(format, (int) value)));
-        tietAlpha.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(s, sAlpha));
-        tietRed.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(s, sRed));
-        tietGreen.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(s, sGreen));
-        tietBlue.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(s, sBlue));
-
-        if (type) {
-            loadColor(oldColor, true);
+    @Override
+    void setComponent(@IntRange(from = 0, to = 2) int index, float c) {
+        if (colorRep) {
+            rgb[index] = c;
+            color = ColorUtils.set(color, index, c);
         } else {
-            loadColor(Color.toArgb(oldColor), true);
+            colorInt = ColorUtils.set(colorInt, index, (int) c);
         }
+        setColor();
+    }
 
-        showOtherColorPickers(dialog, (oldColor, newColor) -> {
-            if (type) {
-                loadColor(newColor, false);
-            } else {
-                loadColor(Color.toArgb(newColor), false);
-            }
-        });
+    private void setColor() {
+        if (colorRep) {
+            colorInt = ColorUtils.convert(rgb[0], rgb[1], rgb[2], Color.alpha(color), connector);
+        } else {
+            color = Color.pack(colorInt);
+        }
     }
 }

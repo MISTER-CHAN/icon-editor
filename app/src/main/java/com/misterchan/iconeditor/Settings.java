@@ -13,6 +13,7 @@ public class Settings {
     private static final String KEY_ASHA = "asha"; // Automatically Set Has Alpha
     public static final String KEY_CFU = "cfu"; // Check for Updates
     public static final String KEY_CIR = "cir"; // Color Int Component Radix
+    public static final String KEY_CP = "cp"; // Color Picker
     public static final String KEY_CR = "cr"; // Color Representation
     private static final String KEY_FB = "fb"; // Filter Bitmap
     public static final String KEY_FL = "fl"; // Frame List
@@ -28,7 +29,9 @@ public class Settings {
     private boolean newLayerLevel = false;
     private boolean pickInHsv = false;
     private int colorIntCompRadix = 16;
+    private int colorPicker = 0;
     public MainActivity mainActivity;
+    private SharedPreferences preferences;
     private String colorIntCompFormat = FORMAT_02X;
 
     private Settings() {
@@ -46,6 +49,10 @@ public class Settings {
         return colorIntCompRadix;
     }
 
+    public int colorPicker() {
+        return colorPicker;
+    }
+
     public boolean colorRep() {
         return colorRep;
     }
@@ -58,35 +65,38 @@ public class Settings {
         return newLayerLevel;
     }
 
-    public boolean pickInHsv() {
-        return pickInHsv;
+    public SharedPreferences pref() {
+        return preferences;
     }
 
     public void update(SharedPreferences preferences) {
-        update(preferences, KEY_CIR);
-        update(preferences, KEY_CR);
-        update(preferences, KEY_ASHA);
-        update(preferences, KEY_FB);
-        update(preferences, KEY_HMS);
-        update(preferences, KEY_MT);
-        update(preferences, KEY_NLL);
-        update(preferences, KEY_PIH);
+        this.preferences = preferences;
+        update(KEY_CIR);
+        update(KEY_CP);
+        update(KEY_CR);
+        update(KEY_ASHA);
+        update(KEY_FB);
+        update(KEY_HMS);
+        update(KEY_MT);
+        update(KEY_NLL);
+        update(KEY_PIH);
     }
 
-    public void update(SharedPreferences preferences, String key) {
+    public void update(String key) {
         switch (key) {
             case KEY_ASHA -> autoSetHasAlpha = preferences.getBoolean(KEY_ASHA, false);
             case KEY_CIR -> {
                 try {
-                    colorIntCompRadix = Integer.parseUnsignedInt(preferences.getString(KEY_CIR, "16"));
+                    colorIntCompRadix = preferences.getInt(KEY_CIR, 16);
                 } catch (NumberFormatException e) {
                     colorIntCompRadix = 16;
                 }
                 colorIntCompFormat = colorIntCompRadix == 16 ? FORMAT_02X : FORMAT_D;
             }
+            case KEY_CP -> colorPicker = preferences.getInt(KEY_CP, 0);
             case KEY_CR -> {
-                colorRep = "l".equals(preferences.getString(KEY_CR, "i"));
-                mainActivity.setArgbColorType();
+                colorRep = preferences.getBoolean(KEY_CR, false);
+                mainActivity.setColorRep();
             }
             case KEY_FB -> mainActivity.setFilterBitmap(preferences.getBoolean(KEY_FB, false));
             case KEY_FL ->
