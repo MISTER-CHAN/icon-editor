@@ -6,319 +6,328 @@
     android:layout_height="match_parent"
     tools:context=".ui.MainActivity">
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="horizontal">
 
         <LinearLayout
-            android:id="@+id/ll_views_lower"
+            android:id="@+id/ll_palette"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_margin="4dp"
+            android:background="?android:attr/colorBackground"
+            android:elevation="8dp"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/ll_tools"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@color/black"
+                android:orientation="vertical">
+
+                <FrameLayout
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_margin="1dp">
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:scaleType="fitXY"
+                        android:src="@drawable/chessboard" />
+
+                    <View
+                        android:id="@+id/v_foreground_color"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@color/black" />
+                </FrameLayout>
+
+                <FrameLayout
+                    android:layout_width="32dp"
+                    android:layout_height="16dp"
+                    android:layout_marginHorizontal="1dp"
+                    android:layout_marginBottom="1dp">
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:scaleType="fitXY"
+                        android:src="@drawable/chessboard" />
+
+                    <View
+                        android:id="@+id/v_background_color"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@android:color/transparent" />
+                </FrameLayout>
+            </LinearLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_swatches"
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:fadingEdgeLength="16dp"
+                android:orientation="vertical"
+                android:requiresFadingEdge="vertical"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
+            <Button
+                android:id="@+id/b_swatches_add"
+                style="?attr/materialIconButtonStyle"
+                android:layout_width="32dp"
+                android:layout_height="wrap_content"
+                app:icon="@drawable/ic_add" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/ll_tools"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:background="?android:attr/colorBackground"
             android:elevation="8dp"
-            android:orientation="horizontal">
+            android:gravity="start"
+            android:orientation="vertical"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/fl_tool_options"
+            app:layout_constraintStart_toEndOf="@id/ll_palette"
+            app:layout_constraintTop_toTopOf="parent">
 
-            <LinearLayout
+            <com.google.android.material.button.MaterialButtonToggleGroup
+                android:id="@+id/btg_zoom"
+                style="@style/Widget_IconEditor_ButtonToggleGroup_ToolOptions"
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_margin="4dp"
-                android:gravity="center_horizontal"
-                android:orientation="vertical">
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@color/black"
-                    android:orientation="vertical">
-
-                    <FrameLayout
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:layout_margin="1dp">
-
-                        <ImageView
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:scaleType="fitXY"
-                            android:src="@drawable/chessboard" />
-
-                        <View
-                            android:id="@+id/v_foreground_color"
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:background="@color/black" />
-                    </FrameLayout>
-
-                    <FrameLayout
-                        android:layout_width="32dp"
-                        android:layout_height="16dp"
-                        android:layout_marginHorizontal="1dp"
-                        android:layout_marginBottom="1dp">
-
-                        <ImageView
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:scaleType="fitXY"
-                            android:src="@drawable/chessboard" />
-
-                        <View
-                            android:id="@+id/v_background_color"
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:background="@android:color/transparent" />
-                    </FrameLayout>
-                </LinearLayout>
-
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/rv_swatches"
-                    android:layout_width="wrap_content"
-                    android:layout_height="0dp"
-                    android:layout_weight="1"
-                    android:fadingEdgeLength="16dp"
-                    android:orientation="vertical"
-                    android:requiresFadingEdge="vertical"
-                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+                android:layout_height="wrap_content"
+                app:singleSelection="true">
 
                 <Button
-                    android:id="@+id/b_swatches_add"
-                    style="?attr/materialIconButtonStyle"
-                    android:layout_width="32dp"
+                    android:id="@+id/b_zoom"
+                    style="@style/Widget.IconEditor.Button.OutlinedButton.Dense"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    app:icon="@drawable/ic_add" />
-            </LinearLayout>
+                    android:text="@string/zoom" />
+            </com.google.android.material.button.MaterialButtonToggleGroup>
+
+            <ScrollView
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:fadingEdgeLength="16dp"
+                android:requiresFadingEdge="vertical"
+                android:scrollbars="none">
+
+                <include
+                    android:id="@+id/tools"
+                    layout="@layout/tools" />
+            </ScrollView>
+        </LinearLayout>
+
+        <FrameLayout
+            android:id="@+id/fl_tool_options"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:background="?android:attr/colorBackground"
+            android:elevation="8dp"
+            android:gravity="center_vertical"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/canvas"
+            app:layout_constraintStart_toEndOf="@id/ll_tools"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ScrollView
+                android:id="@+id/sv_options_brush"
+                style="@style/Widget_IconEditor_ScrollView_ToolOptions"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent">
+
+                <include
+                    android:id="@+id/options_brush"
+                    layout="@layout/options_brush" />
+            </ScrollView>
+
+            <ScrollView
+                android:id="@+id/sv_options_bucket_fill"
+                style="@style/Widget_IconEditor_ScrollView_ToolOptions"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent">
+
+                <include
+                    android:id="@+id/options_bucket_fill"
+                    layout="@layout/options_bucket_fill" />
+            </ScrollView>
+
+            <ScrollView
+                android:id="@+id/sv_options_clone_stamp"
+                style="@style/Widget_IconEditor_ScrollView_ToolOptions"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent">
+
+                <include
+                    android:id="@+id/options_clone_stamp"
+                    layout="@layout/options_clone_stamp" />
+            </ScrollView>
+
+            <ScrollView
+                android:id="@+id/sv_options_eraser"
+                style="@style/Widget_IconEditor_ScrollView_ToolOptions"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent">
+
+                <include
+                    android:id="@+id/options_eraser"
+                    layout="@layout/options_eraser" />
+            </ScrollView>
+
+            <ScrollView
+                android:id="@+id/sv_options_eyedropper"
+                style="@style/Widget_IconEditor_ScrollView_ToolOptions"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent">
+
+                <include
+                    android:id="@+id/options_eyedropper"
+                    layout="@layout/options_eyedropper" />
+            </ScrollView>
+
+            <ScrollView
+                android:id="@+id/sv_options_gradient"
+                style="@style/Widget_IconEditor_ScrollView_ToolOptions"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent">
+
+                <include
+                    android:id="@+id/options_gradient"
+                    layout="@layout/options_gradient" />
+            </ScrollView>
+
+            <ScrollView
+                android:id="@+id/sv_options_gradient_line"
+                style="@style/Widget_IconEditor_ScrollView_ToolOptions"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent">
+
+                <include
+                    android:id="@+id/options_gradient_line"
+                    layout="@layout/options_gradient_line" />
+            </ScrollView>
+
+            <ScrollView
+                android:id="@+id/sv_options_magic_eraser"
+                style="@style/Widget_IconEditor_ScrollView_ToolOptions"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent">
+
+                <include
+                    android:id="@+id/options_magic_eraser"
+                    layout="@layout/options_magic_eraser" />
+            </ScrollView>
+
+            <ScrollView
+                android:id="@+id/sv_options_magic_paint"
+                style="@style/Widget_IconEditor_ScrollView_ToolOptions"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent">
+
+                <include
+                    android:id="@+id/options_magic_paint"
+                    layout="@layout/options_magic_paint" />
+            </ScrollView>
+
+            <ScrollView
+                android:id="@+id/sv_options_patcher"
+                style="@style/Widget_IconEditor_ScrollView_ToolOptions"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent">
+
+                <include
+                    android:id="@+id/options_patcher"
+                    layout="@layout/options_patcher" />
+            </ScrollView>
+
+            <ScrollView
+                android:id="@+id/sv_options_path"
+                style="@style/Widget_IconEditor_ScrollView_ToolOptions"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent">
+
+                <include
+                    android:id="@+id/options_path"
+                    layout="@layout/options_path" />
+            </ScrollView>
+
+            <ScrollView
+                android:id="@+id/sv_options_pencil"
+                style="@style/Widget_IconEditor_ScrollView_ToolOptions"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent">
+
+                <include
+                    android:id="@+id/options_pencil"
+                    layout="@layout/options_pencil" />
+            </ScrollView>
+
+            <ScrollView
+                android:id="@+id/sv_options_shape"
+                style="@style/Widget_IconEditor_ScrollView_ToolOptions"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent">
+
+                <include
+                    android:id="@+id/options_shape"
+                    layout="@layout/options_shape" />
+            </ScrollView>
 
             <LinearLayout
+                android:id="@+id/ll_options_text"
+                style="@style/Widget_IconEditor_LinearLayout_ToolOptions"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:gravity="start"
-                android:orientation="vertical">
+                android:visibility="invisible">
 
-                <com.google.android.material.button.MaterialButtonToggleGroup
-                    android:id="@+id/btg_zoom"
-                    style="@style/Widget_IconEditor_ButtonToggleGroup_ToolOptions"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    app:singleSelection="true">
-
-                    <Button
-                        android:id="@+id/b_zoom"
-                        style="@style/Widget.IconEditor.Button.OutlinedButton.Dense"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/zoom" />
-                </com.google.android.material.button.MaterialButtonToggleGroup>
-
-                <ScrollView
-                    android:layout_width="wrap_content"
-                    android:layout_height="0dp"
-                    android:layout_weight="1"
-                    android:fadingEdgeLength="16dp"
-                    android:requiresFadingEdge="vertical"
-                    android:scrollbars="none">
-
-                    <include
-                        android:id="@+id/tools"
-                        layout="@layout/tools" />
-                </ScrollView>
+                <include
+                    android:id="@+id/options_text"
+                    layout="@layout/options_text" />
             </LinearLayout>
 
-            <FrameLayout
-                android:id="@+id/fl_tool_options"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical">
-
-                <ScrollView
-                    android:id="@+id/sv_options_brush"
-                    style="@style/Widget_IconEditor_ScrollView_ToolOptions"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent">
-
-                    <include
-                        android:id="@+id/options_brush"
-                        layout="@layout/options_brush" />
-                </ScrollView>
-
-                <ScrollView
-                    android:id="@+id/sv_options_bucket_fill"
-                    style="@style/Widget_IconEditor_ScrollView_ToolOptions"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent">
-
-                    <include
-                        android:id="@+id/options_bucket_fill"
-                        layout="@layout/options_bucket_fill" />
-                </ScrollView>
-
-                <ScrollView
-                    android:id="@+id/sv_options_clone_stamp"
-                    style="@style/Widget_IconEditor_ScrollView_ToolOptions"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent">
-
-                    <include
-                        android:id="@+id/options_clone_stamp"
-                        layout="@layout/options_clone_stamp" />
-                </ScrollView>
-
-                <ScrollView
-                    android:id="@+id/sv_options_eraser"
-                    style="@style/Widget_IconEditor_ScrollView_ToolOptions"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent">
-
-                    <include
-                        android:id="@+id/options_eraser"
-                        layout="@layout/options_eraser" />
-                </ScrollView>
-
-                <ScrollView
-                    android:id="@+id/sv_options_eyedropper"
-                    style="@style/Widget_IconEditor_ScrollView_ToolOptions"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent">
-
-                    <include
-                        android:id="@+id/options_eyedropper"
-                        layout="@layout/options_eyedropper" />
-                </ScrollView>
-
-                <ScrollView
-                    android:id="@+id/sv_options_gradient"
-                    style="@style/Widget_IconEditor_ScrollView_ToolOptions"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent">
-
-                    <include
-                        android:id="@+id/options_gradient"
-                        layout="@layout/options_gradient" />
-                </ScrollView>
-
-                <ScrollView
-                    android:id="@+id/sv_options_gradient_line"
-                    style="@style/Widget_IconEditor_ScrollView_ToolOptions"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent">
-
-                    <include
-                        android:id="@+id/options_gradient_line"
-                        layout="@layout/options_gradient_line" />
-                </ScrollView>
-
-                <ScrollView
-                    android:id="@+id/sv_options_magic_eraser"
-                    style="@style/Widget_IconEditor_ScrollView_ToolOptions"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent">
-
-                    <include
-                        android:id="@+id/options_magic_eraser"
-                        layout="@layout/options_magic_eraser" />
-                </ScrollView>
-
-                <ScrollView
-                    android:id="@+id/sv_options_magic_paint"
-                    style="@style/Widget_IconEditor_ScrollView_ToolOptions"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent">
-
-                    <include
-                        android:id="@+id/options_magic_paint"
-                        layout="@layout/options_magic_paint" />
-                </ScrollView>
-
-                <ScrollView
-                    android:id="@+id/sv_options_patcher"
-                    style="@style/Widget_IconEditor_ScrollView_ToolOptions"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent">
-
-                    <include
-                        android:id="@+id/options_patcher"
-                        layout="@layout/options_patcher" />
-                </ScrollView>
-
-                <ScrollView
-                    android:id="@+id/sv_options_path"
-                    style="@style/Widget_IconEditor_ScrollView_ToolOptions"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent">
-
-                    <include
-                        android:id="@+id/options_path"
-                        layout="@layout/options_path" />
-                </ScrollView>
-
-                <ScrollView
-                    android:id="@+id/sv_options_pencil"
-                    style="@style/Widget_IconEditor_ScrollView_ToolOptions"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent">
-
-                    <include
-                        android:id="@+id/options_pencil"
-                        layout="@layout/options_pencil" />
-                </ScrollView>
-
-                <ScrollView
-                    android:id="@+id/sv_options_shape"
-                    style="@style/Widget_IconEditor_ScrollView_ToolOptions"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent">
-
-                    <include
-                        android:id="@+id/options_shape"
-                        layout="@layout/options_shape" />
-                </ScrollView>
-
-                <LinearLayout
-                    android:id="@+id/ll_options_text"
-                    style="@style/Widget_IconEditor_LinearLayout_ToolOptions"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:visibility="invisible">
-
-                    <include
-                        android:id="@+id/options_text"
-                        layout="@layout/options_text" />
-                </LinearLayout>
-
-                <ScrollView
-                    android:id="@+id/sv_options_transformer"
-                    style="@style/Widget_IconEditor_ScrollView_ToolOptions"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent">
-
-                    <include
-                        android:id="@+id/options_transformer"
-                        layout="@layout/options_transformer" />
-                </ScrollView>
-            </FrameLayout>
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/ll_canvas"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:orientation="vertical">
-
-            <include
-                android:id="@+id/canvas"
-                layout="@layout/canvas"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1" />
-
-            <TextView
-                android:id="@+id/tv_status"
+            <ScrollView
+                android:id="@+id/sv_options_transformer"
+                style="@style/Widget_IconEditor_ScrollView_ToolOptions"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="4dp"
-                android:maxLines="1" />
-        </LinearLayout>
-    </LinearLayout>
+                android:layout_height="match_parent">
+
+                <include
+                    android:id="@+id/options_transformer"
+                    layout="@layout/options_transformer" />
+            </ScrollView>
+        </FrameLayout>
+
+        <include
+            android:id="@+id/canvas"
+            layout="@layout/canvas"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toTopOf="@id/tv_status"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/fl_tool_options"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/tv_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="4dp"
+            android:maxLines="1"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@id/fl_tool_options"
+            app:layout_constraintTop_toBottomOf="@id/canvas" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <LinearLayout
         android:id="@+id/ll_tl"

@@ -9,7 +9,7 @@ import androidx.annotation.Size;
 import com.misterchan.iconeditor.Settings;
 import com.misterchan.iconeditor.util.ColorUtils;
 
-class LabColorPicker extends ColorPicker {
+public class LabColorPicker extends ColorPicker {
     private static final ColorSpace LAB = ColorSpace.get(ColorSpace.Named.CIE_LAB);
 
     private final ColorSpace.Connector connectorFromLab, connectorToSrgb;
@@ -20,10 +20,10 @@ class LabColorPicker extends ColorPicker {
     @ColorLong
     private long color;
 
-    LabColorPicker(long color) {
-        prop = new Properties(true, false, "L*", "a*", "b*",
+    public LabColorPicker(long color) {
+        prop = new Properties("L*", "a*", "b*",
                 0.0f, 100.0f, -128.0f, 128.0f, -128.0f, 128.0f,
-                EDITOR_TYPE_NUM_DEC, EDITOR_TYPE_NUM_DEC_SIGNED, EDITOR_TYPE_NUM_DEC_SIGNED, null);
+                EDITOR_TYPE_NUM_DEC, EDITOR_TYPE_NUM_DEC_SIGNED, EDITOR_TYPE_NUM_DEC_SIGNED);
 
         ColorSpace colorSpace = Color.colorSpace(color);
         connectorFromLab = ColorSpace.connect(LAB, colorSpace);
@@ -35,27 +35,27 @@ class LabColorPicker extends ColorPicker {
     }
 
     @Override
-    long color() {
+    public long color() {
         return color;
     }
 
     @Override
-    int colorInt() {
+    public int colorInt() {
         return ColorUtils.convert(color, connectorToSrgb);
     }
 
     @Override
-    float getComponent(int index) {
+    public float getComponent(int index) {
         return lab[index];
     }
 
     @Override
-    void setAlpha(float a) {
+    public void setAlpha(float a) {
         color = ColorUtils.setAlpha(color, Settings.INST.colorRep() ? a : a / 0xFF);
     }
 
     @Override
-    void setComponent(int index, float c) {
+    public void setComponent(int index, float c) {
         lab[index] = c;
         color = Color.convert(lab[0], lab[1], lab[2], Color.alpha(color), connectorFromLab);
     }

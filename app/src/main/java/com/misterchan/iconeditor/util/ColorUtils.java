@@ -78,19 +78,8 @@ public class ColorUtils {
         hsv[2] = max;
     }
 
-    @FloatRange(from = 0.0f, to = 1.0f)
-    public static float con(float a) {
-        return a <= 0.0f ? 0.0f : a >= 1.0f ? 1.0f : a;
-    }
-
-    @IntRange(from = 0x00, to = 0xFF)
-    public static int con(int a) {
-        return a <= 0x00 ? 0x00 : a >= 0xFF ? 0xFF : a;
-    }
-
-
     /**
-     * Convert color to sRGB with an existing connector. This is more efficient than {@link Color#toArgb(long)}.
+     * Convert to sRGB with an existing connector. This is a little bit more efficient than {@link Color#toArgb(long)}.
      */
     @ColorInt
     public static int convert(long color, ColorSpace.Connector connector) {
@@ -148,9 +137,9 @@ public class ColorUtils {
         final float h = hsv[0], s = hsv[1], v = hsv[2];
         final int hi = (int) (h / 60.0f);
         final float f = h / 60.0f - hi;
-        final float p = con(v * (1.0f - s));
-        final float q = con(v * (1.0f - f * s));
-        final float t = con(v * (1.0f - (1.0f - f) * s));
+        final float p = sat(v * (1.0f - s));
+        final float q = sat(v * (1.0f - f * s));
+        final float t = sat(v * (1.0f - (1.0f - f) * s));
         return switch (hi) {
             case 0 -> Color.argb(0.0f, v, t, p);
             case 1 -> Color.argb(0.0f, q, v, p);
@@ -180,12 +169,27 @@ public class ColorUtils {
         return red << 16 | green << 8 | blue;
     }
 
+    /**
+     * <b>Saturate</b> (a.k.a. <b>clamp</b>, <b>constrain</b>)
+     */
+    @FloatRange(from = 0.0f, to = 1.0f)
+    public static float sat(float c) {
+        return c <= 0.0f ? 0.0f : c >= 1.0f ? 1.0f : c;
+    }
+
+    /**
+     * <b>Saturate</b> (a.k.a. <b>clamp</b>, <b>constrain</b>)
+     */
+    @IntRange(from = 0x00, to = 0xFF)
+    public static int sat(int c) {
+        return c <= 0x00 ? 0x00 : c >= 0xFF ? 0xFF : c;
+    }
 
     /**
      * @param index The index of <code>{</code>R<code>, </code>G<code>, </code>B<code>}</code>
      */
     @ColorInt
-    public static int set(@ColorInt int color, @IntRange(from = 0, to = 2) int index, @IntRange(from = 0x00, to = 0xFF) int comp) {
+    public static int setComponent(@ColorInt int color, @IntRange(from = 0, to = 2) int index, @IntRange(from = 0x00, to = 0xFF) int comp) {
         return comp << ((2 - index) << 3) | color & ~(0xFF << ((2 - index) << 3));
     }
 
@@ -198,7 +202,7 @@ public class ColorUtils {
      * @param index The index of <code>{</code>R<code>, </code>G<code>, </code>B<code>}</code>
      */
     @ColorLong
-    public static long set(@ColorLong long color, @IntRange(from = 0, to = 2) int index, float comp) {
+    public static long setComponent(@ColorLong long color, @IntRange(from = 0, to = 2) int index, float comp) {
         ColorSpace colorSpace = Color.colorSpace(color);
         if (colorSpace.isSrgb()) {
             return (long) (comp * 255.0f + 0.5) << ((2 - index) << 3) << 32 | color & ~(0xFFL << ((2 - index) << 3) << 32);
@@ -216,7 +220,7 @@ public class ColorUtils {
         }
 
         long a = (int) (Math.max(0.0f, Math.min(alpha, 1.0f)) * 1023.0f + 0.5f) & 0x3FFL;
-        return a << 6 | color & 0xFFFFFFFFFFFF007FL;
+        return a << 6 | color & 0xFFFFFFFFFFFF003FL;
     }
 
     @ColorLong
@@ -227,6 +231,6 @@ public class ColorUtils {
         }
 
         long a = (int) (Math.max(0.0f, Math.min(alpha / 255.0f, 1.0f)) * 1023.0f + 0.5f) & 0x3FFL;
-        return a << 6 | color & 0xFFFFFFFFFFFF007FL;
+        return a << 6 | color & 0xFFFFFFFFFFFF003FL;
     }
 }

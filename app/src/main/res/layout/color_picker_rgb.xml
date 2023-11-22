@@ -3,7 +3,6 @@
     android:id="@+id/gl"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginHorizontal="24dp"
     android:columnCount="2"
     android:rowCount="3">
 
@@ -29,7 +28,7 @@
     <Spinner
         android:id="@+id/s_color_int_comp_num_sys"
         android:layout_gravity="end|center_vertical"
-        android:layout_marginVertical="8dp"
+        android:layout_marginTop="8dp"
         android:entries="@array/color_int_comp_num_sys"
         android:minHeight="48dp" />
 
@@ -42,6 +41,6 @@
         android:id="@+id/tv_color_space"
         android:layout_width="0dp"
         android:layout_gravity="end|fill_horizontal"
-        android:layout_marginVertical="8dp"
+        android:layout_marginTop="8dp"
         android:textAlignment="textEnd" />
 </GridLayout>

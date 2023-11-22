@@ -10,7 +10,7 @@ import androidx.annotation.Size;
 import com.misterchan.iconeditor.Settings;
 import com.misterchan.iconeditor.util.ColorUtils;
 
-class YuvColorPicker extends ColorPicker {
+public class YuvColorPicker extends ColorPicker {
     private static final float[] RGB_TO_YUV = new ColorMatrix() {
         {
             setRGB2YUV();
@@ -31,10 +31,10 @@ class YuvColorPicker extends ColorPicker {
     @ColorLong
     private long color;
 
-    YuvColorPicker(long color) {
-        prop = new Properties(true, false, "Y", "U", "V",
+    public YuvColorPicker(long color) {
+        prop = new Properties("Y", "U", "V",
                 0.0f, 1.0f, -0.5f, 0.5f, -0.5f, 0.5f,
-                EDITOR_TYPE_NUM_DEC, EDITOR_TYPE_NUM_DEC_SIGNED, EDITOR_TYPE_NUM_DEC_SIGNED, null);
+                EDITOR_TYPE_NUM_DEC, EDITOR_TYPE_NUM_DEC_SIGNED, EDITOR_TYPE_NUM_DEC_SIGNED);
 
         connector = ColorSpace.connect(Color.colorSpace(color));
 
@@ -46,12 +46,12 @@ class YuvColorPicker extends ColorPicker {
     }
 
     @Override
-    long color() {
+    public long color() {
         return color;
     }
 
     @Override
-    int colorInt() {
+    public int colorInt() {
         return ColorUtils.convert(rgb[0], rgb[1], rgb[2], Color.alpha(color), connector);
     }
 
@@ -62,19 +62,19 @@ class YuvColorPicker extends ColorPicker {
     }
 
     @Override
-    float getComponent(int index) {
+    public float getComponent(int index) {
         return yuv[index];
     }
 
     @Override
-    void setAlpha(float a) {
+    public void setAlpha(float a) {
         color = ColorUtils.setAlpha(color, Settings.INST.colorRep() ? a : a / 0xFF);
     }
 
     @Override
-    void setComponent(int index, float c) {
+    public void setComponent(int index, float c) {
         yuv[index] = c;
         convert(yuv, rgb, YUV_TO_RGB);
-        color = ColorUtils.set(color, index, rgb[index]);
+        color = ColorUtils.setComponent(color, index, rgb[index]);
     }
 }

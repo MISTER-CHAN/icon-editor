@@ -57,9 +57,9 @@ public class BitmapUtils {
                                               final float mul, final float add) {
         for (int i = 0; i < src.length; ++i) {
             final int r = Color.red(src[i]), g = Color.green(src[i]), b = Color.blue(src[i]);
-            final int r_ = ColorUtils.con((int) (r * mul + add));
-            final int g_ = ColorUtils.con((int) (g * mul + add));
-            final int b_ = ColorUtils.con((int) (b * mul + add));
+            final int r_ = ColorUtils.sat((int) (r * mul + add));
+            final int g_ = ColorUtils.sat((int) (g * mul + add));
+            final int b_ = ColorUtils.sat((int) (b * mul + add));
             dst[i] = ColorUtils.clipped(src[i], r_, g_, b_);
         }
     }
@@ -77,10 +77,10 @@ public class BitmapUtils {
                                               @Size(8) final float[] lighting) {
         for (int i = 0; i < src.length; ++i) {
             final int r = Color.red(src[i]), g = Color.green(src[i]), b = Color.blue(src[i]), a = Color.alpha(src[i]);
-            final int r_ = ColorUtils.con((int) (r * lighting[0] + lighting[1]));
-            final int g_ = ColorUtils.con((int) (g * lighting[2] + lighting[3]));
-            final int b_ = ColorUtils.con((int) (b * lighting[4] + lighting[5]));
-            final int a_ = ColorUtils.con((int) (a * lighting[6] + lighting[7]));
+            final int r_ = ColorUtils.sat((int) (r * lighting[0] + lighting[1]));
+            final int g_ = ColorUtils.sat((int) (g * lighting[2] + lighting[3]));
+            final int b_ = ColorUtils.sat((int) (b * lighting[4] + lighting[5]));
+            final int a_ = ColorUtils.sat((int) (a * lighting[6] + lighting[7]));
             dst[i] = Color.argb(a_, r_, g_, b_);
         }
     }
@@ -101,10 +101,10 @@ public class BitmapUtils {
                                                  @Size(20) final float[] colorMatrix) {
         for (int i = 0; i < src.length; ++i) {
             final int r = Color.red(src[i]), g = Color.green(src[i]), b = Color.blue(src[i]), a = Color.alpha(src[i]);
-            final int r_ = ColorUtils.con((int) (r * colorMatrix[0] + g * colorMatrix[1] + b * colorMatrix[2] + a * colorMatrix[3] + colorMatrix[4]));
-            final int g_ = ColorUtils.con((int) (r * colorMatrix[5] + g * colorMatrix[6] + b * colorMatrix[7] + a * colorMatrix[8] + colorMatrix[9]));
-            final int b_ = ColorUtils.con((int) (r * colorMatrix[10] + g * colorMatrix[11] + b * colorMatrix[12] + a * colorMatrix[13] + colorMatrix[14]));
-            final int a_ = ColorUtils.con((int) (r * colorMatrix[15] + g * colorMatrix[16] + b * colorMatrix[17] + a * colorMatrix[18] + colorMatrix[19]));
+            final int r_ = ColorUtils.sat((int) (r * colorMatrix[0] + g * colorMatrix[1] + b * colorMatrix[2] + a * colorMatrix[3] + colorMatrix[4]));
+            final int g_ = ColorUtils.sat((int) (r * colorMatrix[5] + g * colorMatrix[6] + b * colorMatrix[7] + a * colorMatrix[8] + colorMatrix[9]));
+            final int b_ = ColorUtils.sat((int) (r * colorMatrix[10] + g * colorMatrix[11] + b * colorMatrix[12] + a * colorMatrix[13] + colorMatrix[14]));
+            final int a_ = ColorUtils.sat((int) (r * colorMatrix[15] + g * colorMatrix[16] + b * colorMatrix[17] + a * colorMatrix[18] + colorMatrix[19]));
             dst[i] = Color.argb(a_, r_, g_, b_);
         }
     }
@@ -463,7 +463,7 @@ public class BitmapUtils {
                     + (dg == 0.0f ? 0.0f : (g - fa * bg) / dg * rg)
                     + (db == 0.0f ? 0.0f : (b - fa * bb) / db * rb);
 
-            pixels[i] = Color.argb(ColorUtils.con(a_), fr, fg, fb);
+            pixels[i] = Color.argb(ColorUtils.sat(a_), fr, fg, fb);
         }
         bitmap.setPixels(pixels, 0, w, 0, 0, w, h);
     }
@@ -556,8 +556,8 @@ public class BitmapUtils {
             final int pixel = src[i];
             ColorUtils.colorToHSL(pixel, hsl);
             hsl[0] = (hsl[0] + deltaHsl[0] + 360.0f) % 360.0f;
-            hsl[1] = ColorUtils.con(hsl[1] + deltaHsl[1]);
-            hsl[2] = ColorUtils.con(hsl[2] + deltaHsl[2]);
+            hsl[1] = ColorUtils.sat(hsl[1] + deltaHsl[1]);
+            hsl[2] = ColorUtils.sat(hsl[2] + deltaHsl[2]);
             dst[i] = ColorUtils.clipped(pixel, ColorUtils.HSLToColor(hsl));
         }
     }
@@ -569,8 +569,8 @@ public class BitmapUtils {
             final int pixel = src[i];
             ColorUtils.colorToHSV(pixel, hsv);
             hsv[0] = (hsv[0] + deltaHsv[0] + 360.0f) % 360.0f;
-            hsv[1] = ColorUtils.con(hsv[1] + deltaHsv[1]);
-            hsv[2] = ColorUtils.con(hsv[2] + deltaHsv[2]);
+            hsv[1] = ColorUtils.sat(hsv[1] + deltaHsv[1]);
+            hsv[2] = ColorUtils.sat(hsv[2] + deltaHsv[2]);
             dst[i] = ColorUtils.clipped(pixel, ColorUtils.HSVToColor(hsv));
         }
     }

@@ -21,7 +21,7 @@ import com.misterchan.iconeditor.databinding.ColorPickerHsvBinding;
 import com.misterchan.iconeditor.util.BitmapUtils;
 import com.misterchan.iconeditor.util.ColorUtils;
 
-class HsvColorPicker extends ColorPicker {
+public class HsvColorPicker extends ColorPicker {
     private static final float THUMB_RADIUS = 20.0f;
 
     private static final Paint PAINT_THUMB = new Paint() {
@@ -34,11 +34,11 @@ class HsvColorPicker extends ColorPicker {
         }
     };
 
-    interface OnHChangeListener {
+    public interface OnHChangeListener {
         void onChange(float h);
     }
 
-    interface OnSVChangeListener {
+    public interface OnSVChangeListener {
         void onChange(float s, float v);
     }
 
@@ -57,10 +57,8 @@ class HsvColorPicker extends ColorPicker {
     private int colorInt;
 
     @SuppressLint("ClickableViewAccessibility")
-    HsvColorPicker(long color, ColorPickerHsvBinding binding, OnHChangeListener hl, OnSVChangeListener svl) {
-        prop = new Properties(true, false, "H", "S", "V",
-                0.0f, 360.0f, 0.0f, 100.0f, 0.0f, 100.0f,
-                EDITOR_TYPE_NUM_DEC, EDITOR_TYPE_NUM_DEC, EDITOR_TYPE_NUM_DEC, null);
+    public HsvColorPicker(long color, ColorPickerHsvBinding binding, OnHChangeListener hl, OnSVChangeListener svl) {
+        prop = new Properties("H", "S", "V", true);
 
         this.binding = binding;
         OneShotPreDrawListener.add(binding.ivHue, () -> {
@@ -85,19 +83,17 @@ class HsvColorPicker extends ColorPicker {
             drawSatVal();
         });
         binding.ivHue.setOnTouchListener((v, event) -> {
-            switch (event.getAction()) {
-                case MotionEvent.ACTION_DOWN, MotionEvent.ACTION_MOVE -> {
-                    hl.onChange(Math.min(Math.max(event.getX(), 0.0f), hueImageW) / hueImageW * 360.0f);
-                }
+            int action = event.getAction();
+            if (action == MotionEvent.ACTION_MOVE || action == MotionEvent.ACTION_DOWN) {
+                hl.onChange(Math.min(Math.max(event.getX(), 0.0f), hueImageW) / hueImageW * 360.0f);
             }
             return true;
         });
         binding.ivSatVal.setOnTouchListener((v, event) -> {
-            switch (event.getAction()) {
-                case MotionEvent.ACTION_DOWN, MotionEvent.ACTION_MOVE -> {
-                    svl.onChange(Math.min(Math.max(event.getX(), 0.0f), satValImageW) / satValImageW * 100.0f,
-                            (1.0f - Math.min(Math.max(event.getY(), 0.0f), satValImageH) / satValImageH) * 100.0f);
-                }
+            int action = event.getAction();
+            if (action == MotionEvent.ACTION_MOVE || action == MotionEvent.ACTION_DOWN) {
+                svl.onChange(Math.min(Math.max(event.getX(), 0.0f), satValImageW) / satValImageW * 100.0f,
+                        (1.0f - Math.min(Math.max(event.getY(), 0.0f), satValImageH) / satValImageH) * 100.0f);
             }
             return true;
         });
@@ -106,17 +102,17 @@ class HsvColorPicker extends ColorPicker {
     }
 
     @Override
-    long color() {
+    public long color() {
         return Color.pack(colorInt);
     }
 
     @Override
-    int colorInt() {
+    public int colorInt() {
         return colorInt;
     }
 
     @Override
-    void dismiss() {
+    public void dismiss() {
         hueBitmap.recycle();
         satValBitmap.recycle();
     }
@@ -146,22 +142,21 @@ class HsvColorPicker extends ColorPicker {
     }
 
     @Override
-    float getComponent(int index) {
+    public float getComponent(int index) {
         return index == 0 ? hsv[0] : hsv[index] * 100.0f;
     }
 
     @Override
-    void setAlpha(float a) {
+    public void setAlpha(float a) {
         colorInt = ColorUtils.setAlpha(colorInt, (int) (Settings.INST.colorRep() ? a * 0xFF : a));
     }
 
     @Override
-    void setComponent(@IntRange(from = 0, to = 2) int index, float c) {
-        switch (index) {
-            case 0 -> hsv[0] = c;
-            case 1, 2 -> hsv[index] = c / 100.0f;
-        }
-        colorInt = ColorUtils.clipped(colorInt, ColorUtils.HSVToColor(hsv));
+    public void setComponent(@IntRange(from = 0, to = 2) int index, float c) {
+        if (index == 1 || index == 2) c /= 100.0f;
+        if (hsv[index] == c) return;
+        hsv[index] = c;
+        colorInt = colorInt & Color.BLACK | ColorUtils.HSVToColor(hsv);
         if (index == 0) drawHue();
         drawSatVal();
     }

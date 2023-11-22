@@ -9,7 +9,7 @@ import androidx.annotation.Size;
 import com.misterchan.iconeditor.Settings;
 import com.misterchan.iconeditor.util.ColorUtils;
 
-class XyYColorPicker extends ColorPicker {
+public class XyYColorPicker extends ColorPicker {
     private final ColorSpace.Connector connectorFromXyz, connectorToXyz, connectorToSrgb;
 
     @Size(3)
@@ -18,10 +18,10 @@ class XyYColorPicker extends ColorPicker {
     @ColorLong
     private long color;
 
-    XyYColorPicker(long color) {
-        prop = new Properties(true, false, "x", "y", "Y",
+    public XyYColorPicker(long color) {
+        prop = new Properties("x", "y", "Y",
                 0.0f, 0.8f, 0.0f, 0.9f, -2.0f, 2.0f,
-                EDITOR_TYPE_NUM_DEC, EDITOR_TYPE_NUM_DEC, EDITOR_TYPE_NUM_DEC_SIGNED, null);
+                EDITOR_TYPE_NUM_DEC, EDITOR_TYPE_NUM_DEC, EDITOR_TYPE_NUM_DEC_SIGNED);
 
         ColorSpace colorSpace = Color.colorSpace(color);
         connectorFromXyz = ColorSpace.connect(XyzColorPicker.XYZ, colorSpace);
@@ -32,27 +32,27 @@ class XyYColorPicker extends ColorPicker {
     }
 
     @Override
-    long color() {
+    public long color() {
         return color;
     }
 
     @Override
-    int colorInt() {
+    public int colorInt() {
         return ColorUtils.convert(color, connectorToSrgb);
     }
 
     @Override
-    float getComponent(int index) {
+    public float getComponent(int index) {
         return xyY[index];
     }
 
     @Override
-    void setAlpha(float a) {
+    public void setAlpha(float a) {
         color = ColorUtils.setAlpha(color, Settings.INST.colorRep() ? a : a / 0xFF);
     }
 
     @Override
-    void setComponent(int index, float c) {
+    public void setComponent(int index, float c) {
         xyY[index] = c;
         final float yoy = xyY[2] / xyY[1], x = yoy * xyY[0], z = yoy * (1.0f - xyY[0] - xyY[1]);
         color = Color.convert(x, xyY[2], z, Color.alpha(color), connectorFromXyz);

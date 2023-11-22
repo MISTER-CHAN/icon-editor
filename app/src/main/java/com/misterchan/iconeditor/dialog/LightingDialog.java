@@ -15,7 +15,6 @@ import androidx.appcompat.app.AlertDialog;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.misterchan.iconeditor.R;
-import com.misterchan.iconeditor.colorpicker.ColorPickerDialog;
 
 public class LightingDialog {
 

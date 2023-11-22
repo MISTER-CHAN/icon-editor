@@ -77,7 +77,7 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.misterchan.iconeditor.BuildConfig;
 import com.misterchan.iconeditor.CellGrid;
-import com.misterchan.iconeditor.colorpicker.ColorPickerDialog;
+import com.misterchan.iconeditor.dialog.ColorPickerDialog;
 import com.misterchan.iconeditor.DrawingPrimitivePreview;
 import com.misterchan.iconeditor.EditPreview;
 import com.misterchan.iconeditor.FloatingLayer;
@@ -2310,9 +2310,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         }
     };
 
-    /**
-     * Callback to call on touch image view with mesh transformer
-     */
+    /** Callback to call on touch image view with mesh transformer */
     @SuppressLint("ClickableViewAccessibility")
     private final View.OnTouchListener onIVTouchWithMTListener = new OnIVTouchListener() {
         private int lastVertIndex;
@@ -2354,9 +2352,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         }
     };
 
-    /**
-     * Callback to call on touch image view with poly transformer
-     */
+    /** Callback to call on touch image view with poly transformer */
     @SuppressLint("ClickableViewAccessibility")
     private final View.OnTouchListener onIVTouchWithPTListener = new OnIVTouchListener() {
         private float[] src, dst, bmSrc, bmDst;
@@ -2452,9 +2448,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         }
     };
 
-    /**
-     * Callback to call on touch image view with rotation transformer
-     */
+    /** Callback to call on touch image view with rotation transformer */
     @SuppressLint({"ClickableViewAccessibility"})
     private final View.OnTouchListener onIVTouchWithRTListener = new OnIVTouchListener() {
         private double lastTheta;
@@ -2510,9 +2504,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         }
     };
 
-    /**
-     * Callback to call on touch image view with scale transformer
-     */
+    /** Callback to call on touch image view with scale transformer */
     @SuppressLint({"ClickableViewAccessibility"})
     private final View.OnTouchListener onIVTouchWithSTListener = new OnIVTouchListener() {
         private boolean hasDraggedBound = false;
@@ -2675,9 +2667,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         }
     };
 
-    /**
-     * Callback to call on touch image view with translation transformer
-     */
+    /** Callback to call on touch image view with translation transformer */
     @SuppressLint({"ClickableViewAccessibility"})
     private final View.OnTouchListener onIVTouchWithTTListener = new OnIVMultiTouchListener() {
         private float dx, dy;
@@ -4026,7 +4016,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         {
             final ViewGroup.LayoutParams lpNeg = activityMain.vBlockerNeg.getLayoutParams(), lpPos = activityMain.vBlockerPos.getLayoutParams();
             if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
-                lpNeg.width = activityMain.llCanvas.getLeft();
+                lpNeg.width = activityMain.canvas.getRoot().getLeft();
                 lpPos.width = activityMain.llTl.getHeight();
             } else {
                 final View canvasView = activityMain.canvas.getRoot();
@@ -5766,9 +5756,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         activityMain.canvas.iv.invalidate();
     }
 
-    /**
-     * @return The x coordinate on bitmap.
-     */
+    /** @return The x coordinate on bitmap. */
     public int toBitmapX(float x) {
         return (int) ((x - translationX) / scale) - layer.left;
     }
@@ -5781,9 +5769,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         return ((x - translationX) / scale) - layer.left;
     }
 
-    /**
-     * @return The y coordinate on bitmap.
-     */
+    /** @return The y coordinate on bitmap. */
     public int toBitmapY(float y) {
         return (int) ((y - translationY) / scale) - layer.top;
     }
@@ -5812,9 +5798,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         return unscaled * scale;
     }
 
-    /**
-     * @return The x coordinate on view.
-     */
+    /** @return The x coordinate on view. */
     public float toViewX(int x) {
         return translationX + (x + layer.left) * scale;
     }
@@ -5827,9 +5811,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         return translationX + x * scale;
     }
 
-    /**
-     * @return The y coordinate on view.
-     */
+    /** @return The y coordinate on view. */
     public float toViewY(int y) {
         return translationY + (y + layer.top) * scale;
     }

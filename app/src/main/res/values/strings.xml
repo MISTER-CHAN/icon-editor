@@ -72,18 +72,6 @@
     <string name="contiguous">Contiguous</string>
     <string name="contrast">Contrast</string>
     <string name="conversions">Conversions</string>
-    <string name="convert_from_cmyk">Convert from CMYK</string>
-    <string name="convert_from_hsv">Convert from HSV</string>
-    <string name="convert_from_lab">Convert from CIE L*a*b*</string>
-    <string name="convert_from_xyy">Convert from CIE xyY</string>
-    <string name="convert_from_xyz">Convert from CIE XYZ</string>
-    <string name="convert_from_yuv">Convert from YUV</string>
-    <string name="convert_cmyk_to_rgb">Convert CMYK to RGB</string>
-    <string name="convert_hsv_to_rgb">Convert HSV to RGB</string>
-    <string name="convert_lab_to_rgb">Convert CIE L*a*b* to RGB</string>
-    <string name="convert_xyy_to_rgb">Convert CIE xyY to RGB</string>
-    <string name="convert_xyz_to_rgb">Convert CIE XYZ to RGB</string>
-    <string name="convert_yuv_to_rgb">Convert YUV to RGB</string>
     <string name="coordinates" translatable="false">(%d, %d)</string>
     <string name="copy_noun">Copy</string>
     <string name="copy_verb">Copy</string>

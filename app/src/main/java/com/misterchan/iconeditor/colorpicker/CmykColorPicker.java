@@ -8,44 +8,42 @@ import androidx.annotation.Size;
 import com.misterchan.iconeditor.Settings;
 import com.misterchan.iconeditor.util.ColorUtils;
 
-class CmykColorPicker extends ColorPicker {
+public class CmykColorPicker extends ColorPicker {
     @Size(4)
     private final int[] cmyk = new int[4];
 
     @ColorInt
     private int colorInt;
 
-    CmykColorPicker(long color) {
-        prop = new Properties(false, true, "C", "M", "Y",
-                0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF,
-                EDITOR_TYPE_NUM, EDITOR_TYPE_NUM, EDITOR_TYPE_NUM, KEY_LISTENER_HEX);
+    public CmykColorPicker(long color) {
+        prop = new Properties(true, "C", "M", "Y");
 
         setCompsFromRgb(color);
     }
 
     @Override
-    long color() {
+    public long color() {
         return Color.pack(colorInt);
     }
 
     @Override
-    int colorInt() {
+    public int colorInt() {
         return colorInt;
     }
 
     @Override
-    float getComponent(int index) {
+    public float getComponent(int index) {
         return cmyk[index];
     }
 
     @Override
-    void setAlpha(float alpha) {
+    public void setAlpha(float alpha) {
         int a = (int) (Settings.INST.colorRep() ? alpha * 0xFF : alpha);
         colorInt = ColorUtils.setAlpha(colorInt, a);
     }
 
     @Override
-    void setComponent(int index, float comp) {
+    public void setComponent(int index, float comp) {
         cmyk[index] = (int) comp;
         int c = cmyk[0], m = cmyk[1], y = cmyk[2], k = cmyk[3];
         int invK = 0xFF - k;

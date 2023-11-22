@@ -1,7 +1,9 @@
-package com.misterchan.iconeditor.colorpicker;
+package com.misterchan.iconeditor.dialog;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.text.method.DigitsKeyListener;
+import android.text.method.KeyListener;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -9,7 +11,6 @@ import android.widget.LinearLayout;
 import androidx.annotation.ColorLong;
 import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
-import androidx.viewbinding.ViewBinding;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.slider.Slider;
@@ -18,12 +19,23 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.misterchan.iconeditor.R;
 import com.misterchan.iconeditor.Settings;
+import com.misterchan.iconeditor.colorpicker.CmykColorPicker;
+import com.misterchan.iconeditor.colorpicker.ColorPicker;
+import com.misterchan.iconeditor.colorpicker.HslColorPicker;
+import com.misterchan.iconeditor.colorpicker.HsvColorPicker;
+import com.misterchan.iconeditor.colorpicker.LabColorPicker;
+import com.misterchan.iconeditor.colorpicker.RgbColorPicker;
+import com.misterchan.iconeditor.colorpicker.XyYColorPicker;
+import com.misterchan.iconeditor.colorpicker.XyzColorPicker;
+import com.misterchan.iconeditor.colorpicker.YuvColorPicker;
 import com.misterchan.iconeditor.databinding.ColorPickerHsvBinding;
 import com.misterchan.iconeditor.databinding.ColorPickerRgbBinding;
 import com.misterchan.iconeditor.listener.AfterTextChangedListener;
 import com.misterchan.iconeditor.listener.OnSliderValueChangeListener;
 
 public class ColorPickerDialog {
+    private static final KeyListener KEY_LISTENER_HEX = DigitsKeyListener.getInstance("0123456789ABCDEFabcdef");
+
     public interface OnColorPickListener {
         void onPick(Long oldColor, Long newColor);
     }
@@ -38,7 +50,6 @@ public class ColorPickerDialog {
     private TextInputEditText tietAlpha, tietComp0, tietComp1, tietComp2, tietComp3;
     private TextInputLayout tilComp0, tilComp1, tilComp2, tilComp3;
     private View vPreview;
-    private ViewBinding extraViews;
 
     private final TabLayout.OnTabSelectedListener onColorSpaceTLTabSelectedListener = new TabLayout.OnTabSelectedListener() {
         @Override
@@ -99,67 +110,76 @@ public class ColorPickerDialog {
 
     private void changeColorPicker(int pos, boolean changeViews) {
         enabled = false;
-        if (colorPicker != null) {
-            colorPicker.dismiss();
-        }
         if (changeViews) {
+            if (colorPicker != null) colorPicker.dismiss();
             llExtraViews.removeAllViews();
-            tilComp0.setSuffixText(pos == 1 ? "°" : null);
-            tilComp1.setSuffixText(pos == 1 ? "%" : null);
-            tilComp2.setSuffixText(pos == 1 ? "%" : null);
         }
 
         long color = colorPicker != null ? colorPicker.color() : oldColor;
         colorPicker = switch (pos) {
             default -> {
+                ColorPickerRgbBinding binding = null;
                 if (changeViews) {
-                    extraViews = ColorPickerRgbBinding.inflate(layoutInflater, llExtraViews, false);
-                    llExtraViews.addView(extraViews.getRoot());
+                    binding = ColorPickerRgbBinding.inflate(layoutInflater, llExtraViews, false);
+                    llExtraViews.addView(binding.getRoot());
+                } else if (colorPicker instanceof RgbColorPicker oldCp) {
+                    binding = oldCp.binding;
                 }
-                yield new RgbColorPicker(color, (ColorPickerRgbBinding) extraViews,
-                        changeViews ? () -> {
-                            onColorRepChanged();
-                            changeColorPicker(0, false);
-                            float a = Color.alpha(colorPicker.color());
-                            tietAlpha.setText(alphaToString(Settings.INST.colorRep() ? a : a * 0xFF));
-                        } : null);
+                yield new RgbColorPicker(color, binding, changeViews ? () -> {
+                    onColorRepChanged();
+                    changeColorPicker(0, false);
+                    float a = Color.alpha(colorPicker.color());
+                    tietAlpha.setText(alphaToString(Settings.INST.colorRep() ? a : a * 0xFF));
+                } : null);
             }
             case 1 -> {
                 var binding = ColorPickerHsvBinding.inflate(layoutInflater, llExtraViews, false);
-                llExtraViews.addView((extraViews = binding).getRoot());
+                llExtraViews.addView(binding.getRoot());
                 yield new HsvColorPicker(color, binding, h -> tietComp0.setText(String.valueOf(h)), (s, v) -> {
                     tietComp1.setText(String.valueOf(s));
                     tietComp2.setText(String.valueOf(v));
                 });
             }
-            case 2 -> new CmykColorPicker(color);
-            case 3 -> new YuvColorPicker(color);
-            case 4 -> new LabColorPicker(color);
-            case 5 -> new XyzColorPicker(color);
-            case 6 -> new XyYColorPicker(color);
+            case 2 -> new HslColorPicker(color);
+            case 3 -> new CmykColorPicker(color);
+            case 4 -> new YuvColorPicker(color);
+            case 5 -> new LabColorPicker(color);
+            case 6 -> new XyzColorPicker(color);
+            case 7 -> new XyYColorPicker(color);
         };
 
-        tilComp0.setHint(colorPicker.prop.c0());
-        tilComp1.setHint(colorPicker.prop.c1());
-        tilComp2.setHint(colorPicker.prop.c2());
+        tilComp0.setHint(colorPicker.prop().c0());
+        tilComp1.setHint(colorPicker.prop().c1());
+        tilComp2.setHint(colorPicker.prop().c2());
+        tilComp0.setSuffixText(colorPicker.prop().c0Suffix());
+        tilComp1.setSuffixText(colorPicker.prop().c1Suffix());
+        tilComp2.setSuffixText(colorPicker.prop().c2Suffix());
 
-        sComp0.setValueFrom(colorPicker.prop.c0Min());
-        sComp0.setValueTo(colorPicker.prop.c0Max());
-        sComp1.setValueFrom(colorPicker.prop.c1Min());
-        sComp1.setValueTo(colorPicker.prop.c1Max());
-        sComp2.setValueFrom(colorPicker.prop.c2Min());
-        sComp2.setValueTo(colorPicker.prop.c2Max());
+        sComp0.setValueFrom(colorPicker.prop().c0Min());
+        sComp0.setValueTo(colorPicker.prop().c0Max());
+        sComp1.setValueFrom(colorPicker.prop().c1Min());
+        sComp1.setValueTo(colorPicker.prop().c1Max());
+        sComp2.setValueFrom(colorPicker.prop().c2Min());
+        sComp2.setValueTo(colorPicker.prop().c2Max());
 
-        tietComp0.setInputType(colorPicker.prop.c0InputType());
-        tietComp1.setInputType(colorPicker.prop.c1InputType());
-        tietComp2.setInputType(colorPicker.prop.c2InputType());
-        sComp0.setStepSize(colorPicker.prop.colorRep() ? 0.0f : 1.0f);
-        sComp1.setStepSize(colorPicker.prop.colorRep() ? 0.0f : 1.0f);
-        sComp2.setStepSize(colorPicker.prop.colorRep() ? 0.0f : 1.0f);
-        if (!colorPicker.prop.colorRep() && colorPicker.prop.keyListener() == null) {
-            tietComp0.setKeyListener(ColorPicker.KEY_LISTENER_HEX);
-            tietComp1.setKeyListener(ColorPicker.KEY_LISTENER_HEX);
-            tietComp2.setKeyListener(ColorPicker.KEY_LISTENER_HEX);
+        sComp0.setStepSize(colorPicker.prop().colorRep() ? 0.0f : 1.0f);
+        sComp1.setStepSize(colorPicker.prop().colorRep() ? 0.0f : 1.0f);
+        sComp2.setStepSize(colorPicker.prop().colorRep() ? 0.0f : 1.0f);
+        if (colorPicker.prop().compBase10()) {
+            tietComp0.setInputType(colorPicker.prop().c0InputType());
+            tietComp1.setInputType(colorPicker.prop().c1InputType());
+            tietComp2.setInputType(colorPicker.prop().c2InputType());
+        } else {
+            tietComp0.setKeyListener(KEY_LISTENER_HEX);
+            tietComp1.setKeyListener(KEY_LISTENER_HEX);
+            tietComp2.setKeyListener(KEY_LISTENER_HEX);
+        }
+        if (colorPicker.prop().compCount()) {
+            if (Settings.INST.colorIntCompRadix() == 10) {
+                tietComp3.setInputType(ColorPicker.EDITOR_TYPE_NUM);
+            } else {
+                tietComp3.setKeyListener(KEY_LISTENER_HEX);
+            }
         }
 
         float c0v = colorPicker.getComponent(0), c1v = colorPicker.getComponent(1), c2v = colorPicker.getComponent(2);
@@ -169,15 +189,12 @@ public class ColorPickerDialog {
         tietComp0.setText(compToString(c0v));
         tietComp1.setText(compToString(c1v));
         tietComp2.setText(compToString(c2v));
-        {
-            boolean compCount = colorPicker.prop.compCount();
-            sComp3.setVisibility(compCount ? View.VISIBLE : View.GONE);
-            tilComp3.setVisibility(compCount ? View.VISIBLE : View.GONE);
-            if (compCount) {
-                float c3v = colorPicker.getComponent(3);
-                sComp3.setValue(c3v);
-                tietComp3.setText(alphaToString(c3v));
-            }
+        sComp3.setVisibility(colorPicker.prop().compCount() ? View.VISIBLE : View.GONE);
+        tilComp3.setVisibility(colorPicker.prop().compCount() ? View.VISIBLE : View.GONE);
+        if (colorPicker.prop().compCount()) {
+            float c3v = colorPicker.getComponent(3);
+            sComp3.setValue(c3v);
+            tietComp3.setText(alphaToString(c3v));
         }
 
         enabled = true;
@@ -188,7 +205,7 @@ public class ColorPickerDialog {
     }
 
     private CharSequence compToString(float f) {
-        return colorPicker.prop.colorRep() ? String.valueOf(f) : String.format(Settings.INST.colorIntCompFormat(), (int) f);
+        return colorPicker.prop().colorRep() ? String.valueOf(f) : String.format(Settings.INST.colorIntCompFormat(), (int) f);
     }
 
     private void onAlphaChanged(String s) {
@@ -209,11 +226,15 @@ public class ColorPickerDialog {
 
         float f;
         try {
-            f = colorPicker.prop.colorRep() ? Float.parseFloat(s) : Integer.parseUnsignedInt(s, Settings.INST.colorIntCompRadix());
+            f = colorPicker.prop().colorRep() ? Float.parseFloat(s) : Integer.parseUnsignedInt(s, Settings.INST.colorIntCompRadix());
         } catch (NumberFormatException e) {
             return;
         }
-        if (!(slider.getValueFrom() <= f && f <= slider.getValueTo())) return;
+        if (index == 0 && colorPicker.prop().c0Circular()) {
+            f %= colorPicker.prop().c0Max();
+        } else {
+            if (!(slider.getValueFrom() <= f && f <= slider.getValueTo())) return;
+        }
         slider.setValue(f);
         colorPicker.setComponent(index, f);
         vPreview.setBackgroundColor(colorPicker.colorInt());
@@ -228,15 +249,10 @@ public class ColorPickerDialog {
 
         if (colorRep) {
             tietAlpha.setInputType(ColorPicker.EDITOR_TYPE_NUM_DEC);
-            tietComp3.setInputType(ColorPicker.EDITOR_TYPE_NUM_DEC);
+        } else if (Settings.INST.colorIntCompRadix() == 10) {
+            tietAlpha.setInputType(ColorPicker.EDITOR_TYPE_NUM);
         } else {
-            if (Settings.INST.colorIntCompRadix() == 10) {
-                tietAlpha.setInputType(ColorPicker.EDITOR_TYPE_NUM);
-                tietComp3.setInputType(ColorPicker.EDITOR_TYPE_NUM);
-            } else {
-                tietAlpha.setKeyListener(ColorPicker.KEY_LISTENER_HEX);
-                tietComp3.setKeyListener(ColorPicker.KEY_LISTENER_HEX);
-            }
+            tietAlpha.setKeyListener(KEY_LISTENER_HEX);
         }
     }
 
@@ -249,7 +265,7 @@ public class ColorPickerDialog {
         sComp1 = dialog.findViewById(R.id.s_comp_1);
         sComp2 = dialog.findViewById(R.id.s_comp_2);
         sComp3 = dialog.findViewById(R.id.s_comp_3);
-        TabLayout tlColorPickers = dialog.findViewById(R.id.tl_color_pickers);
+        TabLayout tlColorPickers = dialog.findViewById(R.id.color_pickers);
         tietAlpha = dialog.findViewById(R.id.tiet_alpha);
         tietComp0 = dialog.findViewById(R.id.tiet_comp_0);
         tietComp1 = dialog.findViewById(R.id.tiet_comp_1);
