@@ -55,10 +55,8 @@ public class RgbColorPicker extends ColorPicker {
                 radix == 10);
 
         this.binding = binding;
-        binding.sColorIntCompNumSysLabel.setVisibility(colorRep ? View.GONE : View.VISIBLE);
-        binding.sColorIntCompNumSys.setVisibility(colorRep ? View.GONE : View.VISIBLE);
-        binding.tvColorSpaceLabel.setVisibility(colorRep ? View.VISIBLE : View.GONE);
-        binding.tvColorSpace.setVisibility(colorRep ? View.VISIBLE : View.GONE);
+        binding.gColorIntCompNumSys.setVisibility(colorRep ? View.GONE : View.VISIBLE);
+        binding.gColorSpace.setVisibility(colorRep ? View.VISIBLE : View.GONE);
         if (colorRep) {
             binding.tvColorSpace.setText(colorSpace.toString());
         } else {

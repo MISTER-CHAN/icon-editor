@@ -2310,7 +2310,9 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         }
     };
 
-    /** Callback to call on touch image view with mesh transformer */
+    /**
+     * Callback to call on touch image view with mesh transformer
+     */
     @SuppressLint("ClickableViewAccessibility")
     private final View.OnTouchListener onIVTouchWithMTListener = new OnIVTouchListener() {
         private int lastVertIndex;
@@ -2352,7 +2354,9 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         }
     };
 
-    /** Callback to call on touch image view with poly transformer */
+    /**
+     * Callback to call on touch image view with poly transformer
+     */
     @SuppressLint("ClickableViewAccessibility")
     private final View.OnTouchListener onIVTouchWithPTListener = new OnIVTouchListener() {
         private float[] src, dst, bmSrc, bmDst;
@@ -2448,7 +2452,9 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         }
     };
 
-    /** Callback to call on touch image view with rotation transformer */
+    /**
+     * Callback to call on touch image view with rotation transformer
+     */
     @SuppressLint({"ClickableViewAccessibility"})
     private final View.OnTouchListener onIVTouchWithRTListener = new OnIVTouchListener() {
         private double lastTheta;
@@ -2504,7 +2510,9 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         }
     };
 
-    /** Callback to call on touch image view with scale transformer */
+    /**
+     * Callback to call on touch image view with scale transformer
+     */
     @SuppressLint({"ClickableViewAccessibility"})
     private final View.OnTouchListener onIVTouchWithSTListener = new OnIVTouchListener() {
         private boolean hasDraggedBound = false;
@@ -2667,7 +2675,9 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         }
     };
 
-    /** Callback to call on touch image view with translation transformer */
+    /**
+     * Callback to call on touch image view with translation transformer
+     */
     @SuppressLint({"ClickableViewAccessibility"})
     private final View.OnTouchListener onIVTouchWithTTListener = new OnIVMultiTouchListener() {
         private float dx, dy;
@@ -4017,7 +4027,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
             final ViewGroup.LayoutParams lpNeg = activityMain.vBlockerNeg.getLayoutParams(), lpPos = activityMain.vBlockerPos.getLayoutParams();
             if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
                 lpNeg.width = activityMain.canvas.getRoot().getLeft();
-                lpPos.width = activityMain.llTl.getHeight();
+                lpPos.width = activityMain.tlProjectList.getHeight();
             } else {
                 final View canvasView = activityMain.canvas.getRoot();
                 lpNeg.height = canvasView.getTop();
@@ -4195,17 +4205,18 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         brush.setBrush(BitmapUtils.drawableToBitmap(this, R.drawable.brush_tip_shape));
 
         if (isLandscape) {
-            final LinearLayout ll = activityMain.llTl;
-            OneShotPreDrawListener.add(ll, () -> {
-                final int width = ll.getMeasuredHeight(), height = activityMain.tlProjectList.getMeasuredHeight();
-                final ViewGroup.LayoutParams lp = ll.getLayoutParams();
+            final var tl = activityMain.tlProjectList;
+            OneShotPreDrawListener.add(tl, () -> {
+                final int width = activityMain.getRoot().getMeasuredHeight(), height = activityMain.tlProjectList.getMeasuredHeight();
+                final ViewGroup.LayoutParams lp = tl.getLayoutParams();
                 lp.width = width;
                 lp.height = height;
-                ll.setLayoutParams(lp);
+                tl.setLayoutParams(lp);
+                final boolean ltr = getResources().getConfiguration().getLayoutDirection() == View.LAYOUT_DIRECTION_LTR;
                 final float radius = height >> 1;
-                ll.setPivotX(width - radius);
-                ll.setPivotY(radius);
-                ll.setRotation(90.0f);
+                tl.setPivotX(ltr ? width - radius : radius);
+                tl.setPivotY(radius);
+                tl.setRotation(ltr ? 90.0f : -90.0f);
             });
             Toast.makeText(this, R.string.please_switch_orientation_to_vertical_to_get_all_functions, Toast.LENGTH_LONG).show();
         }
@@ -5756,7 +5767,9 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         activityMain.canvas.iv.invalidate();
     }
 
-    /** @return The x coordinate on bitmap. */
+    /**
+     * @return The x coordinate on bitmap.
+     */
     public int toBitmapX(float x) {
         return (int) ((x - translationX) / scale) - layer.left;
     }
@@ -5769,7 +5782,9 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         return ((x - translationX) / scale) - layer.left;
     }
 
-    /** @return The y coordinate on bitmap. */
+    /**
+     * @return The y coordinate on bitmap.
+     */
     public int toBitmapY(float y) {
         return (int) ((y - translationY) / scale) - layer.top;
     }
@@ -5798,7 +5813,9 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         return unscaled * scale;
     }
 
-    /** @return The x coordinate on view. */
+    /**
+     * @return The x coordinate on view.
+     */
     public float toViewX(int x) {
         return translationX + (x + layer.left) * scale;
     }
@@ -5811,7 +5828,9 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         return translationX + x * scale;
     }
 
-    /** @return The y coordinate on view. */
+    /**
+     * @return The y coordinate on view.
+     */
     public float toViewY(int y) {
         return translationY + (y + layer.top) * scale;
     }

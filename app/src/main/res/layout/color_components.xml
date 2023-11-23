@@ -1,16 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:columnCount="2"
-    android:gravity="center"
-    android:orientation="horizontal"
-    android:rowCount="5">
+    android:paddingHorizontal="24dp">
 
     <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/til_alpha"
         style="@style/Widget.Material3.TextInputLayout.FilledBox.Dense"
-        android:layout_marginVertical="2dp">
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginVertical="2dp"
+        app:layout_constraintEnd_toStartOf="@id/s_alpha"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/tiet_alpha"
@@ -27,15 +30,24 @@
     <com.google.android.material.slider.Slider
         android:id="@+id/s_alpha"
         android:layout_width="0dp"
-        android:layout_gravity="center_vertical|fill_horizontal"
+        android:layout_height="wrap_content"
         android:valueTo="255"
         app:labelBehavior="gone"
+        app:layout_constraintBottom_toBottomOf="@id/til_alpha"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/til_alpha"
+        app:layout_constraintTop_toTopOf="@id/til_alpha"
         app:tickVisible="false" />
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/til_comp_0"
         style="@style/Widget.Material3.TextInputLayout.FilledBox.Dense"
-        android:layout_marginVertical="2dp">
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginVertical="2dp"
+        app:layout_constraintEnd_toStartOf="@id/s_comp_0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/til_alpha">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/tiet_comp_0"
@@ -52,15 +64,24 @@
     <com.google.android.material.slider.Slider
         android:id="@+id/s_comp_0"
         android:layout_width="0dp"
-        android:layout_gravity="center_vertical|fill_horizontal"
+        android:layout_height="wrap_content"
         android:valueTo="255"
         app:labelBehavior="gone"
+        app:layout_constraintBottom_toBottomOf="@id/til_comp_0"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/til_comp_0"
+        app:layout_constraintTop_toTopOf="@id/til_comp_0"
         app:tickVisible="false" />
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/til_comp_1"
         style="@style/Widget.Material3.TextInputLayout.FilledBox.Dense"
-        android:layout_marginVertical="2dp">
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginVertical="2dp"
+        app:layout_constraintEnd_toStartOf="@id/s_comp_1"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/til_comp_0">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/tiet_comp_1"
@@ -77,15 +98,24 @@
     <com.google.android.material.slider.Slider
         android:id="@+id/s_comp_1"
         android:layout_width="0dp"
-        android:layout_gravity="center_vertical|fill_horizontal"
+        android:layout_height="wrap_content"
         android:valueTo="255"
         app:labelBehavior="gone"
+        app:layout_constraintBottom_toBottomOf="@id/til_comp_1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/til_comp_1"
+        app:layout_constraintTop_toTopOf="@id/til_comp_1"
         app:tickVisible="false" />
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/til_comp_2"
         style="@style/Widget.Material3.TextInputLayout.FilledBox.Dense"
-        android:layout_marginVertical="2dp">
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginVertical="2dp"
+        app:layout_constraintEnd_toStartOf="@id/s_comp_1"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/til_comp_1">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/tiet_comp_2"
@@ -102,16 +132,25 @@
     <com.google.android.material.slider.Slider
         android:id="@+id/s_comp_2"
         android:layout_width="0dp"
-        android:layout_gravity="center_vertical|fill_horizontal"
+        android:layout_height="wrap_content"
         android:valueTo="255"
         app:labelBehavior="gone"
+        app:layout_constraintBottom_toBottomOf="@id/til_comp_2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/til_comp_2"
+        app:layout_constraintTop_toTopOf="@id/til_comp_2"
         app:tickVisible="false" />
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/til_comp_3"
         style="@style/Widget.Material3.TextInputLayout.FilledBox.Dense"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginVertical="2dp"
-        android:visibility="gone">
+        android:visibility="gone"
+        app:layout_constraintEnd_toStartOf="@id/s_comp_3"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/til_comp_2">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/tiet_comp_3"
@@ -128,9 +167,13 @@
     <com.google.android.material.slider.Slider
         android:id="@+id/s_comp_3"
         android:layout_width="0dp"
-        android:layout_gravity="center_vertical|fill_horizontal"
+        android:layout_height="wrap_content"
         android:valueTo="255"
         android:visibility="gone"
         app:labelBehavior="gone"
+        app:layout_constraintBottom_toBottomOf="@id/til_comp_3"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/til_comp_3"
+        app:layout_constraintTop_toTopOf="@id/til_comp_3"
         app:tickVisible="false" />
-</GridLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

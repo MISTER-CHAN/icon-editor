@@ -1,87 +1,106 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:gravity="center_horizontal"
-    android:orientation="vertical"
-    android:padding="16dp">
+    android:layout_height="wrap_content"
+    android:paddingHorizontal="24dp"
+    android:paddingTop="16dp">
 
-    <GridLayout
-        android:layout_width="match_parent"
+    <androidx.constraintlayout.widget.Barrier
+        android:id="@+id/barrier"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:columnCount="2"
-        android:orientation="horizontal"
-        android:rowCount="3">
+        app:barrierDirection="end"
+        app:barrierMargin="8dp"
+        app:constraint_referenced_ids="tv_hue,tv_saturation,tv_value" />
 
-        <TextView
-            android:layout_gravity="fill_vertical|start"
-            android:layout_margin="8dp"
-            android:gravity="center_vertical|start"
-            android:text="@string/h" />
+    <TextView
+        android:id="@+id/tv_hue"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/h"
+        app:layout_constraintBottom_toBottomOf="@id/rs_hue"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/rs_hue" />
 
-        <com.google.android.material.slider.RangeSlider
-            android:id="@+id/rs_hue"
-            android:layout_width="0dp"
-            android:layout_gravity="center_vertical|fill_horizontal"
-            android:stepSize="1"
-            android:valueFrom="0"
-            android:valueTo="360"
-            app:tickVisible="false"
-            app:values="@array/range_0_360_values" />
+    <com.google.android.material.slider.RangeSlider
+        android:id="@+id/rs_hue"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:stepSize="1"
+        android:valueFrom="0"
+        android:valueTo="360"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/barrier"
+        app:layout_constraintTop_toTopOf="parent"
+        app:tickVisible="false"
+        app:values="@array/range_0_360_values" />
 
-        <TextView
-            android:layout_gravity="center_vertical|start"
-            android:layout_margin="8dp"
-            android:text="@string/s" />
+    <TextView
+        android:id="@+id/tv_saturation"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/s"
+        app:layout_constraintBottom_toBottomOf="@id/rs_saturation"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/rs_saturation" />
 
-        <com.google.android.material.slider.RangeSlider
-            android:id="@+id/rs_saturation"
-            android:layout_width="0dp"
-            android:layout_gravity="center_vertical|fill_horizontal"
-            android:stepSize="0.01"
-            android:valueFrom="0"
-            android:valueTo="1"
-            app:tickVisible="false"
-            app:values="@array/range_0_1_values" />
+    <com.google.android.material.slider.RangeSlider
+        android:id="@+id/rs_saturation"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:stepSize="0.01"
+        android:valueFrom="0"
+        android:valueTo="1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/barrier"
+        app:layout_constraintTop_toBottomOf="@id/rs_hue"
+        app:tickVisible="false"
+        app:values="@array/range_0_1_values" />
 
-        <TextView
-            android:layout_gravity="center_vertical|start"
-            android:layout_margin="8dp"
-            android:text="@string/v" />
+    <TextView
+        android:id="@+id/tv_value"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/v"
+        app:layout_constraintBottom_toBottomOf="@id/rs_value"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/rs_value" />
 
-        <com.google.android.material.slider.RangeSlider
-            android:id="@+id/rs_value"
-            android:layout_width="0dp"
-            android:layout_gravity="center_vertical|fill_horizontal"
-            android:stepSize="0.01"
-            android:valueFrom="0"
-            android:valueTo="1"
-            app:tickVisible="false"
-            app:values="@array/range_0_1_values" />
-    </GridLayout>
+    <com.google.android.material.slider.RangeSlider
+        android:id="@+id/rs_value"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:stepSize="0.01"
+        android:valueFrom="0"
+        android:valueTo="1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/barrier"
+        app:layout_constraintTop_toBottomOf="@id/rs_saturation"
+        app:tickVisible="false"
+        app:values="@array/range_0_1_values" />
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+    <TextView
+        android:id="@+id/tv_transition"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/transition"
+        app:layout_constraintBottom_toBottomOf="@id/s_transition"
+        app:layout_constraintEnd_toStartOf="@id/s_transition"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/s_transition" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical|start"
-            android:layout_margin="8dp"
-            android:text="@string/transition" />
-
-        <com.google.android.material.slider.Slider
-            android:id="@+id/s_transition"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_weight="1"
-            android:value="0"
-            android:valueFrom="0"
-            android:valueTo="1"
-            app:labelBehavior="gone"
-            app:tickVisible="false" />
-    </LinearLayout>
-</LinearLayout>
+    <com.google.android.material.slider.Slider
+        android:id="@+id/s_transition"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:value="0"
+        android:valueFrom="0"
+        android:valueTo="1"
+        app:labelBehavior="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/tv_transition"
+        app:layout_constraintTop_toBottomOf="@id/rs_value"
+        app:tickVisible="false" />
+</androidx.constraintlayout.widget.ConstraintLayout>

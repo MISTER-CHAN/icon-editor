@@ -1,101 +1,119 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="16dp">
+    android:paddingStart="24dp"
+    android:paddingTop="8dp"
+    android:paddingEnd="16dp">
 
-    <GridLayout
-        android:layout_width="match_parent"
+    <androidx.constraintlayout.widget.Barrier
+        android:id="@+id/barrier"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:columnCount="2"
+        app:barrierDirection="end"
+        app:barrierMargin="8dp"
+        app:constraint_referenced_ids="tv_size,tv_scale_type" />
+
+    <TextView
+        android:id="@+id/tv_size"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/size"
+        app:layout_constraintBaseline_toBaselineOf="@id/til_size_x"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/til_size_x"
+        style="@style/Widget.Material3.TextInputLayout.FilledBox"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        app:layout_constraintEnd_toStartOf="@id/til_size_y"
+        app:layout_constraintStart_toEndOf="@id/barrier"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/tiet_width"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@android:color/transparent"
+            android:hint="@string/width"
+            android:inputType="number"
+            android:textAlignment="textEnd" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/til_size_y"
+        style="@style/Widget.Material3.TextInputLayout.FilledBox"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        app:layout_constraintBaseline_toBaselineOf="@id/til_size_x"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/til_size_x">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/tiet_height"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@android:color/transparent"
+            android:hint="@string/height"
+            android:inputType="number"
+            android:textAlignment="textEnd" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <CheckBox
+        android:id="@+id/cb_lar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="8dp"
+        android:text="@string/lock_aspect_ratio"
+        app:layout_constraintStart_toEndOf="@id/barrier"
+        app:layout_constraintTop_toBottomOf="@id/til_size_x" />
+
+    <TextView
+        android:id="@+id/tv_scale_type"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/scale_type"
+        app:layout_constraintBottom_toBottomOf="@id/rg_scale_type"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/rg_scale_type" />
+
+    <RadioGroup
+        android:id="@+id/rg_scale_type"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:rowCount="4">
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/barrier"
+        app:layout_constraintTop_toBottomOf="@id/cb_lar">
 
-        <TextView
-            android:layout_gravity="center_vertical|start"
-            android:layout_margin="8dp"
-            android:text="@string/size" />
+        <RadioButton
+            android:id="@+id/rb_stretch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="8dp"
+            android:layout_weight="1"
+            android:text="@string/stretch" />
 
-        <LinearLayout
-            android:layout_gravity="center_vertical|fill_horizontal"
-            android:orientation="horizontal">
+        <RadioButton
+            android:id="@+id/rb_crop"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="8dp"
+            android:layout_weight="1"
+            android:text="@string/crop" />
+    </RadioGroup>
 
-            <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.Material3.TextInputLayout.FilledBox"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_margin="8dp"
-                android:layout_weight="1">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/tiet_width"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:backgroundTint="@android:color/transparent"
-                    android:hint="@string/width"
-                    android:inputType="number"
-                    android:textAlignment="textEnd" />
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.Material3.TextInputLayout.FilledBox"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_margin="8dp"
-                android:layout_weight="1">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/tiet_height"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:backgroundTint="@android:color/transparent"
-                    android:hint="@string/height"
-                    android:inputType="number"
-                    android:textAlignment="textEnd" />
-            </com.google.android.material.textfield.TextInputLayout>
-        </LinearLayout>
-
-        <View android:visibility="gone" />
-
-        <CheckBox
-            android:id="@+id/cb_lar"
-            android:layout_gravity="center_vertical|start"
-            android:layout_margin="8dp"
-            android:text="@string/lock_aspect_ratio" />
-
-        <TextView
-            android:layout_gravity="center_vertical|start"
-            android:layout_margin="8dp"
-            android:text="@string/scale_type" />
-
-        <RadioGroup
-            android:layout_gravity="center_vertical|fill_horizontal"
-            android:orientation="horizontal">
-
-            <RadioButton
-                android:id="@+id/rb_stretch"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_margin="8dp"
-                android:layout_weight="1"
-                android:text="@string/stretch" />
-
-            <RadioButton
-                android:id="@+id/rb_crop"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_margin="8dp"
-                android:layout_weight="1"
-                android:text="@string/crop" />
-        </RadioGroup>
-
-        <View android:visibility="gone" />
-
-        <CheckBox
-            android:id="@+id/cb_filter"
-            android:layout_gravity="center_vertical|start"
-            android:layout_margin="8dp"
-            android:text="@string/filter_verb" />
-    </GridLayout>
-</LinearLayout>
+    <CheckBox
+        android:id="@+id/cb_filter"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="8dp"
+        android:text="@string/filter_verb"
+        app:layout_constraintStart_toEndOf="@id/barrier"
+        app:layout_constraintTop_toBottomOf="@id/rg_scale_type" />
+</androidx.constraintlayout.widget.ConstraintLayout>

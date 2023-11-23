@@ -13,12 +13,10 @@ import androidx.core.view.OneShotPreDrawListener;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.slider.RangeSlider;
 import com.misterchan.iconeditor.Frame;
-import com.misterchan.iconeditor.Layers;
 import com.misterchan.iconeditor.Project;
 import com.misterchan.iconeditor.R;
 import com.misterchan.iconeditor.listener.OnCircularRSChangeListener;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class AnimationClipper {

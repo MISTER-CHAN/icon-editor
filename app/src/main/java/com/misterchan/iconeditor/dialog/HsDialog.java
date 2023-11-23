@@ -73,7 +73,7 @@ public class HsDialog {
         final Slider sHue = dialog.findViewById(R.id.s_hue);
         final Slider sSaturation = dialog.findViewById(R.id.s_saturation);
         final Slider sComp2 = dialog.findViewById(R.id.s_comp_2);
-        final TabLayout tlComps = dialog.findViewById(R.id.tl_comps);
+        final TabLayout tlColorSpace = dialog.findViewById(R.id.tl_color_spaces);
         final TextView tvComp2 = dialog.findViewById(R.id.tv_comp_2);
         final int cs = (int) deltaHs[3]; // Color space
         final OnSliderChangeListener l = this::update;
@@ -87,14 +87,14 @@ public class HsDialog {
         sSaturation.addOnSliderTouchListener(l);
         sComp2.addOnChangeListener(l);
         sComp2.addOnSliderTouchListener(l);
-        tlComps.getTabAt(cs).select();
+        tlColorSpace.getTabAt(cs).select();
 
         tvComp2.setText(switch (cs) {
             default -> R.string.v;
             case 1 -> R.string.l;
         });
 
-        tlComps.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+        tlColorSpace.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
                 final int position = tab.getPosition();

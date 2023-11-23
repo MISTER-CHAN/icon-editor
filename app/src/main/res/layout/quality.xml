@@ -1,51 +1,73 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp">
+    android:layout_height="wrap_content"
+    android:paddingHorizontal="16dp"
+    android:paddingTop="16dp">
 
-    <LinearLayout
-        android:id="@+id/ll_quality"
-        android:layout_width="match_parent"
+    <androidx.constraintlayout.widget.Group
+        android:id="@+id/g_quality"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:visibility="gone">
+        android:visibility="gone"
+        app:constraint_referenced_ids="til_quality,s_quality" />
 
-        <com.google.android.material.textfield.TextInputLayout
-            style="@style/Widget.Material3.TextInputLayout.FilledBox"
-            android:layout_width="wrap_content"
+    <androidx.constraintlayout.widget.Group
+        android:id="@+id/g_format"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:constraint_referenced_ids="rg_formats" />
+
+    <androidx.constraintlayout.widget.Group
+        android:id="@+id/g_gif"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:constraint_referenced_ids="tv_gif_encoding_type,s_gif_encoding_type,tv_gif_dither,s_gif_dither" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/til_quality"
+        style="@style/Widget.Material3.TextInputLayout.FilledBox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="8dp"
+        app:layout_constraintEnd_toStartOf="@id/s_quality"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/tiet_quality"
+            android:layout_width="72dp"
             android:layout_height="wrap_content"
-            android:layout_margin="8dp">
+            android:backgroundTint="@android:color/transparent"
+            android:hint="@string/quality"
+            android:inputType="number"
+            android:textAlignment="textEnd" />
+    </com.google.android.material.textfield.TextInputLayout>
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/tiet_quality"
-                android:layout_width="72dp"
-                android:layout_height="wrap_content"
-                android:backgroundTint="@android:color/transparent"
-                android:hint="@string/quality"
-                android:inputType="number"
-                android:textAlignment="textEnd" />
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.slider.Slider
-            android:id="@+id/s_quality"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:stepSize="1"
-            android:valueTo="100"
-            app:tickVisible="false" />
-    </LinearLayout>
+    <com.google.android.material.slider.Slider
+        android:id="@+id/s_quality"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:stepSize="1"
+        android:valueTo="100"
+        app:layout_constraintBottom_toBottomOf="@id/til_quality"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/til_quality"
+        app:layout_constraintTop_toTopOf="@id/til_quality"
+        app:tickVisible="false" />
 
     <RadioGroup
         android:id="@+id/rg_formats"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginHorizontal="8dp"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:visibility="gone">
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
         <RadioButton
             android:id="@+id/rb_lossless"
@@ -62,34 +84,39 @@
             android:text="@string/lossy" />
     </RadioGroup>
 
-    <GridLayout
-        android:id="@+id/gl_gif"
-        android:layout_width="match_parent"
+    <TextView
+        android:id="@+id/tv_gif_encoding_type"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:columnCount="2"
-        android:orientation="horizontal"
-        android:rowCount="2"
-        android:visibility="gone">
+        android:layout_margin="8dp"
+        android:text="@string/encoding_type"
+        app:layout_constraintBaseline_toBaselineOf="@id/s_gif_encoding_type"
+        app:layout_constraintStart_toStartOf="parent" />
 
-        <TextView
-            android:layout_gravity="center_vertical|start"
-            android:layout_margin="8dp"
-            android:text="@string/encoding_type" />
+    <Spinner
+        android:id="@+id/s_gif_encoding_type"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:entries="@array/gif_encoding_types"
+        android:minHeight="48dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-        <Spinner
-            android:id="@+id/s_gif_encoding_type"
-            android:layout_gravity="center_vertical|start"
-            android:layout_margin="8dp"
-            android:entries="@array/gif_encoding_types" />
+    <TextView
+        android:id="@+id/tv_gif_dither"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:text="@string/dither"
+        app:layout_constraintBaseline_toBaselineOf="@id/s_gif_dither"
+        app:layout_constraintStart_toStartOf="parent" />
 
-        <TextView
-            android:layout_gravity="center_vertical|start"
-            android:layout_margin="8dp"
-            android:text="@string/dither" />
-
-        <androidx.appcompat.widget.SwitchCompat
-            android:id="@+id/s_gif_dither"
-            android:layout_gravity="center_vertical|start"
-            android:layout_margin="8dp" />
-    </GridLayout>
-</LinearLayout>
+    <androidx.appcompat.widget.SwitchCompat
+        android:id="@+id/s_gif_dither"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/s_gif_encoding_type" />
+</androidx.constraintlayout.widget.ConstraintLayout>

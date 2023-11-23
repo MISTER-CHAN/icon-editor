@@ -1,65 +1,84 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp">
+    android:layout_height="wrap_content"
+    android:paddingStart="24dp"
+    android:paddingTop="16dp"
+    android:paddingEnd="18dp">
 
-    <GridLayout
-        android:layout_width="match_parent"
+    <FrameLayout
+        android:id="@+id/fl_iv"
+        android:layout_width="0dp"
+        android:layout_height="128dp"
+        android:layout_columnSpan="2"
+        android:layout_marginEnd="6dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/iv"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="fitXY" />
+
+        <ImageView
+            android:id="@+id/iv_progress"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="fitXY" />
+    </FrameLayout>
+
+    <androidx.constraintlayout.widget.Barrier
+        android:id="@+id/barrier"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:columnCount="2"
-        android:orientation="horizontal"
-        android:rowCount="3">
+        app:barrierDirection="end"
+        app:barrierMargin="8dp"
+        app:constraint_referenced_ids="tv_input,tv_output" />
 
-        <FrameLayout
-            android:layout_height="128dp"
-            android:layout_columnSpan="2"
-            android:layout_gravity="fill_horizontal"
-            android:layout_margin="8dp">
+    <TextView
+        android:id="@+id/tv_input"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/input"
+        app:layout_constraintBottom_toBottomOf="@id/rs_input"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/rs_input" />
 
-            <ImageView
-                android:id="@+id/iv"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:scaleType="fitXY" />
+    <com.google.android.material.slider.RangeSlider
+        android:id="@+id/rs_input"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:stepSize="1"
+        android:valueFrom="0"
+        android:valueTo="255"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/barrier"
+        app:layout_constraintTop_toBottomOf="@id/fl_iv"
+        app:tickVisible="false"
+        app:values="@array/range_00_ff_values" />
 
-            <ImageView
-                android:id="@+id/iv_progress"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:scaleType="fitXY" />
-        </FrameLayout>
+    <TextView
+        android:id="@+id/tv_output"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/output"
+        app:layout_constraintBottom_toBottomOf="@id/rs_output"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/rs_output" />
 
-        <TextView
-            android:layout_gravity="center_vertical|start"
-            android:layout_margin="8dp"
-            android:text="@string/input" />
-
-        <com.google.android.material.slider.RangeSlider
-            android:id="@+id/rs_input"
-            android:layout_width="0dp"
-            android:layout_gravity="center_vertical|fill_horizontal"
-            android:stepSize="1"
-            android:valueFrom="0"
-            android:valueTo="255"
-            app:tickVisible="false"
-            app:values="@array/range_00_ff_values" />
-
-        <TextView
-            android:layout_gravity="center_vertical|start"
-            android:layout_margin="8dp"
-            android:text="@string/output" />
-
-        <com.google.android.material.slider.RangeSlider
-            android:id="@+id/rs_output"
-            android:layout_width="0dp"
-            android:layout_gravity="center_vertical|fill_horizontal"
-            android:stepSize="1"
-            android:valueFrom="0"
-            android:valueTo="255"
-            app:tickVisible="false"
-            app:values="@array/range_00_ff_values" />
-    </GridLayout>
-</LinearLayout>
+    <com.google.android.material.slider.RangeSlider
+        android:id="@+id/rs_output"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:stepSize="1"
+        android:valueFrom="0"
+        android:valueTo="255"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/barrier"
+        app:layout_constraintTop_toBottomOf="@id/rs_input"
+        app:tickVisible="false"
+        app:values="@array/range_00_ff_values" />
+</androidx.constraintlayout.widget.ConstraintLayout>

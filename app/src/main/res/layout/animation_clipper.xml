@@ -3,13 +3,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:paddingHorizontal="24dp">
 
     <FrameLayout
         android:id="@+id/fl_iv"
         android:layout_width="match_parent"
         android:layout_height="128dp"
-        android:layout_margin="8dp">
+        android:layout_marginTop="16dp">
 
         <ImageView
             android:layout_width="match_parent"
@@ -28,7 +28,7 @@
         android:id="@+id/rs"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="8dp"
+        android:layout_marginTop="8dp"
         android:stepSize="1"
         android:valueTo="1" />
 </LinearLayout>

@@ -10,6 +10,7 @@ import android.widget.Spinner;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.SwitchCompat;
+import androidx.constraintlayout.widget.Group;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.slider.Slider;
@@ -69,8 +70,8 @@ public class QualityManager {
         final AlertDialog dialog = builder.show();
 
         final boolean isFormatWebp = format == Bitmap.CompressFormat.WEBP_LOSSY || format == Bitmap.CompressFormat.WEBP_LOSSLESS;
-        final GridLayout glGif = dialog.findViewById(R.id.gl_gif);
-        final LinearLayout llQuality = dialog.findViewById(R.id.ll_quality);
+        final Group gGif = dialog.findViewById(R.id.g_gif);
+        final Group gQuality = dialog.findViewById(R.id.g_quality);
         final RadioButton rbLossless = dialog.findViewById(R.id.rb_lossless);
         final RadioButton rbLossy = dialog.findViewById(R.id.rb_lossy);
         final Slider sQuality = dialog.findViewById(R.id.s_quality);
@@ -79,14 +80,14 @@ public class QualityManager {
         final TextInputEditText tietQuality = dialog.findViewById(R.id.tiet_quality);
 
         if (isFormatWebp) {
-            dialog.findViewById(R.id.rg_formats).setVisibility(View.VISIBLE);
+            dialog.findViewById(R.id.g_format).setVisibility(View.VISIBLE);
             rbLossless.setChecked(format == Bitmap.CompressFormat.WEBP_LOSSLESS);
             rbLossless.setOnCheckedChangeListener((OnCBCheckedListener) buttonView -> format = Bitmap.CompressFormat.WEBP_LOSSLESS);
             rbLossy.setChecked(format == Bitmap.CompressFormat.WEBP_LOSSY);
             rbLossy.setOnCheckedChangeListener((OnCBCheckedListener) buttonView -> format = Bitmap.CompressFormat.WEBP_LOSSY);
         }
         if (gifEncodingType != null) {
-            glGif.setVisibility(View.VISIBLE);
+            gGif.setVisibility(View.VISIBLE);
             sGifDither.setChecked(gifDither);
             sGifDither.setOnCheckedChangeListener((buttonView, isChecked) -> gifDither = isChecked);
             sGifEncodingType.setSelection(switch (gifEncodingType) {
@@ -106,7 +107,7 @@ public class QualityManager {
                 };
             });
         } else {
-            llQuality.setVisibility(View.VISIBLE);
+            gQuality.setVisibility(View.VISIBLE);
             sQuality.setValue(quality);
             sQuality.addOnChangeListener((OnSliderValueChangeListener) (slider, value) -> {
                 quality = (int) value;

@@ -1,47 +1,87 @@
 <?xml version="1.0" encoding="utf-8"?>
-<GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/gl"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:columnCount="2"
-    android:rowCount="3">
+    android:paddingStart="24dp"
+    android:paddingEnd="8dp">
+
+    <androidx.constraintlayout.widget.Barrier
+        android:id="@+id/barrier"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:barrierDirection="end"
+        app:constraint_referenced_ids="tv_color_rep,tv_color_int_comp_num_sys,tv_color_space_label" />
+
+    <androidx.constraintlayout.widget.Group
+        android:id="@+id/g_color_int_comp_num_sys"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:constraint_referenced_ids="tv_color_int_comp_num_sys,s_color_int_comp_num_sys" />
+
+    <androidx.constraintlayout.widget.Group
+        android:id="@+id/g_color_space"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:constraint_referenced_ids="tv_color_space_label,tv_color_space" />
 
     <TextView
-        android:id="@+id/s_color_rep_label"
-        android:layout_gravity="start|center_vertical"
+        android:id="@+id/tv_color_rep"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:labelFor="@id/s_color_rep"
-        android:text="@string/representation" />
+        android:text="@string/representation"
+        app:layout_constraintBaseline_toBaselineOf="@id/s_color_rep"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <Spinner
         android:id="@+id/s_color_rep"
-        android:layout_gravity="end|center_vertical"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginVertical="8dp"
         android:entries="@array/color_rep"
-        android:minHeight="48dp" />
+        android:minHeight="48dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/s_color_int_comp_num_sys_label"
-        android:layout_gravity="start|center_vertical"
+        android:id="@+id/tv_color_int_comp_num_sys"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:labelFor="@id/s_color_int_comp_num_sys"
-        android:text="@string/component_numeral_system" />
+        android:text="@string/component_numeral_system"
+        app:layout_constraintBaseline_toBaselineOf="@id/s_color_int_comp_num_sys"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <Spinner
         android:id="@+id/s_color_int_comp_num_sys"
-        android:layout_gravity="end|center_vertical"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:entries="@array/color_int_comp_num_sys"
-        android:minHeight="48dp" />
+        android:minHeight="48dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/s_color_rep" />
 
     <TextView
         android:id="@+id/tv_color_space_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:labelFor="@id/tv_color_space"
-        android:text="@string/color_space" />
+        android:text="@string/color_space"
+        app:layout_constraintBaseline_toBaselineOf="@id/tv_color_space"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
         android:id="@+id/tv_color_space"
         android:layout_width="0dp"
-        android:layout_gravity="end|fill_horizontal"
+        android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:textAlignment="textEnd" />
-</GridLayout>
+        android:layout_marginEnd="16dp"
+        android:textAlignment="textEnd"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/barrier"
+        app:layout_constraintTop_toBottomOf="@id/s_color_int_comp_num_sys" />
+</androidx.constraintlayout.widget.ConstraintLayout>
