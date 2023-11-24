@@ -177,7 +177,7 @@
     <string name="level_up">Level up</string>
     <string name="levels">Levels</string>
     <string name="lighting">Lighting</string>
-    <string name="lighting_where">Where\n<i><b>C</b></i> – Source color\n<i><b>C\'</b></i> – Result color</string>
+    <string name="lighting_where">Where\n<i><b><font face="serif">C</font></b></i> – Source color\n<i><b><font face="serif">C\'</font></b></i> – Result color</string>
     <string name="lightness">Lightness</string>
     <string name="line">Line</string>
     <string name="linear">Linear</string>
