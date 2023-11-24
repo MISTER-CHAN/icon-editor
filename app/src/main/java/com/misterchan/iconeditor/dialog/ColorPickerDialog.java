@@ -1,6 +1,7 @@
 package com.misterchan.iconeditor.dialog;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.text.method.DigitsKeyListener;
 import android.text.method.KeyListener;
@@ -43,6 +44,7 @@ public class ColorPickerDialog {
     private final AlertDialog dialog;
     private boolean enabled;
     private ColorPicker colorPicker;
+    private Context context;
     private final LayoutInflater layoutInflater;
     private LinearLayout llExtraViews;
     private final long oldColor;
@@ -79,6 +81,7 @@ public class ColorPickerDialog {
     public ColorPickerDialog(Context context, @StringRes int titleId,
                              OnColorPickListener onColorPickListener,
                              @ColorLong Long oldColor, @StringRes int neutralFunction) {
+        this.context = context;
         layoutInflater = LayoutInflater.from(context);
         AlertDialog.Builder dialogBuilder = new MaterialAlertDialogBuilder(context)
                 .setNegativeButton(R.string.cancel, null)
@@ -301,6 +304,10 @@ public class ColorPickerDialog {
         tlColorPickers.addOnTabSelectedListener(onColorSpaceTLTabSelectedListener);
         {
             int colorPickerPos = Settings.INST.colorPicker();
+            if (context.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE
+                    && (colorPickerPos != 0 && colorPickerPos != 1)) {
+                llExtraViews.setVisibility(View.GONE);
+            }
             if (tlColorPickers.getSelectedTabPosition() != colorPickerPos) {
                 tlColorPickers.getTabAt(colorPickerPos).select();
             } else {

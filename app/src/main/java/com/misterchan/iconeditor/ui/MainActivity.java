@@ -3991,6 +3991,15 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
     }
 
     private void load() {
+        activityMain.optionsBrush.tietSoftness.setText(String.valueOf(softness));
+        activityMain.optionsEraser.tietBlurRadius.setText(String.valueOf(0.0f));
+        activityMain.optionsEraser.tietStrokeWidth.setText(String.valueOf(eraser.getStrokeWidth()));
+        activityMain.optionsPencil.tietBlurRadius.setText(String.valueOf(0.0f));
+        activityMain.optionsPencil.tietStrokeWidth.setText(String.valueOf(paint.getStrokeWidth()));
+        activityMain.optionsText.tietTextSize.setText(String.valueOf(paint.getTextSize()));
+        activityMain.optionsTransformer.tietMeshWidth.setText(String.valueOf(2));
+        activityMain.optionsTransformer.tietMeshHeight.setText(String.valueOf(2));
+
         viewWidth = activityMain.canvas.iv.getWidth();
         viewHeight = activityMain.canvas.iv.getHeight();
         rulerHHeight = activityMain.canvas.ivRulerH.getHeight();
@@ -4043,7 +4052,6 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
             } else {
                 addDefaultTab();
             }
-            activityMain.tools.btgTools.check(R.id.b_pencil);
         } else {
             for (int i = 0; i < projects.size(); ++i) {
                 final Project p = projects.get(i);
@@ -4054,6 +4062,13 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                 }
             }
             selectProject(0);
+        }
+
+        activityMain.tools.btgTools.addOnButtonCheckedListener(onToolButtonCheckedListener);
+        if (activityMain.tools.btgTools.getCheckedButtonId() != R.id.b_pencil) {
+            activityMain.tools.btgTools.check(R.id.b_pencil);
+        } else {
+            onToolButtonCheckedListener.onButtonChecked(null, R.id.b_pencil, true);
         }
     }
 
@@ -4092,7 +4107,6 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         final ViewModel viewModel = new ViewModelProvider(this).get(ViewModel.class);
         inputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
 
-        activityMain.tools.btgTools.addOnButtonCheckedListener(onToolButtonCheckedListener);
         activityMain.btgZoom.addOnButtonCheckedListener(onZoomToolButtonCheckedListener);
         activityMain.optionsBrush.bTipShape.setOnClickListener(onBrushTipShapeButtonClickListener);
         activityMain.optionsBucketFill.bTolerance.setOnClickListener(onToleranceButtonClickListener);
@@ -4180,15 +4194,6 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         layerList.rvLayerList.setItemAnimator(new DefaultItemAnimator());
         MovableItemAdapter.createItemMoveHelper(onLayerItemMoveListener).attachToRecyclerView(layerList.rvLayerList);
 
-        activityMain.optionsBrush.tietSoftness.setText(String.valueOf(softness));
-        activityMain.optionsEraser.tietBlurRadius.setText(String.valueOf(0.0f));
-        activityMain.optionsEraser.tietStrokeWidth.setText(String.valueOf(eraser.getStrokeWidth()));
-        activityMain.optionsPencil.tietBlurRadius.setText(String.valueOf(0.0f));
-        activityMain.optionsPencil.tietStrokeWidth.setText(String.valueOf(paint.getStrokeWidth()));
-        activityMain.optionsText.tietTextSize.setText(String.valueOf(paint.getTextSize()));
-        activityMain.optionsTransformer.tietMeshWidth.setText(String.valueOf(2));
-        activityMain.optionsTransformer.tietMeshHeight.setText(String.valueOf(2));
-
         final Resources res = getResources();
 
         chessboard = BitmapFactory.decodeResource(res, R.mipmap.chessboard);
@@ -4210,7 +4215,6 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                 final int width = activityMain.getRoot().getMeasuredHeight(), height = activityMain.tlProjectList.getMeasuredHeight();
                 final ViewGroup.LayoutParams lp = tl.getLayoutParams();
                 lp.width = width;
-                lp.height = height;
                 tl.setLayoutParams(lp);
                 final boolean ltr = getResources().getConfiguration().getLayoutDirection() == View.LAYOUT_DIRECTION_LTR;
                 final float radius = height >> 1;
