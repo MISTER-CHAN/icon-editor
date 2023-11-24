@@ -19,7 +19,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/cp_eq"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:typeface="serif" />
 
         <include
             android:id="@+id/mul"
@@ -30,7 +31,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/times_c_plus"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:typeface="serif" />
 
         <include
             android:id="@+id/add"
@@ -40,5 +42,6 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/lighting_where" />
+        android:text="@string/lighting_where"
+        android:typeface="serif" />
 </LinearLayout>
