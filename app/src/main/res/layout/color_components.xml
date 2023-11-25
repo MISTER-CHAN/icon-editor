@@ -149,7 +149,8 @@
         android:visibility="gone"
         app:layout_constraintEnd_toStartOf="@id/s_comp_3"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/til_comp_2">
+        app:layout_constraintTop_toBottomOf="@id/til_comp_2"
+        app:suffixText="@string/percent">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/tiet_comp_3"
@@ -157,7 +158,7 @@
             android:layout_height="wrap_content"
             android:backgroundTint="@android:color/transparent"
             android:hint="@string/k"
-            android:inputType="text"
+            android:inputType="numberDecimal"
             android:paddingStart="8dp"
             android:paddingEnd="8dp"
             android:textAlignment="textEnd" />
@@ -167,7 +168,7 @@
         android:id="@+id/s_comp_3"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:valueTo="255"
+        android:valueTo="100"
         android:visibility="gone"
         app:labelBehavior="gone"
         app:layout_constraintBottom_toBottomOf="@id/til_comp_3"

@@ -177,13 +177,6 @@ public class ColorPickerDialog {
             tietComp1.setKeyListener(KEY_LISTENER_HEX);
             tietComp2.setKeyListener(KEY_LISTENER_HEX);
         }
-        if (colorPicker.prop().compCount()) {
-            if (Settings.INST.colorIntCompRadix() == 10) {
-                tietComp3.setInputType(ColorPicker.EDITOR_TYPE_NUM);
-            } else {
-                tietComp3.setKeyListener(KEY_LISTENER_HEX);
-            }
-        }
 
         float c0v = colorPicker.getComponent(0), c1v = colorPicker.getComponent(1), c2v = colorPicker.getComponent(2);
         sComp0.setValue(c0v);
@@ -197,7 +190,7 @@ public class ColorPickerDialog {
         if (colorPicker.prop().compCount()) {
             float c3v = colorPicker.getComponent(3);
             sComp3.setValue(c3v);
-            tietComp3.setText(alphaToString(c3v));
+            tietComp3.setText(String.valueOf(c3v));
         }
 
         enabled = true;
@@ -293,7 +286,7 @@ public class ColorPickerDialog {
         sComp0.addOnChangeListener((OnSliderValueChangeListener) (slider, value) -> tietComp0.setText(compToString(value)));
         sComp1.addOnChangeListener((OnSliderValueChangeListener) (slider, value) -> tietComp1.setText(compToString(value)));
         sComp2.addOnChangeListener((OnSliderValueChangeListener) (slider, value) -> tietComp2.setText(compToString(value)));
-        sComp3.addOnChangeListener((OnSliderValueChangeListener) (slider, value) -> tietComp3.setText(alphaToString(value)));
+        sComp3.addOnChangeListener((OnSliderValueChangeListener) (slider, value) -> tietComp3.setText(String.valueOf(value)));
 
         tietAlpha.addTextChangedListener((AfterTextChangedListener) this::onAlphaChanged);
         tietComp0.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(0, s, sComp0));

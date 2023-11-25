@@ -23,7 +23,8 @@ public class YuvColorPicker extends ColorPicker {
         }
     }.getArray();
 
-    private final ColorSpace.Connector connector;
+    private final ColorSpace colorSpace;
+    private final ColorSpace.Connector connectorToSrgb;
 
     @Size(3)
     private final float[] yuv = new float[3], rgb = new float[3];
@@ -36,7 +37,8 @@ public class YuvColorPicker extends ColorPicker {
                 0.0f, 1.0f, -0.5f, 0.5f, -0.5f, 0.5f,
                 EDITOR_TYPE_NUM_DEC, EDITOR_TYPE_NUM_DEC_SIGNED, EDITOR_TYPE_NUM_DEC_SIGNED);
 
-        connector = ColorSpace.connect(Color.colorSpace(color));
+        colorSpace = Color.colorSpace(color);
+        connectorToSrgb = ColorSpace.connect(colorSpace);
 
         this.color = color;
         convert(new float[]{Color.red(color), Color.green(color), Color.blue(color)}, yuv, RGB_TO_YUV);
@@ -52,7 +54,7 @@ public class YuvColorPicker extends ColorPicker {
 
     @Override
     public int colorInt() {
-        return ColorUtils.convert(rgb[0], rgb[1], rgb[2], Color.alpha(color), connector);
+        return ColorUtils.convert(rgb[0], rgb[1], rgb[2], Color.alpha(color), connectorToSrgb);
     }
 
     public static void convert(@Size(3) final float[] src, @Size(3) final float[] dst, @Size(20) final float[] matrix) {
@@ -75,6 +77,6 @@ public class YuvColorPicker extends ColorPicker {
     public void setComponent(int index, float c) {
         yuv[index] = c;
         convert(yuv, rgb, YUV_TO_RGB);
-        color = ColorUtils.setComponent(color, index, rgb[index]);
+        color = Color.pack(rgb[0], rgb[1], rgb[2], Color.alpha(color), colorSpace);
     }
 }
