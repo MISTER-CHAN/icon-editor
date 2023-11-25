@@ -52,7 +52,7 @@ public class ColorUtils {
             } else if (max == b) {
                 hsl[0] = 60.0f * (r - g) / (max - min) + 240.0f;
             }
-            hsl[1] = (max - min) / (1.0f - Math.abs(2.0f * hsl[2] - 1.0f));
+            hsl[1] = sat((max - min) / (1.0f - Math.abs(2.0f * hsl[2] - 1.0f)));
         }
     }
 
