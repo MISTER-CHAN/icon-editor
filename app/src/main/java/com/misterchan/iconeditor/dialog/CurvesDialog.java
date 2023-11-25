@@ -124,7 +124,7 @@ public class CurvesDialog {
         theme.resolveAttribute(android.R.attr.textColorPrimary, typedValue, true);
         final int color = context.getResources().getColor(typedValue.resourceId, theme);
         final int a = Color.alpha(color) << 24;
-        final int aHalf = Color.alpha(color) / 2 << 24;
+        final int aHalf = (Color.alpha(color) & 0xFFFFFFFE) << 23;
         normalPaint.setColor(color);
         curveColors[3] = curveColors[4] = color;
         histColors[3] = histColors[4] = aHalf | ColorUtils.rgb(color);
