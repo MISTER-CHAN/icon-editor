@@ -13,6 +13,9 @@ import java.util.List;
 import java.util.Stack;
 
 public class Layers {
+    private Layers() {
+    }
+
     private static void addFilters(Bitmap bitmap, Layer layer) {
         addFilters(bitmap, new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight()), layer);
     }
@@ -147,7 +150,6 @@ public class Layers {
                 if (skipInvisible && !layer.visible) {
                     continue;
                 }
-                final LayerTree children = node.children;
                 final int bmW = layer.bitmap.getWidth(), bmH = layer.bitmap.getHeight();
                 final int left = backgroundNode.isRoot ? layer.left : layer.left - backgroundNode.layer.left,
                         top = backgroundNode.isRoot ? layer.top : layer.top - backgroundNode.layer.top;
@@ -162,7 +164,7 @@ public class Layers {
                 dst.intersect(dstLeft, dstTop, dstLeft + bmW, dstTop + bmH);
                 final int intW = src.width(), intH = src.height(); // Intersection size, src size == dst size
                 final Rect intRel = new Rect(0, 0, intW, intH); // Intersection relative rectangle
-                if (children == null) {
+                if (node.children == null) {
                     Rect extraSrc = null, extraDst = null; // Intersection between intersection and extra layer
                     if (layer == specifiedLayer && extraLayer != null) {
                         if (extraLayer.hasRect()) {
@@ -222,7 +224,7 @@ public class Layers {
                 } else {
                     @ColorInt final int[] pixels = layer.clipped ? BitmapUtils.getPixels(bitmap, dst) : null;
                     final boolean passBm = layer.filter != null && !node.isRoot;
-                    final Bitmap mergedChildren = mergeLayers(children, src,
+                    final Bitmap mergedChildren = mergeLayers(node.children, src,
                             passBm ? bitmap : null, passBm ? dst : null,
                             skipInvisible, specifiedLayer, specifiedLayerBm, extraLayer);
                     canvas.drawBitmap(mergedChildren, null, dst, layer.paint);

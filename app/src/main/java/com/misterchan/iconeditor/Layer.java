@@ -82,8 +82,8 @@ public class Layer {
         top = layer.top;
         this.name = name;
         if (layer.colorMatrix != null) colorMatrix.set(layer.colorMatrix);
-        if (layer.deltaHs != null) deltaHs = Arrays.copyOf(layer.deltaHs, 3);
-        if (layer.curves != null) curves = Arrays.copyOf(layer.curves, 5);
+        if (layer.deltaHs != null) deltaHs = Arrays.copyOf(layer.deltaHs, layer.deltaHs.length);
+        if (layer.curves != null) curves = Arrays.copyOf(layer.curves, layer.curves.length);
         paint = new Paint(layer.paint);
     }
 
