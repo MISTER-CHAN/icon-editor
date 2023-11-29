@@ -81,9 +81,12 @@ public class Layer {
         left = layer.left;
         top = layer.top;
         this.name = name;
+        if (layer.lighting != null) lighting = Arrays.copyOf(layer.lighting, 8);
         if (layer.colorMatrix != null) colorMatrix.set(layer.colorMatrix);
-        if (layer.deltaHs != null) deltaHs = Arrays.copyOf(layer.deltaHs, layer.deltaHs.length);
-        if (layer.curves != null) curves = Arrays.copyOf(layer.curves, layer.curves.length);
+        if (layer.deltaHs != null) deltaHs = Arrays.copyOf(layer.deltaHs, 4);
+        if (layer.curves != null) {
+            for (int i = 0; i <= 4; ++i) curves[i] = Arrays.copyOf(layer.curves[i], 0x100);
+        }
         paint = new Paint(layer.paint);
     }
 
