@@ -86,6 +86,7 @@ public class Layer {
         if (layer.deltaHs != null) deltaHs = Arrays.copyOf(layer.deltaHs, 4);
         if (layer.lighting != null) lighting = Arrays.copyOf(layer.lighting, 8);
         if (layer.curves != null) {
+            curves = new int[5][];
             for (int i = 0; i <= 4; ++i) curves[i] = Arrays.copyOf(layer.curves[i], 0x100);
         }
         paint = new Paint(layer.paint);
