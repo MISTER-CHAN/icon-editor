@@ -40,11 +40,11 @@ public class Layer {
     public int left = 0, top = 0;
     public String name;
 
-    @Size(8)
-    public float[] lighting;
-
     @Size(4)
     public float[] deltaHs;
+
+    @Size(8)
+    public float[] lighting;
 
     /**
      * <table>
@@ -73,6 +73,7 @@ public class Layer {
     }
 
     public Layer(Layer layer, Bitmap bitmap, String name) {
+        clipped = layer.clipped;
         reference = layer.reference;
         visible = layer.visible;
         this.bitmap = bitmap;
@@ -81,9 +82,9 @@ public class Layer {
         left = layer.left;
         top = layer.top;
         this.name = name;
-        if (layer.lighting != null) lighting = Arrays.copyOf(layer.lighting, 8);
         if (layer.colorMatrix != null) colorMatrix.set(layer.colorMatrix);
         if (layer.deltaHs != null) deltaHs = Arrays.copyOf(layer.deltaHs, 4);
+        if (layer.lighting != null) lighting = Arrays.copyOf(layer.lighting, 8);
         if (layer.curves != null) {
             for (int i = 0; i <= 4; ++i) curves[i] = Arrays.copyOf(layer.curves[i], 0x100);
         }
