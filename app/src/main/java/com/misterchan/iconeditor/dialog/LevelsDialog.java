@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.BlendMode;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -15,6 +16,7 @@ import android.widget.ImageView;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.FloatRange;
+import androidx.annotation.IntRange;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 
@@ -22,6 +24,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.slider.RangeSlider;
 import com.misterchan.iconeditor.R;
 import com.misterchan.iconeditor.listener.OnCircularRSChangeListener;
+import com.misterchan.iconeditor.util.BitmapUtils;
 import com.misterchan.iconeditor.util.LightingToLevels;
 
 import java.util.List;
@@ -40,7 +43,7 @@ public class LevelsDialog {
     private ImageView iv;
     private ImageView ivProgress;
     private OnLevelsChangedListener listener;
-    private final Paint paint = new Paint();
+    private final Paint progressPaint = new Paint();
 
     @FloatRange(from = 0x00, to = 0xFF)
     private float inputShadows = 0x00, inputHighlights = 0xFF;
@@ -63,40 +66,20 @@ public class LevelsDialog {
         final Resources.Theme theme = context.getTheme();
         final TypedValue typedValue = new TypedValue();
         theme.resolveAttribute(android.R.attr.textColorPrimary, typedValue, true);
-        paint.setColor(context.getResources().getColor(typedValue.resourceId, theme));
+        progressPaint.setColor(context.getResources().getColor(typedValue.resourceId, theme));
     }
 
     public static final Function<Integer, Integer> valueFunc =
             pixel -> Math.max(Math.max(Color.red(pixel), Color.green(pixel)), Color.blue(pixel));
 
     public void drawHistogram(@ColorInt int[] src) {
-        drawHistogram(src, bitmap, iv, valueFunc, 100.0f, paint);
-    }
-
-    public static void drawHistogram(@ColorInt int[] src, Bitmap dst, ImageView iv,
-                                     Function<Integer, Integer> f, float maxHeight, Paint paint) {
-        new Thread(() -> {
-            final Canvas cv = new Canvas(dst);
-            final int[] numValue = new int[0x100];
-            int max = 1;
-            for (final int pixel : src) {
-                final int n = ++numValue[f.apply(pixel)];
-                if (n > max) {
-                    max = n;
-                }
-            }
-            for (int i = 0x0; i < 0x100; ) {
-                cv.drawRect(i, maxHeight - (float) numValue[i] / (float) max * maxHeight,
-                        ++i, maxHeight, paint);
-            }
-            iv.invalidate();
-        }).start();
+        BitmapUtils.drawHistogram(src, bitmap, 4, iv);
     }
 
     private void drawProgress() {
         progressBitmap.eraseColor(Color.TRANSPARENT);
-        progressCanvas.drawLine(inputShadows, 0.0f, inputShadows, 100.0f, paint);
-        progressCanvas.drawLine(inputHighlights, 0.0f, inputHighlights, 100.0f, paint);
+        progressCanvas.drawLine(inputShadows, 0.0f, inputShadows, 100.0f, progressPaint);
+        progressCanvas.drawLine(inputHighlights, 0.0f, inputHighlights, 100.0f, progressPaint);
         ivProgress.invalidate();
     }
 

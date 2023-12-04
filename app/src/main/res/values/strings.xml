@@ -38,8 +38,8 @@
     <string name="cancel">Cancel</string>
     <string name="cell_grid">Cell Grid</string>
     <string name="center">Center</string>
-    <string name="channels">Channels</string>
     <string name="channel_mixer">Channel Mixer</string>
+    <string name="channels">Channels</string>
     <string name="check_for_updates">Check for Updates</string>
     <string name="check_for_updates_in_system_browser">Check for updates in system browser</string>
     <string name="cie_l_a_b_" translatable="false">CIE L*a*b*</string>
@@ -135,10 +135,7 @@
     <string name="gradient">Gradient</string>
     <string name="gradient_line">Gradient Line</string>
     <string name="group">Group</string>
-    <string name="gt" translatable="false"><![CDATA[>]]></string>
     <string name="h" translatable="false">H</string>
-    <string name="h_max" translatable="false">H<sub>max</sub></string>
-    <string name="h_min" translatable="false">H<sub>min</sub></string>
     <string name="has_alpha">Has Alpha</string>
     <string name="height">Height</string>
     <string name="help">Help</string>
@@ -147,7 +144,7 @@
     <string name="highlights">Highlights</string>
     <string name="history_max_size">Maximum Size of History</string>
     <string name="homepage">Homepage</string>
-    <string name="horizontal">Horizontally</string>
+    <string name="horizontal">Horizontal</string>
     <string name="horizontally">Horizontally</string>
     <string name="hs" translatable="false">HS</string>
     <string name="hsl" translatable="false">HSL</string>
@@ -373,7 +370,7 @@
     <string name="untitled">Untitled</string>
     <string name="v" translatable="false">V</string>
     <string name="version">Version (Release Date)</string>
-    <string name="vertical">Vertically</string>
+    <string name="vertical">Vertical</string>
     <string name="vertically">Vertically</string>
     <string name="view">View</string>
     <string name="visible">Visible</string>

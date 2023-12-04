@@ -44,7 +44,7 @@ public abstract class ColorPicker {
         }
 
         public Properties(CharSequence c0, CharSequence c1, CharSequence c2, boolean c0Circular) {
-            this(true, false, c0, c1, c2, "°", "%", "%",
+            this(true, false, c0, c1, c2, "\u00B0", "%", "%",
                     0.0f, 360.0f, 0.0f, 100.0f, 0.0f, 100.0f, c0Circular,
                     EDITOR_TYPE_NUM_DEC, EDITOR_TYPE_NUM_DEC, EDITOR_TYPE_NUM_DEC, true);
         }

@@ -42,7 +42,6 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -1199,11 +1198,30 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         drawFloatingLayersIntoImage();
         if (layer == frame.getBackgroundLayer()) {
             for (final Frame f : project.frames) {
-                resizeImage(f, f.getBackgroundLayer(), width, height, transform, null, 0, 0);
+                if (f.layers.size() == 1 || transform == ImageSizeManager.ScaleType.CROP) {
+                    resizeImage(f.getBackgroundLayer(), width, height, transform, null);
+                } else {
+                    final Layer bl = f.getBackgroundLayer();
+                    final Matrix matrix = new Matrix();
+                    matrix.setRectToRect(
+                            new RectF(bl.left, bl.top, bl.left + bl.bitmap.getWidth(), bl.top + bl.bitmap.getHeight()),
+                            new RectF(bl.left, bl.top, bl.left + width, bl.top + height),
+                            Matrix.ScaleToFit.FILL);
+                    resizeImage(bl, width, height, transform, null);
+                    for (int i = 0; i < f.layers.size() - 1; ++i) {
+                        final Layer l = f.layers.get(i);
+                        final RectF rf = new RectF(l.left, l.top, l.left + l.bitmap.getWidth(), l.top + l.bitmap.getHeight());
+                        matrix.mapRect(rf);
+                        final Rect r = new Rect();
+                        rf.round(r);
+                        l.moveTo(r.left, r.top);
+                        resizeImage(l, r.width(), r.height(), transform, null);
+                    }
+                }
                 f.updateThumbnail();
             }
         } else {
-            resizeImage(frame, layer, width, height, transform, null, 0, 0);
+            resizeImage(layer, width, height, transform, null);
         }
     };
 
@@ -4778,22 +4796,22 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                 if (!hasSelection) break;
                 drawFloatingLayersIntoImage();
                 final int width = selection.r.width(), height = selection.r.height();
+                final int offsetX = selection.r.left, offsetY = selection.r.top;
                 if (layer == frame.getBackgroundLayer()) {
-                    translationX += toScaled(selection.r.left);
-                    translationY += toScaled(selection.r.top);
+                    translationX += toScaled(offsetX);
+                    translationY += toScaled(offsetY);
                     for (final Frame f : project.frames) {
                         final Layer bl = f.getBackgroundLayer();
-                        final Bitmap bm = Bitmap.createBitmap(bl.bitmap, selection.r.left, selection.r.top, width, height);
-                        resizeImage(f, bl, width, height,
-                                ImageSizeManager.ScaleType.CROP, bm,
-                                selection.r.left, selection.r.top);
+                        final Bitmap bm = Bitmap.createBitmap(bl.bitmap, offsetX, offsetY, width, height);
+                        for (int i = 0; i < frame.layers.size() - 1; ++i)
+                            frame.layers.get(i).moveBy(-offsetX, -offsetY);
+                        resizeImage(bl, width, height, ImageSizeManager.ScaleType.CROP, bm);
                         bm.recycle();
                     }
                 } else {
-                    final Bitmap bm = Bitmap.createBitmap(bitmap, selection.r.left, selection.r.top, width, height);
-                    resizeImage(frame, layer, width, height,
-                            ImageSizeManager.ScaleType.CROP, bm,
-                            selection.r.left, selection.r.top);
+                    layer.moveBy(offsetX, offsetY);
+                    final Bitmap bm = Bitmap.createBitmap(layer.bitmap, offsetX, offsetY, width, height);
+                    resizeImage(layer, width, height, ImageSizeManager.ScaleType.CROP, bm);
                     bm.recycle();
                 }
             }
@@ -5405,30 +5423,20 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         }
     }
 
-    private void resizeImage(Frame frame, Layer layer, int width, int height,
-                             ImageSizeManager.ScaleType scaleType, @Nullable Bitmap newImage,
-                             int offsetX, int offsetY) {
+    private void resizeImage(Layer layer, int width, int height,
+                             ImageSizeManager.ScaleType scaleType, @Nullable Bitmap newImage) {
         final Bitmap bm = Bitmap.createBitmap(width, height,
                 layer.bitmap.getConfig(), layer.bitmap.hasAlpha(), layer.bitmap.getColorSpace());
         final Canvas cv = new Canvas(bm);
         if (scaleType != null) {
             if (newImage == null) newImage = layer.bitmap;
-            switch (scaleType) {
-                case STRETCH, STRETCH_FILTER -> {
-                    cv.drawBitmap(newImage,
-                            new Rect(0, 0, layer.bitmap.getWidth(), layer.bitmap.getHeight()),
-                            new RectF(0.0f, 0.0f, width, height),
-                            scaleType == ImageSizeManager.ScaleType.STRETCH_FILTER ? PAINT_SRC : PAINT_BITMAP);
-                }
-                case CROP -> cv.drawBitmap(newImage, 0.0f, 0.0f, PAINT_BITMAP);
+            if (scaleType == ImageSizeManager.ScaleType.CROP) {
+                cv.drawBitmap(newImage, 0.0f, 0.0f, PAINT_BITMAP);
+            } else {
+                cv.drawBitmap(newImage,
+                        null, new RectF(0.0f, 0.0f, width, height),
+                        scaleType == ImageSizeManager.ScaleType.STRETCH_FILTER ? PAINT_SRC : PAINT_BITMAP);
             }
-        }
-        if (layer == frame.getBackgroundLayer()) {
-            for (int i = 0; i < frame.layers.size() - 1; ++i) {
-                frame.layers.get(i).moveBy(-offsetX, -offsetY);
-            }
-        } else {
-            layer.moveBy(offsetX, offsetY);
         }
         layer.bitmap.recycle();
         layer.bitmap = bm;

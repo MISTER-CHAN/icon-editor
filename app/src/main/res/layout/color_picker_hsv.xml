@@ -9,11 +9,11 @@
         android:id="@+id/iv_hue"
         android:layout_width="match_parent"
         android:layout_height="16dp"
-        android:layout_marginVertical="2dp" />
+        android:layout_marginTop="4dp" />
 
     <ImageView
         android:id="@+id/iv_sat_val"
         android:layout_width="match_parent"
         android:layout_height="128dp"
-        android:layout_marginTop="2dp" />
+        android:layout_marginTop="4dp" />
 </LinearLayout>

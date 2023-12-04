@@ -63,10 +63,6 @@ public class CurvesDialog {
     private final int[] curveColors = new int[5];
 
     @ColorInt
-    @Size(5)
-    private final int[] histColors = new int[5];
-
-    @ColorInt
     private int[] srcPixels;
 
     /**
@@ -90,8 +86,6 @@ public class CurvesDialog {
             setStrokeWidth(2.0f);
         }
     };
-
-    private final Paint histPaint = new Paint(BitmapUtils.PAINT_SRC);
 
     {
         for (int i = 0x00; i <= 0xFF; ++i) {
@@ -124,10 +118,8 @@ public class CurvesDialog {
         theme.resolveAttribute(android.R.attr.textColorPrimary, typedValue, true);
         final int color = context.getResources().getColor(typedValue.resourceId, theme);
         final int a = Color.alpha(color) << 24;
-        final int aHalf = (Color.alpha(color) & 0xFFFFFFFE) << 23;
         normalPaint.setColor(color);
         curveColors[3] = curveColors[4] = color;
-        histColors[3] = histColors[4] = aHalf | ColorUtils.rgb(color);
         final int r = sat(Color.red(color) - 0x40) << 16,
                 g = sat(Color.green(color) - 0x40) << 8,
                 b = sat(Color.blue(color) - 0x40);
@@ -135,9 +127,6 @@ public class CurvesDialog {
         curveColors[0] = a | cr;
         curveColors[1] = a | cg;
         curveColors[2] = a | cb;
-        histColors[0] = aHalf | cr;
-        histColors[1] = aHalf | cg;
-        histColors[2] = aHalf | cb;
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -217,19 +206,10 @@ public class CurvesDialog {
         ivGrid.invalidate();
     }
 
-    private final Function<Integer, Integer>[] compFuncs = new Function[]{
-            (Function<Integer, Integer>) Color::red,
-            (Function<Integer, Integer>) Color::green,
-            (Function<Integer, Integer>) Color::blue,
-            (Function<Integer, Integer>) Color::alpha,
-            LevelsDialog.valueFunc
-    };
-
     private void drawHistogram() {
         if (histBitmaps[selectedCompIndex] == null) {
             histBitmaps[selectedCompIndex] = Bitmap.createBitmap(0x100, 0x100, Bitmap.Config.ARGB_4444);
-            LevelsDialog.drawHistogram(srcPixels, histBitmaps[selectedCompIndex], ivHistogram,
-                    compFuncs[selectedCompIndex], 256.0f, histPaint);
+            BitmapUtils.drawHistogram(srcPixels, histBitmaps[selectedCompIndex], selectedCompIndex, ivHistogram);
         }
         ivHistogram.setImageBitmap(histBitmaps[selectedCompIndex]);
     }
@@ -246,7 +226,7 @@ public class CurvesDialog {
 
     @IntRange(from = 0x00, to = 0xFF)
     private static int sat(int v) {
-        return v <= 0x0 ? 0x0 : v >= 0x100 ? 0xFF : v;
+        return v <= 0x0 ? 0x00 : v >= 0x100 ? 0xFF : v;
     }
 
     public CurvesDialog setDefaultCurves(@Size(5) int[][] curves) {
@@ -262,7 +242,6 @@ public class CurvesDialog {
             if (i < 0xFF) pts[i * 4 + 1] = 255.0f - c[i];
         }
         curvePaint.setColor(curveColors[index]);
-        histPaint.setColor(histColors[index]);
         drawHistogram();
         drawGraphics();
     }
@@ -365,6 +344,8 @@ public class CurvesDialog {
         grid = Bitmap.createBitmap(0x100, 0x100, Bitmap.Config.ARGB_4444);
         ivGrid.setImageBitmap(grid);
         drawGrid();
+
+        ivHistogram.setImageAlpha(0x40);
 
         if (curves == null) {
             curves = new int[][]{new int[0x100], new int[0x100], new int[0x100], new int[0x100], new int[0x100]};

@@ -10,6 +10,7 @@ import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
+import android.widget.ImageView;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.DrawableRes;
@@ -25,8 +26,22 @@ import com.misterchan.iconeditor.ColorRange;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Random;
+import java.util.function.Function;
 
 public class BitmapUtils {
+    private static final Function<Integer, Integer>[] FUNC_RGBA = new Function[]{
+            (Function<Integer, Integer>) Color::red,
+            (Function<Integer, Integer>) Color::green,
+            (Function<Integer, Integer>) Color::blue,
+            (Function<Integer, Integer>) Color::alpha,
+    };
+
+    /**
+     * Displaying colors
+     */
+    @ColorInt
+    private static final int[] DC_RGBA = {Color.RED, Color.GREEN, Color.BLUE, Color.BLACK};
+
     public static final Paint PAINT_CLEAR = new Paint() {
         {
             setAntiAlias(false);
@@ -219,6 +234,35 @@ public class BitmapUtils {
         drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
         drawable.draw(canvas);
         return bitmap;
+    }
+
+    public static void drawHistogram(@ColorInt int[] src, Bitmap dst,
+                                     @IntRange(from = 0, to = 4) int comp, ImageView iv) {
+        new Thread(() -> {
+            final int compMin = comp == 4 ? 0 : comp, compMax = comp == 4 ? 2 : comp;
+            final int[][] numValue = new int[4][];
+            int max = 1;
+            for (int c = compMin; c <= compMax; ++c) {
+                numValue[c] = new int[0x100];
+                for (final int pixel : src) {
+                    final int n = ++numValue[c][FUNC_RGBA[c].apply(pixel)];
+                    if (n > max) max = n;
+                }
+            }
+            final Canvas cv = new Canvas(dst);
+            final float maxHeight = dst.getHeight();
+            final Paint paint = new Paint(PAINT_SRC_OVER);
+            paint.setBlendMode(comp == 4 ? BlendMode.PLUS : BlendMode.SRC);
+            for (int c = compMin; c <= compMax; ++c) {
+                paint.setColor(DC_RGBA[c]);
+                for (int i = 0x0; i < 0x100; ) {
+                    cv.drawRect(i, maxHeight - (float) numValue[c][i] / (float) max * maxHeight,
+                            ++i, maxHeight,
+                            paint);
+                }
+            }
+            iv.invalidate();
+        }).start();
     }
 
     private static Bitmap edgeDetection(final Bitmap bitmap) {
