@@ -1122,7 +1122,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
     };
 
     @SuppressLint("ClickableViewAccessibility")
-    private final View.OnTouchListener onTouchRulerHListener = new View.OnTouchListener() {
+    private final View.OnTouchListener onRulerHTouchListener = new View.OnTouchListener() {
         private Guide guide;
 
         @Override
@@ -1136,12 +1136,14 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                 case MotionEvent.ACTION_MOVE -> {
                     guide.position = toBitmapY(event.getY() - rulerHHeight);
                     drawGridOntoView();
+                    activityMain.tvStatus.setText(getString(R.string.position_, guide.position));
                 }
                 case MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                     final float y = event.getY();
                     if (!(rulerHHeight <= y && y < rulerHHeight + viewHeight)) {
                         layer.guides.remove(guide);
                         drawGridOntoView();
+                        clearStatus();
                     }
                     guide = null;
                 }
@@ -1151,7 +1153,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
     };
 
     @SuppressLint("ClickableViewAccessibility")
-    private final View.OnTouchListener onTouchRulerVListener = new View.OnTouchListener() {
+    private final View.OnTouchListener onRulerVTouchListener = new View.OnTouchListener() {
         private Guide guide;
 
         @Override
@@ -1165,12 +1167,14 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                 case MotionEvent.ACTION_MOVE -> {
                     guide.position = toBitmapX(event.getX() - rulerVWidth);
                     drawGridOntoView();
+                    activityMain.tvStatus.setText(getString(R.string.position_, guide.position));
                 }
                 case MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                     final float x = event.getX();
                     if (!(rulerVWidth <= x && x < rulerVWidth + viewWidth)) {
                         layer.guides.remove(guide);
                         drawGridOntoView();
+                        clearStatus();
                     }
                     guide = null;
                 }
@@ -1198,16 +1202,13 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         drawFloatingLayersIntoImage();
         if (layer == frame.getBackgroundLayer()) {
             for (final Frame f : project.frames) {
-                if (f.layers.size() == 1 || transform == ImageSizeManager.ScaleType.CROP) {
-                    resizeImage(f.getBackgroundLayer(), width, height, transform, null);
-                } else {
-                    final Layer bl = f.getBackgroundLayer();
+                final Layer bl = f.getBackgroundLayer();
+                if (f.layers.size() > 1 && transform != ImageSizeManager.ScaleType.CROP) {
                     final Matrix matrix = new Matrix();
                     matrix.setRectToRect(
                             new RectF(bl.left, bl.top, bl.left + bl.bitmap.getWidth(), bl.top + bl.bitmap.getHeight()),
                             new RectF(bl.left, bl.top, bl.left + width, bl.top + height),
                             Matrix.ScaleToFit.FILL);
-                    resizeImage(bl, width, height, transform, null);
                     for (int i = 0; i < f.layers.size() - 1; ++i) {
                         final Layer l = f.layers.get(i);
                         final RectF rf = new RectF(l.left, l.top, l.left + l.bitmap.getWidth(), l.top + l.bitmap.getHeight());
@@ -1218,6 +1219,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                         resizeImage(l, r.width(), r.height(), transform, null);
                     }
                 }
+                resizeImage(bl, width, height, transform, null);
                 f.updateThumbnail();
             }
         } else {
@@ -4149,8 +4151,8 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         activityMain.optionsTransformer.cbFilter.setChecked(true);
         activityMain.optionsTransformer.cbFilter.setOnCheckedChangeListener(onTransformerFilterCheckedChangeListener);
         activityMain.canvas.flIv.setOnTouchListener(onIVTouchWithPencilListener);
-        activityMain.canvas.ivRulerH.setOnTouchListener(onTouchRulerHListener);
-        activityMain.canvas.ivRulerV.setOnTouchListener(onTouchRulerVListener);
+        activityMain.canvas.ivRulerH.setOnTouchListener(onRulerHTouchListener);
+        activityMain.canvas.ivRulerV.setOnTouchListener(onRulerVTouchListener);
         activityMain.rvSwatches.setItemAnimator(new DefaultItemAnimator());
         activityMain.optionsGradient.sColors.setOnItemSelectedListener(onGradientColorsSpinnerItemSelectedListener);
         activityMain.optionsGradient.sType.setOnItemSelectedListener(onGradientTypeSpinnerItemSelectedListener);
@@ -5090,6 +5092,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
             case R.id.i_guides_clear -> {
                 layer.guides.clear();
                 drawGridOntoView();
+                clearStatus();
             }
             case R.id.i_guides_new -> {
                 final Guide guide = new Guide();

@@ -216,6 +216,7 @@
     <string name="point">点</string>
     <string name="poly">多边形</string>
     <string name="position">位置</string>
+    <string name="position_">位置：%d</string>
     <string name="posterize">海报化</string>
     <string name="precise">精密</string>
     <string name="preferences">偏好</string>

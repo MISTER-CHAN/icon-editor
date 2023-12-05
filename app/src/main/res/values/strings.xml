@@ -246,6 +246,7 @@
     <string name="point">Point</string>
     <string name="poly">Poly</string>
     <string name="position">Position</string>
+    <string name="position_">Position: %d</string>
     <string name="posterize">Posterize</string>
     <string name="precise">Precise</string>
     <string name="preferences">Preferences</string>
