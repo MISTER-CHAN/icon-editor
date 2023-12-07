@@ -36,13 +36,13 @@
                     android:title="@string/paste"
                     app:iconTint="?attr/colorOnSurfaceVariant" />
                 <item
-                    android:id="@+id/i_clone"
+                    android:id="@+id/i_duplicate"
                     android:icon="@drawable/ic_void"
-                    android:title="@string/clone" />
+                    android:title="@string/duplicate_here" />
                 <item
-                    android:id="@+id/i_clone_as_new"
+                    android:id="@+id/i_duplicate_into_new"
                     android:icon="@drawable/ic_void"
-                    android:title="@string/clone_as_new" />
+                    android:title="@string/duplicate_into_new" />
                 <item
                     android:id="@+id/i_draw_color"
                     android:icon="@drawable/ic_void"

@@ -5,6 +5,7 @@
     <string name="add">新增</string>
     <string name="align">對齊</string>
     <string name="all_layers">全部圖層</string>
+    <string name="alloc_sep_mem_when_previewing">當預覽時爲可見子集分配單獨記憶體（更佔用記憶體並可能導致崩潰）</string>
     <string name="anti_alias">抗鋸齒</string>
     <string name="app_name">Icon Editor</string>
     <string name="apply_to_each_frame">套用至每幀</string>
@@ -42,8 +43,6 @@
     <string name="clear_guides">淸除參考線</string>
     <string name="clip">剪輯</string>
     <string name="clipped">剪裁</string>
-    <string name="clone">克隆</string>
-    <string name="clone_as_new">克隆爲新圖像</string>
     <string name="cloner">克隆筆</string>
     <string name="close">關閉</string>
     <string name="close_others">關閉其他</string>
@@ -87,6 +86,8 @@
     <string name="drawing_primitive">繪圖基元</string>
     <string name="duplicate">複製</string>
     <string name="duplicate_by_color_range">複製顏色範圍</string>
+    <string name="duplicate_here">複製至此</string>
+    <string name="duplicate_into_new">複製至新圖像</string>
     <string name="edit">編輯</string>
     <string name="enabled">啟用</string>
     <string name="encoding_type">編碼類型</string>
@@ -177,6 +178,7 @@
     <string name="mesh">網</string>
     <string name="min">最小</string>
     <string name="mirror">鏡</string>
+    <string name="modify_pixels_whether_visible_or_not_when_previewing">修改像素無論其是否可見（更慢）</string>
     <string name="monospace">等寬</string>
     <string name="more">更多</string>
     <string name="more_color_pickers">更多拾色器</string>
@@ -221,6 +223,7 @@
     <string name="precise">精密</string>
     <string name="preferences">偏好</string>
     <string name="preset_brush">預設筆刷</string>
+    <string name="preview_visible_subset_only">僅預覽可見子集</string>
     <string name="properties">屬性</string>
     <string name="quality">品質</string>
     <string name="quick_add_layer_mask">快速新增圖層遮罩</string>
@@ -328,7 +331,7 @@
     <string name="unify_delays">統一延遲</string>
     <string name="unknown"><strike>未知</strike></string>
     <string name="untitled">無標題</string>
-    <string name="version">版本（發布日期）</string>
+    <string name="version">版本（發佈日期）</string>
     <string name="vertical">垂直</string>
     <string name="vertically">垂直</string>
     <string name="view">檢視</string>

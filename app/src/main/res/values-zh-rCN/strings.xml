@@ -5,6 +5,7 @@
     <string name="add">添加</string>
     <string name="align">对齐</string>
     <string name="all_layers">全部图层</string>
+    <string name="alloc_sep_mem_when_previewing">当预览时为可见子集分配单独内存（更占用内存）</string>
     <string name="anti_alias">抗锯齿</string>
     <string name="app_name">Icon Editor</string>
     <string name="apply_to_each_frame">应用至每帧</string>
@@ -42,8 +43,6 @@
     <string name="clear_guides">清除参考线</string>
     <string name="clip">剪辑</string>
     <string name="clipped">剪贴</string>
-    <string name="clone">克隆</string>
-    <string name="clone_as_new">克隆为新图像</string>
     <string name="cloner">克隆笔</string>
     <string name="close">关闭</string>
     <string name="close_others">关闭其他</string>
@@ -87,6 +86,8 @@
     <string name="drawing_primitive">绘图基元</string>
     <string name="duplicate">复制</string>
     <string name="duplicate_by_color_range">复制颜色范围</string>
+    <string name="duplicate_here">复制至此</string>
+    <string name="duplicate_into_new">复制至新图像</string>
     <string name="edit">编辑</string>
     <string name="enabled">启用</string>
     <string name="encoding_type">编码类型</string>
@@ -177,6 +178,7 @@
     <string name="mesh">网</string>
     <string name="min">最小</string>
     <string name="mirror">镜</string>
+    <string name="modify_pixels_whether_visible_or_not_when_previewing">修改像素无论其是否可见（更慢）</string>
     <string name="monospace">等宽</string>
     <string name="more">更多</string>
     <string name="more_color_pickers">更多拾色器</string>
@@ -221,6 +223,7 @@
     <string name="precise">精密</string>
     <string name="preferences">偏好</string>
     <string name="preset_brush">预设笔刷</string>
+    <string name="preview_visible_subset_only">仅预览可见子集</string>
     <string name="properties">属性</string>
     <string name="quality">品质</string>
     <string name="quick_add_layer_mask">快速添加图层蒙版</string>

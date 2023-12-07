@@ -15,6 +15,7 @@ public class Settings {
     public static final String KEY_CIR = "cir"; // Color Int Component Radix
     public static final String KEY_CP = "cp"; // Color Picker
     public static final String KEY_CR = "cr"; // Color Representation
+    private static final String KEY_EPVS = "epvs"; // Alloc for Visible Subset in Edit Preview
     private static final String KEY_FB = "fb"; // Filter Bitmap
     public static final String KEY_FL = "fl"; // Frame List
     public static final String KEY_HMS = "hms"; // History Max Size
@@ -25,6 +26,7 @@ public class Settings {
 
     private boolean autoSetHasAlpha = false;
     private boolean colorRep = false;
+    private boolean editPreviewVisSubset = true;
     private int historyMaxSize = 50;
     private boolean newLayerLevel = false;
     private boolean pickInHsv = false;
@@ -57,6 +59,10 @@ public class Settings {
         return colorRep;
     }
 
+    public boolean editPreviewVisSubset() {
+        return editPreviewVisSubset;
+    }
+
     public int historyMaxSize() {
         return historyMaxSize;
     }
@@ -71,10 +77,11 @@ public class Settings {
 
     public void update(SharedPreferences preferences) {
         this.preferences = preferences;
+        update(KEY_ASHA);
         update(KEY_CIR);
         update(KEY_CP);
         update(KEY_CR);
-        update(KEY_ASHA);
+        update(KEY_EPVS);
         update(KEY_FB);
         update(KEY_HMS);
         update(KEY_MT);
@@ -98,6 +105,7 @@ public class Settings {
                 colorRep = preferences.getBoolean(KEY_CR, false);
                 mainActivity.setColorRep();
             }
+            case KEY_EPVS -> editPreviewVisSubset = preferences.getBoolean(KEY_EPVS, true);
             case KEY_FB -> mainActivity.setFilterBitmap(preferences.getBoolean(KEY_FB, false));
             case KEY_FL ->
                     mainActivity.setFrameListMenuItemVisible(preferences.getBoolean(KEY_FL, false));

@@ -15,7 +15,8 @@
         app:endIconMode="clear_text"
         app:layout_constraintBaseline_toBaselineOf="@id/s_file_type"
         app:layout_constraintEnd_toStartOf="@id/s_file_type"
-        app:layout_constraintStart_toStartOf="parent">
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_goneMarginEnd="16dp">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/tiet_file_name"
