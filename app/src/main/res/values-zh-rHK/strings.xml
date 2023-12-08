@@ -5,7 +5,7 @@
     <string name="add">新增</string>
     <string name="align">對齊</string>
     <string name="all_layers">全部圖層</string>
-    <string name="alloc_sep_mem_when_previewing">當預覽時爲可見子集分配單獨記憶體（更佔用記憶體並可能導致崩潰）</string>
+    <string name="alloc_sep_mem_when_previewing">當預覽時爲可見子集分配單獨記憶體（更佔用記憶體）</string>
     <string name="anti_alias">抗鋸齒</string>
     <string name="app_name">Icon Editor</string>
     <string name="apply_to_each_frame">套用至每幀</string>

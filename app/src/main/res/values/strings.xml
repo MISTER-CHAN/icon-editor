@@ -7,7 +7,7 @@
     <string name="add_symbol" translatable="false">+</string>
     <string name="align">Align</string>
     <string name="all_layers">All Layers</string>
-    <string name="alloc_sep_mem_when_previewing">Allocate separate memory for visible subset when previewing. (Takes up more memory)</string>
+    <string name="alloc_sep_mem_when_previewing">Allocate separate memory for visible subset when previewing (Takes up more memory)</string>
     <string name="alpha" translatable="false">Alpha</string>
     <string name="anti_alias">Anti-alias</string>
     <string name="app_name">Icon Editor</string>
@@ -204,7 +204,7 @@
     <string name="min">Min</string>
     <string name="mirror">Mirror</string>
     <string name="mister_chan" translatable="false">MISTER_CHAN</string>
-    <string name="modify_pixels_whether_visible_or_not_when_previewing">Modify pixels whether they are visible or not when previewing. (Slower)</string>
+    <string name="modify_pixels_whether_visible_or_not_when_previewing">Modify pixels whether they are visible or not when previewing (Slower)</string>
     <string name="monospace">Monospace</string>
     <string name="more">More</string>
     <string name="more_color_pickers">More Color Pickers</string>
