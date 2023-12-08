@@ -40,25 +40,32 @@ public class EditPreview {
         this.rect = rect;
         pixels = new int[w * h];
         bm.getPixels(pixels, 0, w, 0, 0, w, h);
+
+        int[] visiblePixels = null;
         if (visibleRect != null) {
             if (!visibleRect.intersect(rect)) {
                 visibleRect.setEmpty();
             }
             if (!visibleRect.contains(rect)) {
-                this.visibleRect = visibleRect;
-                final int vw = visibleRect.width(), vh = visibleRect.height();
-                visiblePixels = new int[vw * vh];
-                if (visible()) {
+                final int vw = visibleRect.width(), vh = visibleRect.height(), va = vw * vh;
+                if (va == 0) {
+                    visiblePixels = new int[0];
+                } else allocForVisSubset:{
+                    try {
+                        visiblePixels = new int[va];
+                        final int[] arr = new int[va]; // Trial and error
+                    } catch (OutOfMemoryError e) {
+                        visibleRect = null;
+                        break allocForVisSubset;
+                    }
                     bm.getPixels(visiblePixels, 0, vw, visibleRect.left, visibleRect.top, vw, vh);
                 }
             } else {
-                this.visibleRect = rect;
-                visiblePixels = pixels;
+                visibleRect = null;
             }
-        } else {
-            this.visibleRect = rect;
-            visiblePixels = pixels;
         }
+        this.visibleRect = visibleRect != null ? visibleRect : rect;
+        this.visiblePixels = visibleRect != null ? visiblePixels : pixels;
     }
 
     public void addLightingColorFilter(float mul, float add, boolean stopped) {
