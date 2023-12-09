@@ -97,6 +97,11 @@ public class EditPreview {
     }
 
     @ColorInt
+    public int[] getOriginalPixels() {
+        return BitmapUtils.getPixels(src, rect);
+    }
+
+    @ColorInt
     public int[] getPixels() {
         if (cachePixels) {
             if (pixels == null) {

@@ -4956,7 +4956,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                 drawFloatingLayersIntoImage();
                 createEditPreview(true, true);
                 new CurvesDialog(this)
-                        .setSource(editPreview.getPixels())
+                        .setSource(editPreview.getOriginalPixels())
                         .setOnCurvesChangedListener(onFilterCurvesChangedListener)
                         .setOnActionListener(onEditPreviewPBClickListener, onEditPreviewCancelListener)
                         .show();
@@ -4983,7 +4983,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                 drawFloatingLayersIntoImage();
                 createEditPreview(true, true);
                 new LevelsDialog(this, onFilterLevelsChangedListener)
-                        .drawHistogram(editPreview.getPixels())
+                        .drawHistogram(editPreview.getOriginalPixels())
                         .setOnActionListener(onEditPreviewPBClickListener, onEditPreviewCancelListener)
                         .show();
                 clearStatus();
