@@ -17,7 +17,7 @@ import com.misterchan.iconeditor.R;
 
 import java.text.DecimalFormat;
 
-public class ColorMatrixManager {
+public class ColorMatrixManager extends FilterDialog {
 
     private static final DecimalFormat DEC_FORMAT = new DecimalFormat("0.#######");
 
@@ -25,60 +25,39 @@ public class ColorMatrixManager {
         void onChanged(float[] matrix);
     }
 
-    private final AlertDialog.Builder dialogBuilder;
-    private final OnMatrixElementsChangedListener onMatrixElementsChangeListener;
+    private final OnMatrixElementsChangedListener listener;
 
     @Size(20)
     private final float[] m;
 
     public ColorMatrixManager(Context context,
-                              final OnMatrixElementsChangedListener onMatrixElementsChangeListener,
-                              @Size(value = 20) float[] defaultMatrix) {
-        this(context,
-                onMatrixElementsChangeListener,
-                null, null,
-                defaultMatrix);
+                              OnMatrixElementsChangedListener listener) {
+        this(context, new float[]{
+                1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+                0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+                0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+                0.0f, 0.0f, 0.0f, 1.0f, 0.0f
+        }, listener);
     }
 
-    public ColorMatrixManager(Context context,
-                              final OnMatrixElementsChangedListener onMatrixElementsChangeListener,
-                              final DialogInterface.OnClickListener onPosButtonClickListener,
-                              final DialogInterface.OnCancelListener onCancelListener) {
-        this(context,
-                onMatrixElementsChangeListener,
-                onPosButtonClickListener,
-                onCancelListener,
-                new float[]{
-                        1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-                        0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
-                        0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-                        0.0f, 0.0f, 0.0f, 1.0f, 0.0f
-                });
-    }
+    public ColorMatrixManager(Context context, @Size(value = 20) float[] defaultMatrix,
+                              OnMatrixElementsChangedListener listener) {
+        super(context);
+        builder.setView(R.layout.color_matrix);
 
-    public ColorMatrixManager(Context context,
-                              final OnMatrixElementsChangedListener onMatrixElementsChangeListener,
-                              final DialogInterface.OnClickListener onPosButtonClickListener,
-                              final DialogInterface.OnCancelListener onCancelListener,
-                              @Size(value = 20) float[] defaultMatrix) {
+        ((MaterialAlertDialogBuilder) builder).setBackgroundInsetBottom(0);
         m = defaultMatrix;
-
-        dialogBuilder = new MaterialAlertDialogBuilder(context, R.style.ThemeOverlay_IconEditor_MaterialAlertDialog_Insetless_Square)
-                .setBackgroundInsetBottom(0)
-                .setOnCancelListener(onCancelListener)
-                .setPositiveButton(R.string.ok, onPosButtonClickListener)
-                .setView(R.layout.color_matrix);
-
-        if (onCancelListener != null) {
-            dialogBuilder.setNegativeButton(R.string.cancel,
-                    (dialog, which) -> onCancelListener.onCancel(dialog));
-        }
-
-        this.onMatrixElementsChangeListener = onMatrixElementsChangeListener;
+        this.listener = listener;
     }
 
+    @Override
+    void onFilterCommit() {
+        listener.onChanged(m);
+    }
+
+    @Override
     public void show() {
-        final AlertDialog dialog = dialogBuilder.show();
+        final AlertDialog dialog = builder.show();
 
         final Window window = dialog.getWindow();
         final WindowManager.LayoutParams lp = window.getAttributes();
@@ -104,6 +83,6 @@ public class ColorMatrixManager {
             return;
         }
         m[index] = f;
-        onMatrixElementsChangeListener.onChanged(m);
+        listener.onChanged(m);
     }
 }

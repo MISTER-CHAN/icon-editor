@@ -33,7 +33,7 @@ import com.misterchan.iconeditor.util.BitmapUtils;
 
 import java.util.function.Function;
 
-public class CurvesDialog {
+public class CurvesDialog extends FilterDialog {
 
     public interface OnCurvesChangedListener {
         void onChanged(@Size(5) int[][] curves, boolean stopped);
@@ -41,7 +41,6 @@ public class CurvesDialog {
 
     private Bitmap bitmap;
     private Bitmap grid;
-    private final AlertDialog.Builder builder;
     private Canvas canvas;
     private float density;
     private ImageView iv;
@@ -95,9 +94,8 @@ public class CurvesDialog {
     }
 
     public CurvesDialog(Context context) {
-        builder = new MaterialAlertDialogBuilder(context)
-                .setTitle(R.string.curves)
-                .setView(R.layout.curves);
+        super(context);
+        builder.setTitle(R.string.curves).setView(R.layout.curves);
 
         builder.setOnDismissListener(dialog -> {
             canvas = null;
@@ -214,6 +212,11 @@ public class CurvesDialog {
         ivHistogram.setImageBitmap(histBitmaps[selectedCompIndex]);
     }
 
+    @Override
+    void onFilterCommit() {
+        listener.onChanged(curves, true);
+    }
+
     private void reset() {
         reset(c);
     }
@@ -229,11 +232,6 @@ public class CurvesDialog {
         return v <= 0x0 ? 0x00 : v >= 0x100 ? 0xFF : v;
     }
 
-    public CurvesDialog setDefaultCurves(@Size(5) int[][] curves) {
-        this.curves = curves;
-        return this;
-    }
-
     private void selectComp(int index) {
         selectedCompIndex = index;
         c = curves[index];
@@ -246,19 +244,13 @@ public class CurvesDialog {
         drawGraphics();
     }
 
-    public CurvesDialog setOnCancelListener(DialogInterface.OnCancelListener listener) {
-        builder.setOnCancelListener(listener);
-        builder.setNegativeButton(R.string.cancel, (dialog, which) -> listener.onCancel(dialog));
+    public CurvesDialog setDefaultCurves(@Size(5) int[][] curves) {
+        this.curves = curves;
         return this;
     }
 
-    public CurvesDialog setOnCurvesChangeListener(OnCurvesChangedListener listener) {
+    public CurvesDialog setOnCurvesChangedListener(OnCurvesChangedListener listener) {
         this.listener = listener;
-        return this;
-    }
-
-    public CurvesDialog setOnPositiveButtonClickListener(DialogInterface.OnClickListener listener) {
-        builder.setPositiveButton(R.string.ok, listener);
         return this;
     }
 
@@ -275,8 +267,9 @@ public class CurvesDialog {
         return this;
     }
 
+    @Override
     @SuppressLint("ClickableViewAccessibility")
-    public CurvesDialog show() {
+    public void show() {
         final AlertDialog dialog = builder.show();
 
         final Window window = dialog.getWindow();
@@ -356,8 +349,6 @@ public class CurvesDialog {
 
         tlComps.selectTab(null);
         tlComps.getTabAt(0).select();
-
-        return this;
     }
 
     private int toBitmap(float coo) {

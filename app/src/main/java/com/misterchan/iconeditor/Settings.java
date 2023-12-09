@@ -15,21 +15,17 @@ public class Settings {
     public static final String KEY_CIR = "cir"; // Color Int Component Radix
     public static final String KEY_CP = "cp"; // Color Picker
     public static final String KEY_CR = "cr"; // Color Representation
-    private static final String KEY_EPVS = "epvs"; // Alloc for Visible Subset in Edit Preview
     private static final String KEY_FB = "fb"; // Filter Bitmap
     public static final String KEY_FL = "fl"; // Frame List
     public static final String KEY_HMS = "hms"; // History Max Size
     public static final String KEY_LOC = "loc"; // Locale
     private static final String KEY_MT = "mt"; // Multithreaded
     private static final String KEY_NLL = "nll"; // New Layer Level
-    public static final String KEY_PIH = "pih"; // Pick in HSV
 
     private boolean autoSetHasAlpha = false;
     private boolean colorRep = false;
-    private boolean editPreviewVisSubset = true;
     private int historyMaxSize = 50;
     private boolean newLayerLevel = false;
-    private boolean pickInHsv = false;
     private int colorIntCompRadix = 16;
     private int colorPicker = 0;
     public MainActivity mainActivity;
@@ -59,10 +55,6 @@ public class Settings {
         return colorRep;
     }
 
-    public boolean editPreviewVisSubset() {
-        return editPreviewVisSubset;
-    }
-
     public int historyMaxSize() {
         return historyMaxSize;
     }
@@ -81,12 +73,10 @@ public class Settings {
         update(KEY_CIR);
         update(KEY_CP);
         update(KEY_CR);
-        update(KEY_EPVS);
         update(KEY_FB);
         update(KEY_HMS);
         update(KEY_MT);
         update(KEY_NLL);
-        update(KEY_PIH);
     }
 
     public void update(String key) {
@@ -105,7 +95,6 @@ public class Settings {
                 colorRep = preferences.getBoolean(KEY_CR, false);
                 mainActivity.setColorRep();
             }
-            case KEY_EPVS -> editPreviewVisSubset = preferences.getBoolean(KEY_EPVS, true);
             case KEY_FB -> mainActivity.setFilterBitmap(preferences.getBoolean(KEY_FB, false));
             case KEY_FL ->
                     mainActivity.setFrameListMenuItemVisible(preferences.getBoolean(KEY_FL, false));
@@ -118,7 +107,6 @@ public class Settings {
             }
             case KEY_MT -> mainActivity.setRunnableRunner(preferences.getBoolean(KEY_MT, true));
             case KEY_NLL -> newLayerLevel = "sel".equals(preferences.getString(KEY_NLL, "top"));
-            case KEY_PIH -> pickInHsv = preferences.getBoolean(KEY_PIH, false);
         }
     }
 }

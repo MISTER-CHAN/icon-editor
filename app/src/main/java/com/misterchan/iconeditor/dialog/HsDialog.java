@@ -16,13 +16,12 @@ import com.google.android.material.tabs.TabLayout;
 import com.misterchan.iconeditor.R;
 import com.misterchan.iconeditor.listener.OnSliderChangeListener;
 
-public class HsDialog {
+public class HsDialog extends FilterDialog {
     public interface OnChangedListener {
         void onChanged(@Size(4) float[] deltaHs, boolean stopped);
     }
 
-    private final AlertDialog.Builder builder;
-    private OnChangedListener listener;
+    private final OnChangedListener listener;
 
     /**
      * <table>
@@ -33,34 +32,24 @@ public class HsDialog {
     @Size(4)
     private final float[] deltaHs;
 
-    public HsDialog(Context context) {
-        this(context, null);
+    public HsDialog(Context context, OnChangedListener onChangedListener) {
+        this(context, null, onChangedListener);
     }
 
-    public HsDialog(Context context, @Size(4) float[] defaultDeltaHs) {
-        builder = new MaterialAlertDialogBuilder(context)
-                .setTitle(R.string.hue_saturation)
-                .setView(R.layout.hs);
+    public HsDialog(Context context, @Size(4) float[] defaultDeltaHs, OnChangedListener onChangedListener) {
+        super(context);
+        builder.setTitle(R.string.hue_saturation).setView(R.layout.hs);
 
         deltaHs = defaultDeltaHs != null ? defaultDeltaHs : new float[]{0.0f, 0.0f, 0.0f, 1.0f};
+        listener = onChangedListener;
     }
 
-    public HsDialog setOnCancelListener(DialogInterface.OnCancelListener listener) {
-        builder.setOnCancelListener(listener);
-        builder.setNegativeButton(R.string.cancel, (dialog, which) -> listener.onCancel(dialog));
-        return this;
+    @Override
+    void onFilterCommit() {
+        listener.onChanged(deltaHs, true);
     }
 
-    public HsDialog setOnPositiveButtonClickListener(DialogInterface.OnClickListener listener) {
-        builder.setPositiveButton(R.string.ok, listener);
-        return this;
-    }
-
-    public HsDialog setOnChangeListener(OnChangedListener listener) {
-        this.listener = listener;
-        return this;
-    }
-
+    @Override
     public void show() {
         final AlertDialog dialog = builder.show();
 

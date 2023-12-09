@@ -20,12 +20,11 @@ import com.misterchan.iconeditor.R;
 import com.misterchan.iconeditor.listener.OnSliderChangeListener;
 import com.misterchan.iconeditor.util.BitmapUtils;
 
-public class FillWithRefDialog {
+public class FillWithRefDialog extends FilterDialog {
     public interface OnChangeListener {
         void onChange(Bitmap bitmap, Shader.TileMode tileMode, boolean stopped);
     }
 
-    private final AlertDialog.Builder builder;
     private Bitmap src, dst;
     private OnChangeListener listener;
     private Shader.TileMode tileMode = Shader.TileMode.REPEAT;
@@ -60,27 +59,22 @@ public class FillWithRefDialog {
         onChange(stopped);
     };
 
-    public FillWithRefDialog(Context context, Bitmap src) {
-        builder = new MaterialAlertDialogBuilder(context)
-                .setTitle(R.string.fill_with_reference)
+    public FillWithRefDialog(Context context, Bitmap src, OnChangeListener listener) {
+        super(context);
+        builder.setTitle(R.string.fill_with_reference)
                 .setView(R.layout.fill_with_ref);
 
         this.src = src;
+        this.listener = listener;
     }
 
     private void onChange(boolean stopped) {
         listener.onChange(dst, tileMode, stopped);
     }
 
-    public FillWithRefDialog setOnCancelListener(DialogInterface.OnCancelListener listener) {
-        builder.setOnCancelListener(listener);
-        builder.setNegativeButton(R.string.cancel, (dialog, which) -> listener.onCancel(dialog));
-        return this;
-    }
-
-    public FillWithRefDialog setOnChangeListener(OnChangeListener listener) {
-        this.listener = listener;
-        return this;
+    @Override
+    void onFilterCommit() {
+        listener.onChange(dst, tileMode, true);
     }
 
     public FillWithRefDialog setOnDismissListener(DialogInterface.OnDismissListener listener) {
@@ -93,12 +87,8 @@ public class FillWithRefDialog {
         return this;
     }
 
-    public FillWithRefDialog setOnPositiveButtonClickListener(DialogInterface.OnClickListener listener) {
-        builder.setPositiveButton(R.string.ok, listener);
-        return this;
-    }
-
-    public FillWithRefDialog show() {
+    @Override
+    public void show() {
         final AlertDialog dialog = builder.show();
 
         final Window window = dialog.getWindow();
@@ -117,6 +107,5 @@ public class FillWithRefDialog {
         sSize.addOnSliderTouchListener(onSizeSliderChangeListener);
 
         onSizeSliderChangeListener.onChange(sSize, sSize.getValueTo(), true);
-        return this;
     }
 }

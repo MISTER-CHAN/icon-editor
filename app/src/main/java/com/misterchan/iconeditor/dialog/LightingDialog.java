@@ -1,7 +1,6 @@
 package com.misterchan.iconeditor.dialog;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.graphics.Color;
 import android.view.Gravity;
 import android.view.View;
@@ -16,28 +15,26 @@ import androidx.appcompat.app.AlertDialog;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.misterchan.iconeditor.R;
 
-public class LightingDialog {
+public class LightingDialog extends FilterDialog {
 
     public interface OnLightingChangedListener {
         void onChanged(@Size(8) float[] lighting, boolean stopped);
     }
 
-    private final AlertDialog.Builder builder;
     private final Context context;
-    private OnLightingChangedListener onLightingChangeListener;
+    private final OnLightingChangedListener listener;
 
     @Size(8)
     private final float[] lighting;
 
-    public LightingDialog(Context context) {
-        this(context, null);
+    public LightingDialog(Context context, OnLightingChangedListener listener) {
+        this(context, null, listener);
     }
 
-    public LightingDialog(Context context, float[] defaultLighting) {
+    public LightingDialog(Context context, float[] defaultLighting, OnLightingChangedListener listener) {
+        super(context);
         this.context = context;
-        builder = new MaterialAlertDialogBuilder(context)
-                .setTitle(R.string.lighting)
-                .setView(R.layout.lighting);
+        builder.setTitle(R.string.lighting).setView(R.layout.lighting);
 
         if (defaultLighting == null) {
             lighting = new float[]{1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f};
@@ -48,25 +45,16 @@ public class LightingDialog {
                 lighting[i + 1] = Math.min(Math.max(Math.round(lighting[i + 1]), 0x00), 0xFF);
             }
         }
+
+        this.listener = listener;
     }
 
-    public LightingDialog setOnCancelListener(DialogInterface.OnCancelListener listener) {
-        builder.setOnCancelListener(listener);
-        builder.setNegativeButton(R.string.cancel,
-                (dialog, which) -> listener.onCancel(dialog));
-        return this;
+    @Override
+    void onFilterCommit() {
+        listener.onChanged(lighting, true);
     }
 
-    public LightingDialog setOnPositiveButtonClickListener(DialogInterface.OnClickListener listener) {
-        builder.setPositiveButton(R.string.ok, listener);
-        return this;
-    }
-
-    public LightingDialog setOnLightingChangeListener(OnLightingChangedListener listener) {
-        onLightingChangeListener = listener;
-        return this;
-    }
-
+    @Override
     public void show() {
         final AlertDialog dialog = builder.show();
 
@@ -90,7 +78,7 @@ public class LightingDialog {
             lighting[4] = Color.blue(newColor);
             lighting[6] = Color.alpha(newColor);
             vMul.setBackgroundColor(Color.toArgb(newColor));
-            onLightingChangeListener.onChanged(lighting, true);
+            listener.onChanged(lighting, true);
         }, Color.pack(lighting[0], lighting[2], lighting[4], lighting[6])).show());
 
         flAdd.setOnClickListener(v -> new ColorPickerDialog(context, R.string.offset, (oldColor, newColor) -> {
@@ -100,7 +88,7 @@ public class LightingDialog {
             lighting[5] = Color.blue(newColorInt);
             lighting[7] = Color.alpha(newColorInt);
             vAdd.setBackgroundColor(Color.toArgb(newColor));
-            onLightingChangeListener.onChanged(lighting, true);
+            listener.onChanged(lighting, true);
         }, Color.pack(Color.argb((int) lighting[7], (int) lighting[1], (int) lighting[3], (int) lighting[5]))).show());
     }
 }

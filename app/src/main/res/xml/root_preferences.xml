@@ -48,14 +48,6 @@
 
         <SwitchPreferenceCompat
             app:defaultValue="true"
-            app:key="epvs"
-            app:singleLineTitle="false"
-            app:summaryOff="@string/modify_pixels_whether_visible_or_not_when_previewing"
-            app:summaryOn="@string/alloc_sep_mem_when_previewing"
-            app:title="@string/preview_visible_subset_only" />
-
-        <SwitchPreferenceCompat
-            app:defaultValue="true"
             app:key="mt"
             app:singleLineTitle="false"
             app:summaryOff="@string/synchronously_draw_image_and_ui"

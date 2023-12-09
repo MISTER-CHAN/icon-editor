@@ -1,7 +1,6 @@
 package com.misterchan.iconeditor.dialog;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.graphics.Matrix;
 import android.view.Gravity;
 import android.view.Window;
@@ -18,7 +17,7 @@ import com.misterchan.iconeditor.R;
 
 import java.text.DecimalFormat;
 
-public class MatrixManager {
+public class MatrixManager extends FilterDialog {
 
     private static final DecimalFormat DEC_FORMAT = new DecimalFormat("0.#######");
 
@@ -26,57 +25,38 @@ public class MatrixManager {
         void onChanged(Matrix matrix);
     }
 
-    private final AlertDialog.Builder dialogBuilder;
     private final Matrix matrix;
-    private final OnMatrixElementsChangedListener onMatrixElementsChangeListener;
+    private final OnMatrixElementsChangedListener listener;
 
     @Size(9)
     private final float[] values = new float[9];
 
     public MatrixManager(Context context,
-                         final OnMatrixElementsChangedListener onMatrixElementsChangeListener,
-                         Matrix defaultMatrix) {
-        this(context,
-                onMatrixElementsChangeListener,
-                null, null,
-                defaultMatrix);
+                         OnMatrixElementsChangedListener listener) {
+        this(context, listener, new Matrix());
     }
 
     public MatrixManager(Context context,
-                         final OnMatrixElementsChangedListener onMatrixElementsChangeListener,
-                         final DialogInterface.OnClickListener onPosButtonClickListener,
-                         final DialogInterface.OnCancelListener onCancelListener) {
-        this(context,
-                onMatrixElementsChangeListener,
-                onPosButtonClickListener,
-                onCancelListener,
-                new Matrix());
-    }
-
-    public MatrixManager(Context context,
-                         final OnMatrixElementsChangedListener onMatrixElementsChangeListener,
-                         final DialogInterface.OnClickListener onPosButtonClickListener,
-                         final DialogInterface.OnCancelListener onCancelListener,
+                         OnMatrixElementsChangedListener onMatrixElementsChangeListener,
                          Matrix defaultMatrix) {
+        super(context);
+        builder.setView(R.layout.matrix);
+
+        ((MaterialAlertDialogBuilder) builder).setBackgroundInsetBottom(0);
+
         matrix = defaultMatrix;
         matrix.getValues(values);
-
-        dialogBuilder = new MaterialAlertDialogBuilder(context, R.style.ThemeOverlay_IconEditor_MaterialAlertDialog_Insetless_Square)
-                .setBackgroundInsetBottom(0)
-                .setOnCancelListener(onCancelListener)
-                .setPositiveButton(R.string.ok, onPosButtonClickListener)
-                .setView(R.layout.matrix);
-
-        if (onCancelListener != null) {
-            dialogBuilder.setNegativeButton(R.string.cancel,
-                    (dialog, which) -> onCancelListener.onCancel(dialog));
-        }
-
-        this.onMatrixElementsChangeListener = onMatrixElementsChangeListener;
+        this.listener = onMatrixElementsChangeListener;
     }
 
+    @Override
+    void onFilterCommit() {
+        listener.onChanged(matrix);
+    }
+
+    @Override
     public void show() {
-        final AlertDialog dialog = dialogBuilder.show();
+        final AlertDialog dialog = builder.show();
 
         final Window window = dialog.getWindow();
         final WindowManager.LayoutParams lp = window.getAttributes();
@@ -103,6 +83,6 @@ public class MatrixManager {
         }
         values[index] = f;
         matrix.setValues(values);
-        onMatrixElementsChangeListener.onChanged(matrix);
+        listener.onChanged(matrix);
     }
 }

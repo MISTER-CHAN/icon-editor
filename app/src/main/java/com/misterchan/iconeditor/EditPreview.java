@@ -9,97 +9,58 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 
 import androidx.annotation.ColorInt;
-import androidx.annotation.IntRange;
-import androidx.annotation.Size;
 
 import com.misterchan.iconeditor.util.BitmapUtils;
 
 public class EditPreview {
+    public interface Modification {
+        void modify(@ColorInt int[] src, @ColorInt int[] dst);
+    }
+
     private Bitmap bitmap;
-    private Bitmap bm;
     private final Bitmap src;
+    private boolean cachePixels;
+    private boolean committed;
     private Canvas canvas;
-    private Canvas cv;
-    private final Rect rect, visibleRect;
+    private final Rect rect;
 
     @ColorInt
-    private final int[] pixels, visiblePixels;
+    private int[] pixels;
 
-    public EditPreview(Bitmap bitmap, Rect rect) {
-        this(bitmap, rect, null);
+    /**
+     * Previewing rectangle
+     */
+    private Rect prevRect;
+
+    public EditPreview(Bitmap bitmap, Rect rect, boolean cachePixels) {
+        this(bitmap, rect, cachePixels, rect);
     }
 
-    public EditPreview(Bitmap bitmap, Rect rect, Rect visibleRect) {
-        final int w = rect.width(), h = rect.height();
+    /**
+     * @param prevRect Previewing rectangle
+     */
+    public EditPreview(Bitmap bitmap, Rect rect, boolean cachePixels, Rect prevRect) {
         src = bitmap;
         this.bitmap = Bitmap.createBitmap(bitmap);
-        bm = Bitmap.createBitmap(w, h, bitmap.getConfig(), bitmap.hasAlpha(), bitmap.getColorSpace());
         canvas = new Canvas(this.bitmap);
-        cv = new Canvas(bm);
-        cv.drawBitmap(bitmap, rect, new RectF(0.0f, 0.0f, w, h), BitmapUtils.PAINT_SRC);
         this.rect = rect;
-        pixels = new int[w * h];
-        bm.getPixels(pixels, 0, w, 0, 0, w, h);
-
-        int[] visiblePixels = null;
-        if (visibleRect != null) {
-            if (!visibleRect.intersect(rect)) {
-                visibleRect.setEmpty();
-            }
-            if (!visibleRect.contains(rect)) {
-                final int vw = visibleRect.width(), vh = visibleRect.height(), va = vw * vh;
-                if (va == 0) {
-                    visiblePixels = new int[0];
-                } else allocForVisSubset:{
-                    try {
-                        visiblePixels = new int[va];
-                        final int[] arr = new int[va]; // Trial and error
-                    } catch (OutOfMemoryError e) {
-                        visibleRect = null;
-                        break allocForVisSubset;
-                    }
-                    bm.getPixels(visiblePixels, 0, vw, visibleRect.left, visibleRect.top, vw, vh);
-                }
-            } else {
-                visibleRect = null;
-            }
+        this.prevRect = prevRect;
+        this.cachePixels = cachePixels;
+        if (rect != prevRect && !prevRect.intersect(rect)) {
+            prevRect.setEmpty();
         }
-        this.visibleRect = visibleRect != null ? visibleRect : rect;
-        this.visiblePixels = visibleRect != null ? visiblePixels : pixels;
-    }
-
-    public void addLightingColorFilter(float mul, float add, boolean stopped) {
-        final int[] src = getPixels(stopped), dst = new int[getArea(stopped)];
-        BitmapUtils.addLightingColorFilter(src, dst, mul, add);
-        setPixels(dst, stopped);
-    }
-
-    public void addLightingColorFilter(@Size(8) float[] lighting) {
-        final int[] src = getPixels(true), dst = new int[getArea(true)];
-        BitmapUtils.addLightingColorFilter(src, dst, lighting);
-        setPixels(dst, true);
-    }
-
-    public void addColorMatrixColorFilter(@Size(20) float[] colorMatrix) {
-        final int[] src = getPixels(true), dst = new int[getArea(true)];
-        BitmapUtils.addColorMatrixColorFilter(src, dst, colorMatrix);
-        setPixels(dst, true);
     }
 
     public void clearFilters() {
-        canvas.drawBitmap(bm, rect.left, rect.top, BitmapUtils.PAINT_SRC);
+        canvas.drawBitmap(src, rect, rect, BitmapUtils.PAINT_SRC);
     }
 
-    @ColorInt
-    public int[] copyPixels() {
-        final int w = bm.getWidth(), h = bm.getHeight();
-        final int[] pixels = new int[w * h];
-        bm.getPixels(pixels, 0, w, 0, 0, w, h);
-        return pixels;
+    public boolean committed() {
+        return committed;
     }
 
-    public void drawBitmap(Bitmap b) {
-        canvas.drawBitmap(b, rect.left, rect.top, BitmapUtils.PAINT_SRC_OVER);
+    public void drawBitmap(Bitmap bm) {
+        canvas.drawBitmap(bm, rect.left, rect.top, BitmapUtils.PAINT_SRC_OVER);
     }
 
     public void drawColor(@ColorInt int color, BlendMode blendMode) {
@@ -109,8 +70,14 @@ public class EditPreview {
         canvas.drawRect(rect, paint);
     }
 
-    public int getArea(boolean stopped) {
-        return getWidth(stopped) * getHeight(stopped);
+    public void edit(Modification mod) {
+        final int[] src = getPixels(), dst = cachePixels ? new int[getArea()] : src;
+        mod.modify(src, dst);
+        setPixels(dst);
+    }
+
+    public int getArea() {
+        return getWidth() * getHeight();
     }
 
     public Canvas getCanvas() {
@@ -121,67 +88,73 @@ public class EditPreview {
         return bitmap;
     }
 
-    public int getHeight(boolean stopped) {
-        return stopped ? bm.getHeight() : visibleRect.height();
+    public int getHeight() {
+        return prevRect.height();
     }
 
     public Bitmap getOriginal() {
-        return bm;
+        return src;
     }
 
     @ColorInt
-    public int[] getPixels(boolean stopped) {
-        return stopped ? pixels : visiblePixels;
+    public int[] getPixels() {
+        if (cachePixels) {
+            if (pixels == null) {
+                final int vw = prevRect.width(), vh = prevRect.height(), va = vw * vh;
+                pixels = new int[va];
+                if (pixels.length > 0) {
+                    src.getPixels(pixels, 0, vw, prevRect.left, prevRect.top, vw, vh);
+                }
+            }
+            return pixels;
+        } else {
+            final int w = getWidth(), h = getHeight();
+            final int[] pixels = new int[w * h];
+            src.getPixels(pixels, 0, w, 0, 0, w, h);
+            return pixels;
+        }
     }
 
     public Rect getRect() {
         return rect;
     }
 
-    public int getWidth(boolean stopped) {
-        return stopped ? bm.getWidth() : visibleRect.width();
+    public int getWidth() {
+        return prevRect.width();
     }
 
-    public boolean visible() {
-        return visiblePixels.length > 0;
-    }
-
-    public void posterize(@IntRange(from = 0x01, to = 0xFF) int level, boolean stopped) {
-        final int[] src = getPixels(stopped), dst = new int[getArea(stopped)];
-        BitmapUtils.posterize(src, dst, level);
-        setPixels(dst, stopped);
+    public void prepareToCommit() {
+        cachePixels = false;
+        prevRect = rect;
+        committed = true;
+        pixels = null;
     }
 
     public void recycle() {
         canvas = null;
         bitmap.recycle();
         bitmap = null;
-
-        cv = null;
-        bm.recycle();
-        bm = null;
     }
 
     public void reset() {
-        canvas.drawBitmap(bm, rect.left, rect.top, BitmapUtils.PAINT_SRC);
+        canvas.drawBitmap(src, rect, rect, BitmapUtils.PAINT_SRC);
     }
 
-    public void setPixels(@ColorInt int[] pixels, boolean stopped) {
-        if (stopped) {
-            setPixels(pixels, 0, 0, bm.getWidth(), bm.getHeight());
-        } else {
-            setPixels(pixels, visibleRect.left, visibleRect.top, visibleRect.width(), visibleRect.height());
-        }
+    public void setPixels(@ColorInt int[] pixels) {
+        setPixels(pixels, prevRect.left, prevRect.top, prevRect.width(), prevRect.height());
     }
 
     private void setPixels(@ColorInt int[] pixels, int x, int y, int width, int height) {
-        bitmap.setPixels(pixels, 0, width, rect.left + x, rect.top + y, width, height);
+        bitmap.setPixels(pixels, 0, width, x, y, width, height);
     }
 
     public void transform(Matrix matrix) {
         canvas.drawBitmap(src, 0.0f, 0.0f, BitmapUtils.PAINT_SRC);
         canvas.drawRect(rect, BitmapUtils.PAINT_CLEAR);
-        matrix.postTranslate(rect.left, rect.top);
-        canvas.drawBitmap(bm, matrix, BitmapUtils.PAINT_SRC);
+        canvas.drawBitmap(src, matrix, BitmapUtils.PAINT_SRC);
+    }
+
+    public boolean visible() {
+        return pixels == null || pixels.length > 0 || cachePixels;
     }
 }

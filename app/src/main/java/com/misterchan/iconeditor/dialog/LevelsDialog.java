@@ -1,10 +1,8 @@
 package com.misterchan.iconeditor.dialog;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.BlendMode;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -16,11 +14,9 @@ import android.widget.ImageView;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.FloatRange;
-import androidx.annotation.IntRange;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.slider.RangeSlider;
 import com.misterchan.iconeditor.R;
 import com.misterchan.iconeditor.listener.OnCircularRSChangeListener;
@@ -30,7 +26,7 @@ import com.misterchan.iconeditor.util.LightingToLevels;
 import java.util.List;
 import java.util.function.Function;
 
-public class LevelsDialog {
+public class LevelsDialog extends FilterDialog {
 
     public interface OnLevelsChangedListener {
         void onChanged(float inputShadows, float inputHighlights, float outputShadows, float outputHighlights, boolean stopped);
@@ -38,11 +34,10 @@ public class LevelsDialog {
 
     private Bitmap bitmap;
     private Bitmap progressBitmap;
-    private final AlertDialog.Builder builder;
     private Canvas progressCanvas;
     private ImageView iv;
     private ImageView ivProgress;
-    private OnLevelsChangedListener listener;
+    private final OnLevelsChangedListener listener;
     private final Paint progressPaint = new Paint();
 
     @FloatRange(from = 0x00, to = 0xFF)
@@ -51,9 +46,12 @@ public class LevelsDialog {
     @FloatRange(from = 0x00, to = 0xFF)
     private float outputShadows = 0x00, outputHighlights = 0xFF;
 
-    public LevelsDialog(Context context) {
-        builder = new MaterialAlertDialogBuilder(context)
-                .setView(R.layout.levels);
+    @ColorInt
+    private int[] srcPixels;
+
+    public LevelsDialog(Context context, OnLevelsChangedListener listener) {
+        super(context);
+        builder.setView(R.layout.levels);
 
         builder.setOnDismissListener(dialog -> {
             bitmap.recycle();
@@ -67,13 +65,16 @@ public class LevelsDialog {
         final TypedValue typedValue = new TypedValue();
         theme.resolveAttribute(android.R.attr.textColorPrimary, typedValue, true);
         progressPaint.setColor(context.getResources().getColor(typedValue.resourceId, theme));
+
+        this.listener = listener;
     }
 
     public static final Function<Integer, Integer> valueFunc =
             pixel -> Math.max(Math.max(Color.red(pixel), Color.green(pixel)), Color.blue(pixel));
 
-    public void drawHistogram(@ColorInt int[] src) {
-        BitmapUtils.drawHistogram(src, bitmap, 4, iv);
+    public LevelsDialog drawHistogram(@ColorInt int[] src) {
+        srcPixels = src;
+        return this;
     }
 
     private void drawProgress() {
@@ -81,6 +82,11 @@ public class LevelsDialog {
         progressCanvas.drawLine(inputShadows, 0.0f, inputShadows, 100.0f, progressPaint);
         progressCanvas.drawLine(inputHighlights, 0.0f, inputHighlights, 100.0f, progressPaint);
         ivProgress.invalidate();
+    }
+
+    @Override
+    void onFilterCommit() {
+        listener.onChanged(inputShadows, inputHighlights, outputShadows, outputHighlights, true);
     }
 
     public LevelsDialog set(float mul, float add) {
@@ -96,23 +102,8 @@ public class LevelsDialog {
         return this;
     }
 
-    public LevelsDialog setOnCancelListener(DialogInterface.OnCancelListener listener) {
-        builder.setOnCancelListener(listener);
-        builder.setNegativeButton(R.string.cancel, (dialog, which) -> listener.onCancel(dialog));
-        return this;
-    }
-
-    public LevelsDialog setOnPositiveButtonClickListener(DialogInterface.OnClickListener listener) {
-        builder.setPositiveButton(R.string.ok, listener);
-        return this;
-    }
-
-    public LevelsDialog setOnLevelsChangeListener(OnLevelsChangedListener listener) {
-        this.listener = listener;
-        return this;
-    }
-
-    public LevelsDialog show() {
+    @Override
+    public void show() {
         final AlertDialog dialog = builder.show();
 
         final Window window = dialog.getWindow();
@@ -170,6 +161,9 @@ public class LevelsDialog {
 
         drawProgress();
 
-        return this;
+        if (srcPixels != null) {
+            BitmapUtils.drawHistogram(srcPixels, bitmap, 4, iv);
+            srcPixels = null;
+        }
     }
 }

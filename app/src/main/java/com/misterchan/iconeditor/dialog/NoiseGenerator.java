@@ -19,7 +19,7 @@ import com.misterchan.iconeditor.listener.AfterTextChangedListener;
 import com.misterchan.iconeditor.listener.OnButtonCheckedListener;
 import com.misterchan.iconeditor.listener.OnSliderChangeListener;
 
-public class NoiseGenerator {
+public class NoiseGenerator extends FilterDialog {
 
     private static final int SB_MAX = 100;
 
@@ -54,32 +54,22 @@ public class NoiseGenerator {
         }
     }
 
-    private final AlertDialog.Builder builder;
-    private OnPropChangedListener listener;
+    private final OnPropChangedListener listener;
     private final Properties properties = new Properties();
 
-    public NoiseGenerator(Context context) {
-        builder = new MaterialAlertDialogBuilder(context)
-                .setTitle(R.string.generate_noise)
-                .setView(R.layout.noise_generator);
-    }
+    public NoiseGenerator(Context context, OnPropChangedListener listener) {
+        super(context);
+        builder.setTitle(R.string.generate_noise).setView(R.layout.noise_generator);
 
-    public NoiseGenerator setOnCancelListener(DialogInterface.OnCancelListener listener) {
-        builder.setOnCancelListener(listener);
-        builder.setNegativeButton(R.string.cancel, (dialog, which) -> listener.onCancel(dialog));
-        return this;
-    }
-
-    public NoiseGenerator setOnConfirmListener(DialogInterface.OnClickListener listener) {
-        builder.setPositiveButton(R.string.ok, listener);
-        return this;
-    }
-
-    public NoiseGenerator setOnPropChangedListener(OnPropChangedListener listener) {
         this.listener = listener;
-        return this;
     }
 
+    @Override
+    void onFilterCommit() {
+        listener.onChanged(properties, true);
+    }
+
+    @Override
     @SuppressLint("NonConstantResourceId")
     public void show() {
         final AlertDialog dialog = builder.show();

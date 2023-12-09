@@ -1,7 +1,6 @@
 package com.misterchan.iconeditor.dialog;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.graphics.drawable.Drawable;
 import android.view.Gravity;
 import android.view.Window;
@@ -12,20 +11,24 @@ import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
 
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.slider.Slider;
 import com.misterchan.iconeditor.R;
 import com.misterchan.iconeditor.listener.OnSliderChangeListener;
 
-public class SliderDialog {
+public class SliderDialog extends FilterDialog {
 
-    private final AlertDialog.Builder builder;
     private float stepSize, valueTo, valueFrom, value;
-    private OnSliderChangeListener onChangeListener;
+    private OnSliderChangeListener listener;
+    private Slider slider;
 
     public SliderDialog(Context context) {
-        builder = new MaterialAlertDialogBuilder(context)
-                .setView(R.layout.slider);
+        super(context);
+        builder.setView(R.layout.slider);
+    }
+
+    @Override
+    void onFilterCommit() {
+        listener.onChange(slider, slider.getValue(), true);
     }
 
     public SliderDialog setIcon(@DrawableRes int iconId) {
@@ -38,25 +41,8 @@ public class SliderDialog {
         return this;
     }
 
-    public SliderDialog setOnApplyListener(DialogInterface.OnClickListener listener) {
-        builder.setPositiveButton(R.string.ok, listener);
-        return this;
-    }
-
-    public SliderDialog setOnCancelListener(DialogInterface.OnCancelListener listener) {
-        return setOnCancelListener(listener, true);
-    }
-
-    public SliderDialog setOnCancelListener(DialogInterface.OnCancelListener listener, boolean showButton) {
-        builder.setOnCancelListener(listener);
-        if (showButton) {
-            builder.setNegativeButton(R.string.cancel, (dialog, which) -> listener.onCancel(dialog));
-        }
-        return this;
-    }
-
     public SliderDialog setOnChangeListener(OnSliderChangeListener listener) {
-        onChangeListener = listener;
+        this.listener = listener;
         return this;
     }
 
@@ -85,6 +71,7 @@ public class SliderDialog {
         return this;
     }
 
+    @Override
     public void show() {
         final AlertDialog dialog = builder.show();
 
@@ -94,12 +81,12 @@ public class SliderDialog {
         lp.gravity = Gravity.BOTTOM;
         window.setAttributes(lp);
 
-        final Slider slider = dialog.findViewById(R.id.slider);
+        slider = dialog.findViewById(R.id.slider);
         slider.setStepSize(stepSize);
         slider.setValueTo(valueTo);
         slider.setValueFrom(valueFrom);
         slider.setValue(value);
-        slider.addOnChangeListener(onChangeListener);
-        slider.addOnSliderTouchListener(onChangeListener);
+        slider.addOnChangeListener(listener);
+        slider.addOnSliderTouchListener(listener);
     }
 }

@@ -21,45 +21,28 @@ import com.misterchan.iconeditor.listener.OnSliderChangeListener;
 
 import java.util.List;
 
-public class ColorRangeDialog {
+public class ColorRangeDialog extends FilterDialog {
 
     public interface OnChangedListener {
         void onChanged(ColorRange colorRange, boolean stopped);
     }
 
-    private final AlertDialog.Builder builder;
     private final ColorRange cr;
-    private OnChangedListener listener;
+    private final OnChangedListener listener;
 
-    public ColorRangeDialog(Context context) {
-        this(context, null);
-    }
-
-    public ColorRangeDialog(Context context, ColorRange defaultColorRange) {
-        builder = new MaterialAlertDialogBuilder(context)
-                .setPositiveButton(R.string.ok, null)
-                .setTitle(R.string.color_range)
-                .setView(R.layout.color_range);
+    public ColorRangeDialog(Context context, ColorRange defaultColorRange, OnChangedListener listener) {
+        super(context);
+        builder.setTitle(R.string.color_range).setView(R.layout.color_range);
 
         cr = defaultColorRange != null ? defaultColorRange : new ColorRange();
-    }
-
-    public ColorRangeDialog setOnCancelListener(DialogInterface.OnCancelListener listener) {
-        builder.setOnCancelListener(listener);
-        builder.setNegativeButton(R.string.cancel, (dialog, which) -> listener.onCancel(dialog));
-        return this;
-    }
-
-    public ColorRangeDialog setOnPositiveButtonClickListener(OnChangedListener listener) {
-        builder.setPositiveButton(R.string.ok, (dialog, which) -> listener.onChanged(cr, true));
-        return this;
-    }
-
-    public ColorRangeDialog setOnColorRangeChangeListener(OnChangedListener listener) {
         this.listener = listener;
-        return this;
     }
 
+    @Override
+    void onFilterCommit() {
+    }
+
+    @Override
     public void show() {
         final AlertDialog dialog = builder.show();
 
@@ -73,7 +56,7 @@ public class ColorRangeDialog {
         final RangeSlider rsSaturation = dialog.findViewById(R.id.rs_saturation);
         final RangeSlider rsValue = dialog.findViewById(R.id.rs_value);
         final Slider sTransition = dialog.findViewById(R.id.s_transition);
-        final LabelFormatter dlf = value -> value + "°"; // Degree label formatter
+        final LabelFormatter dlf = value -> value + "\u00B0"; // Degree label formatter
         final LabelFormatter plf = value -> value * 100.0f + "%"; // Percentage label formatter
 
         rsHue.setValues(cr.cuboid[0], cr.cuboid[3]);

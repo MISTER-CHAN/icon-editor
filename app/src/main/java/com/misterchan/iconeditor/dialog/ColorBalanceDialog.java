@@ -14,26 +14,33 @@ import com.google.android.material.slider.Slider;
 import com.misterchan.iconeditor.R;
 import com.misterchan.iconeditor.listener.OnSliderChangeListener;
 
-public class ColorBalanceDialog {
+public class ColorBalanceDialog extends FilterDialog {
 
-    private final AlertDialog.Builder builder;
-    private LightingDialog.OnLightingChangedListener listener;
+    private final LightingDialog.OnLightingChangedListener listener;
     private Slider sRed, sGreen, sBlue;
 
     @Size(8)
     private final float[] lighting;
 
-    public ColorBalanceDialog(Context context) {
-        this(context, null);
+    public ColorBalanceDialog(Context context,
+                              LightingDialog.OnLightingChangedListener listener) {
+        this(context, null, listener);
     }
 
-    public ColorBalanceDialog(Context context, float[] defaultLighting) {
-        builder = new MaterialAlertDialogBuilder(context)
-                .setIcon(R.drawable.ic_balance)
+    public ColorBalanceDialog(Context context, @Size(8) float[] defaultLighting,
+                              LightingDialog.OnLightingChangedListener listener) {
+        super(context);
+        builder.setIcon(R.drawable.ic_balance)
                 .setTitle(R.string.color_balance)
                 .setView(R.layout.color_balance);
 
         lighting = defaultLighting != null ? defaultLighting : new float[]{1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f};
+        this.listener = listener;
+    }
+
+    @Override
+    void onFilterCommit() {
+        listener.onChanged(lighting, true);
     }
 
     private void onValueChange(Slider slider, float value, boolean stopped) {
@@ -45,22 +52,7 @@ public class ColorBalanceDialog {
         listener.onChanged(lighting, stopped);
     }
 
-    public ColorBalanceDialog setOnCancelListener(DialogInterface.OnCancelListener listener) {
-        builder.setOnCancelListener(listener);
-        builder.setNegativeButton(R.string.cancel, (dialog, which) -> listener.onCancel(dialog));
-        return this;
-    }
-
-    public ColorBalanceDialog setOnPositiveButtonClickListener(DialogInterface.OnClickListener listener) {
-        builder.setPositiveButton(R.string.ok, listener);
-        return this;
-    }
-
-    public ColorBalanceDialog setOnColorBalanceChangeListener(LightingDialog.OnLightingChangedListener listener) {
-        this.listener = listener;
-        return this;
-    }
-
+    @Override
     public void show() {
         final AlertDialog dialog = builder.show();
 

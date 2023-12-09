@@ -696,8 +696,8 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                     .show();
 
     private final ColorMatrixManager.OnMatrixElementsChangedListener onFilterColorMatrixChangedListener = matrix -> runOrStart(() -> {
-        editPreview.addColorMatrixColorFilter(matrix);
-        drawEditPreviewOntoView(true);
+        editPreview.edit((src, dst) -> BitmapUtils.addColorMatrixColorFilter(src, dst, matrix));
+        drawEditPreviewOntoView();
     }, true);
 
     private final ColorRangeDialog.OnChangedListener onLayerColorRangeChangedListener = (colorRange, stopped) -> {
@@ -707,34 +707,30 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
     };
 
     private final CurvesDialog.OnCurvesChangedListener onFilterCurvesChangedListener = (curves, stopped) -> runOrStart(() -> {
-        if (!editPreview.visible() && !stopped) return;
-        final int[] src = editPreview.getPixels(stopped), dst = new int[editPreview.getArea(stopped)];
-        BitmapUtils.applyCurves(src, dst, curves);
-        editPreview.setPixels(dst, stopped);
-        drawEditPreviewOntoView(stopped);
+        if (!editPreview.visible()) return;
+        editPreview.edit((src, dst) -> BitmapUtils.applyCurves(src, dst, curves));
+        drawEditPreviewOntoView();
     }, stopped);
 
-    private final DialogInterface.OnCancelListener onEditPreviewCancelListener = dialog -> {
+    private final Runnable onEditPreviewCancelListener = () -> {
         drawBitmapOntoView(selection.r, true);
-        editPreview.recycle();
-        editPreview = null;
+        recycleEditPreview();
         clearStatus();
     };
 
-    private final DialogInterface.OnClickListener onEditPreviewNBClickListener =
-            (dialog, which) -> onEditPreviewCancelListener.onCancel(dialog);
+    private final Runnable onEditPreviewPBClickListener = () -> editPreview.prepareToCommit();
 
-    private final DialogInterface.OnClickListener onEditPreviewPBClickListener = (dialog, which) -> {
+    private void onEditPreviewCommit() {
         drawEditPreviewIntoImage();
         addToHistory();
-        clearStatus();
-    };
+        runOnUiThread(this::clearStatus);
+    }
 
     private final FillWithRefDialog.OnChangeListener onFillWithRefTileModeChangeListener = (bitmap, tileMode, stopped) -> runOrStart(() -> {
         paint.setShader(new BitmapShader(bitmap, tileMode, tileMode));
         editPreview.clearFilters();
         editPreview.getCanvas().drawRect(editPreview.getRect(), paint);
-        drawEditPreviewOntoView(true);
+        drawEditPreviewOntoView();
     }, stopped);
 
     private final HiddenImageMaker.OnMakeListener onHiddenImageMakeListener = bitmap -> {
@@ -745,23 +741,21 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
 
     private final HsDialog.OnChangedListener onFilterHsChangedListener = (deltaHs, stopped) -> {
         runOrStart(() -> {
-            if (!editPreview.visible() && !stopped) return;
+            if (!editPreview.visible()) return;
             if (deltaHs[0] == 0.0f && deltaHs[1] == 0.0f && deltaHs[2] == 0.0f) {
                 editPreview.clearFilters();
             } else {
-                final int[] src = editPreview.getPixels(stopped), dst = new int[editPreview.getArea(stopped)];
-                BitmapUtils.shiftHs(src, dst, deltaHs);
-                editPreview.setPixels(dst, stopped);
+                editPreview.edit((src, dst) -> BitmapUtils.shiftHs(src, dst, deltaHs));
             }
-            drawEditPreviewOntoView(stopped);
+            drawEditPreviewOntoView();
         }, stopped);
-        showStateHs(deltaHs);
+        showStateOfHs(deltaHs);
     };
 
     private final HsDialog.OnChangedListener onLayerHsChangedListener = (deltaHs, stopped) -> {
         layer.deltaHs = deltaHs;
         drawBitmapOntoView(stopped);
-        showStateHs(deltaHs);
+        showStateOfHs(deltaHs);
     };
 
     private final AdapterView.OnItemSelectedListener onGradientColorsSpinnerItemSelectedListener = (OnAdapterViewItemSelectedListener) (parent, view, position, id) -> {
@@ -782,9 +776,10 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
     private final LevelsDialog.OnLevelsChangedListener onFilterLevelsChangedListener = (inputShadows, inputHighlights, outputShadows, outputHighlights, stopped) -> {
         final float ratio = (outputHighlights - outputShadows) / (inputHighlights - inputShadows);
         runOrStart(() -> {
-            if (!editPreview.visible() && !stopped) return;
-            editPreview.addLightingColorFilter(ratio, -inputShadows * ratio + outputShadows, stopped);
-            drawEditPreviewOntoView(stopped);
+            if (!editPreview.visible()) return;
+            editPreview.edit((src, dst) ->
+                    BitmapUtils.addLightingColorFilter(src, dst, ratio, -inputShadows * ratio + outputShadows));
+            drawEditPreviewOntoView();
         }, stopped);
     };
 
@@ -796,8 +791,8 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
     };
 
     private final LightingDialog.OnLightingChangedListener onFilterLightingChangedListener = (lighting, stopped) -> runOrStart(() -> {
-        editPreview.addLightingColorFilter(lighting);
-        drawEditPreviewOntoView(true);
+        editPreview.edit((src, dst) -> BitmapUtils.addLightingColorFilter(src, dst, lighting));
+        drawEditPreviewOntoView();
     }, true);
 
     private final MatrixManager.OnMatrixElementsChangedListener onMatrixChangedListener = matrix -> runOrStart(() -> {
@@ -809,6 +804,10 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
 
     private final NoiseGenerator.OnPropChangedListener onNoisePropChangedListener = (properties, stopped) -> {
         runOrStart(() -> {
+            if (editPreview.committed()) {
+                onEditPreviewCommit();
+                return;
+            }
             if (properties.noisiness() == 0.0f) {
                 editPreview.clearFilters();
             } else switch (properties.drawingPrimitive()) {
@@ -817,10 +816,8 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                         editPreview.drawColor(paint.getColor(), BlendMode.SRC);
                         break;
                     }
-                    final int[] pixels = editPreview.copyPixels();
-                    BitmapUtils.generateNoise(pixels, paint.getColor(),
-                            properties.noisiness(), properties.seed(), properties.noRepeats());
-                    editPreview.setPixels(pixels, true);
+                    editPreview.edit((src, dst) -> BitmapUtils.generateNoise(dst, paint.getColor(),
+                            properties.noisiness(), properties.seed(), properties.noRepeats()));
                 }
                 case POINT -> {
                     if (properties.noisiness() == 1.0f && properties.noRepeats()) {
@@ -838,7 +835,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                             properties.noisiness(), properties.seed(), properties.noRepeats());
                 }
             }
-            drawEditPreviewOntoView(stopped);
+            drawEditPreviewOntoView();
         }, stopped);
         clearStatus();
     };
@@ -846,11 +843,11 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
     private final OnSliderChangeListener onFilterContrastSliderChangeListener = (slider, value, stopped) -> {
         final float mul = value, add = 0xFF / 2.0f * (1.0f - mul);
         runOrStart(() -> {
-            if (!editPreview.visible() && !stopped) return;
-            editPreview.addLightingColorFilter(mul, add, stopped);
-            drawEditPreviewOntoView(stopped);
+            if (!editPreview.visible()) return;
+            editPreview.edit((src, dst) -> BitmapUtils.addLightingColorFilter(src, dst, mul, add));
+            drawEditPreviewOntoView();
         }, stopped);
-        activityMain.tvStatus.setText(getString(R.string.state_contrast, mul));
+        showStateForEditPreview(getString(R.string.state_contrast, mul));
     };
 
     private final OnSliderChangeListener onLayerContrastSliderChangeListener = (slider, value, stopped) -> {
@@ -863,22 +860,20 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
 
     private final OnSliderChangeListener onFilterHToASliderChangeListener = (slider, value, stopped) -> {
         runOrStart(() -> {
-            if (!editPreview.visible() && !stopped) return;
-            final int[] src = editPreview.getPixels(stopped), dst = new int[editPreview.getArea(stopped)];
-            BitmapUtils.setAlphaByHue(src, dst, value);
-            editPreview.setPixels(dst, stopped);
-            drawEditPreviewOntoView(stopped);
+            if (!editPreview.visible()) return;
+            editPreview.edit((src, dst) -> BitmapUtils.setAlphaByHue(src, dst, value));
+            drawEditPreviewOntoView();
         }, stopped);
-        activityMain.tvStatus.setText(getString(R.string.state_hue, value));
+        showStateForEditPreview(getString(R.string.state_hue, value));
     };
 
     private final OnSliderChangeListener onFilterLightnessSliderChangeListener = (slider, value, stopped) -> {
         runOrStart(() -> {
-            if (!editPreview.visible() && !stopped) return;
-            editPreview.addLightingColorFilter(1.0f, value, stopped);
-            drawEditPreviewOntoView(stopped);
+            if (!editPreview.visible()) return;
+            editPreview.edit((src, dst) -> BitmapUtils.addLightingColorFilter(src, dst, 1.0f, value));
+            drawEditPreviewOntoView();
         }, stopped);
-        activityMain.tvStatus.setText(getString(R.string.state_lightness, (int) value));
+        showStateForEditPreview(getString(R.string.state_lightness, (int) value));
     };
 
     private final OnSliderChangeListener onLayerLightnessSliderChangeListener = (slider, value, stopped) -> {
@@ -890,11 +885,11 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
     @SuppressLint("StringFormatMatches")
     private final OnSliderChangeListener onFilterPosterizationSliderChangeListener = (slider, value, stopped) -> {
         runOrStart(() -> {
-            if (!editPreview.visible() && !stopped) return;
-            editPreview.posterize((int) value, stopped);
-            drawEditPreviewOntoView(stopped);
+            if (!editPreview.visible()) return;
+            editPreview.edit((src, dst) -> BitmapUtils.posterize(src, dst, (int) value));
+            drawEditPreviewOntoView();
         }, stopped);
-        activityMain.tvStatus.setText(String.format(
+        showStateForEditPreview(String.format(
                 getString(R.string.state_posterization, Settings.INST.colorIntCompFormat()),
                 (int) value));
     };
@@ -903,10 +898,10 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         final ColorMatrix colorMatrix = new ColorMatrix();
         colorMatrix.setSaturation(value);
         runOrStart(() -> {
-            editPreview.addColorMatrixColorFilter(colorMatrix.getArray());
-            drawEditPreviewOntoView(stopped);
+            editPreview.edit((src, dst) -> BitmapUtils.addColorMatrixColorFilter(src, dst, colorMatrix.getArray()));
+            drawEditPreviewOntoView();
         }, stopped);
-        activityMain.tvStatus.setText(getString(R.string.state_saturation, value));
+        showStateForEditPreview(getString(R.string.state_saturation, value));
     };
 
     private final OnSliderChangeListener onLayerSaturationSliderChangeListener = (slider, value, stopped) -> {
@@ -918,15 +913,15 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
     private final OnSliderChangeListener onFilterThresholdSliderChangeListener = (slider, value, stopped) -> {
         final float f = -0x100 * value;
         runOrStart(() -> {
-            editPreview.addColorMatrixColorFilter(new float[]{
+            editPreview.edit((src, dst) -> BitmapUtils.addColorMatrixColorFilter(src, dst, new float[]{
                     0.213f * 0x100, 0.715f * 0x100, 0.072f * 0x100, 0.0f, f,
                     0.213f * 0x100, 0.715f * 0x100, 0.072f * 0x100, 0.0f, f,
                     0.213f * 0x100, 0.715f * 0x100, 0.072f * 0x100, 0.0f, f,
                     0.0f, 0.0f, 0.0f, 1.0f, 0.0f
-            });
-            drawEditPreviewOntoView(stopped);
+            }));
+            drawEditPreviewOntoView();
         }, stopped);
-        activityMain.tvStatus.setText(getString(R.string.state_threshold, (int) value));
+        showStateForEditPreview(getString(R.string.state_threshold, (int) value));
     };
 
     private final OnSliderChangeListener onLayerThresholdSliderChangeListener = (slider, value, stopped) -> {
@@ -948,28 +943,25 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
     private final OnSliderChangeListener onThresholdChangeListener = (slider, value, stopped) -> {
         threshold = (int) value;
         runOrStart(() -> {
-            if (!editPreview.visible() && !stopped) return;
+            if (!editPreview.visible()) return;
             if (threshold == 0xFF) {
                 editPreview.drawColor(Color.BLACK, BlendMode.SRC_IN);
             } else if (threshold == 0x00) {
                 editPreview.clearFilters();
             } else {
-                editPreview.posterize(0xFF - threshold, stopped);
+                editPreview.edit((src, dst) -> BitmapUtils.posterize(src, dst, 0xFF - threshold));
             }
-            drawEditPreviewOntoView(stopped);
+            drawEditPreviewOntoView();
         }, stopped);
         activityMain.tvStatus.setText(getString(R.string.state_threshold, threshold));
     };
 
-    private final DialogInterface.OnClickListener onThresholdApplyListener = onEditPreviewNBClickListener;
-
     private final View.OnClickListener onToleranceButtonClickListener = v -> {
-        createEditPreview();
+        createEditPreview(true, true);
         new SliderDialog(this).setTitle(R.string.tolerance).setValueFrom(0x00).setValueTo(0xFF).setValue(threshold)
                 .setStepSize(1.0f)
                 .setOnChangeListener(onThresholdChangeListener)
-                .setOnApplyListener(onThresholdApplyListener)
-                .setOnCancelListener(onEditPreviewCancelListener, false)
+                .setOnActionListener(onEditPreviewCancelListener)
                 .show();
         onThresholdChangeListener.onChange(null, threshold, true);
     };
@@ -2072,7 +2064,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
             }
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
-                    createEditPreview();
+                    createEditPreview(false, false);
 
                 case MotionEvent.ACTION_MOVE: {
                     final float x = event.getX(), y = event.getY();
@@ -2091,8 +2083,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                 case MotionEvent.ACTION_UP:
                 case MotionEvent.ACTION_CANCEL:
                     drawEditPreviewIntoImage();
-                    editPreview.recycle();
-                    editPreview = null;
+                    recycleEditPreview();
                     addToHistory();
                     clearStatus();
                     break;
@@ -2101,8 +2092,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
 
         @Override
         protected void undo() {
-            editPreview.recycle();
-            editPreview = null;
+            recycleEditPreview();
             clearStatus();
         }
     };
@@ -3278,16 +3268,11 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         addLayer(project, frame, bm, position, level, left, top, true, getString(R.string.layer), true);
     }
 
-    private void createEditPreview() {
-        createEditPreview(false);
-    }
-
-    private void createEditPreview(boolean allocForVisSubset) {
+    private void createEditPreview(boolean cachePixels, boolean onlyForVisible) {
         if (editPreview != null) editPreview.recycle();
         if (!hasSelection) selectAll();
-        editPreview = Settings.INST.editPreviewVisSubset() && allocForVisSubset
-                ? new EditPreview(bitmap, selection.r, getVisibleSubset())
-                : new EditPreview(bitmap, selection.r);
+        editPreview = new EditPreview(bitmap, selection.r, cachePixels,
+                onlyForVisible ? getVisibleSubset() : selection.r);
     }
 
     private void createTransformer() {
@@ -3578,15 +3563,16 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
 
     private void drawEditPreviewIntoImage() {
         canvas.drawBitmap(editPreview.getEntire(), 0.0f, 0.0f, PAINT_BITMAP);
+        recycleEditPreview();
         drawBitmapOntoView(true);
     }
 
     private void drawEditPreviewOntoView() {
-        drawEditPreviewOntoView(false);
-    }
-
-    private void drawEditPreviewOntoView(final boolean wait) {
-        drawBitmapOntoView(editPreview.getEntire(), selection.r, wait);
+        if (editPreview.committed()) {
+            onEditPreviewCommit();
+            return;
+        }
+        drawBitmapOntoView(editPreview.getEntire(), selection.r, true);
     }
 
     private void drawFloatingLayersIntoImage() {
@@ -4357,8 +4343,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                         .setValueFrom(0x00).setValueTo(0xFF).setValue(layer.paint.getAlpha())
                         .setStepSize(1.0f)
                         .setOnChangeListener(onLayerAlphaSliderChangeListener)
-                        .setOnApplyListener((dialog, which) -> clearStatus())
-                        .setOnCancelListener(dialog -> clearStatus(), false)
+                        .setOnActionListener(this::clearStatus)
                         .show();
                 activityMain.tvStatus.setText(String.format(
                         getString(R.string.state_alpha, Settings.INST.colorIntCompFormat()),
@@ -4469,9 +4454,9 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                     layer.filter = Layer.Filter.COLOR_BALANCE;
                     drawBitmapOntoView(true);
                 }
-                new ColorBalanceDialog(this, layer.lighting)
-                        .setOnColorBalanceChangeListener((lighting, stopped) -> drawBitmapOntoView(stopped))
-                        .setOnPositiveButtonClickListener(null)
+                new ColorBalanceDialog(this, layer.lighting,
+                        (lighting, stopped) -> drawBitmapOntoView(stopped))
+                        .setOkButton()
                         .show();
                 clearStatus();
             }
@@ -4482,7 +4467,9 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                     layer.filter = Layer.Filter.COLOR_MATRIX;
                     drawBitmapOntoView(true);
                 }
-                new ColorMatrixManager(this, matrix -> drawBitmapOntoView(true), layer.colorMatrix.getArray())
+                new ColorMatrixManager(this, layer.colorMatrix.getArray(),
+                        matrix -> drawBitmapOntoView(true))
+                        .setOkButton()
                         .show();
                 clearStatus();
             }
@@ -4498,7 +4485,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                         .setIcon(R.drawable.ic_contrast).setTitle(R.string.contrast)
                         .setValueFrom(-1.0f).setValueTo(10.0f).setValue(layer.lighting[0])
                         .setOnChangeListener(onLayerContrastSliderChangeListener)
-                        .setOnApplyListener(null)
+                        .setOkButton()
                         .show();
                 activityMain.tvStatus.setText(getString(R.string.state_contrast, layer.lighting[0]));
             }
@@ -4512,8 +4499,8 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                 new CurvesDialog(this)
                         .setSource(bitmap)
                         .setDefaultCurves(layer.curves)
-                        .setOnCurvesChangeListener((curves, stopped) -> drawBitmapOntoView(stopped))
-                        .setOnPositiveButtonClickListener(null)
+                        .setOnCurvesChangedListener((curves, stopped) -> drawBitmapOntoView(stopped))
+                        .setOkButton()
                         .show();
                 clearStatus();
             }
@@ -4524,11 +4511,11 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                     layer.filter = Layer.Filter.HS;
                     drawBitmapOntoView(true);
                 }
-                new HsDialog(this, layer.deltaHs)
-                        .setOnChangeListener(onLayerHsChangedListener)
-                        .setOnPositiveButtonClickListener(null)
+                new HsDialog(this, layer.deltaHs,
+                        onLayerHsChangedListener)
+                        .setOkButton()
                         .show();
-                showStateHs(layer.deltaHs);
+                showStateOfHs(layer.deltaHs);
             }
             case R.id.i_layer_filter_levels -> {
                 ssdLayerList.dismiss();
@@ -4538,12 +4525,11 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                     layer.filter = Layer.Filter.LEVELS;
                     drawBitmapOntoView(true);
                 }
-                new LevelsDialog(this)
+                new LevelsDialog(this, onLayerLevelsChangedListener)
                         .set(layer.lighting[0], layer.lighting[1])
-                        .setOnLevelsChangeListener(onLayerLevelsChangedListener)
-                        .setOnPositiveButtonClickListener(null)
-                        .show()
-                        .drawHistogram(BitmapUtils.getPixels(bitmap));
+                        .drawHistogram(BitmapUtils.getPixels(bitmap))
+                        .setOkButton()
+                        .show();
                 clearStatus();
             }
             case R.id.i_layer_filter_lighting -> {
@@ -4553,9 +4539,9 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                     layer.filter = Layer.Filter.LIGHTING;
                     drawBitmapOntoView(true);
                 }
-                new LightingDialog(this, layer.lighting)
-                        .setOnLightingChangeListener((lighting, stopped) -> drawBitmapOntoView(true))
-                        .setOnPositiveButtonClickListener(null)
+                new LightingDialog(this, layer.lighting,
+                        (lighting, stopped) -> drawBitmapOntoView(true))
+                        .setOkButton()
                         .show();
                 clearStatus();
             }
@@ -4571,7 +4557,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                         .setIcon(R.drawable.ic_brightness_5).setTitle(R.string.lightness)
                         .setValueFrom(-0xFF).setValueTo(0xFF).setValue(layer.lighting[1]).setStepSize(1.0f)
                         .setOnChangeListener(onLayerLightnessSliderChangeListener)
-                        .setOnApplyListener(null)
+                        .setOkButton()
                         .show();
                 activityMain.tvStatus.setText(getString(R.string.state_lightness, (int) layer.lighting[1]));
             }
@@ -4593,10 +4579,9 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                 }
                 final float sat = (layer.colorMatrix.getArray()[0] - 0.213f) / (1.0f - 0.213f);
                 new SliderDialog(this).setTitle(R.string.saturation)
-                        .setValueFrom(-1.0f).setValueTo(10.0f)
-                        .setValue(sat)
+                        .setValueFrom(-1.0f).setValueTo(10.0f).setValue(sat)
                         .setOnChangeListener(onLayerSaturationSliderChangeListener)
-                        .setOnApplyListener(null)
+                        .setOkButton()
                         .show();
                 activityMain.tvStatus.setText(getString(R.string.state_saturation, sat));
             }
@@ -4606,8 +4591,9 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                     layer.filter = Layer.Filter.SELECTED_BY_CR;
                     drawBitmapOntoView(true);
                 }
-                new ColorRangeDialog(this, layer.colorRange)
-                        .setOnColorRangeChangeListener(onLayerColorRangeChangedListener)
+                new ColorRangeDialog(this, layer.colorRange,
+                        onLayerColorRangeChangedListener)
+                        .setOkButton()
                         .show();
             }
             case R.id.i_layer_filter_threshold -> {
@@ -4631,7 +4617,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                         .setIcon(R.drawable.ic_filter_b_and_w).setTitle(R.string.threshold)
                         .setValueFrom(0x00).setValueTo(0xFF).setValue(threshold).setStepSize(1.0f)
                         .setOnChangeListener(onLayerThresholdSliderChangeListener)
-                        .setOnApplyListener(null)
+                        .setOkButton()
                         .show();
                 activityMain.tvStatus.setText(getString(R.string.state_threshold, (int) threshold));
             }
@@ -4932,141 +4918,122 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                     break;
                 }
                 drawFloatingLayersIntoImage();
-                createEditPreview();
-                new FillWithRefDialog(this, ref.bm())
-                        .setOnChangeListener(onFillWithRefTileModeChangeListener)
-                        .setOnPositiveButtonClickListener(onEditPreviewPBClickListener)
-                        .setOnCancelListener(onEditPreviewCancelListener)
+                createEditPreview(false, false);
+                new FillWithRefDialog(this, ref.bm(), onFillWithRefTileModeChangeListener)
                         .setOnDismissListener(dialog -> paint.setShader(null))
+                        .setOnActionListener(onEditPreviewPBClickListener, onEditPreviewCancelListener)
                         .show();
                 clearStatus();
             }
             case R.id.i_filter_color_balance -> {
                 drawFloatingLayersIntoImage();
-                createEditPreview(true);
-                new ColorBalanceDialog(this)
-                        .setOnColorBalanceChangeListener(onFilterLightingChangedListener)
-                        .setOnPositiveButtonClickListener(onEditPreviewPBClickListener)
-                        .setOnCancelListener(onEditPreviewCancelListener)
+                createEditPreview(true, true);
+                new ColorBalanceDialog(this, onFilterLightingChangedListener)
+                        .setOnActionListener(onEditPreviewPBClickListener, onEditPreviewCancelListener)
                         .show();
                 clearStatus();
             }
             case R.id.i_filter_color_matrix -> {
                 drawFloatingLayersIntoImage();
-                createEditPreview();
-                new ColorMatrixManager(this,
-                        onFilterColorMatrixChangedListener,
-                        onEditPreviewPBClickListener,
-                        onEditPreviewCancelListener)
+                createEditPreview(true, true);
+                new ColorMatrixManager(this, onFilterColorMatrixChangedListener)
+                        .setOnActionListener(onEditPreviewPBClickListener, onEditPreviewCancelListener)
                         .show();
                 clearStatus();
             }
             case R.id.i_filter_contrast -> {
                 drawFloatingLayersIntoImage();
-                createEditPreview(true);
+                createEditPreview(true, true);
                 new SliderDialog(this)
                         .setIcon(item.getIcon()).setTitle(R.string.contrast)
                         .setValueFrom(-1.0f).setValueTo(10.0f).setValue(1.0f)
                         .setOnChangeListener(onFilterContrastSliderChangeListener)
-                        .setOnApplyListener(onEditPreviewPBClickListener)
-                        .setOnCancelListener(onEditPreviewCancelListener)
+                        .setOnActionListener(onEditPreviewPBClickListener, onEditPreviewCancelListener)
                         .show();
                 clearStatus();
             }
             case R.id.i_filter_curves -> {
                 drawFloatingLayersIntoImage();
-                createEditPreview(true);
+                createEditPreview(true, true);
                 new CurvesDialog(this)
-                        .setSource(editPreview.getPixels(true))
-                        .setOnCurvesChangeListener(onFilterCurvesChangedListener)
-                        .setOnPositiveButtonClickListener(onEditPreviewPBClickListener)
-                        .setOnCancelListener(onEditPreviewCancelListener)
+                        .setSource(editPreview.getPixels())
+                        .setOnCurvesChangedListener(onFilterCurvesChangedListener)
+                        .setOnActionListener(onEditPreviewPBClickListener, onEditPreviewCancelListener)
                         .show();
                 clearStatus();
             }
             case R.id.i_filter_hs -> {
                 drawFloatingLayersIntoImage();
-                createEditPreview(true);
-                new HsDialog(this)
-                        .setOnChangeListener(onFilterHsChangedListener)
-                        .setOnPositiveButtonClickListener(onEditPreviewPBClickListener)
-                        .setOnCancelListener(onEditPreviewCancelListener)
+                createEditPreview(true, true);
+                new HsDialog(this, onFilterHsChangedListener)
+                        .setOnActionListener(onEditPreviewPBClickListener, onEditPreviewCancelListener)
                         .show();
                 clearStatus();
             }
             case R.id.i_filter_hue_to_alpha -> {
                 drawFloatingLayersIntoImage();
-                createEditPreview(true);
+                createEditPreview(true, true);
                 new SliderDialog(this).setTitle(R.string.hue).setValueFrom(0.0f).setValueTo(360.0f).setValue(0.0f)
                         .setOnChangeListener(onFilterHToASliderChangeListener)
-                        .setOnApplyListener(onEditPreviewPBClickListener)
-                        .setOnCancelListener(onEditPreviewCancelListener)
+                        .setOnActionListener(onEditPreviewPBClickListener, onEditPreviewCancelListener)
                         .show();
                 onFilterHToASliderChangeListener.onChange(null, 0, true);
             }
             case R.id.i_filter_levels -> {
                 drawFloatingLayersIntoImage();
-                createEditPreview(true);
-                new LevelsDialog(this)
-                        .setOnLevelsChangeListener(onFilterLevelsChangedListener)
-                        .setOnPositiveButtonClickListener(onEditPreviewPBClickListener)
-                        .setOnCancelListener(onEditPreviewCancelListener)
-                        .show()
-                        .drawHistogram(editPreview.getPixels(true));
+                createEditPreview(true, true);
+                new LevelsDialog(this, onFilterLevelsChangedListener)
+                        .drawHistogram(editPreview.getPixels())
+                        .setOnActionListener(onEditPreviewPBClickListener, onEditPreviewCancelListener)
+                        .show();
                 clearStatus();
             }
             case R.id.i_filter_lighting -> {
                 drawFloatingLayersIntoImage();
-                createEditPreview();
-                new LightingDialog(this)
-                        .setOnLightingChangeListener(onFilterLightingChangedListener)
-                        .setOnPositiveButtonClickListener(onEditPreviewPBClickListener)
-                        .setOnCancelListener(onEditPreviewCancelListener)
+                createEditPreview(true, true);
+                new LightingDialog(this, onFilterLightingChangedListener)
+                        .setOnActionListener(onEditPreviewPBClickListener, onEditPreviewCancelListener)
                         .show();
                 clearStatus();
             }
             case R.id.i_filter_lightness -> {
                 drawFloatingLayersIntoImage();
-                createEditPreview(true);
+                createEditPreview(true, true);
                 new SliderDialog(this)
                         .setIcon(item.getIcon()).setTitle(R.string.lightness)
                         .setValueFrom(-0xFF).setValueTo(0xFF).setValue(0).setStepSize(1.0f)
                         .setOnChangeListener(onFilterLightnessSliderChangeListener)
-                        .setOnApplyListener(onEditPreviewPBClickListener)
-                        .setOnCancelListener(onEditPreviewCancelListener)
+                        .setOnActionListener(onEditPreviewPBClickListener, onEditPreviewCancelListener)
                         .show();
                 clearStatus();
             }
             case R.id.i_filter_posterize -> {
                 drawFloatingLayersIntoImage();
-                createEditPreview(true);
+                createEditPreview(true, true);
                 new SliderDialog(this).setTitle(R.string.posterize)
                         .setValueFrom(0x02).setValueTo(0xFF).setValue(0xFF).setStepSize(1.0f)
                         .setOnChangeListener(onFilterPosterizationSliderChangeListener)
-                        .setOnApplyListener(onEditPreviewPBClickListener)
-                        .setOnCancelListener(onEditPreviewCancelListener)
+                        .setOnActionListener(onEditPreviewPBClickListener, onEditPreviewCancelListener)
                         .show();
                 clearStatus();
             }
             case R.id.i_filter_saturation -> {
                 drawFloatingLayersIntoImage();
-                createEditPreview(true);
+                createEditPreview(true, true);
                 new SliderDialog(this).setTitle(R.string.saturation).setValueFrom(-1.0f).setValueTo(10.0f).setValue(1.0f)
                         .setOnChangeListener(onFilterSaturationSliderChangeListener)
-                        .setOnApplyListener(onEditPreviewPBClickListener)
-                        .setOnCancelListener(onEditPreviewCancelListener)
+                        .setOnActionListener(onEditPreviewPBClickListener, onEditPreviewCancelListener)
                         .show();
                 clearStatus();
             }
             case R.id.i_filter_threshold -> {
                 drawFloatingLayersIntoImage();
-                createEditPreview(true);
+                createEditPreview(true, true);
                 new SliderDialog(this)
                         .setIcon(item.getIcon()).setTitle(R.string.threshold)
                         .setValueFrom(0x00).setValueTo(0xFF).setValue(0x80).setStepSize(1.0f)
                         .setOnChangeListener(onFilterThresholdSliderChangeListener)
-                        .setOnApplyListener(onEditPreviewPBClickListener)
-                        .setOnCancelListener(onEditPreviewCancelListener)
+                        .setOnActionListener(onEditPreviewPBClickListener, onEditPreviewCancelListener)
                         .show();
                 onFilterThresholdSliderChangeListener.onChange(null, 0x80, true);
                 clearStatus();
@@ -5088,11 +5055,9 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
             }
             case R.id.i_generate_noise -> {
                 drawFloatingLayersIntoImage();
-                createEditPreview();
-                new NoiseGenerator(this)
-                        .setOnPropChangedListener(onNoisePropChangedListener)
-                        .setOnConfirmListener(onEditPreviewPBClickListener)
-                        .setOnCancelListener(onEditPreviewCancelListener)
+                createEditPreview(true, false);
+                new NoiseGenerator(this, onNoisePropChangedListener)
+                        .setOnActionListener(onEditPreviewPBClickListener, onEditPreviewCancelListener)
                         .show();
                 clearStatus();
             }
@@ -5191,15 +5156,12 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
             case R.id.i_size -> new ImageSizeManager(this, bitmap, onImageSizeApplyListener).show();
             case R.id.i_transform -> {
                 drawFloatingLayersIntoImage();
-                createEditPreview();
+                createEditPreview(false, false);
                 new MatrixManager(this,
-                        onMatrixChangedListener,
-                        onEditPreviewPBClickListener,
-                        dialog -> {
+                        onMatrixChangedListener)
+                        .setOnActionListener(onEditPreviewPBClickListener, () -> {
                             drawBitmapOntoView(true);
-                            editPreview.recycle();
-                            editPreview = null;
-                            clearStatus();
+                            recycleEditPreview();
                         })
                         .show();
                 clearStatus();
@@ -5333,7 +5295,6 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                     .show();
             return;
         }
-        final int area = bm.getWidth() * bm.getHeight();
         openImage(bm, uri);
     }
 
@@ -5424,6 +5385,11 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         BitmapUtils.recycle(rulerVBitmap);
         BitmapUtils.recycle(selectionBitmap);
         BitmapUtils.recycle(viewBitmap);
+    }
+
+    private void recycleEditPreview() {
+        editPreview.recycle();
+        editPreview = null;
     }
 
     private void recycleTransformer() {
@@ -5776,9 +5742,14 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         drawSelectionOntoView();
     }
 
+    private void showStateForEditPreview(CharSequence text) {
+        if (editPreview.committed()) return;
+        activityMain.tvStatus.setText(text);
+    }
+
     @SuppressLint("StringFormatMatches")
-    private void showStateHs(@Size(4) float[] deltaHs) {
-        activityMain.tvStatus.setText(getString(R.string.state_hs, deltaHs[0], deltaHs[1], switch ((int) deltaHs[3]) {
+    private void showStateOfHs(@Size(4) float[] deltaHs) {
+        showStateForEditPreview(getString(R.string.state_hs, deltaHs[0], deltaHs[1], switch ((int) deltaHs[3]) {
             default -> 'V';
             case 1 -> 'L';
         }, deltaHs[2]));
