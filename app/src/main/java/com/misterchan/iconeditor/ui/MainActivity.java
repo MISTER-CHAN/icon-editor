@@ -5756,7 +5756,8 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
 
     @SuppressLint("StringFormatMatches")
     private void showStateOfHs(@Size(4) float[] deltaHs) {
-        showStateForEditPreview(getString(R.string.state_hs, deltaHs[0], deltaHs[1], switch ((int) deltaHs[3]) {
+        if (editPreview != null && editPreview.committed()) return;
+        activityMain.tvStatus.setText(getString(R.string.state_hs, deltaHs[0], deltaHs[1], switch ((int) deltaHs[3]) {
             default -> 'V';
             case 1 -> 'L';
         }, deltaHs[2]));
