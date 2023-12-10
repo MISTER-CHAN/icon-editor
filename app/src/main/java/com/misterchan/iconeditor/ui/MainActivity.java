@@ -796,6 +796,10 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
     }, true);
 
     private final MatrixManager.OnMatrixElementsChangedListener onMatrixChangedListener = matrix -> runOrStart(() -> {
+        if (editPreview.committed()) {
+            onEditPreviewCommit();
+            return;
+        }
         editPreview.transform(matrix);
         drawBitmapOntoView(editPreview.getEntire(), true);
     }, true);
@@ -2082,10 +2086,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                 }
                 case MotionEvent.ACTION_UP:
                 case MotionEvent.ACTION_CANCEL:
-                    drawEditPreviewIntoImage();
-                    recycleEditPreview();
-                    addToHistory();
-                    clearStatus();
+                    onEditPreviewCommit();
                     break;
             }
         }
@@ -3268,11 +3269,19 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         addLayer(project, frame, bm, position, level, left, top, true, getString(R.string.layer), true);
     }
 
+    private void createEditPreview(boolean cacheBitmap) {
+        createEditPreview(cacheBitmap, false, false);
+    }
+
     private void createEditPreview(boolean cachePixels, boolean onlyForVisible) {
+        createEditPreview(false, cachePixels, onlyForVisible);
+    }
+
+    private void createEditPreview(boolean cacheBitmap, boolean cachePixels, boolean onlyForVisible) {
         if (editPreview != null) editPreview.recycle();
         if (!hasSelection) selectAll();
-        editPreview = new EditPreview(bitmap, selection.r, cachePixels,
-                onlyForVisible ? getVisibleSubset() : selection.r);
+        editPreview = new EditPreview(bitmap, selection.r, cacheBitmap, cachePixels,
+                onlyForVisible ? getVisibleSubset() : null);
     }
 
     private void createTransformer() {
@@ -5156,7 +5165,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
             case R.id.i_size -> new ImageSizeManager(this, bitmap, onImageSizeApplyListener).show();
             case R.id.i_transform -> {
                 drawFloatingLayersIntoImage();
-                createEditPreview(false, false);
+                createEditPreview(true);
                 new MatrixManager(this,
                         onMatrixChangedListener)
                         .setOnActionListener(onEditPreviewPBClickListener, () -> {

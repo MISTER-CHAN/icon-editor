@@ -17,11 +17,12 @@ public class EditPreview {
         void modify(@ColorInt int[] src, @ColorInt int[] dst);
     }
 
-    private Bitmap bitmap;
+    private final Bitmap bitmap;
     private final Bitmap src;
+    private final Bitmap bm;
     private boolean cachePixels;
     private boolean committed;
-    private Canvas canvas;
+    private final Canvas canvas;
     private final Rect rect;
 
     @ColorInt
@@ -32,23 +33,27 @@ public class EditPreview {
      */
     private Rect prevRect;
 
-    public EditPreview(Bitmap bitmap, Rect rect, boolean cachePixels) {
-        this(bitmap, rect, cachePixels, rect);
-    }
-
     /**
      * @param prevRect Previewing rectangle
      */
-    public EditPreview(Bitmap bitmap, Rect rect, boolean cachePixels, Rect prevRect) {
+    public EditPreview(Bitmap bitmap, Rect rect, boolean cacheBitmap, boolean cachePixels, Rect prevRect) {
         src = bitmap;
         this.bitmap = Bitmap.createBitmap(bitmap);
         canvas = new Canvas(this.bitmap);
         this.rect = rect;
-        this.prevRect = prevRect;
         this.cachePixels = cachePixels;
+
+        if (prevRect == null) {
+            prevRect = rect;
+        }
+        this.prevRect = prevRect;
         if (rect != prevRect && !prevRect.intersect(rect)) {
             prevRect.setEmpty();
         }
+
+        bm = cacheBitmap
+                ? Bitmap.createBitmap(bitmap, rect.left, rect.top, rect.width(), rect.height())
+                : null;
     }
 
     public void clearFilters() {
@@ -71,13 +76,9 @@ public class EditPreview {
     }
 
     public void edit(Modification mod) {
-        final int[] src = getPixels(), dst = cachePixels ? new int[getArea()] : src;
+        final int[] src = getPixels(), dst = cachePixels ? new int[prevRect.width() * prevRect.height()] : src;
         mod.modify(src, dst);
         setPixels(dst);
-    }
-
-    public int getArea() {
-        return getWidth() * getHeight();
     }
 
     public Canvas getCanvas() {
@@ -86,10 +87,6 @@ public class EditPreview {
 
     public Bitmap getEntire() {
         return bitmap;
-    }
-
-    public int getHeight() {
-        return prevRect.height();
     }
 
     public Bitmap getOriginal() {
@@ -105,27 +102,23 @@ public class EditPreview {
     public int[] getPixels() {
         if (cachePixels) {
             if (pixels == null) {
-                final int vw = prevRect.width(), vh = prevRect.height(), va = vw * vh;
-                pixels = new int[va];
+                final int vw = prevRect.width(), vh = prevRect.height();
+                pixels = new int[vw * vh];
                 if (pixels.length > 0) {
                     src.getPixels(pixels, 0, vw, prevRect.left, prevRect.top, vw, vh);
                 }
             }
             return pixels;
         } else {
-            final int w = getWidth(), h = getHeight();
+            final int w = prevRect.width(), h = prevRect.height();
             final int[] pixels = new int[w * h];
-            src.getPixels(pixels, 0, w, 0, 0, w, h);
+            src.getPixels(pixels, 0, w, prevRect.left, prevRect.top, w, h);
             return pixels;
         }
     }
 
     public Rect getRect() {
         return rect;
-    }
-
-    public int getWidth() {
-        return prevRect.width();
     }
 
     public void prepareToCommit() {
@@ -136,9 +129,11 @@ public class EditPreview {
     }
 
     public void recycle() {
-        canvas = null;
         bitmap.recycle();
-        bitmap = null;
+
+        if (bm != null) {
+            bm.recycle();
+        }
     }
 
     public void reset() {
@@ -156,10 +151,11 @@ public class EditPreview {
     public void transform(Matrix matrix) {
         canvas.drawBitmap(src, 0.0f, 0.0f, BitmapUtils.PAINT_SRC);
         canvas.drawRect(rect, BitmapUtils.PAINT_CLEAR);
-        canvas.drawBitmap(src, matrix, BitmapUtils.PAINT_SRC);
+        matrix.postTranslate(rect.left, rect.top);
+        canvas.drawBitmap(bm, matrix, BitmapUtils.PAINT_SRC);
     }
 
     public boolean visible() {
-        return pixels == null || pixels.length > 0 || cachePixels;
+        return pixels == null || pixels.length > 0 || !cachePixels;
     }
 }
