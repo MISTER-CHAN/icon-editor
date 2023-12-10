@@ -1080,6 +1080,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         @Override
         public void onTabSelected(TabLayout.Tab tab) {
             final int position = tab.getPosition();
+            final Project unselected = project;
             project = projects.get(position);
             frameList.rvFrameList.setAdapter(project.frameAdapter);
 
@@ -1088,10 +1089,14 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
             scale = project.scale;
 
             if (hasSelection) {
-                final Bitmap unselected = frame.getBackgroundLayer().bitmap;
-                final Bitmap selected = project.getFirstFrame().getBackgroundLayer().bitmap;
-                if (selected.getWidth() != unselected.getWidth() || selected.getHeight() != unselected.getHeight()) {
+                if (unselected.isRecycled) {
                     hasSelection = false;
+                } else {
+                    final Bitmap unselectedBm = frame.getBackgroundLayer().bitmap;
+                    final Bitmap selectedBm = project.getFirstFrame().getBackgroundLayer().bitmap;
+                    if (selectedBm.getWidth() != unselectedBm.getWidth() || selectedBm.getHeight() != unselectedBm.getHeight()) {
+                        hasSelection = false;
+                    }
                 }
             }
 
@@ -3092,7 +3097,6 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         addToHistory(layer);
         frame.computeLayerTree();
         if (setSelected) {
-            hasSelection = false;
             selectLayer(position);
             if (ssdLayerList != null) {
                 layerList.rvLayerList.post(() -> {
@@ -3337,6 +3341,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
 
     private void deleteProject(int position) {
         final Project project = projects.get(position);
+        project.isRecycled = true;
         for (int i = project.frames.size() - 1; i >= 0; --i) {
             deleteFrame(project, i);
         }
@@ -5612,30 +5617,23 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         frame.selectedLayerIndex = position;
         bitmap = layer.bitmap;
         canvas = new Canvas(bitmap);
-
         calculateBackgroundSizeOnView();
 
         if (hasSelection) {
             selection.r.offset(unselectedLayer.left - layer.left, unselectedLayer.top - layer.top);
         }
-
         recycleTransformer();
         transformer.mesh = null;
         optimizeSelection();
 
-        switch (activityMain.tools.btgTools.getCheckedButtonId()) {
-            case R.id.b_clone_stamp -> cloneStampSrc = null;
+        if (activityMain.tools.btgTools.getCheckedButtonId() == R.id.b_clone_stamp) {
+            cloneStampSrc = null;
         }
-
         updateReference();
 
-        if (activityMain.topAppBar != null) {
-            miHasAlpha.setChecked(bitmap.hasAlpha());
-        }
+        if (activityMain.topAppBar != null) miHasAlpha.setChecked(bitmap.hasAlpha());
 
-        if (!dpPreview.isRecycled()) {
-            dpPreview.erase();
-        }
+        if (!dpPreview.isRecycled()) dpPreview.erase();
         drawBitmapOntoView(true, true);
         drawChessboardOntoView();
         drawGridOntoView();

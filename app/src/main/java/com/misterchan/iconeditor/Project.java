@@ -15,6 +15,7 @@ public class Project {
     }
 
     public boolean gifDither = true;
+    public boolean isRecycled = false;
     public Bitmap.CompressFormat compressFormat;
     public float scale = Float.NaN;
     public float translationX = Float.NaN, translationY = Float.NaN;
