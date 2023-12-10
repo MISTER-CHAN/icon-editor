@@ -92,9 +92,10 @@ public class GuideEditor {
             guide.orientation = Guide.ORIENTATION_HORIZONTAL;
             if (guide.position > height) {
                 guide.position = height;
-                sPosition.setValueTo(height);
+                sPosition.setValue(height);
                 setPositionTextSilently(height);
             }
+            sPosition.setValueTo(height);
             onNewGuideChangeListener.onChange(guide);
         });
 
@@ -102,9 +103,10 @@ public class GuideEditor {
             guide.orientation = Guide.ORIENTATION_VERTICAL;
             if (guide.position > width) {
                 guide.position = width;
-                sPosition.setValueTo(width);
+                sPosition.setValue(width);
                 setPositionTextSilently(width);
             }
+            sPosition.setValueTo(width);
             onNewGuideChangeListener.onChange(guide);
         });
     }
