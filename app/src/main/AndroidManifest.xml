@@ -16,8 +16,10 @@
 
         <activity
             android:name=".ui.MainActivity"
+            android:alwaysRetainTaskState="true"
             android:configChanges="fontScale|keyboard|keyboardHidden|locale"
             android:exported="true"
+            android:launchMode="singleTask"
             android:resizeableActivity="false"
             android:screenOrientation="fullUser"
             android:theme="@style/Theme.IconEditor.NoActionBar"

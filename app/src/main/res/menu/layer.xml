@@ -269,7 +269,7 @@
         </item>
         <item
             android:icon="@drawable/ic_void"
-            android:title="@string/level">
+            android:title="@string/group">
             <menu>
                 <group android:id="@+id/g_layer_level">
                     <item

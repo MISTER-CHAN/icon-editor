@@ -4076,6 +4076,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         if (projects.isEmpty()) {
             if (fileToOpen != null) {
                 openFile(fileToOpen);
+                fileToOpen = null;
             } else {
                 addDefaultTab();
             }
@@ -4749,6 +4750,14 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
             }
         }
         return true;
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        final Uri file = intent.getData();
+        if (hasNotLoaded) fileToOpen = file;
+        else openFile(file);
     }
 
     @Override
