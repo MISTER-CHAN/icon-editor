@@ -666,6 +666,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         final int checkedItem = brush.tipShape.ordinal();
         new MaterialAlertDialogBuilder(this).setTitle(R.string.tip_shape)
                 .setSingleChoiceItems(R.array.brush_tip_shapes, checkedItem, (dialog, which) -> {
+                    if (brush.tipShape == BrushTool.TipShape.REF) brush.recycle();
                     brush.tipShape = switch (which) {
                         default -> BrushTool.TipShape.PRESET_BRUSH;
                         case 1 -> BrushTool.TipShape.REF;
@@ -1424,7 +1425,8 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                     velocityTracker.computeCurrentVelocity(1);
                     final int currBX = toBitmapX(event.getX()), currBY = toBitmapY(event.getY());
                     final float vel = (float) Math.hypot(velocityTracker.getXVelocity(), velocityTracker.getYVelocity());
-                    final float rad = Math.min(maxRad / vel / softness, maxRad);
+                    if (vel == 0.0f) break;
+                    final float rad = Math.min(maxRad / (vel + 1.0f / softness) / softness, maxRad);
                     final float diffBX = currBX - lastBX, diffBY = currBY - lastBY;
                     final float projBX = Math.abs(diffBX), projBY = Math.abs(diffBY);
                     final float stepBX = projBX >= projBY ? Math.signum(diffBX) : diffBX / projBY,
@@ -5910,6 +5912,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         final Bitmap rb = frame.mergeReferenceLayers();
         ref.set(rb != null ? rb : checkIfRequireRef() ? BitmapUtils.createBitmap(bitmap) : null);
         if (activityMain.tools.btgTools.getCheckedButtonId() == R.id.b_brush && brush.tipShape == BrushTool.TipShape.REF) {
+            brush.recycle();
             brush.setToRef(ref.bm(), paint.getColorLong());
         }
     }

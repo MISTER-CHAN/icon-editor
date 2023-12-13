@@ -35,12 +35,10 @@ public class BrushTool {
     public void setToBrush(long color) {
         if (brush == null) return;
         set(brush, color);
-        tipShape = TipShape.PRESET_BRUSH;
     }
 
     public void setToRef(Bitmap src, long color) {
         set(src, color);
-        tipShape = TipShape.REF;
     }
 
     public void set(long color) {
@@ -48,10 +46,7 @@ public class BrushTool {
     }
 
     private void set(@NonNull Bitmap src, long color) {
-        if (tipShape == TipShape.REF && this.src != null && !this.src.isRecycled())
-            this.src.recycle();
         this.src = src;
-
         final Bitmap dst = Bitmap.createBitmap(src.getWidth(), src.getHeight(), Bitmap.Config.ARGB_8888);
         dst.eraseColor(color);
         new Canvas(dst).drawBitmap(src, 0.0f, 0.0f, PAINT);
@@ -72,7 +67,7 @@ public class BrushTool {
 
     public void recycleAll() {
         recycle();
-        if (brush != null && !brush.isRecycled()) brush.recycle();
+        if (brush != null) brush.recycle();
     }
 
     public boolean recycled() {
