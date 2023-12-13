@@ -666,12 +666,10 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         final int checkedItem = brush.tipShape.ordinal();
         new MaterialAlertDialogBuilder(this).setTitle(R.string.tip_shape)
                 .setSingleChoiceItems(R.array.brush_tip_shapes, checkedItem, (dialog, which) -> {
-                    if (brush.tipShape == BrushTool.TipShape.REF) brush.recycle();
-                    brush.tipShape = switch (which) {
+                    updateBrush(switch (which) {
                         default -> BrushTool.TipShape.PRESET_BRUSH;
                         case 1 -> BrushTool.TipShape.REF;
-                    };
-                    updateBrush();
+                    });
                 })
                 .setPositiveButton(R.string.ok, null)
                 .show();
@@ -2839,7 +2837,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                     activityMain.optionsBrush.tietSoftness.setText(String.valueOf(softness));
                     activityMain.optionsBrush.tietStrokeWidth.setText(String.valueOf(strokeWidth));
                     activityMain.svOptionsBrush.setVisibility(View.VISIBLE);
-                    updateBrush();
+                    updateBrush(null);
                 }
             }
             case R.id.b_bucket_fill -> {
@@ -5901,10 +5899,15 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         clearStatus();
     }
 
-    private void updateBrush() {
-        switch (brush.tipShape) {
+    private void updateBrush(BrushTool.TipShape tipShape) {
+        if (tipShape == null) tipShape = brush.tipShape;
+        switch (tipShape) {
             case PRESET_BRUSH -> brush.setToBrush(paint.getColorLong());
-            case REF -> updateReference();
+            case REF -> {
+                updateReference();
+                if (brush.tipShape == BrushTool.TipShape.PRESET_BRUSH)
+                    brush.setToRef(ref.bm(), paint.getColorLong());
+            }
         }
     }
 
@@ -5912,7 +5915,6 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         final Bitmap rb = frame.mergeReferenceLayers();
         ref.set(rb != null ? rb : checkIfRequireRef() ? BitmapUtils.createBitmap(bitmap) : null);
         if (activityMain.tools.btgTools.getCheckedButtonId() == R.id.b_brush && brush.tipShape == BrushTool.TipShape.REF) {
-            brush.recycle();
             brush.setToRef(ref.bm(), paint.getColorLong());
         }
     }
