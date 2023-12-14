@@ -39,10 +39,6 @@ public class BrushTool {
     }
 
     public void setToRef(Bitmap src, long color) {
-        if (src == null) {
-            tipShape = TipShape.PRESET_BRUSH;
-            return;
-        }
         set(src, color);
         tipShape = TipShape.REF;
     }

@@ -2884,7 +2884,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
             case R.id.b_magic_eraser -> {
                 if (isChecked) {
                     onToolChanged(onIVTouchWithMagicEraserListener, activityMain.svOptionsMagicEraser);
-                    updateReference();
+                    updateReference(true);
                     paint.setAntiAlias(false);
                     paint.setMaskFilter(null);
                     paint.setStrokeCap(Paint.Cap.BUTT);
@@ -2898,7 +2898,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
             case R.id.b_magic_paint -> {
                 if (isChecked) {
                     onToolChanged(onIVTouchWithMagicPaintListener, activityMain.svOptionsMagicPaint);
-                    updateReference();
+                    updateReference(true);
                     threshold = 0xFF;
                     activityMain.optionsMagicPaint.cbAntiAlias.setChecked(antiAlias);
                     activityMain.optionsMagicPaint.tietBlurRadius.setText(String.valueOf(blurRadius));
@@ -5219,6 +5219,14 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         return true;
     }
 
+    private void onPaintColorChanged() {
+        if (activityMain.tools.btgTools.getCheckedButtonId() == R.id.b_brush) {
+            brush.set(paint.getColorLong());
+        } else if (isEditingText) {
+            drawTextOntoView(true);
+        }
+    }
+
     @SuppressLint("NonConstantResourceId")
     private boolean onProjTabOptionsItemSelected(MenuItem item) {
         final int position = activityMain.tlProjectList.getSelectedTabPosition();
@@ -5698,14 +5706,6 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         onPaintColorChanged();
     }
 
-    private void onPaintColorChanged() {
-        if (activityMain.tools.btgTools.getCheckedButtonId() == R.id.b_brush) {
-            brush.set(paint.getColorLong());
-        } else if (isEditingText) {
-            drawTextOntoView(true);
-        }
-    }
-
     private void setQuality(Project project, DirectorySelector.OnFileNameApplyCallback callback) {
         switch (project.fileType) {
             case PNG -> callback.onApply(project);
@@ -5904,7 +5904,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         switch (tipShape) {
             case PRESET_BRUSH -> brush.setToBrush(paint.getColorLong());
             case REF -> {
-                updateReference();
+                updateReference(true);
                 if (brush.tipShape == BrushTool.TipShape.PRESET_BRUSH)
                     brush.setToRef(ref.bm(), paint.getColorLong());
             }
@@ -5912,8 +5912,12 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
     }
 
     private void updateReference() {
+        updateReference(false);
+    }
+
+    private void updateReference(boolean nonNull) {
         final Bitmap rb = frame.mergeReferenceLayers();
-        ref.set(rb != null ? rb : checkIfRequireRef() ? BitmapUtils.createBitmap(bitmap) : null);
+        ref.set(rb != null ? rb : nonNull || checkIfRequireRef() ? BitmapUtils.createBitmap(bitmap) : null);
         if (activityMain.tools.btgTools.getCheckedButtonId() == R.id.b_brush && brush.tipShape == BrushTool.TipShape.REF) {
             brush.setToRef(ref.bm(), paint.getColorLong());
         }
