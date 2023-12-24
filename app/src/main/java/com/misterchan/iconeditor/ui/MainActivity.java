@@ -4142,7 +4142,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         final Layer layer = action.layer();
         if (action.rect() != null) {
             layer.canvas.drawBitmap(action.bm(), null, action.rect(), PAINT_BITMAP);
-        } else if (action.bm().getWidth() == bitmap.getWidth() && action.bm().getHeight() == bitmap.getHeight()) {
+        } else if (action.bm().getWidth() == layer.bitmap.getWidth() && action.bm().getHeight() == layer.bitmap.getHeight()) {
             layer.canvas.drawBitmap(action.bm(), 0.0f, 0.0f, PAINT_BITMAP);
         } else {
             layer.bitmap.recycle();
@@ -4151,8 +4151,6 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         }
 
         if (layer == this.layer) {
-            bitmap = layer.bitmap;
-            canvas = layer.canvas;
             if (!parSt.isRecycled()) {
                 if (action.rect() != null) parSt.draw(action.bm(), action.rect());
                 else if (action.bm().getWidth() == bitmap.getWidth() && action.bm().getHeight() == bitmap.getHeight())
@@ -4162,8 +4160,10 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
             if (!dpPreview.isRecycled()) {
                 if (action.rect() != null || action.bm().getWidth() == bitmap.getWidth() && action.bm().getHeight() == bitmap.getHeight())
                     dpPreview.erase();
-                else dpPreview.setBitmap(bitmap.getWidth(), bitmap.getHeight());
+                else dpPreview.setBitmap(action.bm().getWidth(), action.bm().getHeight());
             }
+            bitmap = layer.bitmap;
+            canvas = layer.canvas;
 
             recycleTransformer();
             if (hasSelection
