@@ -4139,17 +4139,18 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
     }
 
     private void moveStep(History.Action action) {
+        final Layer layer = action.layer();
         if (action.rect() != null) {
-            action.layer().canvas.drawBitmap(action.bm(), null, action.rect(), PAINT_BITMAP);
+            layer.canvas.drawBitmap(action.bm(), null, action.rect(), PAINT_BITMAP);
         } else if (action.bm().getWidth() == bitmap.getWidth() && action.bm().getHeight() == bitmap.getHeight()) {
-            action.layer().canvas.drawBitmap(action.bm(), 0.0f, 0.0f, PAINT_BITMAP);
+            layer.canvas.drawBitmap(action.bm(), 0.0f, 0.0f, PAINT_BITMAP);
         } else {
-            action.layer().bitmap.recycle();
-            action.layer().bitmap = Bitmap.createBitmap(action.bm());
-            action.layer().canvas = new Canvas(layer.bitmap);
+            layer.bitmap.recycle();
+            layer.bitmap = Bitmap.createBitmap(action.bm());
+            layer.canvas = new Canvas(layer.bitmap);
         }
 
-        if (action.layer() == layer) {
+        if (layer == this.layer) {
             bitmap = layer.bitmap;
             canvas = layer.canvas;
             if (!parSt.isRecycled()) {
@@ -4182,7 +4183,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
             selection.marqBoundBeingDragged = null;
         }
 
-        if (action.layer() == frame.getBackgroundLayer()) {
+        if (layer == frame.getBackgroundLayer()) {
             calculateBackgroundSizeOnView();
             drawChessboardOntoView();
         }
