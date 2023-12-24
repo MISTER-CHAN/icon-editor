@@ -1,6 +1,7 @@
 package com.misterchan.iconeditor;
 
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.ColorMatrix;
 import android.graphics.Paint;
 
@@ -30,12 +31,12 @@ public class Layer {
     public boolean reference = false;
     public boolean visible = true;
     public Bitmap bitmap;
+    public Canvas canvas;
     public final CellGrid cellGrid = new CellGrid();
     public ColorMatrix colorMatrix;
     public final ColorRange colorRange = new ColorRange();
     public final Deque<Guide> guides = new LinkedList<>();
     public Filter filter;
-    public final History history = new History();
     private int level = 0;
     public int left = 0, top = 0;
     public String name;
@@ -77,6 +78,7 @@ public class Layer {
         reference = layer.reference;
         visible = layer.visible;
         this.bitmap = bitmap;
+        canvas = new Canvas(bitmap);
         filter = layer.filter;
         level = layer.level;
         left = layer.left;

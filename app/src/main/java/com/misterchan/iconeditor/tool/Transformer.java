@@ -25,11 +25,11 @@ public class Transformer implements FloatingLayer {
         }
     }
 
-    private Bitmap bitmap;
-    private Bitmap src;
+    private Bitmap bitmap, srcBm;
     private Canvas canvas;
     public Mesh mesh;
     public Rect rect;
+    private Rect srcRect;
 
     private final Paint paint = new Paint() {
         {
@@ -41,7 +41,7 @@ public class Transformer implements FloatingLayer {
         if (isRecycled()) {
             return;
         }
-        src = BitmapUtils.createBitmap(bitmap);
+        srcBm = BitmapUtils.createBitmap(bitmap);
     }
 
     public void createMesh(int width, int height) {
@@ -65,6 +65,14 @@ public class Transformer implements FloatingLayer {
         return bitmap;
     }
 
+    public Bitmap getOriginal() {
+        return srcBm;
+    }
+
+    public Rect getOrigRect() {
+        return srcRect;
+    }
+
     @Override
     public int getLeft() {
         return rect.left;
@@ -76,13 +84,13 @@ public class Transformer implements FloatingLayer {
     }
 
     public boolean isRecycled() {
-        return src == null || bitmap == null;
+        return srcBm == null || bitmap == null;
     }
 
     public void recycle() {
-        if (src != null) {
-            src.recycle();
-            src = null;
+        if (srcBm != null) {
+            srcBm.recycle();
+            srcBm = null;
         }
         if (bitmap != null) {
             bitmap.recycle();
@@ -91,12 +99,12 @@ public class Transformer implements FloatingLayer {
     }
 
     public void reset() {
-        if (src.getWidth() != bitmap.getWidth() || src.getHeight() != bitmap.getHeight()) {
+        if (srcBm.getWidth() != bitmap.getWidth() || srcBm.getHeight() != bitmap.getHeight()) {
             bitmap.recycle();
             bitmap = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
             canvas = new Canvas(bitmap);
         }
-        canvas.drawBitmap(src, 0.0f, 0.0f, BitmapUtils.PAINT_SRC);
+        canvas.drawBitmap(srcBm, 0.0f, 0.0f, BitmapUtils.PAINT_SRC);
     }
 
     public void rotate(float degrees, boolean filter, boolean antiAlias) {
@@ -112,12 +120,13 @@ public class Transformer implements FloatingLayer {
     }
 
     public void setBitmap(Bitmap bitmap, Rect rect) {
-        if (src != null) src.recycle();
+        if (srcBm != null) srcBm.recycle();
         if (this.bitmap != null) this.bitmap.recycle();
-        src = bitmap;
+        srcBm = bitmap;
         this.bitmap = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
         canvas = new Canvas(this.bitmap);
         canvas.drawBitmap(bitmap, 0.0f, 0.0f, BitmapUtils.PAINT_SRC);
+        srcRect = new Rect(rect);
         this.rect = rect;
     }
 
@@ -155,6 +164,6 @@ public class Transformer implements FloatingLayer {
         bitmap.eraseColor(Color.TRANSPARENT);
         paint.setAntiAlias(antiAlias);
         paint.setFilterBitmap(filter);
-        canvas.drawBitmapMesh(src, mesh.width, mesh.height, mesh.verts, 0, null, 0, paint);
+        canvas.drawBitmapMesh(srcBm, mesh.width, mesh.height, mesh.verts, 0, null, 0, paint);
     }
 }

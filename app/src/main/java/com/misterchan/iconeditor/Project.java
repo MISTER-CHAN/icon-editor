@@ -15,17 +15,17 @@ public class Project {
     }
 
     public boolean gifDither = true;
-    public boolean isRecycled = false;
     public Bitmap.CompressFormat compressFormat;
     public float scale = Float.NaN;
     public float translationX = Float.NaN, translationY = Float.NaN;
     public FrameAdapter frameAdapter = new FrameAdapter(this);
-    public int selectedFrameIndex = 0;
-    public final List<Frame> frames = new ArrayList<>();
-    public GifEncoder.EncodingType gifEncodingType;
     public FileType fileType;
+    public GifEncoder.EncodingType gifEncodingType;
+    public final History history = new History();
     public int onionSkins = 1;
     public int quality = -1;
+    public int selectedFrameIndex = 0;
+    public final List<Frame> frames = new ArrayList<>();
     public String filePath;
     private String title;
     public TabLayout.Tab tab;

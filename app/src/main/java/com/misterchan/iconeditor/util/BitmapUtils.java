@@ -144,7 +144,8 @@ public class BitmapUtils {
 
     public static void bucketFill(final Bitmap src, Rect srcRect, final Bitmap dst, Rect dstRect,
                                   final int x, final int y, @ColorInt final int color,
-                                  final boolean ignoreAlpha, final int tolerance) {
+                                  final boolean ignoreAlpha, final int tolerance,
+                                  @Nullable final Rect bounds) {
         if (dstRect == null) {
             dstRect = new Rect(0, 0, dst.getWidth(), dst.getHeight());
         }
@@ -185,6 +186,9 @@ public class BitmapUtils {
                                 && ColorUtils.matches(pixel, px, tolerance)) {
                     pixels[i] = color;
                 }
+            }
+            if (pixels[i] != px && bounds != null) {
+                bounds.union(i % w, i / w);
             }
         }
         dst.setPixels(pixels, 0, w, dstRect.left, dstRect.top, w, h);
@@ -287,6 +291,13 @@ public class BitmapUtils {
     public static void floodFill(final Bitmap src, Rect srcRect, final Bitmap dst, Rect dstRect,
                                  final int x, final int y, @ColorInt final int color,
                                  final boolean ignoreAlpha, final int tolerance) {
+        floodFill(src, srcRect, dst, dstRect, x, y, color, ignoreAlpha, tolerance, null);
+    }
+
+    public static void floodFill(final Bitmap src, Rect srcRect, final Bitmap dst, Rect dstRect,
+                                 final int x, final int y, @ColorInt final int color,
+                                 final boolean ignoreAlpha, final int tolerance,
+                                 final Rect bounds) {
         if (dstRect == null) {
             dstRect = new Rect(0, 0, dst.getWidth(), dst.getHeight());
         }
@@ -345,6 +356,9 @@ public class BitmapUtils {
                 srcPixels[i] = newColor;
                 if (src != dst) {
                     dstPixels[i] = newColor;
+                }
+                if (bounds != null) {
+                    bounds.union(point.x, point.y);
                 }
                 if (dstRect.left <= point.x - 1 && !visited[i - 1])
                     queue.offer(new Point(point.x - 1, point.y));

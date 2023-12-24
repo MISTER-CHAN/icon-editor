@@ -6,7 +6,6 @@ import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import android.graphics.RectF;
 
 import androidx.annotation.ColorInt;
 
@@ -54,10 +53,6 @@ public class EditPreview {
         bm = cacheBitmap
                 ? Bitmap.createBitmap(bitmap, rect.left, rect.top, rect.width(), rect.height())
                 : null;
-    }
-
-    public void clearFilters() {
-        canvas.drawBitmap(src, rect, rect, BitmapUtils.PAINT_SRC);
     }
 
     public boolean committed() {
@@ -136,8 +131,12 @@ public class EditPreview {
         }
     }
 
-    public void reset() {
+    public void revert() {
         canvas.drawBitmap(src, rect, rect, BitmapUtils.PAINT_SRC);
+    }
+
+    public void setBitmap(Bitmap bm) {
+        canvas.drawBitmap(bm, rect.left, rect.top, BitmapUtils.PAINT_SRC);
     }
 
     public void setPixels(@ColorInt int[] pixels) {
