@@ -4,12 +4,13 @@
 
         <SwitchPreferenceCompat
             app:defaultValue="false"
+            app:icon="@drawable/ic_movie"
             app:key="fl"
             app:singleLineTitle="false"
             app:title="@string/show_timeline" />
 
         <ListPreference
-            app:defaultValue="top"
+            app:defaultValue="t"
             app:entries="@array/nll_entries"
             app:entryValues="@array/nll_values"
             app:key="nll"
@@ -18,7 +19,17 @@
             app:useSimpleSummaryProvider="true" />
 
         <ListPreference
-            app:defaultValue="def"
+            app:defaultValue="d"
+            app:entries="@array/theme_entries"
+            app:entryValues="@array/theme_values"
+            app:icon="@drawable/ic_palette"
+            app:key="theme"
+            app:singleLineTitle="false"
+            app:title="@string/theme"
+            app:useSimpleSummaryProvider="true" />
+
+        <ListPreference
+            app:defaultValue="d"
             app:entries="@array/locales_entries"
             app:entryValues="@array/locale_values"
             app:icon="@drawable/ic_language"

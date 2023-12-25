@@ -188,7 +188,7 @@ public class BitmapUtils {
                 }
             }
             if (pixels[i] != px && bounds != null) {
-                bounds.union(i % w, i / w);
+                bounds.union(i % w, i / w, i % w + 1, i / w + 1);
             }
         }
         dst.setPixels(pixels, 0, w, dstRect.left, dstRect.top, w, h);
@@ -358,7 +358,7 @@ public class BitmapUtils {
                     dstPixels[i] = newColor;
                 }
                 if (bounds != null) {
-                    bounds.union(point.x, point.y);
+                    bounds.union(point.x, point.y, point.x + 1, point.y + 1);
                 }
                 if (dstRect.left <= point.x - 1 && !visited[i - 1])
                     queue.offer(new Point(point.x - 1, point.y));

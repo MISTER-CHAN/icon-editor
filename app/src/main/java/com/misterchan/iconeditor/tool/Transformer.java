@@ -25,11 +25,11 @@ public class Transformer implements FloatingLayer {
         }
     }
 
-    private Bitmap bitmap, srcBm;
+    private Bitmap bitmap, origBm, srcBm;
     private Canvas canvas;
     public Mesh mesh;
     public Rect rect;
-    private Rect srcRect;
+    private Rect origRect;
 
     private final Paint paint = new Paint() {
         {
@@ -41,6 +41,7 @@ public class Transformer implements FloatingLayer {
         if (isRecycled()) {
             return;
         }
+        srcBm.recycle();
         srcBm = BitmapUtils.createBitmap(bitmap);
     }
 
@@ -66,11 +67,11 @@ public class Transformer implements FloatingLayer {
     }
 
     public Bitmap getOriginal() {
-        return srcBm;
+        return origBm;
     }
 
     public Rect getOrigRect() {
-        return srcRect;
+        return origRect;
     }
 
     @Override
@@ -88,6 +89,10 @@ public class Transformer implements FloatingLayer {
     }
 
     public void recycle() {
+        if (origBm != null) {
+            origBm.recycle();
+            origBm = null;
+        }
         if (srcBm != null) {
             srcBm.recycle();
             srcBm = null;
@@ -120,13 +125,15 @@ public class Transformer implements FloatingLayer {
     }
 
     public void setBitmap(Bitmap bitmap, Rect rect) {
+        if (origBm != null) origBm.recycle();
         if (srcBm != null) srcBm.recycle();
         if (this.bitmap != null) this.bitmap.recycle();
-        srcBm = bitmap;
+        origBm = bitmap;
+        srcBm = BitmapUtils.createBitmap(bitmap);
         this.bitmap = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
         canvas = new Canvas(this.bitmap);
         canvas.drawBitmap(bitmap, 0.0f, 0.0f, BitmapUtils.PAINT_SRC);
-        srcRect = new Rect(rect);
+        origRect = new Rect(rect);
         this.rect = rect;
     }
 

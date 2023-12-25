@@ -311,6 +311,7 @@
     <string name="softness">Softness</string>
     <string name="source">Source</string>
     <string name="spacing">Spacing</string>
+    <string name="square_corner">Square Corner</string>
     <string name="stable">Stable</string>
     <string name="stamp">Stamp</string>
     <string name="state_alpha" translatable="false">Alpha: %s</string>
@@ -348,6 +349,7 @@
     <string name="sweep">Sweep</string>
     <string name="synchronously_draw_image_and_ui">Synchronously draw image and U.I.</string>
     <string name="text">Text</string>
+    <string name="theme">Theme</string>
     <string name="there_are_frames_invalid_which_are">There are %d frames invalid whose positions are\n%s\n\nPossible reasons are\n- The sizes differ from the first frame\'s\n- The configs are not ARGB_8888</string>
     <string name="this_config_is_not_supported_yet">This config is not supported yet.</string>
     <string name="this_would_affect_size_of_memory_used">This would affect the size of memory used</string>

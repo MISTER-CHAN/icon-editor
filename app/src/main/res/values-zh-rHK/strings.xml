@@ -278,6 +278,7 @@
     <string name="softness">軟度</string>
     <string name="source">來源</string>
     <string name="spacing">間距</string>
+    <string name="square_corner">方角</string>
     <string name="stable">穩定</string>
     <string name="stamp">印章</string>
     <string name="state_axes">軸長：%d, %d</string>
@@ -309,6 +310,7 @@
     <string name="sweep">掃描</string>
     <string name="synchronously_draw_image_and_ui">同步繪畫圖像與用戶介面</string>
     <string name="text">文本</string>
+    <string name="theme">主題</string>
     <string name="there_are_frames_invalid_which_are">有 %s 幀無效，其位置爲\n%s\n\n可能原因爲\n- 尺寸異於首幀\n- 配置爲非 ARGB_8888</string>
     <string name="this_config_is_not_supported_yet">暫不支援該配置。</string>
     <string name="this_would_affect_size_of_memory_used">此項將影響記憶體使用量</string>

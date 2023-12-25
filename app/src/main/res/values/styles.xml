@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="MaterialAlertDialog.IconEditor.Insetless" parent="MaterialAlertDialog.Material3">
+    <style name="MaterialAlertDialog.IconEditor.NoInset" parent="MaterialAlertDialog.Material3">
         <item name="backgroundInsetTop">16dp</item>
         <item name="backgroundInsetBottom">16dp</item>
     </style>
@@ -10,12 +10,21 @@
         <item name="android:tint">?attr/colorOnSurfaceVariant</item>
     </style>
 
+    <style name="ShapeAppearance.IconEditor.Square" parent="">
+        <item name="cornerFamily">cut</item>
+        <item name="cornerSize">0dp</item>
+    </style>
+
     <style name="Widget.IconEditor.ActionMode" parent="Widget.Material3.ActionMode">
         <item name="background">?attr/colorSurface</item>
     </style>
 
     <style name="Widget_IconEditor_ActionMode_CloseButton" parent="">
         <item name="android:tint">?attr/colorOnSurface</item>
+    </style>
+
+    <style name="Widget.IconEditor.BottomSheet.Modal" parent="Widget.Material3.BottomSheet.Modal">
+        <item name="shapeAppearance">@style/ShapeAppearance.IconEditor.Square</item>
     </style>
 
     <style name="Widget.IconEditor.Button.OutlinedButton.Dense" parent="Widget.Material3.Button.OutlinedButton">

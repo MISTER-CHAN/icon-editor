@@ -9,7 +9,7 @@
         <item name="actionModeCloseDrawable">@drawable/ic_close</item>
         <item name="actionModeStyle">@style/Widget.IconEditor.ActionMode</item>
         <item name="materialAlertDialogTheme">
-            @style/ThemeOverlay.IconEditor.MaterialAlertDialog.Insetless
+            @style/ThemeOverlay.IconEditor.MaterialAlertDialog.NoInset
         </item>
         <item name="preferenceTheme">@style/Theme_IconEditor_Preference</item>
         <item name="tabStyle">@style/Widget.IconEditor.TabLayout</item>
@@ -23,19 +23,24 @@
         <item name="windowNoTitle">true</item>
     </style>
 
+    <style name="Theme.IconEditor.Square.NoActionBar" parent="Theme.IconEditor.NoActionBar">
+        <item name="bottomSheetDialogTheme">@style/ThemeOverlay.IconEditor.BottomSheetDialog</item>
+        <item name="shapeAppearanceOverlay">@style/ShapeAppearance.IconEditor.Square</item>
+    </style>
+
     <style name="Theme_IconEditor_Preference" parent="PreferenceThemeOverlay">
         <item name="android:tint">?attr/colorOnSurfaceVariant</item>
     </style>
 
-    <style name="ThemeOverlay.IconEditor.MaterialAlertDialog.Insetless" parent="ThemeOverlay.Material3.MaterialAlertDialog">
-        <item name="alertDialogStyle">@style/MaterialAlertDialog.IconEditor.Insetless</item>
+    <style name="ThemeOverlay.IconEditor.BottomSheetDialog" parent="ThemeOverlay.Material3.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/Widget.IconEditor.BottomSheet.Modal</item>
+    </style>
+
+    <style name="ThemeOverlay.IconEditor.MaterialAlertDialog.NoInset" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="alertDialogStyle">@style/MaterialAlertDialog.IconEditor.NoInset</item>
         <item name="materialAlertDialogTitleIconStyle">
             @style/MaterialAlertDialog.IconEditor.Title.Icon
         </item>
-    </style>
-
-    <style name="ThemeOverlay.IconEditor.MaterialAlertDialog.Insetless.Square" parent="ThemeOverlay.IconEditor.MaterialAlertDialog.Insetless">
-        <item name="shapeAppearanceOverlay">?attr/shapeAppearanceCornerSmall</item>
     </style>
 
     <style name="ThemeOverlay.IconEditor.TabLayout" parent="">

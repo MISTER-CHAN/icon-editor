@@ -12,15 +12,16 @@ public class Settings {
 
     private static final String KEY_ASHA = "asha"; // Automatically Set Has Alpha
     public static final String KEY_CFU = "cfu"; // Check for Updates
-    public static final String KEY_CIR = "cir"; // Color Int Component Radix
+    public static final String KEY_CIR = "cir"; // Component Radix of Color Int
     public static final String KEY_CP = "cp"; // Color Picker
     public static final String KEY_CR = "cr"; // Color Representation
     private static final String KEY_FB = "fb"; // Filter Bitmap
     public static final String KEY_FL = "fl"; // Frame List
-    public static final String KEY_HMS = "hms"; // History Max Size
+    public static final String KEY_HMS = "hms"; // Max Size of History
     public static final String KEY_LOC = "loc"; // Locale
     private static final String KEY_MT = "mt"; // Multithreaded
-    private static final String KEY_NLL = "nll"; // New Layer Level
+    private static final String KEY_NLL = "nll"; // Level of New Layer
+    public static final String KEY_THEME = "theme"; // Theme
 
     private boolean autoSetHasAlpha = false;
     private boolean colorRep = false;
@@ -106,7 +107,7 @@ public class Settings {
                 }
             }
             case KEY_MT -> mainActivity.setRunnableRunner(preferences.getBoolean(KEY_MT, true));
-            case KEY_NLL -> newLayerLevel = "sel".equals(preferences.getString(KEY_NLL, "top"));
+            case KEY_NLL -> newLayerLevel = "s".equals(preferences.getString(KEY_NLL, "t"));
         }
     }
 }

@@ -6,21 +6,21 @@ import android.graphics.Rect;
 
 import com.misterchan.iconeditor.util.BitmapUtils;
 
-public class ParallelStates {
+public class ImageStateAccumulator {
     private Bitmap bitmap;
     private Canvas canvas;
-    public final Rect bounds = new Rect(Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE);
+    public final Rect stateBounds = new Rect(Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE);
+
+    public boolean areStateBoundsEmpty() {
+        return stateBounds.isEmpty();
+    }
 
     public Bitmap bitmap() {
         return bitmap;
     }
 
-    public boolean areBoundsEmpty() {
-        return bounds.isEmpty();
-    }
-
-    public boolean doBoundsIntersect() {
-        return bounds.intersects(0, 0, bitmap.getWidth(), bitmap.getHeight());
+    public boolean doStateBoundsIntersect() {
+        return stateBounds.intersects(0, 0, bitmap.getWidth(), bitmap.getHeight());
     }
 
     public void draw(Bitmap bm, Rect dst) {
@@ -28,10 +28,10 @@ public class ParallelStates {
     }
 
     public void drawOnto(Canvas canvas) {
-        if (bitmap == null || !bounds.intersects(0, 0, bitmap.getWidth(), bitmap.getHeight())) {
+        if (bitmap == null || !doStateBoundsIntersect()) {
             return;
         }
-        canvas.drawBitmap(bitmap, bounds, bounds, BitmapUtils.PAINT_SRC);
+        canvas.drawBitmap(bitmap, stateBounds, stateBounds, BitmapUtils.PAINT_SRC);
         resetBounds();
     }
 
@@ -62,8 +62,8 @@ public class ParallelStates {
         canvas = null;
     }
 
-    private void resetBounds() {
-        bounds.set(Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE);
+    public void resetBounds() {
+        stateBounds.set(Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE);
     }
 
     public void set(Bitmap src) {
@@ -74,8 +74,8 @@ public class ParallelStates {
 
     public void unionBounds(int x0, int y0, int x1, int y1, float radius) {
         boolean x = x0 <= x1, y = y0 <= y1;
-        int rad = (int) Math.ceil(radius);
-        unionBounds((x ? x0 : x1) - rad, (y ? y0 : y1) - rad, (x ? x1 : x0) + rad, (y ? y1 : y0) + rad);
+        int rad = (int) Math.ceil(radius + 1.0f);
+        unionBounds((x ? x0 : x1) - rad, (y ? y0 : y1) - rad, (x ? x1 : x0) + rad + 1, (y ? y1 : y0) + rad + 1);
     }
 
     public void unionBounds(Rect rect) {
@@ -84,6 +84,6 @@ public class ParallelStates {
 
     public void unionBounds(int left, int top, int right, int bottom) {
         if (bitmap == null) return;
-        bounds.union(left, top, right, bottom);
+        stateBounds.union(left, top, right, bottom);
     }
 }

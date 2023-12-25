@@ -73,11 +73,11 @@
     </string-array>
 
     <string-array name="nll_values">
-        <item>top</item>
-        <item>sel</item>
+        <item>t</item>
+        <item>s</item>
     </string-array>
 
-    <!-- Locales -->
+    <!-- Locales Preference -->
     <string-array name="locales_entries">
         <item>@string/default_</item>
         <item>@string/en</item>
@@ -86,7 +86,7 @@
     </string-array>
 
     <string-array name="locale_values">
-        <item>def</item>
+        <item>d</item>
         <item>en</item>
         <item>zh_CN</item>
         <item>zh_HK</item>
@@ -107,4 +107,15 @@
         <item>0.0</item>
         <item>360.0</item>
     </array>
+
+    <!-- Theme Preference -->
+    <string-array name="theme_entries">
+        <item>@string/default_</item>
+        <item>@string/square_corner</item>
+    </string-array>
+
+    <string-array name="theme_values">
+        <item>d</item>
+        <item>s</item>
+    </string-array>
 </resources>

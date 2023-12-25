@@ -10,13 +10,13 @@ import androidx.annotation.Nullable;
  * <code><nobr>
  * Earliest&#x250C; &#x250C;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2510;<br />
  * &nbsp; &nbsp; Node&#x2514; &#x2502;Undo Action&#x2502; &#x2510;<br />
- * &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &#x2514;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x252C;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2518; &#x2502; Rect<br />
+ * &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &#x2514;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x252C;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2518; &#x2502;Rect<br />
  * &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &#x250C;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2534;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2510; &#x2502;<br />
  * &nbsp; &nbsp; &nbsp; &nbsp; &#x250C; &#x2502;Redo Action&#x2502; &#x2518;<br />
  * &nbsp; &nbsp; Node&#x2502; &#x2514;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x252C;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2518;<br />
  * &nbsp; &nbsp; &nbsp; &nbsp; &#x2502; &#x250C;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2534;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2510;<br />
  * &nbsp; &nbsp; &nbsp; &nbsp; &#x2514; &#x2502;Undo Action&#x2502; &#x2510;<br />
- * &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &#x2514;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x252C;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2518; &#x2502; Rect<br />
+ * &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &#x2514;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x252C;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2518; &#x2502;Rect<br />
  * &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &#x250C;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2534;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2510; &#x2502;<br />
  * &nbsp; &nbsp; &nbsp; &nbsp; &#x250C; &#x2502;Redo Action&#x2502; &#x2518;<br />
  * &nbsp; &nbsp; &nbsp; &nbsp; &#x2502; &#x2514;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x252C;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2518;<br />
@@ -25,7 +25,7 @@ import androidx.annotation.Nullable;
  * <br />
  * &nbsp; &nbsp; &nbsp; &nbsp; &#x2502; &#x250C;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2534;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2510;<br />
  * &nbsp; &nbsp; &nbsp; &nbsp; &#x2514; &#x2502;Undo Action&#x2502; &#x2510;<br />
- * &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &#x2514;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x252C;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2518; &#x2502; Rect<br />
+ * &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &#x2514;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x252C;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2518; &#x2502;Rect<br />
  * &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &#x250C;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2534;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2510; &#x2502;<br />
  * &nbsp; Latest&#x250C; &#x2502;Redo Action&#x2502; &#x2518;<br />
  * &nbsp; &nbsp; Node&#x2514; &#x2514;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2518;<br />
@@ -81,11 +81,7 @@ public class History {
 
     public synchronized Rect addRedoAction(Layer layer, Bitmap src) {
         if (Settings.INST.historyMaxSize() <= 0) return null;
-        if (size <= 0) {
-            current = new Node(null, null);
-            add(current);
-            return null;
-        }
+        if (size <= 0) return null;
         if (current.undoAction == null) return null;
 
         Rect rect = current.undoAction.rect;
@@ -109,41 +105,11 @@ public class History {
     }
 
     public boolean canRedo() {
-        if (current == null || current.later == null) {
-            return false;
-        }
-        while (current.later.redoAction.layer.bitmap.isRecycled()) {
-            current.later.redoAction.recycle();
-            current.undoAction.recycle();
-            current.undoAction = current.later.undoAction;
-            current.later = current.later.later;
-            if (current.later != null) {
-                current.later.earlier = current;
-            } else {
-                latest = current;
-                return false;
-            }
-        }
-        return true;
+        return current != null && current.later != null;
     }
 
     public boolean canUndo() {
-        if (current == null || current.earlier == null) {
-            return false;
-        }
-        while (current.earlier.undoAction.layer.bitmap.isRecycled()) {
-            current.earlier.undoAction.recycle();
-            current.redoAction.recycle();
-            current.redoAction = current.earlier.redoAction;
-            current.earlier = current.earlier.earlier;
-            if (current.earlier != null) {
-                current.earlier.later = current;
-            } else {
-                earliest = current;
-                return false;
-            }
-        }
-        return true;
+        return current != null && current.earlier != null;
     }
 
     public void clear() {
@@ -186,6 +152,26 @@ public class History {
             latest.undoAction = null;
         }
         --size;
+    }
+
+    public void init() {
+        current = new Node(null, null);
+        add(current);
+    }
+
+    public synchronized void optimize() {
+        Node n = earliest;
+        for (; n.undoAction != null; n = n.later) {
+            if (!n.undoAction.layer.bitmap.isRecycled()) continue;
+            n.undoAction.recycle();
+            n.undoAction = n.later.undoAction;
+            n.later.redoAction.recycle();
+            if (n.later == current) current = n;
+            n.later = n.later.later;
+            if (n.later == null) break;
+            n.later.earlier = n;
+        }
+        latest = n;
     }
 
     public Action redo() {

@@ -278,6 +278,7 @@
     <string name="softness">软度</string>
     <string name="source">来源</string>
     <string name="spacing">间距</string>
+    <string name="square_corner">方角</string>
     <string name="stable">稳定</string>
     <string name="stamp">图章</string>
     <string name="state_axes">轴长：%d, %d</string>
@@ -309,6 +310,7 @@
     <string name="sweep">扫描</string>
     <string name="synchronously_draw_image_and_ui">同步绘画图像与用户界面</string>
     <string name="text">文本</string>
+    <string name="theme">主题</string>
     <string name="there_are_frames_invalid_which_are">有 %d 帧无效，其位置为\n%s\n\n可能原因为\n- 尺寸异于首帧\n- 配置为非 ARGB_8888</string>
     <string name="this_config_is_not_supported_yet">暂不支援该配置。</string>
     <string name="this_would_affect_size_of_memory_used">此项将影响内存使用量</string>
