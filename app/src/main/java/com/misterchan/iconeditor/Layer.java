@@ -9,8 +9,6 @@ import androidx.annotation.IntRange;
 import androidx.annotation.Size;
 
 import java.util.Arrays;
-import java.util.Deque;
-import java.util.LinkedList;
 
 public class Layer {
     public enum Filter {
@@ -32,10 +30,8 @@ public class Layer {
     public boolean visible = true;
     public Bitmap bitmap;
     public Canvas canvas;
-    public final CellGrid cellGrid = new CellGrid();
     public ColorMatrix colorMatrix;
     public final ColorRange colorRange = new ColorRange();
-    public final Deque<Guide> guides = new LinkedList<>();
     public Filter filter;
     private int level = 0;
     public int left = 0, top = 0;

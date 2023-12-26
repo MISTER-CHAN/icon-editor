@@ -26,6 +26,10 @@ public class SettingsActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        if ("s".equals(preferences.getString(Settings.KEY_THEME, "d"))) {
+            setTheme(R.style.Theme_IconEditor_Square_NoActionBar);
+        }
         super.onCreate(savedInstanceState);
         setContentView(R.layout.settings_activity);
         if (savedInstanceState == null) {
@@ -38,9 +42,7 @@ public class SettingsActivity extends AppCompatActivity {
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
-        PreferenceManager
-                .getDefaultSharedPreferences(this)
-                .registerOnSharedPreferenceChangeListener((sharedPreferences, key) -> Settings.INST.update(key));
+        preferences.registerOnSharedPreferenceChangeListener((sharedPreferences, key) -> Settings.INST.update(key));
     }
 
     @Override

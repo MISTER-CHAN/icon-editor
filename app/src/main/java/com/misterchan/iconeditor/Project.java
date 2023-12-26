@@ -7,6 +7,8 @@ import com.misterchan.iconeditor.ui.FrameAdapter;
 import com.waynejo.androidndkgif.GifEncoder;
 
 import java.util.ArrayList;
+import java.util.Deque;
+import java.util.LinkedList;
 import java.util.List;
 
 public class Project {
@@ -16,11 +18,13 @@ public class Project {
 
     public boolean gifDither = true;
     public Bitmap.CompressFormat compressFormat;
+    public final CellGrid cellGrid = new CellGrid();
     public float scale = Float.NaN;
     public float translationX = Float.NaN, translationY = Float.NaN;
     public FrameAdapter frameAdapter = new FrameAdapter(this);
     public FileType fileType;
     public GifEncoder.EncodingType gifEncodingType;
+    public final Deque<Guide> guides = new LinkedList<>();
     public final History history = new History();
     public int onionSkins = 1;
     public int quality = -1;

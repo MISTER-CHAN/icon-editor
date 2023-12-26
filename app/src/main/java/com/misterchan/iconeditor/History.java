@@ -32,8 +32,8 @@ import androidx.annotation.Nullable;
  * </nobr></code>
  */
 public class History {
-    public record Action(Layer layer, @Nullable Rect rect, Bitmap bm) {
-        private void recycle() {
+    public record Action(Layer layer, Rect rect, Bitmap bm) {
+        public void recycle() {
             bm.recycle();
         }
     }

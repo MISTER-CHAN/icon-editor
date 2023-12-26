@@ -10,6 +10,7 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 
 import com.misterchan.iconeditor.FloatingLayer;
+import com.misterchan.iconeditor.History;
 import com.misterchan.iconeditor.util.BitmapUtils;
 
 public class Transformer implements FloatingLayer {
@@ -25,7 +26,8 @@ public class Transformer implements FloatingLayer {
         }
     }
 
-    private Bitmap bitmap, origBm, srcBm;
+    public History.Action undoAction;
+    private Bitmap bitmap, srcBm;
     private Canvas canvas;
     public Mesh mesh;
     public Rect rect;
@@ -66,10 +68,6 @@ public class Transformer implements FloatingLayer {
         return bitmap;
     }
 
-    public Bitmap getOriginal() {
-        return origBm;
-    }
-
     public Rect getOrigRect() {
         return origRect;
     }
@@ -89,9 +87,9 @@ public class Transformer implements FloatingLayer {
     }
 
     public void recycle() {
-        if (origBm != null) {
-            origBm.recycle();
-            origBm = null;
+        if (undoAction != null) {
+            undoAction.recycle();
+            undoAction = null;
         }
         if (srcBm != null) {
             srcBm.recycle();
@@ -125,11 +123,10 @@ public class Transformer implements FloatingLayer {
     }
 
     public void setBitmap(Bitmap bitmap, Rect rect) {
-        if (origBm != null) origBm.recycle();
+        if (undoAction != null) undoAction.recycle();
         if (srcBm != null) srcBm.recycle();
         if (this.bitmap != null) this.bitmap.recycle();
-        origBm = bitmap;
-        srcBm = BitmapUtils.createBitmap(bitmap);
+        srcBm = bitmap;
         this.bitmap = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
         canvas = new Canvas(this.bitmap);
         canvas.drawBitmap(bitmap, 0.0f, 0.0f, BitmapUtils.PAINT_SRC);
