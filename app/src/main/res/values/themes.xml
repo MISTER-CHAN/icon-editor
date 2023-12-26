@@ -23,9 +23,16 @@
         <item name="windowNoTitle">true</item>
     </style>
 
-    <style name="Theme.IconEditor.Square.NoActionBar" parent="Theme.IconEditor.NoActionBar">
+    <style name="Theme.IconEditor.Square" parent="Theme.IconEditor">
         <item name="bottomSheetDialogTheme">@style/ThemeOverlay.IconEditor.BottomSheetDialog</item>
         <item name="shapeAppearanceOverlay">@style/ShapeAppearance.IconEditor.Square</item>
+    </style>
+
+    <style name="Theme.IconEditor.Square.NoActionBar" parent="Theme.IconEditor.Square">
+        <item name="bottomSheetDialogTheme">@style/ThemeOverlay.IconEditor.BottomSheetDialog</item>
+        <item name="shapeAppearanceOverlay">@style/ShapeAppearance.IconEditor.Square</item>
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
     </style>
 
     <style name="Theme_IconEditor_Preference" parent="PreferenceThemeOverlay">
