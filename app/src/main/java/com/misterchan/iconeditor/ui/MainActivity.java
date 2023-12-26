@@ -1153,7 +1153,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                     project.guides.offerFirst(guide); // Add at the front for faster removal if necessary later
                 }
                 case MotionEvent.ACTION_MOVE -> {
-                    guide.position = toBitmapY(event.getY() - rulerHHeight);
+                    guide.position = toBitmapYAbs(event.getY() - rulerHHeight);
                     drawGridOntoView();
                     activityMain.tvStatus.setText(getString(R.string.position_, guide.position));
                 }
@@ -1184,7 +1184,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                     project.guides.offerFirst(guide); // Add at the front for faster removal if necessary later
                 }
                 case MotionEvent.ACTION_MOVE -> {
-                    guide.position = toBitmapX(event.getX() - rulerVWidth);
+                    guide.position = toBitmapXAbs(event.getX() - rulerVWidth);
                     drawGridOntoView();
                     activityMain.tvStatus.setText(getString(R.string.position_, guide.position));
                 }
@@ -3672,7 +3672,8 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
 
         final CellGrid cellGrid = project.cellGrid;
         if (cellGrid.enabled) {
-            final float r = Math.min(translationX + toScaled(bitmap.getWidth()), viewWidth), b = Math.min(translationY + toScaled(bitmap.getHeight()), viewHeight);
+            final Bitmap background = frame.getBackgroundLayer().bitmap;
+            final float r = Math.min(translationX + toScaled(background.getWidth()), viewWidth), b = Math.min(translationY + toScaled(background.getHeight()), viewHeight);
             if (cellGrid.sizeX > 1) {
                 final float t = translationY >= 0.0f ? translationY : translationY % scale;
                 final float scaledSizeX = toScaled(cellGrid.sizeX), scaledSpacingX = toScaled(cellGrid.spacingX);
@@ -5189,7 +5190,8 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
             case R.id.i_guides_new -> {
                 final Guide guide = new Guide();
                 project.guides.offerFirst(guide); // Add at the front for faster removal if necessary later
-                new GuideEditor(this, guide, bitmap.getWidth(), bitmap.getHeight(),
+                final Bitmap background = frame.getBackgroundLayer().bitmap;
+                new GuideEditor(this, guide, background.getWidth(), background.getHeight(),
                         g -> drawGridOntoView(),
                         dialog -> {
                             project.guides.remove(guide);
