@@ -3,9 +3,6 @@ package com.misterchan.iconeditor;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
 /**
  * <code><nobr>
  * Earliest&#x250C; &#x250C;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2510;<br />
@@ -56,12 +53,14 @@ public class History {
         }
     }
 
+    private boolean closed = false;
     private int size = 0;
     private Node current = null;
     private Node earliest, latest;
 
     public synchronized void addUndoAction(Layer layer, Bitmap src, Rect rect) {
         if (Settings.INST.historyMaxSize() <= 0) return;
+
         Bitmap bm;
         Rect r;
         if (rect == null) {
@@ -69,20 +68,29 @@ public class History {
             bm = Bitmap.createBitmap(src);
         } else {
             r = new Rect(rect);
-            if (!r.intersect(0, 0, src.getWidth(), src.getHeight())) return;
+            if (!r.intersect(0, 0, src.getWidth(), src.getHeight())) {
+                closed = true;
+                return;
+            }
             bm = Bitmap.createBitmap(src, r.left, r.top, r.width(), r.height());
         }
+
         while (latest != current) {
             deleteLatest();
         }
+
         if (current.undoAction != null) current.undoAction.recycle();
         current.undoAction = new Action(layer, r, bm);
     }
 
     public synchronized Rect addRedoAction(Layer layer, Bitmap src) {
-        if (Settings.INST.historyMaxSize() <= 0) return null;
-        if (size <= 0) return null;
-        if (current.undoAction == null) return null;
+        if (Settings.INST.historyMaxSize() <= 0 || size <= 0 || current.undoAction == null) {
+            return null;
+        }
+        if (closed) {
+            closed = false;
+            return null;
+        }
 
         Rect rect = current.undoAction.rect;
         Bitmap bm = rect == null ? Bitmap.createBitmap(src) : Bitmap.createBitmap(src, rect.left, rect.top, rect.width(), rect.height());
