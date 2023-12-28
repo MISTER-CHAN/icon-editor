@@ -28,7 +28,7 @@ public class SettingsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         if ("s".equals(preferences.getString(Settings.KEY_THEME, "d"))) {
-            setTheme(R.style.Theme_IconEditor_Square);
+            setTheme(R.style.Theme_IconEditor_SquareCorner);
         }
         super.onCreate(savedInstanceState);
         setContentView(R.layout.settings_activity);

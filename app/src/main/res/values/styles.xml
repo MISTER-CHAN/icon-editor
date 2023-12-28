@@ -10,7 +10,7 @@
         <item name="android:tint">?attr/colorOnSurfaceVariant</item>
     </style>
 
-    <style name="ShapeAppearance.IconEditor.Square" parent="">
+    <style name="ShapeAppearance.IconEditor.SquareCorner" parent="">
         <item name="cornerFamily">cut</item>
         <item name="cornerSize">0dp</item>
     </style>
@@ -24,7 +24,7 @@
     </style>
 
     <style name="Widget.IconEditor.BottomSheet.Modal" parent="Widget.Material3.BottomSheet.Modal">
-        <item name="shapeAppearance">@style/ShapeAppearance.IconEditor.Square</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.IconEditor.SquareCorner</item>
     </style>
 
     <style name="Widget.IconEditor.Button.OutlinedButton.Dense" parent="Widget.Material3.Button.OutlinedButton">

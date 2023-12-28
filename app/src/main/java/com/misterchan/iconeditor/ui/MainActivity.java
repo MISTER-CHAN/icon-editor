@@ -4204,7 +4204,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
     protected void onCreate(Bundle savedInstanceState) {
         final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         if ("s".equals(preferences.getString(Settings.KEY_THEME, "d"))) {
-            setTheme(R.style.Theme_IconEditor_Square_NoActionBar);
+            setTheme(R.style.Theme_IconEditor_SquareCorner_NoActionBar);
         }
         super.onCreate(savedInstanceState);
 
