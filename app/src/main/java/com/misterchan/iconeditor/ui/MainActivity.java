@@ -2303,7 +2303,6 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
     @SuppressLint("ClickableViewAccessibility")
     private final View.OnTouchListener onIVTouchWithTextListener = new OnIVMultiTouchListener() {
         private float dx, dy;
-        private Rect lastRect;
 
         @Override
         public void onIVSingleTouch(View v, MotionEvent event) {
@@ -2311,7 +2310,6 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN -> {
                         final float x = event.getX(), y = event.getY();
-                        drawTextOntoView(lastRect);
                         dx = x - toScaled(text.x);
                         dy = y - toScaled(text.y);
                     }
@@ -2319,10 +2317,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                         final float x = event.getX(), y = event.getY();
                         text.x = toUnscaled(x - dx);
                         text.y = toUnscaled(y - dy);
-                        final Rect r = text.bounds(paint, calcPaintStrokeRad());
-                        lastRect.union(r);
-                        drawTextOntoView(lastRect);
-                        lastRect.set(r);
+                        drawTextOntoView(text.getMeasuredBounds(paint, calcPaintStrokeRad()));
                         activityMain.tvStatus.setText(getString(R.string.coordinates, text.x, text.y));
                     }
                 }
@@ -2334,8 +2329,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                         text.y = toBitmapY(y);
                         activityMain.llOptionsText.setVisibility(View.VISIBLE);
                         isEditingText = true;
-                        lastRect = new Rect(text.measure(paint, calcPaintStrokeRad()));
-                        drawTextOntoView(lastRect);
+                        drawTextOntoView(text.measure(paint, calcPaintStrokeRad()));
                         textActionMode = startSupportActionMode(onTextActionModeCallback);
                         textActionMode.setTitle(R.string.text);
                         dx = toViewX(0);

@@ -9,31 +9,29 @@ public class TextTool {
     private final Rect rect = new Rect();
     public String s = "";
 
-    public Rect bounds(Paint paint, float outset) {
+    public Rect getMeasuredBounds(Paint paint, float outset) {
         Paint.FontMetrics fm = paint.getFontMetrics();
-        rect.set(bounds);
-        rect.offset(switch (paint.getTextAlign()) {
-            case LEFT -> 0;
-            case CENTER -> -(bounds.right >> 1);
-            case RIGHT -> -bounds.right;
-        } + x, (int) Math.floor(y + fm.top));
-        int o = (int) Math.ceil(outset);
-        rect.inset(-o, -o);
-        return rect;
+        return offset(paint.getTextAlign(), fm.top, outset);
     }
 
     public Rect measure(Paint paint, float outset) {
         Paint.FontMetrics fm = paint.getFontMetrics();
         bounds.set(0, 0, (int) Math.ceil(paint.measureText(s)), (int) Math.ceil(fm.bottom - fm.top));
+        return offset(paint.getTextAlign(), fm.top, outset);
+    }
+
+    private Rect offset(Paint.Align align, float top, float outset) {
+        Rect r = new Rect(rect);
         rect.set(bounds);
-        rect.offset(switch (paint.getTextAlign()) {
+        rect.offset(switch (align) {
             case LEFT -> 0;
             case CENTER -> -(bounds.right >> 1);
             case RIGHT -> -bounds.right;
-        } + x, (int) Math.floor(y + fm.top));
+        } + x, (int) Math.floor(y + top));
         int o = (int) Math.ceil(outset);
         rect.inset(-o, -o);
-        return rect;
+        r.union(rect);
+        return r;
     }
 
     public Rect rect() {
