@@ -838,6 +838,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                         editPreview.drawColor(paint.getColor(), BlendMode.SRC);
                         break;
                     }
+                    editPreview.revert();
                     editPreview.edit((src, dst) -> BitmapUtils.generateNoise(dst, paint.getColor(),
                             properties.noisiness(), properties.seed(), properties.noRepeats()));
                 }
@@ -4119,6 +4120,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                 p.frameAdapter.setOnItemSelectedListener(onFrameItemSelectedListener, onFrameItemReselectedListener);
                 for (final Frame f : p.frames) {
                     f.layerAdapter.setOnItemSelectedListener(onLayerItemSelectedListener, onLayerItemReselectedListener);
+                    f.layerAdapter.setOnLayerVisibleChangedListener((buttonView, isChecked) -> drawBitmapOntoView(true));
                 }
             }
             selectProject(0);
@@ -4792,7 +4794,6 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                 final Layer layerBelow = frame.layers.get(posBelow);
                 project.history.addUndoAction(layerBelow, layerBelow.bitmap, null);
                 Layers.mergeLayers(layer, layerBelow);
-                saveStepForwardToHistory();
                 deleteLayer(pos);
                 frame.computeLayerTree();
                 selectLayer(pos);
@@ -4802,6 +4803,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                     if (pos > 0)
                         frame.layerAdapter.notifyItemRangeChanged(0, pos, LayerAdapter.Payload.LEVEL);
                 });
+                saveStepForwardToHistory();
                 project.history.optimize();
             }
             case R.id.i_layer_merge_visible -> {
@@ -5170,7 +5172,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
             }
             case R.id.i_generate_noise -> {
                 drawFloatingLayersIntoImage();
-                createEditPreview(true, false);
+                createEditPreview(false, false);
                 new NoiseGenerator(this, onNoisePropChangedListener)
                         .setOnActionListener(onEditPreviewPBClickListener, onEditPreviewCancelListener)
                         .show();

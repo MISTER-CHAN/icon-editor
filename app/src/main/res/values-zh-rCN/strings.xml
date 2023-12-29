@@ -22,7 +22,7 @@
     <string name="background">背景</string>
     <string name="background_color">底色</string>
     <string name="below_background">背景底下</string>
-    <string name="bitmap_opaque_can_take_faster_drawing_case">一个不透明位图具有更快的绘画速度</string>
+    <string name="bitmap_opaque_can_take_faster_drawing_case">一个不透明位图具有更快绘画速度</string>
     <string name="blend_mode">混合模式</string>
     <string name="blur_radius">模糊半径</string>
     <string name="bold">粗体</string>
@@ -92,7 +92,7 @@
     <string name="enabled">启用</string>
     <string name="encoding_type">编码类型</string>
     <string name="eraser">胶擦</string>
-    <string name="exception_merge_as_hidden">异常：请选中两张图像中第一个图像的分页。</string>
+    <string name="exception_merge_as_hidden">异常：请选中两张图像中第一个分页。</string>
     <string name="export">导出</string>
     <string name="exporting">导出中</string>
     <string name="eyedropper">滴管</string>
@@ -105,7 +105,7 @@
     <string name="filter_layer">滤镜图层</string>
     <string name="filter_noun">滤镜</string>
     <string name="filter_verb">过滤</string>
-    <string name="filter_displayed_image_after_zooming_out">过滤缩小后显示的图像</string>
+    <string name="filter_displayed_image_after_zooming_out">过滤缩小后显示之图像</string>
     <string name="filter_image">过滤图像</string>
     <string name="filters">滤镜</string>
     <string name="fit_on_screen">适应屏幕</string>
@@ -153,7 +153,7 @@
     <string name="level_up">升级</string>
     <string name="levels">色阶</string>
     <string name="lighting">照明</string>
-    <string name="lighting_where">其中\n𝑪 – 来源颜色\n𝑪\' – 结果颜色</string>
+    <string name="lighting_where">其中\n<i><b><font face="serif">C</font></b></i> – 来源颜色\n<i><b><font face="serif">C\'</font></b></i> – 结果颜色</string>
     <string name="lightness">明度</string>
     <string name="line">线</string>
     <string name="linear">线性</string>
@@ -190,7 +190,7 @@
     <string name="no_repeats">无重复</string>
     <string name="none">无</string>
     <string name="normal">正常</string>
-    <string name="not_supported_file_type">不支持的文件类型</string>
+    <string name="not_supported_file_type">不受支持的文件类型</string>
     <string name="null_">空</string>
     <string name="offset">偏移量</string>
     <string name="ok">确定</string>

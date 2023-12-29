@@ -184,7 +184,6 @@
     <string name="long_integer">Long Integer</string>
     <string name="lossless">Lossless</string>
     <string name="lossy">Lossy</string>
-    <string name="lt" translatable="false"><![CDATA[<]]></string>
     <string name="luminance">Luminance</string>
     <string name="m" translatable="false">M</string>
     <string name="magic_eraser">Magic Eraser</string>

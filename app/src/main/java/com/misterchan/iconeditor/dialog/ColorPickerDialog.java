@@ -263,14 +263,14 @@ public class ColorPickerDialog {
         sComp3 = dialog.findViewById(R.id.s_comp_3);
         TabLayout tlColorPickers = dialog.findViewById(R.id.color_pickers);
         tietAlpha = dialog.findViewById(R.id.tiet_alpha);
-        tietComp0 = dialog.findViewById(R.id.tiet_comp_0);
-        tietComp1 = dialog.findViewById(R.id.tiet_comp_1);
-        tietComp2 = dialog.findViewById(R.id.tiet_comp_2);
-        tietComp3 = dialog.findViewById(R.id.tiet_comp_3);
         tilComp0 = dialog.findViewById(R.id.til_comp_0);
         tilComp1 = dialog.findViewById(R.id.til_comp_1);
         tilComp2 = dialog.findViewById(R.id.til_comp_2);
         tilComp3 = dialog.findViewById(R.id.til_comp_3);
+        tietComp0 = (TextInputEditText) tilComp0.getEditText();
+        tietComp1 = (TextInputEditText) tilComp1.getEditText();
+        tietComp2 = (TextInputEditText) tilComp2.getEditText();
+        tietComp3 = (TextInputEditText) tilComp3.getEditText();
         vPreview = dialog.findViewById(R.id.v_color);
 
         vPreview.setBackgroundColor(Color.toArgb(oldColor));

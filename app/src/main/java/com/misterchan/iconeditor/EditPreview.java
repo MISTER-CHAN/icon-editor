@@ -13,7 +13,7 @@ import com.misterchan.iconeditor.util.BitmapUtils;
 
 public class EditPreview {
     public interface Modification {
-        void modify(@ColorInt int[] src, @ColorInt int[] dst);
+        void apply(@ColorInt int[] src, @ColorInt int[] dst);
     }
 
     private final Bitmap bitmap;
@@ -72,7 +72,7 @@ public class EditPreview {
 
     public void edit(Modification mod) {
         final int[] src = getPixels(), dst = cachePixels ? new int[prevRect.width() * prevRect.height()] : src;
-        mod.modify(src, dst);
+        mod.apply(src, dst);
         setPixels(dst);
     }
 
