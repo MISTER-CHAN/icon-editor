@@ -153,7 +153,7 @@
     <string name="level_up">升级</string>
     <string name="levels">色阶</string>
     <string name="lighting">照明</string>
-    <string name="lighting_where">其中\n<i><b><font face="serif">C</font></b></i> – 来源颜色\n<i><b><font face="serif">C\'</font></b></i> – 结果颜色</string>
+    <string name="lighting_where">其中\n<font face="serif"><i><b>C</b></i></font> – 来源颜色\n<font face="serif"><i><b>C\'</b></i></font> – 结果颜色</string>
     <string name="lightness">明度</string>
     <string name="line">线</string>
     <string name="linear">线性</string>

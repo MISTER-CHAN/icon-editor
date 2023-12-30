@@ -4140,67 +4140,6 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         activityMain.tlProjectList.addTab(t, position, false);
     }
 
-    private void moveStep(History.Action action) {
-        final Layer layer = action.layer();
-        if (action.rect() != null) {
-            layer.canvas.drawBitmap(action.bm(), null, action.rect(), PAINT_BITMAP);
-        } else if (action.bm().getWidth() == layer.bitmap.getWidth() && action.bm().getHeight() == layer.bitmap.getHeight()) {
-            layer.canvas.drawBitmap(action.bm(), 0.0f, 0.0f, PAINT_BITMAP);
-        } else {
-            layer.bitmap.recycle();
-            layer.bitmap = Bitmap.createBitmap(action.bm());
-            layer.canvas = new Canvas(layer.bitmap);
-        }
-
-        if (layer == this.layer) {
-            if (!isa.isRecycled()) {
-                if (action.rect() != null) isa.draw(action.bm(), action.rect());
-                else if (action.bm().getWidth() == bitmap.getWidth() && action.bm().getHeight() == bitmap.getHeight())
-                    isa.erase(action.bm(), null);
-                else isa.set(action.bm());
-            }
-            if (!dpPreview.isRecycled()) {
-                if (action.rect() != null || action.bm().getWidth() == bitmap.getWidth() && action.bm().getHeight() == bitmap.getHeight())
-                    dpPreview.erase();
-                else dpPreview.setBitmap(action.bm().getWidth(), action.bm().getHeight());
-            }
-            bitmap = layer.bitmap;
-            canvas = layer.canvas;
-
-            recycleTransformer();
-            if (hasSelection
-                    && activityMain.tools.btgTools.getCheckedButtonId() == R.id.b_transformer
-                    && activityMain.optionsTransformer.btgTransformer.getCheckedButtonId() == R.id.b_mesh) {
-                createTransformerMesh();
-            } else if (magEr.b != null && magEr.f != null) {
-                drawCrossOntoView(magEr.b.x, magEr.b.y, true);
-                drawCrossOntoView(magEr.f.x, magEr.f.y, false);
-            } else if (cloneStampSrc != null) {
-                drawCrossOntoView(cloneStampSrc.x, cloneStampSrc.y);
-            } else {
-                eraseBitmapAndInvalidateView(previewBitmap, activityMain.canvas.ivPreview);
-            }
-            optimizeSelection();
-            isShapeStopped = true;
-            selection.marqBoundBeingDragged = null;
-        }
-
-        if (layer == frame.getBackgroundLayer()) {
-            calculateBackgroundSizeOnView();
-            drawChessboardOntoView();
-        }
-        for (int i = 1; i <= project.onionSkins; ++i) {
-            if (project.selectedFrameIndex >= i)
-                project.frames.get(project.selectedFrameIndex - i).updateThumbnail();
-            if (project.selectedFrameIndex < project.frames.size() - i)
-                project.frames.get(project.selectedFrameIndex + i).updateThumbnail();
-        }
-        drawBitmapOntoView(true, true);
-        drawGridOntoView();
-        drawSelectionOntoView();
-        clearStatus();
-    }
-
     @Override
     @SuppressLint({"ClickableViewAccessibility", "NonConstantResourceId"})
     protected void onCreate(Bundle savedInstanceState) {
@@ -5254,7 +5193,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                 drawSelectionOntoView();
             }
             case R.id.i_redo -> {
-                if (project.history.canRedo()) moveStep(project.history.redo());
+                if (project.history.canRedo()) onExecuteHistoricalCommand(project.history.redo());
             }
             case R.id.i_rotate_90 -> rotate(90.0f);
             case R.id.i_rotate_180 -> rotate(180.0f);
@@ -5291,7 +5230,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                         drawBitmapOntoView(true);
                     }
                 } else if (project.history.canUndo()) {
-                    moveStep(project.history.undo());
+                    onExecuteHistoricalCommand(project.history.undo());
                 }
             }
             case R.id.i_view_actual_pixels -> {
@@ -5402,14 +5341,60 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         return true;
     }
 
+    private void onExecuteHistoricalCommand(History.Action action) {
+        if (action.layer() == layer) {
+            if (!isa.isRecycled()) {
+                if (action.rect() != null) isa.draw(action.bm(), action.rect());
+                else if (action.bm().getWidth() == bitmap.getWidth() && action.bm().getHeight() == bitmap.getHeight())
+                    isa.erase(action.bm(), null);
+                else isa.set(action.bm());
+            }
+            if (!dpPreview.isRecycled()) {
+                if (action.rect() != null || action.bm().getWidth() == bitmap.getWidth() && action.bm().getHeight() == bitmap.getHeight())
+                    dpPreview.erase();
+                else dpPreview.setBitmap(action.bm().getWidth(), action.bm().getHeight());
+            }
+            bitmap = action.layer().bitmap;
+            canvas = action.layer().canvas;
+
+            miHasAlpha.setChecked(bitmap.hasAlpha());
+            recycleTransformer();
+            if (hasSelection
+                    && activityMain.tools.btgTools.getCheckedButtonId() == R.id.b_transformer
+                    && activityMain.optionsTransformer.btgTransformer.getCheckedButtonId() == R.id.b_mesh) {
+                createTransformerMesh();
+            } else if (magEr.b != null && magEr.f != null) {
+                drawCrossOntoView(magEr.b.x, magEr.b.y, true);
+                drawCrossOntoView(magEr.f.x, magEr.f.y, false);
+            } else if (cloneStampSrc != null) {
+                drawCrossOntoView(cloneStampSrc.x, cloneStampSrc.y);
+            } else {
+                eraseBitmapAndInvalidateView(previewBitmap, activityMain.canvas.ivPreview);
+            }
+            optimizeSelection();
+            isShapeStopped = true;
+            selection.marqBoundBeingDragged = null;
+        }
+
+        if (action.layer() == frame.getBackgroundLayer()) {
+            calculateBackgroundSizeOnView();
+            drawChessboardOntoView();
+        }
+        for (int i = 1; i <= project.onionSkins; ++i) {
+            if (project.selectedFrameIndex >= i)
+                project.frames.get(project.selectedFrameIndex - i).updateThumbnail();
+            if (project.selectedFrameIndex < project.frames.size() - i)
+                project.frames.get(project.selectedFrameIndex + i).updateThumbnail();
+        }
+        drawBitmapOntoView(true, true);
+        drawGridOntoView();
+        drawSelectionOntoView();
+        clearStatus();
+    }
+
     private void openFile(Uri uri) {
         if (uri == null) return;
-        final Bitmap bm;
-        try (final InputStream inputStream = getContentResolver().openInputStream(uri)) {
-            bm = BitmapFactory.decodeStream(inputStream);
-        } catch (IOException e) {
-            return;
-        }
+        final Bitmap bm = FileUtils.openFile(getContentResolver(), uri);
         if (bm == null) {
             Snackbar.make(vContent, R.string.image_is_invalid, Snackbar.LENGTH_LONG)
                     .setAction(R.string.open, v -> pickMedia())
@@ -5422,9 +5407,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
     private void openImage(Bitmap bitmap, Uri uri) {
         final Bitmap bm = bitmap.copy(bitmap.getConfig(), true);
         bitmap.recycle();
-        if (Settings.INST.autoSetHasAlpha()) {
-            bm.setHasAlpha(true);
-        }
+        if (Settings.INST.autoSetHasAlpha()) bm.setHasAlpha(true);
         final DocumentFile documentFile = DocumentFile.fromSingleUri(this, uri);
         final String name = documentFile.getName(), mimeType = documentFile.getType();
         if (mimeType != null) {

@@ -6,6 +6,7 @@ import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Environment;
@@ -29,6 +30,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -139,6 +141,16 @@ public class FileUtils {
             gifEncoder.close();
         }
         MediaScannerConnection.scanFile(activity, new String[]{file.toString()}, null, null);
+    }
+
+    public static Bitmap openFile(ContentResolver cr, Uri uri) {
+        final Bitmap bm;
+        try (final InputStream inputStream = cr.openInputStream(uri)) {
+            bm = BitmapFactory.decodeStream(inputStream);
+        } catch (IOException e) {
+            return null;
+        }
+        return bm;
     }
 
     public static void prepareToLogExceptionMsg() {

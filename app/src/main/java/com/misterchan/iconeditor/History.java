@@ -1,7 +1,10 @@
 package com.misterchan.iconeditor;
 
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Rect;
+
+import com.misterchan.iconeditor.util.BitmapUtils;
 
 /**
  * <code><nobr>
@@ -30,6 +33,18 @@ import android.graphics.Rect;
  */
 public class History {
     public record Action(Layer layer, Rect rect, Bitmap bm) {
+        private void execute() {
+            if (rect != null) {
+                layer.canvas.drawBitmap(bm, null, rect, BitmapUtils.PAINT_SRC);
+            } else if (bm.getWidth() == layer.bitmap.getWidth() && bm.getHeight() == layer.bitmap.getHeight()) {
+                layer.canvas.drawBitmap(bm, 0.0f, 0.0f, BitmapUtils.PAINT_SRC);
+            } else {
+                layer.bitmap.recycle();
+                layer.bitmap = Bitmap.createBitmap(bm);
+                layer.canvas = new Canvas(layer.bitmap);
+            }
+        }
+
         public void recycle() {
             bm.recycle();
         }
@@ -184,11 +199,13 @@ public class History {
 
     public Action redo() {
         current = current.later;
+        current.redoAction.execute();
         return current.redoAction;
     }
 
     public Action undo() {
         current = current.earlier;
+        current.undoAction.execute();
         return current.undoAction;
     }
 }
