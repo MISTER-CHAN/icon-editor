@@ -32,6 +32,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Looper;
 import android.os.MessageQueue;
+import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -371,7 +372,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
 
     private final ActivityResultLauncher<PickVisualMediaRequest> pickMultipleMedia =
             registerForActivityResult(
-                    new ActivityResultContracts.PickMultipleVisualMedia(Integer.MAX_VALUE),
+                    new ActivityResultContracts.PickMultipleVisualMedia(MediaStore.getPickImagesMaxLimit()),
                     onImagesPickedCallback);
 
     private final PickVisualMediaRequest pickVisualMediaRequest = new PickVisualMediaRequest.Builder()
