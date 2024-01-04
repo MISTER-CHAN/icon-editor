@@ -28,10 +28,12 @@ import android.graphics.RectF;
 import android.graphics.Shader;
 import android.graphics.Typeface;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Looper;
 import android.os.MessageQueue;
+import android.os.ext.SdkExtensions;
 import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -370,10 +372,10 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
 
     private final ActivityResultCallback<List<Uri>> onImagesPickedCallback = result -> result.forEach(this::openFile);
 
-    private final ActivityResultLauncher<PickVisualMediaRequest> pickMultipleMedia =
-            registerForActivityResult(
-                    new ActivityResultContracts.PickMultipleVisualMedia(MediaStore.getPickImagesMaxLimit()),
-                    onImagesPickedCallback);
+    private final ActivityResultLauncher<PickVisualMediaRequest> pickMultipleMedia = registerForActivityResult(
+            new ActivityResultContracts.PickMultipleVisualMedia(
+                    SdkExtensions.getExtensionVersion(Build.VERSION_CODES.R) >= 2 ? MediaStore.getPickImagesMaxLimit() : 100),
+            onImagesPickedCallback);
 
     private final PickVisualMediaRequest pickVisualMediaRequest = new PickVisualMediaRequest.Builder()
             .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE)
