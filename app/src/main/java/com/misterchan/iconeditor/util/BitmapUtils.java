@@ -22,6 +22,7 @@ import androidx.annotation.Size;
 import androidx.core.content.ContextCompat;
 
 import com.misterchan.iconeditor.ColorRange;
+import com.misterchan.iconeditor.Settings;
 
 import java.util.LinkedList;
 import java.util.Queue;
@@ -462,6 +463,18 @@ public class BitmapUtils {
             dstPixels[i] = ColorUtils.clipped(srcPixels[i], dstPixels[i]);
         }
         dst.setPixels(dstPixels, 0, w, 0, 0, w, h);
+    }
+
+    /**
+     * Makes a mutable copy then recycle the source bitmap.
+     */
+    public static Bitmap mutable(Bitmap bitmap) {
+        final Bitmap newBitmap = bitmap.copy(bitmap.getConfig(), true);
+        bitmap.recycle();
+        if (Settings.INST.autoSetHasAlpha()) {
+            newBitmap.setHasAlpha(true);
+        }
+        return newBitmap;
     }
 
     public static void posterize(Bitmap bitmap, Rect rect, @IntRange(from = 0x01, to = 0xFF) int level) {

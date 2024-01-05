@@ -373,6 +373,7 @@
     <string name="unify_delays">Unify Delays</string>
     <string name="unknown"><strike>Unknown</strike></string>
     <string name="untitled">Untitled</string>
+    <string name="uri_is_invalid">The URI is invalid.</string>
     <string name="v" translatable="false">V</string>
     <string name="version">Version (Release Date)</string>
     <string name="vertical">Vertical</string>

@@ -59,6 +59,7 @@ import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.Size;
+import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.view.ActionMode;
@@ -74,7 +75,6 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButtonToggleGroup;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.sidesheet.SideSheetDialog;
-import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.textfield.TextInputEditText;
@@ -87,9 +87,9 @@ import com.misterchan.iconeditor.FloatingLayer;
 import com.misterchan.iconeditor.Frame;
 import com.misterchan.iconeditor.Guide;
 import com.misterchan.iconeditor.History;
+import com.misterchan.iconeditor.ImageStateAccumulator;
 import com.misterchan.iconeditor.Layer;
 import com.misterchan.iconeditor.Layers;
-import com.misterchan.iconeditor.ImageStateAccumulator;
 import com.misterchan.iconeditor.Project;
 import com.misterchan.iconeditor.R;
 import com.misterchan.iconeditor.Reference;
@@ -139,10 +139,11 @@ import com.waynejo.androidndkgif.GifDecoder;
 import com.waynejo.androidndkgif.GifEncoder;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class MainActivity extends AppCompatActivity implements SelectionTool.CoordinateConversions {
 
@@ -267,6 +268,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
     private int rulerHHeight, rulerVWidth;
     private int threshold;
     private int viewWidth, viewHeight;
+    private Intent fileToOpen;
     private Layer layer;
     private LayerListBinding layerList;
     private List<Long> palette;
@@ -285,7 +287,6 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
     private final TextTool text = new TextTool();
     private Thread thread = new Thread();
     private final Transformer transformer = new Transformer();
-    private Uri fileToOpen;
     private View vContent;
 
     private final Paint bitmapPaint = new Paint() {
@@ -370,7 +371,17 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         }
     };
 
-    private final ActivityResultCallback<List<Uri>> onImagesPickedCallback = result -> result.forEach(this::openFile);
+    private final ActivityResultCallback<List<Uri>> onImagesPickedCallback = result -> {
+        if (result.size() == 1) {
+            @StringRes final int r = openFile(result.get(0));
+            if (r != 0)
+                Snackbar.make(vContent, r, Snackbar.LENGTH_LONG)
+                        .setAction(R.string.open, v -> pickMedia())
+                        .show();
+        } else for (final Uri uri : result) {
+            openFile(uri);
+        }
+    };
 
     private final ActivityResultLauncher<PickVisualMediaRequest> pickMultipleMedia = registerForActivityResult(
             new ActivityResultContracts.PickMultipleVisualMedia(
@@ -4110,9 +4121,13 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         }
 
         if (projects.isEmpty()) {
-            if (fileToOpen != null) {
-                openFile(fileToOpen);
-                fileToOpen = null;
+            final Uri uri = getIntent().getData();
+            if (uri != null) {
+                @StringRes final int r = openFile(uri);
+                if (r != 0) {
+                    if (projects.isEmpty()) addDefaultTab();
+                    Snackbar.make(vContent, r, Snackbar.LENGTH_LONG).show();
+                }
             } else {
                 addDefaultTab();
             }
@@ -4267,7 +4282,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
 
         chessboard = BitmapFactory.decodeResource(res, R.mipmap.chessboard);
         chessboardPaint.setShader(new BitmapShader(chessboard, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT));
-        fileToOpen = getIntent().getData();
+        fileToOpen = getIntent();
         projects = viewModel.getProjects();
 
         palette = viewModel.getPalette();
@@ -4795,9 +4810,9 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-        final Uri file = intent.getData();
-        if (hasNotLoaded) fileToOpen = file;
-        else openFile(file);
+        final Uri uri = intent.getData();
+        @StringRes final int r = openFile(uri);
+        if (r != 0) Snackbar.make(vContent, r, Snackbar.LENGTH_LONG).show();
     }
 
     @Override
@@ -4949,11 +4964,10 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
             case R.id.i_file_open_from_clipboard -> {
                 final ClipboardManager clipboardManager = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
                 if (!clipboardManager.hasPrimaryClip()) break;
-
                 final ClipData clipData = clipboardManager.getPrimaryClip();
                 if (clipData == null || clipData.getItemCount() < 1) break;
-
-                openFile(clipData.getItemAt(0).getUri());
+                @StringRes final int r = openFile(clipData.getItemAt(0).getUri());
+                if (r != 0) Snackbar.make(vContent, r, Snackbar.LENGTH_LONG).show();
             }
             case R.id.i_file_refer_to_clipboard -> {
                 final String filePath = project.filePath;
@@ -4973,7 +4987,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
             case R.id.i_file_save_as -> saveAs();
             case R.id.i_fill_with_ref -> {
                 if (ref.recycled()) {
-                    Snackbar.make(vContent, R.string.no_reference, BaseTransientBottomBar.LENGTH_LONG).show();
+                    Snackbar.make(vContent, R.string.no_reference, Snackbar.LENGTH_LONG).show();
                     break;
                 }
                 drawFloatingLayersIntoImage();
@@ -5395,26 +5409,18 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         clearStatus();
     }
 
-    private void openFile(Uri uri) {
-        if (uri == null) return;
+    @StringRes
+    private int openFile(Uri uri) {
+        if (uri == null) return R.string.uri_is_invalid;
         final Bitmap bm = FileUtils.openFile(getContentResolver(), uri);
-        if (bm == null) {
-            Snackbar.make(vContent, R.string.image_is_invalid, Snackbar.LENGTH_LONG)
-                    .setAction(R.string.open, v -> pickMedia())
-                    .show();
-            return;
-        }
-        openImage(bm, uri);
+        if (bm == null) return R.string.image_is_invalid;
+        return openImage(bm, uri) ? 0 : R.string.not_supported_file_type;
     }
 
-    private void openImage(Bitmap bitmap, Uri uri) {
-        final Bitmap bm = bitmap.copy(bitmap.getConfig(), true);
-        bitmap.recycle();
-        if (Settings.INST.autoSetHasAlpha()) bm.setHasAlpha(true);
+    private boolean openImage(Bitmap bitmap, Uri uri) {
         final DocumentFile documentFile = DocumentFile.fromSingleUri(this, uri);
         final String name = documentFile.getName(), mimeType = documentFile.getType();
         if (mimeType != null) {
-            final String path;
             final Project.FileType type = switch (mimeType) {
                 case "image/jpeg" -> Project.FileType.JPEG;
                 case "image/png" -> Project.FileType.PNG;
@@ -5429,34 +5435,35 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                 default -> null;
             };
             if (compressFormat != null) {
-                path = FileUtils.getRealPath(this, uri);
-                addProject(bm, projects.size(), name, path, type, compressFormat);
+                addProject(BitmapUtils.mutable(bitmap), projects.size(),
+                        name, FileUtils.getRealPath(this, uri), type, compressFormat);
             } else if (type == Project.FileType.GIF) {
-                path = FileUtils.getRealPath(this, uri);
+                final String path = FileUtils.getRealPath(this, uri);
                 final GifDecoder gifDecoder = new GifDecoder();
                 if (path != null && gifDecoder.load(path)) {
+                    bitmap.recycle();
                     final Project proj = addProject(null, projects.size(), name, path, type, null, false);
                     final Frame[] frames = new Frame[gifDecoder.frameNum()];
                     for (int i = 0; i < gifDecoder.frameNum(); ++i) {
-                        final Frame newFrame = addFrame(proj, gifDecoder.frame(i),
-                                i, gifDecoder.delay(i), false);
-                        frames[i] = newFrame;
+                        final Bitmap bm = gifDecoder.frame(i);
+                        if (Settings.INST.autoSetHasAlpha()) bm.setHasAlpha(true);
+                        frames[i] = addFrame(proj, bm, i, gifDecoder.delay(i), false);
                         frames[i].computeLayerTree();
                     }
                     proj.onionSkins = 0;
                     selectProject(projects.size() - 1);
                 } else {
-                    addProject(bm, projects.size(), name, path, type, null);
+                    addProject(BitmapUtils.mutable(bitmap), projects.size(), name, path, type, null);
                 }
             } else {
-                addProject(bm, projects.size(), name);
-                Snackbar.make(vContent, R.string.not_supported_file_type, Snackbar.LENGTH_LONG)
-                        .setAction(R.string.save_as, v -> save())
-                        .show();
+                addProject(BitmapUtils.mutable(bitmap), projects.size(), name);
+                return false;
             }
         } else {
-            addProject(bm, projects.size());
+            addProject(BitmapUtils.mutable(bitmap), projects.size());
+            return false;
         }
+        return true;
     }
 
     private void optimizeSelection() {

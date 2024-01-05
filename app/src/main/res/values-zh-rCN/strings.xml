@@ -333,6 +333,7 @@
     <string name="unify_delays">统一延迟</string>
     <string name="unknown"><strike>未知</strike></string>
     <string name="untitled">无标题</string>
+    <string name="uri_is_invalid">URI 无效。</string>
     <string name="version">版本（发布日期）</string>
     <string name="vertical">垂直</string>
     <string name="vertically">垂直</string>

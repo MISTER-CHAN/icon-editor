@@ -232,6 +232,7 @@ public class FileUtils {
                         Snackbar.make(contentView, R.string.done, Snackbar.LENGTH_SHORT).show();
                     } else {
                         new MaterialAlertDialogBuilder(activity)
+                                .setIcon(R.drawable.ic_done)
                                 .setTitle(R.string.done)
                                 .setMessage(activity.getString(R.string.there_are_frames_invalid_which_are,
                                         invalidFrames.size(),
