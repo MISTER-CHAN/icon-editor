@@ -139,11 +139,8 @@ import com.waynejo.androidndkgif.GifDecoder;
 import com.waynejo.androidndkgif.GifEncoder;
 
 import java.io.File;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 public class MainActivity extends AppCompatActivity implements SelectionTool.CoordinateConversions {
 
@@ -268,7 +265,6 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
     private int rulerHHeight, rulerVWidth;
     private int threshold;
     private int viewWidth, viewHeight;
-    private Intent fileToOpen;
     private Layer layer;
     private LayerListBinding layerList;
     private List<Long> palette;
@@ -672,11 +668,13 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         frame.layerAdapter.notifyItemChanged(frame.selectedLayerIndex, LayerAdapter.Payload.NAME);
     };
 
-    private final View.OnClickListener onAddSwatchButtonClickListener = v ->
+    private final View.OnClickListener onAddPaletteColorButtonClickListener = v ->
             new ColorPickerDialog(this, R.string.add,
                     (oldColor, newColor) -> {
                         palette.add(0, newColor);
                         colorAdapter.notifyItemInserted(0);
+                        activityMain.rvPalette.scrollToPosition(0);
+                        Settings.INST.savePalette(palette);
                     },
                     paint.getColorLong())
                     .show();
@@ -4039,7 +4037,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
             onPaintColorChanged();
         });
         colorAdapter.setOnItemLongClickListener((view, color) -> {
-            new ColorPickerDialog(this, R.string.swatch,
+            new ColorPickerDialog(this, R.string.color,
                     (oldColor, newColor) -> {
                         final int index = palette.indexOf(oldColor);
                         if (newColor != null) {
@@ -4049,6 +4047,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                             palette.remove(index);
                             colorAdapter.notifyItemRemoved(index);
                         }
+                        Settings.INST.savePalette(palette);
                     },
                     color, R.string.delete)
                     .show();
@@ -4196,7 +4195,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         activityMain.optionsBucketFill.bTolerance.setOnClickListener(onToleranceButtonClickListener);
         activityMain.optionsCloneStamp.bSrc.setOnClickListener(onCloneStampSrcButtonClickListener);
         activityMain.optionsMagicPaint.bTolerance.setOnClickListener(onToleranceButtonClickListener);
-        activityMain.bSwatchesAdd.setOnClickListener(onAddSwatchButtonClickListener);
+        activityMain.bPaletteAdd.setOnClickListener(onAddPaletteColorButtonClickListener);
         activityMain.optionsText.bDraw.setOnClickListener(v -> drawTextIntoImage());
         activityMain.optionsTransformer.btgTransformer.addOnButtonCheckedListener(onTransformerButtonCheckedListener);
         activityMain.optionsCloneStamp.cbAntiAlias.setOnCheckedChangeListener(onAntiAliasCBCheckedChangeListener);
@@ -4217,7 +4216,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         activityMain.canvas.flIv.setOnTouchListener(onIVTouchWithPencilListener);
         activityMain.canvas.ivRulerH.setOnTouchListener(onRulerHTouchListener);
         activityMain.canvas.ivRulerV.setOnTouchListener(onRulerVTouchListener);
-        activityMain.rvSwatches.setItemAnimator(new DefaultItemAnimator());
+        activityMain.rvPalette.setItemAnimator(new DefaultItemAnimator());
         activityMain.optionsGradient.sColors.setOnItemSelectedListener(onGradientColorsSpinnerItemSelectedListener);
         activityMain.optionsGradient.sType.setOnItemSelectedListener(onGradientTypeSpinnerItemSelectedListener);
         activityMain.tlProjectList.addOnTabSelectedListener(onProjTabSelectedListener);
@@ -4282,14 +4281,15 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
 
         chessboard = BitmapFactory.decodeResource(res, R.mipmap.chessboard);
         chessboardPaint.setShader(new BitmapShader(chessboard, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT));
-        fileToOpen = getIntent();
         projects = viewModel.getProjects();
 
-        palette = viewModel.getPalette();
+        palette = Settings.INST.palette();
         colorAdapter = new ColorAdapter(palette);
         initColorAdapter();
-        activityMain.rvSwatches.setAdapter(colorAdapter);
-        MovableItemAdapter.createItemMoveHelper(null).attachToRecyclerView(activityMain.rvSwatches);
+        activityMain.rvPalette.setAdapter(colorAdapter);
+        MovableItemAdapter
+                .createItemMoveHelper((fromPos, toPos) -> Settings.INST.savePalette(palette))
+                .attachToRecyclerView(activityMain.rvPalette);
 
         brush.setBrush(BitmapUtils.drawableToBitmap(this, R.drawable.brush_tip_shape));
 
@@ -4811,6 +4811,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         final Uri uri = intent.getData();
+        if (uri == null) return;
         @StringRes final int r = openFile(uri);
         if (r != 0) Snackbar.make(vContent, r, Snackbar.LENGTH_LONG).show();
     }

@@ -69,7 +69,7 @@
             </LinearLayout>
 
             <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rv_swatches"
+                android:id="@+id/rv_palette"
                 android:layout_width="wrap_content"
                 android:layout_height="0dp"
                 android:layout_weight="1"
@@ -79,7 +79,7 @@
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
             <Button
-                android:id="@+id/b_swatches_add"
+                android:id="@+id/b_palette_add"
                 style="?attr/materialIconButtonStyle"
                 android:layout_width="32dp"
                 android:layout_height="wrap_content"

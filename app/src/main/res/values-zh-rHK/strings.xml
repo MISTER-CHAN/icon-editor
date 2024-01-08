@@ -306,7 +306,6 @@
     <string name="stroke_width">筆劃寬度</string>
     <string name="subpixel">子像素</string>
     <string name="swap">交換</string>
-    <string name="swatch">顏色</string>
     <string name="sweep">掃描</string>
     <string name="synchronously_draw_image_and_ui">同步繪畫圖像與用戶介面</string>
     <string name="text">文本</string>

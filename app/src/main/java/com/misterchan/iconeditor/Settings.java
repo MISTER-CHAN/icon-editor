@@ -2,7 +2,12 @@ package com.misterchan.iconeditor;
 
 import android.content.SharedPreferences;
 
+import androidx.annotation.Nullable;
+
 import com.misterchan.iconeditor.ui.MainActivity;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class Settings {
     public static final Settings INST = new Settings();
@@ -21,6 +26,7 @@ public class Settings {
     public static final String KEY_LOC = "loc"; // Locale
     private static final String KEY_MT = "mt"; // Multithreaded
     private static final String KEY_NLL = "nll"; // Level of New Layer
+    private static final String KEY_PALETTE = "palette"; // Palette
     public static final String KEY_THEME = "theme"; // Theme
 
     private boolean autoSetHasAlpha = false;
@@ -29,6 +35,7 @@ public class Settings {
     private boolean newLayerLevel = false;
     private int colorIntCompRadix = 16;
     private int colorPicker = 0;
+    private List<Long> palette;
     public MainActivity mainActivity;
     private SharedPreferences preferences;
     private String colorIntCompFormat = FORMAT_02X;
@@ -64,8 +71,44 @@ public class Settings {
         return newLayerLevel;
     }
 
+    public List<Long> palette() {
+        return palette;
+    }
+
     public SharedPreferences pref() {
         return preferences;
+    }
+
+    private void loadPalette() {
+        String str = preferences.getString(KEY_PALETTE,
+                "\uFF00\u0000\u0000\u0000" + "\uFFFF\uFFFF\u0000\u0000" +
+                        "\uFFFF\u0000\u0000\u0000" + "\uFFFF\uFF00\u0000\u0000" +
+                        "\uFF00\uFF00\u0000\u0000" + "\uFF00\uFFFF\u0000\u0000" +
+                        "\uFF00\u00FF\u0000\u0000" + "\uFFFF\u00FF\u0000\u0000");
+
+        List<Long> palette = new ArrayList<>() {
+            @Override
+            public int indexOf(@Nullable Object o) {
+                for (int i = 0; i < size(); i++) if (o == get(i)) return i;
+                return -1;
+            }
+        };
+
+        for (int i = 0; i < str.length(); i += 4) {
+            palette.add((long) str.charAt(i) << 0x30 | (long) str.charAt(i + 1) << 0x20 | (long) str.charAt(i + 2) << 0x10 | (long) str.charAt(i + 3));
+        }
+
+        this.palette = palette;
+    }
+
+    public void savePalette(List<Long> palette) {
+        this.palette = palette;
+
+        StringBuilder builder = new StringBuilder();
+        for (long color : palette) {
+            builder.append((char) (color >> 0x30)).append((char) (color >> 0x20)).append((char) (color >> 0x10)).append((char) color);
+        }
+        preferences.edit().putString(KEY_PALETTE, builder.toString()).apply();
     }
 
     public void update(SharedPreferences preferences) {
@@ -78,6 +121,7 @@ public class Settings {
         update(KEY_HMS);
         update(KEY_MT);
         update(KEY_NLL);
+        update(KEY_PALETTE);
     }
 
     public void update(String key) {
@@ -108,6 +152,7 @@ public class Settings {
             }
             case KEY_MT -> mainActivity.setRunnableRunner(preferences.getBoolean(KEY_MT, true));
             case KEY_NLL -> newLayerLevel = "s".equals(preferences.getString(KEY_NLL, "t"));
+            case KEY_PALETTE -> loadPalette();
         }
     }
 }

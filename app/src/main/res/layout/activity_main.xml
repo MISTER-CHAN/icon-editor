@@ -289,7 +289,7 @@
                 android:background="?attr/colorOutline"
                 android:orientation="horizontal"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/rv_swatches"
+                app:layout_constraintEnd_toStartOf="@id/rv_palette"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent">
 
@@ -332,7 +332,7 @@
             </LinearLayout>
 
             <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rv_swatches"
+                android:id="@+id/rv_palette"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:fadingEdgeLength="16dp"
@@ -340,19 +340,19 @@
                 android:requiresFadingEdge="horizontal"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/b_swatches_add"
+                app:layout_constraintEnd_toStartOf="@id/b_palette_add"
                 app:layout_constraintStart_toEndOf="@id/ll_paint_colors"
                 app:layout_constraintTop_toTopOf="parent" />
 
             <Button
-                android:id="@+id/b_swatches_add"
+                android:id="@+id/b_palette_add"
                 style="?attr/materialIconButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="32dp"
                 app:icon="@drawable/ic_add"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@id/rv_swatches"
+                app:layout_constraintStart_toEndOf="@id/rv_palette"
                 app:layout_constraintTop_toTopOf="parent" />
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
