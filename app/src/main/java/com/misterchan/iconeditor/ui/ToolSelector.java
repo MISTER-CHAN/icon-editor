@@ -27,6 +27,10 @@ class ToolSelector {
         final TextView[] toolButtons;
         final ToolsBinding tools = ma.getBinding().tools;
         switch (buttonView.getId()) {
+            case R.id.b_translation, R.id.b_scale, R.id.b_rotation, R.id.b_poly, R.id.b_mesh -> {
+                menuGroupId = R.id.g_transformer;
+                toolButtons = new TextView[]{tools.bTranslation, tools.bScale, tools.bRotation, tools.bPoly, tools.bMesh};
+            }
             case R.id.b_eyedropper, R.id.b_ruler -> {
                 menuGroupId = R.id.g_eyedropper;
                 toolButtons = new TextView[]{tools.bEyedropper, tools.bRuler};

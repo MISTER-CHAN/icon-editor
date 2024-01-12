@@ -3,6 +3,7 @@
     <string name="about">关于</string>
     <string name="actual_pixels">实际像素</string>
     <string name="add">添加</string>
+    <string name="add_them_all">全部添加</string>
     <string name="align">对齐</string>
     <string name="all_layers">全部图层</string>
     <string name="alloc_sep_mem_when_previewing">当预览时为可见子集分配单独内存（更占用内存）</string>
@@ -210,8 +211,8 @@
     <string name="pencil">铅笔</string>
     <string name="pen_with_filter">滤光笔</string>
     <string name="performance">性能</string>
-    <string name="pick_in_hsv">以 HSV 拾取</string>
-    <string name="pick_rgb_colors_in_hsv">以 HSV 拾取 RGB 颜色</string>
+    <string name="pick_all">拾取所有</string>
+    <string name="picking">拾取中</string>
     <string name="pixel">像素</string>
     <string name="please_save_first">请先保存。</string>
     <string name="please_switch_orientation_to_vertical_to_get_all_functions">请切换至纵向以获取所有功能。</string>
@@ -262,6 +263,7 @@
     <string name="select_all">全选</string>
     <string name="select_by_color_range">选择颜色范围</string>
     <string name="selected_layers">选中图层级别</string>
+    <string name="selection_too_large">选区过大。</string>
     <string name="send_to_back">置底</string>
     <string name="serif">白体</string>
     <string name="set">设置</string>
@@ -310,6 +312,7 @@
     <string name="synchronously_draw_image_and_ui">同步绘画图像与用户界面</string>
     <string name="text">文本</string>
     <string name="theme">主题</string>
+    <string name="there_are_colors">选区中共有 %d 种颜色。</string>
     <string name="there_are_frames_invalid_which_are">有 %d 帧无效，其位置为\n%s\n\n可能原因为\n- 尺寸异于首帧\n- 配置为非 ARGB_8888</string>
     <string name="this_config_is_not_supported_yet">暂不支援该配置。</string>
     <string name="this_would_affect_size_of_memory_used">此项将影响内存使用量</string>

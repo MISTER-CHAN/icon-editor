@@ -74,6 +74,7 @@ import androidx.recyclerview.widget.DefaultItemAnimator;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButtonToggleGroup;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.android.material.sidesheet.SideSheetDialog;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
@@ -121,7 +122,6 @@ import com.misterchan.iconeditor.dialog.QualityManager;
 import com.misterchan.iconeditor.dialog.SliderDialog;
 import com.misterchan.iconeditor.listener.AfterTextChangedListener;
 import com.misterchan.iconeditor.listener.OnAdapterViewItemSelectedListener;
-import com.misterchan.iconeditor.listener.OnButtonCheckedListener;
 import com.misterchan.iconeditor.listener.OnSliderChangeListener;
 import com.misterchan.iconeditor.tool.BrushTool;
 import com.misterchan.iconeditor.tool.Gradient;
@@ -133,14 +133,18 @@ import com.misterchan.iconeditor.tool.TextTool;
 import com.misterchan.iconeditor.tool.Transformer;
 import com.misterchan.iconeditor.util.BitmapUtils;
 import com.misterchan.iconeditor.util.CanvasUtils;
+import com.misterchan.iconeditor.util.ColorUtils;
 import com.misterchan.iconeditor.util.FileUtils;
 import com.misterchan.iconeditor.util.RunnableRunnable;
 import com.waynejo.androidndkgif.GifDecoder;
 import com.waynejo.androidndkgif.GifEncoder;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
+import java.util.TreeSet;
 
 public class MainActivity extends AppCompatActivity implements SelectionTool.CoordinateConversions {
 
@@ -612,9 +616,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                     bounds.union(transformer.undoAction.rect());
                 }
                 recycleTransformer();
-                if (hasSelection
-                        && activityMain.tools.btgTools.getCheckedButtonId() == R.id.b_transformer
-                        && activityMain.optionsTransformer.btgTransformer.getCheckedButtonId() == R.id.b_mesh) {
+                if (hasSelection && activityMain.tools.btgTools.getCheckedButtonId() == R.id.b_mesh) {
                     createTransformerMesh();
                 }
                 optimizeSelection();
@@ -652,7 +654,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
     };
 
     private final CompoundButton.OnCheckedChangeListener onTransformerFilterCheckedChangeListener = (buttonView, isChecked) -> {
-        if (activityMain.optionsTransformer.btgTransformer.getCheckedButtonId() == R.id.b_mesh && !transformer.isRecycled() && transformer.mesh != null) {
+        if (activityMain.tools.btgTools.getCheckedButtonId() == R.id.b_mesh && !transformer.isRecycled() && transformer.mesh != null) {
             transformer.transformMesh(isChecked, antiAlias);
             drawBitmapOntoView(selection.r, true);
         }
@@ -678,6 +680,66 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                     },
                     paint.getColorLong())
                     .show();
+
+    @SuppressLint("NonConstantResourceId")
+    private final PopupMenu.OnMenuItemClickListener onPaletteOptionsItemSelectedListener = item -> {
+        switch (item.getItemId()) {
+            default -> {
+                return false;
+            }
+            case R.id.i_add ->
+                    onAddPaletteColorButtonClickListener.onClick(activityMain.bPaletteAdd);
+            case R.id.i_pick_all -> {
+                if (!hasSelection) selectAll();
+                if (selection.r.width() * selection.r.height() >= 0x1000000) {
+                    Snackbar.make(vContent, R.string.selection_too_large, Snackbar.LENGTH_LONG).show();
+                    break;
+                }
+                final AlertDialog dialog = new MaterialAlertDialogBuilder(this)
+                        .setTitle(R.string.picking)
+                        .setView(R.layout.progress_indicator)
+                        .setCancelable(false)
+                        .show();
+                final LinearProgressIndicator pi = dialog.findViewById(R.id.progress_indicator);
+                new Thread(() -> {
+                    final int[] pixels = BitmapUtils.getPixels(bitmap, selection.r);
+                    runOnUiThread(() -> pi.setMax(pixels.length));
+                    final Collection<Long> colorSet = BitmapUtils.getColorSet(pixels,
+                            progress -> runOnUiThread(() -> pi.setProgressCompat(progress, true)));
+                    runOnUiThread(() -> {
+                        dialog.dismiss();
+                        new MaterialAlertDialogBuilder(this)
+                                .setTitle(R.string.pick_all)
+                                .setMessage(getString(R.string.there_are_colors, colorSet.size()))
+                                .setPositiveButton(R.string.add_them_all, (d, which) -> {
+                                    palette.addAll(0, colorSet);
+                                    Settings.INST.savePalette(palette);
+                                    colorAdapter.notifyItemRangeRemoved(0, palette.size());
+                                })
+                                .setNegativeButton(R.string.cancel, null)
+                                .show();
+                    });
+                }).start();
+            }
+            case R.id.i_clear -> {
+                final int count = palette.size();
+                palette.clear();
+                colorAdapter.notifyItemRangeRemoved(0, count);
+                Settings.INST.savePalette(palette);
+            }
+        }
+        return true;
+    };
+
+    private final View.OnLongClickListener onAddPaletteColorButtonLongClickListener = v -> {
+        final PopupMenu popupMenu = new PopupMenu(this, v);
+        final Menu menu = popupMenu.getMenu();
+        popupMenu.getMenuInflater().inflate(R.menu.palette, menu);
+        menu.setGroupDividerEnabled(true);
+        popupMenu.setOnMenuItemClickListener(onPaletteOptionsItemSelectedListener);
+        popupMenu.show();
+        return true;
+    };
 
     private final View.OnClickListener onBackgroundColorClickListener = v ->
             new ColorPickerDialog(this, R.string.background_color,
@@ -2369,29 +2431,22 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
             if (!hasSelection) return;
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN -> {
-                    if (selection.r.isEmpty() || transformer.mesh == null) {
-                        break;
-                    }
-                    if (transformer.isRecycled()) {
-                        createTransformer();
-                    }
+                    if (selection.r.isEmpty() || transformer.mesh == null) break;
+                    if (transformer.isRecycled()) createTransformer();
                     final float rx = toBitmapXExact(event.getX()) - selection.r.left, ry = toBitmapYExact(event.getY()) - selection.r.top;
                     lastVertIndex = Math.round(ry / selection.r.height() * transformer.mesh.height) * (transformer.mesh.width + 1)
                             + Math.round(rx / selection.r.width() * transformer.mesh.width);
                 }
                 case MotionEvent.ACTION_MOVE -> {
-                    if (transformer.isRecycled() || transformer.mesh == null) {
-                        break;
-                    }
+                    if (transformer.isRecycled() || transformer.mesh == null) break;
+                    if (0 > lastVertIndex || lastVertIndex >= transformer.mesh.verts.length) break;
                     final float rx = toBitmapXExact(event.getX()) - selection.r.left, ry = toBitmapYExact(event.getY()) - selection.r.top;
                     transformer.mesh.verts[lastVertIndex * 2] = rx;
                     transformer.mesh.verts[lastVertIndex * 2 + 1] = ry;
                     drawSelectionOntoView();
                 }
                 case MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                    if (transformer.isRecycled() || transformer.mesh == null) {
-                        break;
-                    }
+                    if (transformer.isRecycled() || transformer.mesh == null) break;
                     transformer.transformMesh(activityMain.optionsTransformer.cbFilter.isChecked(), antiAlias);
                     drawBitmapOntoView(selection.r, true);
                 }
@@ -2759,9 +2814,11 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                     }
                 }
                 case MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                    drawBitmapOntoView(lastRect, true);
-                    if (!transformer.isRecycled()) drawSelectionOntoView(false);
-                    lastRect = null;
+                    if (hasSelection) {
+                        drawBitmapOntoView(lastRect, true);
+                        if (!transformer.isRecycled()) drawSelectionOntoView(false);
+                        lastRect = null;
+                    }
                 }
             }
         }
@@ -2848,7 +2905,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         }
     };
 
-    @SuppressLint("NonConstantResourceId")
+    @SuppressLint({"NonConstantResourceId", "ClickableViewAccessibility"})
     private final MaterialButtonToggleGroup.OnButtonCheckedListener onToolButtonCheckedListener = (group, checkedId, isChecked) -> {
         switch (checkedId) {
             case R.id.b_brush -> {
@@ -2997,48 +3054,51 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                     drawTextIntoImage(false);
                 }
             }
-            case R.id.b_transformer -> {
+            case R.id.b_translation, R.id.b_scale, R.id.b_rotation, R.id.b_poly, R.id.b_mesh -> {
+                final boolean isTransformerButtonChecked = switch (activityMain.tools.btgTools.getCheckedButtonId()) {
+                    case R.id.b_translation, R.id.b_scale, R.id.b_rotation, R.id.b_poly, R.id.b_mesh ->
+                            true;
+                    default -> false;
+                };
                 if (isChecked) {
-                    onToolChanged(onIVTouchWithTransformerListener, activityMain.svOptionsTransformer);
-                    selector.setColor(Color.BLUE);
-                    if (hasSelection && activityMain.optionsTransformer.btgTransformer.getCheckedButtonId() == R.id.b_mesh) {
-                        createTransformerMesh();
+                    onIVTouchWithTransformerListener = switch (checkedId) {
+                        case R.id.b_translation -> onIVTouchWithTTListener;
+                        case R.id.b_scale -> onIVTouchWithSTListener;
+                        case R.id.b_rotation -> onIVTouchWithRTListener;
+                        case R.id.b_poly -> onIVTouchWithPTListener;
+                        case R.id.b_mesh -> onIVTouchWithMTListener;
+                        default -> null;
+                    };
+                }
+                if (isTransformerButtonChecked && activityMain.svOptionsTransformer.getVisibility() == View.VISIBLE) {
+                    if (isChecked) {
+                        activityMain.optionsTransformer.cbFilter.setVisibility(checkedId != R.id.b_translation ? View.VISIBLE : View.GONE);
+                        activityMain.optionsTransformer.cbLar.setVisibility(checkedId == R.id.b_scale ? View.VISIBLE : View.GONE);
+                        activityMain.optionsTransformer.llMesh.setVisibility(checkedId == R.id.b_mesh ? View.VISIBLE : View.GONE);
+                        if (hasSelection) {
+                            transformer.apply();
+                            if (checkedId == R.id.b_mesh) createTransformerMesh();
+                            else transformer.mesh = null;
+                            drawSelectionOntoView();
+                        }
+                        activityMain.canvas.flIv.setOnTouchListener(onIVTouchWithTransformerListener);
                     }
-                    drawSelectionOntoView();
                 } else {
-                    drawTransformerIntoImage();
-                    transformer.mesh = null;
-                    selection.marqBoundBeingDragged = null;
-                    selector.setColor(Color.DKGRAY);
-                    drawSelectionOntoView();
+                    if (isChecked) {
+                        onToolChanged(onIVTouchWithTransformerListener, activityMain.svOptionsTransformer);
+                        selector.setColor(Color.BLUE);
+                        if (hasSelection && checkedId == R.id.b_mesh) createTransformerMesh();
+                        drawSelectionOntoView();
+                    } else {
+                        drawTransformerIntoImage();
+                        transformer.mesh = null;
+                        selection.marqBoundBeingDragged = null;
+                        selector.setColor(Color.DKGRAY);
+                        drawSelectionOntoView();
+                    }
                 }
             }
         }
-    };
-
-    @SuppressLint({"ClickableViewAccessibility", "NonConstantResourceId"})
-    private final MaterialButtonToggleGroup.OnButtonCheckedListener onTransformerButtonCheckedListener = (OnButtonCheckedListener) (group, checkedId) -> {
-        activityMain.optionsTransformer.cbFilter.setVisibility(checkedId != R.id.b_translation ? View.VISIBLE : View.GONE);
-        activityMain.optionsTransformer.cbLar.setVisibility(checkedId == R.id.b_scale ? View.VISIBLE : View.GONE);
-        activityMain.optionsTransformer.llMesh.setVisibility(checkedId == R.id.b_mesh ? View.VISIBLE : View.GONE);
-        if (hasSelection) {
-            transformer.apply();
-            if (checkedId == R.id.b_mesh) {
-                createTransformerMesh();
-            } else {
-                transformer.mesh = null;
-            }
-            drawSelectionOntoView();
-        }
-        onIVTouchWithTransformerListener = switch (checkedId) {
-            case R.id.b_translation -> onIVTouchWithTTListener;
-            case R.id.b_scale -> onIVTouchWithSTListener;
-            case R.id.b_rotation -> onIVTouchWithRTListener;
-            case R.id.b_poly -> onIVTouchWithPTListener;
-            case R.id.b_mesh -> onIVTouchWithMTListener;
-            default -> null;
-        };
-        activityMain.canvas.flIv.setOnTouchListener(onIVTouchWithTransformerListener);
     };
 
     @SuppressLint("ClickableViewAccessibility")
@@ -3912,8 +3972,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         recycleTransformer();
         drawBitmapOntoView(selection.r, true);
         optimizeSelection();
-        if (activityMain.tools.btgTools.getCheckedButtonId() == R.id.b_transformer
-                && activityMain.optionsTransformer.btgTransformer.getCheckedButtonId() == R.id.b_mesh) {
+        if (activityMain.tools.btgTools.getCheckedButtonId() == R.id.b_mesh) {
             createTransformerMesh();
         }
         drawSelectionOntoView();
@@ -4196,8 +4255,8 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         activityMain.optionsCloneStamp.bSrc.setOnClickListener(onCloneStampSrcButtonClickListener);
         activityMain.optionsMagicPaint.bTolerance.setOnClickListener(onToleranceButtonClickListener);
         activityMain.bPaletteAdd.setOnClickListener(onAddPaletteColorButtonClickListener);
+        activityMain.bPaletteAdd.setOnLongClickListener(onAddPaletteColorButtonLongClickListener);
         activityMain.optionsText.bDraw.setOnClickListener(v -> drawTextIntoImage());
-        activityMain.optionsTransformer.btgTransformer.addOnButtonCheckedListener(onTransformerButtonCheckedListener);
         activityMain.optionsCloneStamp.cbAntiAlias.setOnCheckedChangeListener(onAntiAliasCBCheckedChangeListener);
         activityMain.optionsEraser.cbAntiAlias.setOnCheckedChangeListener((buttonView, isChecked) -> eraser.setAntiAlias(isChecked));
         activityMain.optionsGradientLine.cbAntiAlias.setOnCheckedChangeListener(onAntiAliasCBCheckedChangeListener);
@@ -4265,10 +4324,15 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
             activityMain.tools.bLine.setOnLongClickListener(onToolLongClickListener);
             activityMain.tools.bMagicEraser.setOnLongClickListener(onToolLongClickListener);
             activityMain.tools.bMagicPaint.setOnLongClickListener(onToolLongClickListener);
+            activityMain.tools.bMesh.setOnLongClickListener(onToolLongClickListener);
             activityMain.tools.bOval.setOnLongClickListener(onToolLongClickListener);
             activityMain.tools.bPencil.setOnLongClickListener(onToolLongClickListener);
+            activityMain.tools.bPoly.setOnLongClickListener(onToolLongClickListener);
             activityMain.tools.bRect.setOnLongClickListener(onToolLongClickListener);
+            activityMain.tools.bRotation.setOnLongClickListener(onToolLongClickListener);
             activityMain.tools.bRuler.setOnLongClickListener(onToolLongClickListener);
+            activityMain.tools.bScale.setOnLongClickListener(onToolLongClickListener);
+            activityMain.tools.bTranslation.setOnLongClickListener(onToolLongClickListener);
         }
 
         frameList.rvFrameList.setItemAnimator(new DefaultItemAnimator());
@@ -4902,8 +4966,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
             case R.id.i_deselect -> {
                 drawFloatingLayersIntoImage();
                 hasSelection = false;
-                if (activityMain.tools.btgTools.getCheckedButtonId() == R.id.b_transformer
-                        && activityMain.optionsTransformer.btgTransformer.getCheckedButtonId() == R.id.b_mesh) {
+                if (activityMain.tools.btgTools.getCheckedButtonId() == R.id.b_mesh) {
                     transformer.mesh = null;
                 }
                 eraseBitmapAndInvalidateView(selectionBitmap, activityMain.canvas.ivSelection);
@@ -4934,7 +4997,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                             ? BitmapUtils.createBitmap(bitmap, selection.r.left, selection.r.top, selection.r.width(), selection.r.height())
                             : BitmapUtils.createBitmap(bitmap);
                     createTransformer(bm);
-                    activityMain.tools.btgTools.check(R.id.b_transformer);
+                    activityMain.tools.btgTools.check(R.id.b_translation);
                     drawSelectionOntoView();
                 } else {
                     saveStepBackToHistory(selection.r);
@@ -5206,7 +5269,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                 selection.r.right = selection.r.left + clipboard.getWidth();
                 selection.r.bottom = selection.r.top + clipboard.getHeight();
                 createTransformer(BitmapUtils.createBitmap(clipboard));
-                activityMain.tools.btgTools.check(R.id.b_transformer);
+                activityMain.tools.btgTools.check(R.id.b_translation);
                 drawBitmapOntoView(selection.r, true);
                 drawSelectionOntoView();
             }
@@ -5219,8 +5282,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
             case R.id.i_select_all -> {
                 selectAll();
                 hasSelection = true;
-                if (activityMain.tools.btgTools.getCheckedButtonId() == R.id.b_transformer
-                        && activityMain.optionsTransformer.btgTransformer.getCheckedButtonId() == R.id.b_mesh) {
+                if (activityMain.tools.btgTools.getCheckedButtonId() == R.id.b_mesh) {
                     createTransformerMesh();
                 }
                 drawSelectionOntoView();
@@ -5377,9 +5439,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
 
             miHasAlpha.setChecked(bitmap.hasAlpha());
             recycleTransformer();
-            if (hasSelection
-                    && activityMain.tools.btgTools.getCheckedButtonId() == R.id.b_transformer
-                    && activityMain.optionsTransformer.btgTransformer.getCheckedButtonId() == R.id.b_mesh) {
+            if (hasSelection && activityMain.tools.btgTools.getCheckedButtonId() == R.id.b_mesh) {
                 createTransformerMesh();
             } else if (magEr.b != null && magEr.f != null) {
                 drawCrossOntoView(magEr.b.x, magEr.b.y, true);

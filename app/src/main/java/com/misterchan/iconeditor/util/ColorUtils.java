@@ -37,7 +37,7 @@ public class ColorUtils {
         return dst & Color.BLACK | rgb(red, green, blue);
     }
 
-    @Size(min = 3)
+    @Size(3)
     public static void colorToHSL(@ColorInt int color, @Size(min = 3) float[] hsl) {
         final float r = Color.red(color) / 255.0f, g = Color.green(color) / 255.0f, b = Color.blue(color) / 255.0f;
         final float max = Math.max(Math.max(r, g), b), min = Math.min(Math.min(r, g), b);
@@ -59,7 +59,7 @@ public class ColorUtils {
     /**
      * Override the method for a faster conversion.
      */
-    @Size(min = 3)
+    @Size(3)
     public static void colorToHSV(@ColorInt int color, @Size(min = 3) float[] hsv) {
         final float r = Color.red(color) / 255.0f, g = Color.green(color) / 255.0f, b = Color.blue(color) / 255.0f;
         final float max = Math.max(Math.max(r, g), b), min = Math.min(Math.min(r, g), b);
@@ -93,6 +93,11 @@ public class ColorUtils {
 
         return (int) (a * 255.0f + 0.5f) << 24
                 | (int) (c[0] * 255.0f + 0.5f) << 16 | (int) (c[1] * 255.0f + 0.5f) << 8 | (int) (c[2] * 255.0f + 0.5f);
+    }
+
+    public static double distance(@ColorInt int color1, @ColorInt int color2) {
+        final int dr = Color.red(color1) - Color.red(color2), dg = Color.green(color1) - Color.green(color2), db = Color.blue(color1) - Color.blue(color2);
+        return dr * dr + dg * dg + db * db;
     }
 
     @FloatRange(from = 0.0f, to = 360.0f, toInclusive = false)

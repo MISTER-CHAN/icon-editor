@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:id="@+id/g_add">
+        <item
+            android:id="@+id/i_add"
+            android:icon="@drawable/ic_add"
+            android:iconTint="?attr/colorOnSurfaceVariant"
+            android:title="@string/add" />
+        <item
+            android:id="@+id/i_pick_all"
+            android:title="@string/pick_all" />
+    </group>
+    <group android:id="@+id/g_delete">
+        <item
+            android:id="@+id/i_clear"
+            android:icon="@drawable/ic_delete"
+            android:iconTint="?attr/colorOnSurfaceVariant"
+            android:title="@string/clear" />
+    </group>
+</menu>

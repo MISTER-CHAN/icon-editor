@@ -24,9 +24,13 @@ import androidx.core.content.ContextCompat;
 import com.misterchan.iconeditor.ColorRange;
 import com.misterchan.iconeditor.Settings;
 
+import java.util.Collection;
 import java.util.LinkedList;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.Random;
+import java.util.TreeSet;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class BitmapUtils {
@@ -436,6 +440,23 @@ public class BitmapUtils {
                         paint);
             }
         }
+    }
+
+    public static Collection<Long> getColorSet(@ColorInt int[] pixels, Consumer<Integer> onProgressChangeListener) {
+        final float[] hsl1 = new float[3], hsl2 = new float[3];
+        final Collection<Long> set = new TreeSet<>((c1, c2) -> {
+            if (Objects.equals(c1, c2)) return 0;
+            ColorUtils.colorToHSL((int) (c1 >>> 0x20), hsl1);
+            ColorUtils.colorToHSL((int) (c2 >>> 0x20), hsl2);
+            return (int) Math.signum(((int) (hsl1[1] + 0.9f) * 3636012 + (int) (hsl1[0] / 30f) * 303001 + (int) (hsl1[2] * 100f) * 3030 + (int) (hsl1[0] % 30f) * 101 + (int) (hsl1[1] * 100f)) - ((int) (hsl2[1] + 0.9f) * 3636012 + (int) (hsl2[0] / 30f) * 303001 + (int) (hsl2[2] * 100f) * 3030 + (int) (hsl2[0] % 30f) * 101 + (int) (hsl2[1] * 100f)));
+        });
+        for (int i = 0; i < pixels.length; ++i) {
+            set.add((long) pixels[i] << 0x20);
+            if (i % 0x100 == 0) {
+                onProgressChangeListener.accept(i + 1);
+            }
+        }
+        return set;
     }
 
     @ColorInt

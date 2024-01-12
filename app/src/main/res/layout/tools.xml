@@ -16,11 +16,53 @@
         android:text="@string/select" />
 
     <Button
-        android:id="@+id/b_transformer"
-        style="@style/Widget.IconEditor.Button.OutlinedButton.Dense"
+        android:id="@+id/b_translation"
+        style="@style/Widget.IconEditor.Button.OutlinedButton.Dense.Icon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/transform" />
+        android:text="@string/translate"
+        app:icon="@drawable/ic_expand_more"
+        app:iconTint="?attr/colorOnSurfaceVariant" />
+
+    <Button
+        android:id="@+id/b_scale"
+        style="@style/Widget.IconEditor.Button.OutlinedButton.Dense.Icon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/scale"
+        android:visibility="gone"
+        app:icon="@drawable/ic_expand_more"
+        app:iconTint="?attr/colorOnSurfaceVariant" />
+
+    <Button
+        android:id="@+id/b_rotation"
+        style="@style/Widget.IconEditor.Button.OutlinedButton.Dense.Icon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/rotate"
+        android:visibility="gone"
+        app:icon="@drawable/ic_expand_more"
+        app:iconTint="?attr/colorOnSurfaceVariant" />
+
+    <Button
+        android:id="@+id/b_poly"
+        style="@style/Widget.IconEditor.Button.OutlinedButton.Dense.Icon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/poly"
+        android:visibility="gone"
+        app:icon="@drawable/ic_expand_more"
+        app:iconTint="?attr/colorOnSurfaceVariant" />
+
+    <Button
+        android:id="@+id/b_mesh"
+        style="@style/Widget.IconEditor.Button.OutlinedButton.Dense.Icon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/mesh"
+        android:visibility="gone"
+        app:icon="@drawable/ic_expand_more"
+        app:iconTint="?attr/colorOnSurfaceVariant" />
 
     <Button
         android:id="@+id/b_eyedropper"

@@ -106,7 +106,7 @@ public class Settings {
 
         StringBuilder builder = new StringBuilder();
         for (long color : palette) {
-            builder.append((char) (color >> 0x30)).append((char) (color >> 0x20)).append((char) (color >> 0x10)).append((char) color);
+            builder.append((char) (color >>> 0x30)).append((char) (color >>> 0x20)).append((char) (color >>> 0x10)).append((char) color);
         }
         preferences.edit().putString(KEY_PALETTE, builder.toString()).apply();
     }

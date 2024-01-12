@@ -5,6 +5,7 @@
     <string name="actual_pixels">Actual Pixels</string>
     <string name="add">Add</string>
     <string name="add_symbol" translatable="false">+</string>
+    <string name="add_them_all">Add them all</string>
     <string name="align">Align</string>
     <string name="all_layers">All Layers</string>
     <string name="alloc_sep_mem_when_previewing">Allocate separate memory for visible subset when previewing (Takes up more memory)</string>
@@ -239,8 +240,8 @@
     <string name="pen_with_filter">Filter</string>
     <string name="percent" translatable="false">%</string>
     <string name="performance">Performance</string>
-    <string name="pick_in_hsv">Pick in HSV</string>
-    <string name="pick_rgb_colors_in_hsv">Pick RGB colors in HSV</string>
+    <string name="pick_all">Pick All</string>
+    <string name="picking">Picking</string>
     <string name="pixel">Pixel</string>
     <string name="please_save_first">Please save first.</string>
     <string name="please_switch_orientation_to_vertical_to_get_all_functions">Please switch the orientation to vertical to get all functions.</string>
@@ -294,6 +295,7 @@
     <string name="select_all">Select All</string>
     <string name="select_by_color_range">Select by Color Range</string>
     <string name="selected_layers">Selected Layer\'s</string>
+    <string name="selection_too_large">The selection is too large.</string>
     <string name="send_to_back">Send to Back</string>
     <string name="serif">Serif</string>
     <string name="set">Set</string>
@@ -348,6 +350,7 @@
     <string name="synchronously_draw_image_and_ui">Synchronously draw image and U.I.</string>
     <string name="text">Text</string>
     <string name="theme">Theme</string>
+    <string name="there_are_colors">There are a total of %d colors within the selection.</string>
     <string name="there_are_frames_invalid_which_are">There are %d frames invalid whose positions are\n%s\n\nPossible reasons are\n- The sizes differ from the first frame\'s\n- The configs are not ARGB_8888</string>
     <string name="this_config_is_not_supported_yet">This config is not supported yet.</string>
     <string name="this_would_affect_size_of_memory_used">This would affect the size of memory used</string>
