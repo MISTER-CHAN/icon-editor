@@ -734,8 +734,9 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
     private final View.OnLongClickListener onAddPaletteColorButtonLongClickListener = v -> {
         final PopupMenu popupMenu = new PopupMenu(this, v);
         final Menu menu = popupMenu.getMenu();
+        MenuCompat.setGroupDividerEnabled(menu, true);
         popupMenu.getMenuInflater().inflate(R.menu.palette, menu);
-        menu.setGroupDividerEnabled(true);
+        popupMenu.setForceShowIcon(true);
         popupMenu.setOnMenuItemClickListener(onPaletteOptionsItemSelectedListener);
         popupMenu.show();
         return true;

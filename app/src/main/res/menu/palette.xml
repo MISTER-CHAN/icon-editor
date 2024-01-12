@@ -8,6 +8,7 @@
             android:title="@string/add" />
         <item
             android:id="@+id/i_pick_all"
+            android:icon="@drawable/ic_void"
             android:title="@string/pick_all" />
     </group>
     <group android:id="@+id/g_delete">
