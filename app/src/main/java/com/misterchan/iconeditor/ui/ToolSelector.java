@@ -1,24 +1,39 @@
 package com.misterchan.iconeditor.ui;
 
 import android.annotation.SuppressLint;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import androidx.annotation.IdRes;
-import androidx.appcompat.app.AlertDialog;
-import androidx.core.view.MenuCompat;
 
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.misterchan.iconeditor.R;
 import com.misterchan.iconeditor.databinding.ToolsBinding;
 
 class ToolSelector {
+    @IdRes
+    private static final int[] B_TRANSFORMERS = new int[]{
+            R.id.b_translation,
+            R.id.b_scale,
+            R.id.b_rotation,
+            R.id.b_poly,
+            R.id.b_mesh
+    };
+
     private ToolSelector() {
+    }
+
+    public static void selectTransformer(ToolsBinding tools) {
+        final View[] vTools = new View[]{tools.bTranslation, tools.bScale, tools.bRotation, tools.bPoly, tools.bMesh};
+
+        for (int i = 0; i < vTools.length; ++i) {
+            if (vTools[i].getVisibility() == View.VISIBLE) {
+                tools.btgTools.check(B_TRANSFORMERS[i]);
+                return;
+            }
+        }
     }
 
     @SuppressLint("NonConstantResourceId")

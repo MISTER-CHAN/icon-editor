@@ -4,20 +4,17 @@
     <string name="about">About</string>
     <string name="actual_pixels">Actual Pixels</string>
     <string name="add">Add</string>
+    <string name="add_all">Add All</string>
+    <string name="add_all_colors_in_layer">Add all of the colors in current layer</string>
     <string name="add_symbol" translatable="false">+</string>
     <string name="add_them_all">Add them all</string>
     <string name="align">Align</string>
     <string name="all_layers">All Layers</string>
-    <string name="alloc_sep_mem_when_previewing">Allocate separate memory for visible subset when previewing (Takes up more memory)</string>
     <string name="alpha" translatable="false">Alpha</string>
     <string name="anti_alias">Anti-alias</string>
     <string name="app_name">Icon Editor</string>
     <string name="app_name_abbrev" translatable="false">I.E.</string>
-    <string name="apply_to_each_frame">Apply to Each Frame</string>
-    <string name="argb_color_picker">ARGB Color Picker</string>
-    <string name="around_r">Around R</string>
-    <string name="around_g">Around G</string>
-    <string name="around_b">Around B</string>
+    <string name="apply_to_each_frame">Apply to each frame</string>
     <string name="asynchronously_draw_image_and_ui">Asynchronously draw image and U.I.</string>
     <string name="attaching_eraser">Attaching Eraser</string>
     <string name="author">Author</string>
@@ -27,7 +24,7 @@
     <string name="b" translatable="false">B</string>
     <string name="b_" translatable="false">b*</string>
     <string name="background">Background</string>
-    <string name="background_color">Background Color</string>
+    <string name="background_color">Background color</string>
     <string name="below_background">Below Background</string>
     <string name="bitmap_opaque_can_take_faster_drawing_case">A bitmap that is opaque can take a faster drawing case</string>
     <string name="blend_mode">Blend Mode</string>
@@ -62,7 +59,6 @@
     <string name="color_filter">Color Filter</string>
     <string name="color_picker">Color Picker</string>
     <string name="color_range">Color Range</string>
-    <string name="color_replace">Color Replace</string>
     <string name="color_representation">Color Representation</string>
     <string name="color_space">Color Space</string>
     <string name="color_type">Color Type</string>
@@ -80,7 +76,6 @@
     <string name="cursor">Cursor</string>
     <string name="curves">Curves</string>
     <string name="custom">Custom</string>
-    <string name="custom_color_filter">Custom Color Filter</string>
     <string name="cut">Cut</string>
     <string name="dec">Decimal</string>
     <string name="decal">Decal</string>
@@ -125,7 +120,7 @@
     <string name="fit_on_screen">Fit on Screen</string>
     <string name="flip">Flip</string>
     <string name="float_">Float</string>
-    <string name="foreground_color">Foreground Color</string>
+    <string name="foreground_color">Foreground color</string>
     <string name="forty_eight" translatable="false">48</string>
     <string name="frame">Frame</string>
     <string name="frames">Frames</string>
@@ -204,7 +199,6 @@
     <string name="min">Min</string>
     <string name="mirror">Mirror</string>
     <string name="mister_chan" translatable="false">MISTER_CHAN</string>
-    <string name="modify_pixels_whether_visible_or_not_when_previewing">Modify pixels whether they are visible or not when previewing (Slower)</string>
     <string name="monospace">Monospace</string>
     <string name="more">More</string>
     <string name="more_color_pickers">More Color Pickers</string>
@@ -237,11 +231,8 @@
     <string name="patch">Patch</string>
     <string name="path">Path</string>
     <string name="pencil">Pencil</string>
-    <string name="pen_with_filter">Filter</string>
     <string name="percent" translatable="false">%</string>
     <string name="performance">Performance</string>
-    <string name="pick_all">Pick All</string>
-    <string name="picking">Picking</string>
     <string name="pixel">Pixel</string>
     <string name="please_save_first">Please save first.</string>
     <string name="please_switch_orientation_to_vertical_to_get_all_functions">Please switch the orientation to vertical to get all functions.</string>
@@ -277,11 +268,9 @@
     <string name="rgb_outputs">RGB Outputs</string>
     <string name="right">Right</string>
     <string name="rotate">Rotate</string>
-    <string name="rotate_around_r">Rotate Around R</string>
-    <string name="rotate_around_g">Rotate Around G</string>
-    <string name="rotate_around_b">Rotate Around B</string>
     <string name="ruler">Ruler</string>
     <string name="s" translatable="false">S</string>
+    <string name="sampling">Sampling</string>
     <string name="sans_serif">Sans-serif</string>
     <string name="saturation">Saturation</string>
     <string name="save">Save</string>
@@ -308,7 +297,6 @@
     <string name="simple_fast">Simple Fast</string>
     <string name="size">Size</string>
     <string name="slope">Slope</string>
-    <string name="soft_brush">Soft Brush</string>
     <string name="softness">Softness</string>
     <string name="source">Source</string>
     <string name="spacing">Spacing</string>
@@ -356,7 +344,7 @@
     <string name="this_would_affect_size_of_memory_used">This would affect the size of memory used</string>
     <string name="threshold">Threshold</string>
     <string name="timeline">Timeline</string>
-    <string name="tip_shape">Tip Shape</string>
+    <string name="tip_shape">Tip shape</string>
     <string name="to">To</string>
     <string name="tolerance">Tolerance</string>
     <string name="tool_options">Tool Options</string>

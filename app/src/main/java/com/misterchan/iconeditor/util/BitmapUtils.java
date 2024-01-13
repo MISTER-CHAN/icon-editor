@@ -448,7 +448,13 @@ public class BitmapUtils {
             if (Objects.equals(c1, c2)) return 0;
             ColorUtils.colorToHSL((int) (c1 >>> 0x20), hsl1);
             ColorUtils.colorToHSL((int) (c2 >>> 0x20), hsl2);
-            return (int) Math.signum(((int) (hsl1[1] + 0.9f) * 3636012 + (int) (hsl1[0] / 30f) * 303001 + (int) (hsl1[2] * 100f) * 3030 + (int) (hsl1[0] % 30f) * 101 + (int) (hsl1[1] * 100f)) - ((int) (hsl2[1] + 0.9f) * 3636012 + (int) (hsl2[0] / 30f) * 303001 + (int) (hsl2[2] * 100f) * 3030 + (int) (hsl2[0] % 30f) * 101 + (int) (hsl2[1] * 100f)));
+            if (hsl1[1] < 0.1f ^ hsl2[1] < 0.1f) return (int) Math.signum(hsl1[1] - hsl2[1]);
+            if (Math.floor(hsl1[0] / 30.0f) != Math.floor(hsl2[0] / 30.0f))
+                return (int) Math.signum(hsl1[0] - hsl2[0]);
+            if (hsl1[2] != hsl2[2]) return (int) Math.signum(hsl1[2] - hsl2[2]);
+            if (hsl1[0] % 30.0f != hsl2[0] % 30.0f) return (int) Math.signum(hsl1[0] - hsl2[0]);
+            if (hsl1[1] != hsl2[1]) return (int) Math.signum(hsl1[1] - hsl2[1]);
+            return (int) (c1 >>> 0x3E) - (int) (c2 >>> 0x3E);
         });
         for (int i = 0; i < pixels.length; ++i) {
             set.add((long) pixels[i] << 0x20);

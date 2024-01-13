@@ -133,7 +133,6 @@ import com.misterchan.iconeditor.tool.TextTool;
 import com.misterchan.iconeditor.tool.Transformer;
 import com.misterchan.iconeditor.util.BitmapUtils;
 import com.misterchan.iconeditor.util.CanvasUtils;
-import com.misterchan.iconeditor.util.ColorUtils;
 import com.misterchan.iconeditor.util.FileUtils;
 import com.misterchan.iconeditor.util.RunnableRunnable;
 import com.waynejo.androidndkgif.GifDecoder;
@@ -143,8 +142,6 @@ import java.io.File;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
-import java.util.TreeSet;
 
 public class MainActivity extends AppCompatActivity implements SelectionTool.CoordinateConversions {
 
@@ -689,14 +686,14 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
             }
             case R.id.i_add ->
                     onAddPaletteColorButtonClickListener.onClick(activityMain.bPaletteAdd);
-            case R.id.i_pick_all -> {
+            case R.id.i_add_all -> {
                 if (!hasSelection) selectAll();
                 if (selection.r.width() * selection.r.height() >= 0x1000000) {
                     Snackbar.make(vContent, R.string.selection_too_large, Snackbar.LENGTH_LONG).show();
                     break;
                 }
                 final AlertDialog dialog = new MaterialAlertDialogBuilder(this)
-                        .setTitle(R.string.picking)
+                        .setTitle(R.string.sampling)
                         .setView(R.layout.progress_indicator)
                         .setCancelable(false)
                         .show();
@@ -709,7 +706,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                     runOnUiThread(() -> {
                         dialog.dismiss();
                         new MaterialAlertDialogBuilder(this)
-                                .setTitle(R.string.pick_all)
+                                .setTitle(R.string.add_all_colors_in_layer)
                                 .setMessage(getString(R.string.there_are_colors, colorSet.size()))
                                 .setPositiveButton(R.string.add_them_all, (d, which) -> {
                                     palette.addAll(0, colorSet);
@@ -4998,7 +4995,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                             ? BitmapUtils.createBitmap(bitmap, selection.r.left, selection.r.top, selection.r.width(), selection.r.height())
                             : BitmapUtils.createBitmap(bitmap);
                     createTransformer(bm);
-                    activityMain.tools.btgTools.check(R.id.b_translation);
+                    ToolSelector.selectTransformer(activityMain.tools);
                     drawSelectionOntoView();
                 } else {
                     saveStepBackToHistory(selection.r);
@@ -5270,7 +5267,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                 selection.r.right = selection.r.left + clipboard.getWidth();
                 selection.r.bottom = selection.r.top + clipboard.getHeight();
                 createTransformer(BitmapUtils.createBitmap(clipboard));
-                activityMain.tools.btgTools.check(R.id.b_translation);
+                ToolSelector.selectTransformer(activityMain.tools);
                 drawBitmapOntoView(selection.r, true);
                 drawSelectionOntoView();
             }

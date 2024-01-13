@@ -3,17 +3,14 @@
     <string name="about">關於</string>
     <string name="actual_pixels">實際像素</string>
     <string name="add">新增</string>
+    <string name="add_all">新增所有</string>
+    <string name="add_all_colors_in_layer">新增當前圖層中所有顏色</string>
     <string name="add_them_all">全部新增</string>
     <string name="align">對齊</string>
     <string name="all_layers">全部圖層</string>
-    <string name="alloc_sep_mem_when_previewing">當預覽時爲可見子集分配單獨記憶體（更佔用記憶體）</string>
     <string name="anti_alias">抗鋸齒</string>
     <string name="app_name">Icon Editor</string>
     <string name="apply_to_each_frame">套用至每幀</string>
-    <string name="argb_color_picker">ARGB 拾色器</string>
-    <string name="around_r">繞 R 軸</string>
-    <string name="around_g">繞 G 軸</string>
-    <string name="around_b">繞 B 軸</string>
     <string name="asynchronously_draw_image_and_ui">異步繪畫圖像與用戶介面</string>
     <string name="attaching_eraser">附擦膠</string>
     <string name="author">作者</string>
@@ -51,7 +48,6 @@
     <string name="color_filter">顏色濾鏡</string>
     <string name="color_picker">拾色器</string>
     <string name="color_range">顏色範圍</string>
-    <string name="color_replace">顏色取代</string>
     <string name="color_representation">顏色表示</string>
     <string name="color_space">色彩空間</string>
     <string name="color_type">顏色類型</string>
@@ -68,7 +64,6 @@
     <string name="cursor">光標</string>
     <string name="curves">曲線</string>
     <string name="custom">自訂</string>
-    <string name="custom_color_filter">自訂顏色濾鏡</string>
     <string name="cut">剪下</string>
     <string name="dec">十進制</string>
     <string name="decal">Decal</string>
@@ -179,7 +174,6 @@
     <string name="mesh">網</string>
     <string name="min">最小</string>
     <string name="mirror">鏡</string>
-    <string name="modify_pixels_whether_visible_or_not_when_previewing">修改像素無論其是否可見（更慢）</string>
     <string name="monospace">等寬</string>
     <string name="more">更多</string>
     <string name="more_color_pickers">更多拾色器</string>
@@ -209,10 +203,7 @@
     <string name="patch">修補</string>
     <string name="path">路徑</string>
     <string name="pencil">鉛筆</string>
-    <string name="pen_with_filter">濾光筆</string>
     <string name="performance">效能</string>
-    <string name="pick_all">拾取所有</string>
-    <string name="picking">拾取中</string>
     <string name="pixel">像素</string>
     <string name="please_save_first">請先儲存。</string>
     <string name="please_switch_orientation_to_vertical_to_get_all_functions">請切換至縱向以獲取所有功能。</string>
@@ -246,10 +237,8 @@
     <string name="rgb_outputs">RGB 輸出</string>
     <string name="right">右</string>
     <string name="rotate">旋轉</string>
-    <string name="rotate_around_r">繞 R 軸旋轉</string>
-    <string name="rotate_around_g">繞 G 軸旋轉</string>
-    <string name="rotate_around_b">繞 B 軸旋轉</string>
     <string name="ruler">間尺</string>
+    <string name="sampling">取樣中</string>
     <string name="sans_serif">黑體</string>
     <string name="saturation">飽和度</string>
     <string name="save">儲存</string>
@@ -276,7 +265,6 @@
     <string name="simple_fast">簡單快速</string>
     <string name="size">尺寸</string>
     <string name="slope">斜率</string>
-    <string name="soft_brush">軟筆</string>
     <string name="softness">軟度</string>
     <string name="source">來源</string>
     <string name="spacing">間距</string>
