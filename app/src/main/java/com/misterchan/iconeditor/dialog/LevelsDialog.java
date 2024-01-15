@@ -1,6 +1,6 @@
 package com.misterchan.iconeditor.dialog;
 
-import android.content.Context;
+import android.app.Activity;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -32,6 +32,7 @@ public class LevelsDialog extends FilterDialog {
         void onChanged(float inputShadows, float inputHighlights, float outputShadows, float outputHighlights, boolean stopped);
     }
 
+    private final Activity activity;
     private Bitmap bitmap;
     private Bitmap progressBitmap;
     private Canvas progressCanvas;
@@ -49,8 +50,8 @@ public class LevelsDialog extends FilterDialog {
     @ColorInt
     private int[] srcPixels;
 
-    public LevelsDialog(Context context, OnLevelsChangedListener listener) {
-        super(context);
+    public LevelsDialog(Activity activity, OnLevelsChangedListener listener) {
+        super(activity);
         builder.setView(R.layout.levels);
 
         builder.setOnDismissListener(dialog -> {
@@ -61,10 +62,11 @@ public class LevelsDialog extends FilterDialog {
             progressBitmap = null;
         });
 
-        final Resources.Theme theme = context.getTheme();
+        this.activity = activity;
+        final Resources.Theme theme = activity.getTheme();
         final TypedValue typedValue = new TypedValue();
         theme.resolveAttribute(android.R.attr.textColorPrimary, typedValue, true);
-        progressPaint.setColor(context.getResources().getColor(typedValue.resourceId, theme));
+        progressPaint.setColor(activity.getResources().getColor(typedValue.resourceId, theme));
 
         this.listener = listener;
     }
@@ -162,8 +164,11 @@ public class LevelsDialog extends FilterDialog {
         drawProgress();
 
         if (srcPixels != null) {
-            BitmapUtils.drawHistogram(srcPixels, bitmap, 4, iv);
-            srcPixels = null;
+            new Thread(() -> {
+                BitmapUtils.drawHistogram(srcPixels, bitmap, 4);
+                activity.runOnUiThread(() -> iv.invalidate());
+                srcPixels = null;
+            }).start();
         }
     }
 }

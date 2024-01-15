@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/i_copy_argb"
+        android:title="@string/copy_argb" />
+    <item
+        android:id="@+id/i_paste_argb"
+        android:title="@string/paste_argb" />
+    <item
+        android:id="@+id/i_copy_rgb"
+        android:title="@string/copy_rgb" />
+    <item
+        android:id="@+id/i_paste_rgb"
+        android:title="@string/paste_rgb" />
+</menu>

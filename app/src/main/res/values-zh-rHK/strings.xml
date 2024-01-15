@@ -57,7 +57,9 @@
     <string name="contiguous">連續</string>
     <string name="contrast">對比度</string>
     <string name="conversions">轉換</string>
+    <string name="copy_argb">複製 ARGB</string>
     <string name="copy_noun">副本</string>
+    <string name="copy_rgb">複製 RGB</string>
     <string name="copy_verb">複製</string>
     <string name="crop">裁剪</string>
     <string name="current_layer">當前圖層</string>
@@ -200,6 +202,8 @@
     <string name="palette">調色板</string>
     <string name="pass_layers_below">傳遞底下圖層</string>
     <string name="paste">貼上</string>
+    <string name="paste_argb">貼上 ARGB</string>
+    <string name="paste_rgb">貼上 RGB</string>
     <string name="patch">修補</string>
     <string name="path">路徑</string>
     <string name="pencil">鉛筆</string>

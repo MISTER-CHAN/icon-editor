@@ -195,7 +195,7 @@ public class ColorUtils {
      */
     @ColorInt
     public static int setComponent(@ColorInt int color, @IntRange(from = 0, to = 2) int index, @IntRange(from = 0x00, to = 0xFF) int comp) {
-        return comp << ((2 - index) << 3) | color & ~(0xFF << ((2 - index) << 3));
+        return comp << (2 - index << 3) | color & ~(0xFF << (2 - index << 3));
     }
 
     @ColorInt
@@ -210,11 +210,11 @@ public class ColorUtils {
     public static long setComponent(@ColorLong long color, @IntRange(from = 0, to = 2) int index, float comp) {
         ColorSpace colorSpace = Color.colorSpace(color);
         if (colorSpace.isSrgb()) {
-            return (long) (comp * 255.0f + 0.5) << ((2 - index) << 3) << 32 | color & ~(0xFFL << ((2 - index) << 3) << 32);
+            return (long) (comp * 255.0f + 0.5) << (2 - index << 3) << 32 | color & ~(0xFFL << (2 - index << 3) << 32);
         }
 
         long c = (short) Half.toHalf(comp) & 0xFFFFL;
-        return c << ((3 - index) << 4) | color & ~(0xFFFFL << ((3 - index) << 4));
+        return c << (3 - index << 4) | color & ~(0xFFFFL << (3 - index << 4));
     }
 
     @ColorLong

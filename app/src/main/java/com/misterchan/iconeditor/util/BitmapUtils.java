@@ -150,7 +150,7 @@ public class BitmapUtils {
     public static void bucketFill(final Bitmap src, Rect srcRect, final Bitmap dst, Rect dstRect,
                                   final int x, final int y, @ColorInt final int color,
                                   final boolean ignoreAlpha, final int tolerance,
-                                  @Nullable final Rect bounds) {
+                                  @Nullable final Rect outBounds) {
         if (dstRect == null) {
             dstRect = new Rect(0, 0, dst.getWidth(), dst.getHeight());
         }
@@ -192,8 +192,8 @@ public class BitmapUtils {
                     pixels[i] = color;
                 }
             }
-            if (pixels[i] != px && bounds != null) {
-                bounds.union(i % w, i / w, i % w + 1, i / w + 1);
+            if (pixels[i] != px && outBounds != null) {
+                outBounds.union(i % w, i / w, i % w + 1, i / w + 1);
             }
         }
         dst.setPixels(pixels, 0, w, dstRect.left, dstRect.top, w, h);
@@ -245,33 +245,29 @@ public class BitmapUtils {
         return bitmap;
     }
 
-    public static void drawHistogram(@ColorInt int[] src, Bitmap dst,
-                                     @IntRange(from = 0, to = 4) int comp, ImageView iv) {
-        new Thread(() -> {
-            final int compMin = comp == 4 ? 0 : comp, compMax = comp == 4 ? 2 : comp;
-            final int[][] numValue = new int[4][];
-            int max = 1;
-            for (int c = compMin; c <= compMax; ++c) {
-                numValue[c] = new int[0x100];
-                for (final int pixel : src) {
-                    final int n = ++numValue[c][FUNC_RGBA[c].apply(pixel)];
-                    if (n > max) max = n;
-                }
+    public static void drawHistogram(@ColorInt int[] src, Bitmap dst, @IntRange(from = 0, to = 4) int comp) {
+        final int compMin = comp == 4 ? 0 : comp, compMax = comp == 4 ? 2 : comp;
+        final int[][] numValue = new int[4][];
+        int max = 1;
+        for (int c = compMin; c <= compMax; ++c) {
+            numValue[c] = new int[0x100];
+            for (final int pixel : src) {
+                final int n = ++numValue[c][FUNC_RGBA[c].apply(pixel)];
+                if (n > max) max = n;
             }
-            final Canvas cv = new Canvas(dst);
-            final float maxHeight = dst.getHeight();
-            final Paint paint = new Paint(PAINT_SRC_OVER);
-            paint.setBlendMode(comp == 4 ? BlendMode.PLUS : BlendMode.SRC);
-            for (int c = compMin; c <= compMax; ++c) {
-                paint.setColor(DC_RGBA[c]);
-                for (int i = 0x0; i < 0x100; ) {
-                    cv.drawRect(i, maxHeight - (float) numValue[c][i] / (float) max * maxHeight,
-                            ++i, maxHeight,
-                            paint);
-                }
+        }
+        final Canvas cv = new Canvas(dst);
+        final float maxHeight = dst.getHeight();
+        final Paint paint = new Paint(PAINT_SRC_OVER);
+        paint.setBlendMode(comp == 4 ? BlendMode.PLUS : BlendMode.SRC);
+        for (int c = compMin; c <= compMax; ++c) {
+            paint.setColor(DC_RGBA[c]);
+            for (int i = 0x0; i < 0x100; ) {
+                cv.drawRect(i, maxHeight - (float) numValue[c][i] / (float) max * maxHeight,
+                        ++i, maxHeight,
+                        paint);
             }
-            iv.invalidate();
-        }).start();
+        }
     }
 
     private static Bitmap edgeDetection(final Bitmap bitmap) {
@@ -302,7 +298,7 @@ public class BitmapUtils {
     public static void floodFill(final Bitmap src, Rect srcRect, final Bitmap dst, Rect dstRect,
                                  final int x, final int y, @ColorInt final int color,
                                  final boolean ignoreAlpha, final int tolerance,
-                                 final Rect bounds) {
+                                 final Rect outBounds) {
         if (dstRect == null) {
             dstRect = new Rect(0, 0, dst.getWidth(), dst.getHeight());
         }
@@ -362,8 +358,8 @@ public class BitmapUtils {
                 if (src != dst) {
                     dstPixels[i] = newColor;
                 }
-                if (bounds != null) {
-                    bounds.union(point.x, point.y, point.x + 1, point.y + 1);
+                if (outBounds != null) {
+                    outBounds.union(point.x, point.y, point.x + 1, point.y + 1);
                 }
                 if (dstRect.left <= point.x - 1 && !visited[i - 1])
                     queue.offer(new Point(point.x - 1, point.y));
@@ -541,10 +537,10 @@ public class BitmapUtils {
         final float br = Color.red(bc) / 255.0f, bg = Color.green(bc) / 255.0f, bb = Color.blue(bc) / 255.0f;
         final float dr = fr - br, dg = fg - bg, db = fb - bb, sd = dr + dg + db; // Differences
         final float rr = dr / sd, rg = dg / sd, rb = db / sd; // Ratios
-        final int w = bitmap.getWidth(), h = bitmap.getHeight(), area = w * h;
-        final int[] pixels = new int[area];
+        final int w = bitmap.getWidth(), h = bitmap.getHeight();
+        final int[] pixels = new int[w * h];
         bitmap.getPixels(pixels, 0, w, 0, 0, w, h);
-        for (int i = 0; i < area; ++i) {
+        for (int i = 0; i < pixels.length; ++i) {
             // Color
             final float r = Color.red(pixels[i]) / 255.0f,
                     g = Color.green(pixels[i]) / 255.0f,

@@ -1,8 +1,7 @@
 package com.misterchan.iconeditor.dialog;
 
 import android.annotation.SuppressLint;
-import android.content.Context;
-import android.content.DialogInterface;
+import android.app.Activity;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BlendMode;
@@ -24,14 +23,10 @@ import androidx.annotation.Size;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.view.OneShotPreDrawListener;
 
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.tabs.TabLayout;
-import com.misterchan.iconeditor.util.ColorUtils;
-import com.misterchan.iconeditor.Settings;
 import com.misterchan.iconeditor.R;
+import com.misterchan.iconeditor.Settings;
 import com.misterchan.iconeditor.util.BitmapUtils;
-
-import java.util.function.Function;
 
 public class CurvesDialog extends FilterDialog {
 
@@ -39,6 +34,7 @@ public class CurvesDialog extends FilterDialog {
         void onChanged(@Size(5) int[][] curves, boolean stopped);
     }
 
+    private final Activity activity;
     private Bitmap bitmap;
     private Bitmap grid;
     private Canvas canvas;
@@ -93,8 +89,8 @@ public class CurvesDialog extends FilterDialog {
         }
     }
 
-    public CurvesDialog(Context context) {
-        super(context);
+    public CurvesDialog(Activity activity) {
+        super(activity);
         builder.setTitle(R.string.curves).setView(R.layout.curves);
 
         builder.setOnDismissListener(dialog -> {
@@ -111,10 +107,11 @@ public class CurvesDialog extends FilterDialog {
             histBitmaps = null;
         });
 
-        final Resources.Theme theme = context.getTheme();
+        this.activity = activity;
+        final Resources.Theme theme = activity.getTheme();
         final TypedValue typedValue = new TypedValue();
         theme.resolveAttribute(android.R.attr.textColorPrimary, typedValue, true);
-        final int color = context.getResources().getColor(typedValue.resourceId, theme);
+        final int color = activity.getResources().getColor(typedValue.resourceId, theme);
         final int a = Color.alpha(color) << 24;
         normalPaint.setColor(color);
         curveColors[3] = curveColors[4] = color;
@@ -207,7 +204,10 @@ public class CurvesDialog extends FilterDialog {
     private void drawHistogram() {
         if (histBitmaps[selectedCompIndex] == null) {
             histBitmaps[selectedCompIndex] = Bitmap.createBitmap(0x100, 0x100, Bitmap.Config.ARGB_4444);
-            BitmapUtils.drawHistogram(srcPixels, histBitmaps[selectedCompIndex], selectedCompIndex, ivHistogram);
+            new Thread(() -> {
+                BitmapUtils.drawHistogram(srcPixels, histBitmaps[selectedCompIndex], selectedCompIndex);
+                activity.runOnUiThread(() -> ivHistogram.invalidate());
+            }).start();
         }
         ivHistogram.setImageBitmap(histBitmaps[selectedCompIndex]);
     }

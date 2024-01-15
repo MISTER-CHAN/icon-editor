@@ -1,11 +1,17 @@
 package com.misterchan.iconeditor.dialog;
 
+import android.annotation.SuppressLint;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.text.method.DigitsKeyListener;
 import android.text.method.KeyListener;
+import android.view.ActionMode;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.LinearLayout;
 
@@ -34,6 +40,9 @@ import com.misterchan.iconeditor.databinding.ColorPickerRgbBinding;
 import com.misterchan.iconeditor.listener.AfterTextChangedListener;
 import com.misterchan.iconeditor.listener.OnSliderValueChangeListener;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class ColorPickerDialog {
     private static final KeyListener KEY_LISTENER_HEX = DigitsKeyListener.getInstance("0123456789ABCDEFabcdef");
 
@@ -41,10 +50,123 @@ public class ColorPickerDialog {
         void onPick(Long oldColor, Long newColor);
     }
 
+    private static class RgbHexActionModeCallback implements ActionMode.Callback {
+        private static final Pattern PATTERN_ARGB_4444 =
+                Pattern.compile("(?<a>[0-9A-Fa-f])?(?<r>[0-9A-Fa-f])(?<g>[0-9A-Fa-f])(?<b>[0-9A-Fa-f])$");
+
+        private static final Pattern PATTERN_ARGB_8888 =
+                Pattern.compile("(?<a>[0-9A-Fa-f]{2})?(?<r>[0-9A-Fa-f]{2})(?<g>[0-9A-Fa-f]{2})(?<b>[0-9A-Fa-f]{2})$");
+
+        private final boolean hasAlpha;
+        private final ClipboardManager clipboard;
+        private final ColorPickerDialog dialog;
+        private String hexFromViews;
+        private String[] hexFromClip;
+
+        public RgbHexActionModeCallback(ColorPickerDialog dialog, boolean hasAlpha) {
+            this.dialog = dialog;
+            clipboard = (ClipboardManager) dialog.context.getSystemService(Context.CLIPBOARD_SERVICE);
+            this.hasAlpha = hasAlpha;
+        }
+
+        @Override
+        public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+            if (!(dialog.colorPicker instanceof RgbColorPicker) || dialog.colorPicker.prop().compBase10()) {
+                return true;
+            }
+
+            copy:
+            {
+                StringBuilder sb = new StringBuilder();
+                boolean hasAlpha = this.hasAlpha && dialog.tietAlpha.getText().length() == 2;
+                if (hasAlpha) sb.append(dialog.tietAlpha.getText());
+                if (dialog.tietComp0.getText().length() != 2) break copy;
+                sb.append(dialog.tietComp0.getText());
+                if (dialog.tietComp1.getText().length() != 2) break copy;
+                sb.append(dialog.tietComp1.getText());
+                if (dialog.tietComp2.getText().length() != 2) break copy;
+                sb.append(dialog.tietComp2.getText());
+                hexFromViews = sb.toString();
+
+                int itemId = hasAlpha ? R.id.i_copy_argb : R.id.i_copy_rgb;
+                @StringRes int titleRes = hasAlpha ? R.string.copy_argb : R.string.copy_rgb;
+                menu.add(Menu.NONE, itemId, Menu.NONE, titleRes);
+            }
+
+            paste:
+            {
+                if (!clipboard.hasPrimaryClip()) break paste;
+                CharSequence text = clipboard.getPrimaryClip().getItemAt(0).getText();
+                if (text == null) break paste;
+                Matcher m = null;
+                int countToRep = 0;
+                if (text.length() >= 6) {
+                    m = PATTERN_ARGB_8888.matcher(text);
+                    if (m.find()) countToRep = 1;
+                }
+                if (countToRep == 0 && text.length() >= 3) {
+                    m = PATTERN_ARGB_4444.matcher(text);
+                    if (m.find()) countToRep = 2;
+                }
+                if (countToRep == 0) break paste;
+                String a = hasAlpha ? m.group("a") : null;
+                boolean hasAlpha = a != null;
+                hexFromClip = new String[]{
+                        a != null ? a.repeat(countToRep) : null,
+                        m.group("r").repeat(countToRep), m.group("g").repeat(countToRep), m.group("b").repeat(countToRep)
+                };
+
+                int itemId = hasAlpha ? R.id.i_paste_argb : R.id.i_paste_rgb;
+                @StringRes int titleRes = hasAlpha ? R.string.paste_argb : R.string.paste_rgb;
+                menu.add(Menu.NONE, itemId, Menu.NONE, titleRes);
+            }
+
+            return true;
+        }
+
+        @Override
+        public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+            return false;
+        }
+
+        @Override
+        @SuppressLint("NonConstantResourceId")
+        public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+            switch (item.getItemId()) {
+                default:
+                    return false;
+
+                case R.id.i_copy_argb:
+                    if (!(dialog.colorPicker instanceof RgbColorPicker)) break;
+
+                case R.id.i_copy_rgb:
+                    clipboard.setPrimaryClip(ClipData.newPlainText("RGB Hexadecimal", hexFromViews));
+                    break;
+
+                case R.id.i_paste_argb:
+                    if (!(dialog.colorPicker instanceof RgbColorPicker)) break;
+                    dialog.tietAlpha.setText(hexFromClip[0]);
+
+                case R.id.i_paste_rgb:
+                    if (!(dialog.colorPicker instanceof RgbColorPicker)) break;
+                    dialog.tietComp0.setText(hexFromClip[1]);
+                    dialog.tietComp1.setText(hexFromClip[2]);
+                    dialog.tietComp2.setText(hexFromClip[3]);
+                    break;
+            }
+            mode.finish();
+            return true;
+        }
+
+        @Override
+        public void onDestroyActionMode(ActionMode mode) {
+        }
+    }
+
     private final AlertDialog dialog;
     private boolean enabled;
     private ColorPicker colorPicker;
-    private Context context;
+    private final Context context;
     private final LayoutInflater layoutInflater;
     private LinearLayout llExtraViews;
     private final long oldColor;
@@ -293,6 +415,17 @@ public class ColorPickerDialog {
         tietComp1.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(1, s, sComp1));
         tietComp2.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(2, s, sComp2));
         tietComp3.addTextChangedListener((AfterTextChangedListener) s -> onComponentChanged(3, s, sComp3));
+
+        ActionMode.Callback argbHexActionModeCallback = new RgbHexActionModeCallback(this, true);
+        ActionMode.Callback rgbHexActionModeCallback = new RgbHexActionModeCallback(this, false);
+        tietAlpha.setCustomInsertionActionModeCallback(argbHexActionModeCallback);
+        tietAlpha.setCustomSelectionActionModeCallback(argbHexActionModeCallback);
+        tietComp0.setCustomInsertionActionModeCallback(rgbHexActionModeCallback);
+        tietComp0.setCustomSelectionActionModeCallback(rgbHexActionModeCallback);
+        tietComp1.setCustomInsertionActionModeCallback(rgbHexActionModeCallback);
+        tietComp1.setCustomSelectionActionModeCallback(rgbHexActionModeCallback);
+        tietComp2.setCustomInsertionActionModeCallback(rgbHexActionModeCallback);
+        tietComp2.setCustomSelectionActionModeCallback(rgbHexActionModeCallback);
 
         tlColorPickers.addOnTabSelectedListener(onColorSpaceTLTabSelectedListener);
         {

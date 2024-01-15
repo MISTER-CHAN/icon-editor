@@ -103,4 +103,21 @@ public class SelectionTool {
         }
         return true;
     }
+
+    public void set(int fromX, int fromY, int toX, int toY) {
+        if (fromX < toX) {
+            r.left = fromX;
+            r.right = toX;
+        } else {
+            r.left = toX - 1;
+            r.right = fromX + 1;
+        }
+        if (fromY < toY) {
+            r.top = fromY;
+            r.bottom = toY;
+        } else {
+            r.top = toY - 1;
+            r.bottom = fromY + 1;
+        }
+    }
 }

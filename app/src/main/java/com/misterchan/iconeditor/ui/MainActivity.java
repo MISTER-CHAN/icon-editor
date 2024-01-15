@@ -613,9 +613,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                     bounds.union(transformer.undoAction.rect());
                 }
                 recycleTransformer();
-                if (hasSelection && activityMain.tools.btgTools.getCheckedButtonId() == R.id.b_mesh) {
-                    createTransformerMesh();
-                }
+                if (transformer.mesh != null) transformer.resetMesh();
                 optimizeSelection();
                 drawBitmapOntoView(bounds, true);
                 drawSelectionOntoView();
@@ -651,7 +649,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
     };
 
     private final CompoundButton.OnCheckedChangeListener onTransformerFilterCheckedChangeListener = (buttonView, isChecked) -> {
-        if (activityMain.tools.btgTools.getCheckedButtonId() == R.id.b_mesh && !transformer.isRecycled() && transformer.mesh != null) {
+        if (!transformer.isRecycled() && transformer.mesh != null) {
             transformer.transformMesh(isChecked, antiAlias);
             drawBitmapOntoView(selection.r, true);
         }
@@ -1170,8 +1168,9 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
     private final TabLayout.OnTabSelectedListener onProjTabSelectedListener = new TabLayout.OnTabSelectedListener() {
         @Override
         public void onTabSelected(TabLayout.Tab tab) {
+            drawFloatingLayersIntoImage();
+
             final int position = tab.getPosition();
-            final Project unselected = project;
             project = projects.get(position);
             frameList.rvFrameList.setAdapter(project.frameAdapter);
 
@@ -2422,7 +2421,8 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
      */
     @SuppressLint("ClickableViewAccessibility")
     private final View.OnTouchListener onIVTouchWithMTListener = new OnIVTouchListener() {
-        private int lastVertIndex;
+        private float dx, dy;
+        private int lastVertIndex = -1;
 
         @Override
         public void onIVTouch(View v, MotionEvent event) {
@@ -2434,17 +2434,24 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                     final float rx = toBitmapXExact(event.getX()) - selection.r.left, ry = toBitmapYExact(event.getY()) - selection.r.top;
                     lastVertIndex = Math.round(ry / selection.r.height() * transformer.mesh.height) * (transformer.mesh.width + 1)
                             + Math.round(rx / selection.r.width() * transformer.mesh.width);
+                    if (0 > lastVertIndex || (lastVertIndex << 1) + 2 > transformer.mesh.verts.length) {
+                        lastVertIndex = -1;
+                        break;
+                    }
+                    dx = rx - transformer.mesh.verts[lastVertIndex << 1];
+                    dy = ry - transformer.mesh.verts[(lastVertIndex << 1) + 1];
                 }
                 case MotionEvent.ACTION_MOVE -> {
-                    if (transformer.isRecycled() || transformer.mesh == null) break;
-                    if (0 > lastVertIndex || lastVertIndex >= transformer.mesh.verts.length) break;
+                    if (transformer.isRecycled() || transformer.mesh == null || lastVertIndex < 0)
+                        break;
                     final float rx = toBitmapXExact(event.getX()) - selection.r.left, ry = toBitmapYExact(event.getY()) - selection.r.top;
-                    transformer.mesh.verts[lastVertIndex * 2] = rx;
-                    transformer.mesh.verts[lastVertIndex * 2 + 1] = ry;
+                    transformer.mesh.verts[lastVertIndex << 1] = rx - dx;
+                    transformer.mesh.verts[(lastVertIndex << 1) + 1] = ry - dy;
                     drawSelectionOntoView();
                 }
                 case MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                    if (transformer.isRecycled() || transformer.mesh == null) break;
+                    if (transformer.isRecycled() || transformer.mesh == null || lastVertIndex < 0)
+                        break;
                     transformer.transformMesh(activityMain.optionsTransformer.cbFilter.isChecked(), antiAlias);
                     drawBitmapOntoView(selection.r, true);
                 }
@@ -2494,20 +2501,20 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                     pointCount = pointerCount;
                     final int index = event.getActionIndex();
                     final float x = event.getX(index), y = event.getY(index);
-                    src[index * 2] = x;
-                    src[index * 2 + 1] = y;
-                    bmSrc[index * 2] = toBitmapX(x) - selection.r.left;
-                    bmSrc[index * 2 + 1] = toBitmapY(y) - selection.r.top;
+                    src[index << 1] = x;
+                    src[(index << 1) + 1] = y;
+                    bmSrc[index << 1] = toBitmapX(x) - selection.r.left;
+                    bmSrc[(index << 1) + 1] = toBitmapY(y) - selection.r.top;
                 }
                 case MotionEvent.ACTION_MOVE -> {
                     if (transformer.isRecycled()) break;
                     pointCount = Math.min(event.getPointerCount(), 4);
                     for (int i = 0; i < pointCount; ++i) {
                         final float x = event.getX(i), y = event.getY(i);
-                        dst[i * 2] = x;
-                        dst[i * 2 + 1] = y;
-                        bmDst[i * 2] = toBitmapX(x) - selection.r.left;
-                        bmDst[i * 2 + 1] = toBitmapY(y) - selection.r.top;
+                        dst[i << 1] = x;
+                        dst[(i << 1) + 1] = y;
+                        bmDst[i << 1] = toBitmapX(x) - selection.r.left;
+                        bmDst[(i << 1) + 1] = toBitmapY(y) - selection.r.top;
                     }
                     matrix.setPolyToPoly(src, 0, dst, 0, pointCount);
                     activityMain.canvas.ivSelection.setImageMatrix(matrix);
@@ -3067,19 +3074,19 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                         case R.id.b_mesh -> onIVTouchWithMTListener;
                         default -> null;
                     };
+                    activityMain.optionsTransformer.cbFilter.setVisibility(checkedId != R.id.b_translation ? View.VISIBLE : View.GONE);
+                    activityMain.optionsTransformer.cbLar.setVisibility(checkedId == R.id.b_scale ? View.VISIBLE : View.GONE);
+                    activityMain.optionsTransformer.llMesh.setVisibility(checkedId == R.id.b_mesh ? View.VISIBLE : View.GONE);
                 }
                 if (isTransformerButtonChecked && activityMain.svOptionsTransformer.getVisibility() == View.VISIBLE) {
                     if (isChecked) {
-                        activityMain.optionsTransformer.cbFilter.setVisibility(checkedId != R.id.b_translation ? View.VISIBLE : View.GONE);
-                        activityMain.optionsTransformer.cbLar.setVisibility(checkedId == R.id.b_scale ? View.VISIBLE : View.GONE);
-                        activityMain.optionsTransformer.llMesh.setVisibility(checkedId == R.id.b_mesh ? View.VISIBLE : View.GONE);
+                        activityMain.canvas.flIv.setOnTouchListener(onIVTouchWithTransformerListener);
                         if (hasSelection) {
                             transformer.apply();
-                            if (checkedId == R.id.b_mesh) createTransformerMesh();
+                            if (checkedId == R.id.b_mesh) transformer.resetMesh();
                             else transformer.mesh = null;
                             drawSelectionOntoView();
                         }
-                        activityMain.canvas.flIv.setOnTouchListener(onIVTouchWithTransformerListener);
                     }
                 } else {
                     if (isChecked) {
@@ -3890,14 +3897,14 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                         final float x = toViewX(selection.r.left + mesh.verts[i]), y = toViewY(selection.r.top + mesh.verts[i + 1]);
                         if (c < mesh.width) {
                             selectionCanvas.drawLine(x, y,
-                                    toViewX(selection.r.left + mesh.verts[(r * (mesh.width + 1) + (c + 1)) * 2]),
-                                    toViewY(selection.r.top + mesh.verts[(r * (mesh.width + 1) + (c + 1)) * 2 + 1]),
+                                    toViewX(selection.r.left + mesh.verts[r * (mesh.width + 1) + (c + 1) << 1]),
+                                    toViewY(selection.r.top + mesh.verts[(r * (mesh.width + 1) + (c + 1) << 1) + 1]),
                                     selector);
                         }
                         if (r < mesh.height) {
                             selectionCanvas.drawLine(x, y,
-                                    toViewX(selection.r.left + mesh.verts[((r + 1) * (mesh.width + 1) + c) * 2]),
-                                    toViewY(selection.r.top + mesh.verts[((r + 1) * (mesh.width + 1) + c) * 2 + 1]),
+                                    toViewX(selection.r.left + mesh.verts[(r + 1) * (mesh.width + 1) + c << 1]),
+                                    toViewY(selection.r.top + mesh.verts[((r + 1) * (mesh.width + 1) + c << 1) + 1]),
                                     selector);
                         }
                     }
@@ -3970,9 +3977,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         recycleTransformer();
         drawBitmapOntoView(selection.r, true);
         optimizeSelection();
-        if (activityMain.tools.btgTools.getCheckedButtonId() == R.id.b_mesh) {
-            createTransformerMesh();
-        }
+        if (transformer.mesh != null) transformer.resetMesh();
         drawSelectionOntoView();
         saveStepForwardToHistory();
         clearStatus();
@@ -4386,6 +4391,55 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
     protected void onDestroy() {
         recycleAllBitmaps();
         super.onDestroy();
+    }
+
+    private void onExecuteHistoricalCommand(History.Action action) {
+        if (action.layer() == layer) {
+            if (!isa.isRecycled()) {
+                if (action.rect() != null) isa.draw(action.bm(), action.rect());
+                else if (action.bm().getWidth() == bitmap.getWidth() && action.bm().getHeight() == bitmap.getHeight())
+                    isa.erase(action.bm(), null);
+                else isa.set(action.bm());
+            }
+            if (!dpPreview.isRecycled()) {
+                if (action.rect() != null || action.bm().getWidth() == bitmap.getWidth() && action.bm().getHeight() == bitmap.getHeight())
+                    dpPreview.erase();
+                else dpPreview.setBitmap(action.bm().getWidth(), action.bm().getHeight());
+            }
+            bitmap = action.layer().bitmap;
+            canvas = action.layer().canvas;
+
+            miHasAlpha.setChecked(bitmap.hasAlpha());
+            recycleTransformer();
+            if (transformer.mesh != null) {
+                transformer.resetMesh();
+            } else if (magEr.b != null && magEr.f != null) {
+                drawCrossOntoView(magEr.b.x, magEr.b.y, true);
+                drawCrossOntoView(magEr.f.x, magEr.f.y, false);
+            } else if (cloneStampSrc != null) {
+                drawCrossOntoView(cloneStampSrc.x, cloneStampSrc.y);
+            } else {
+                eraseBitmapAndInvalidateView(previewBitmap, activityMain.canvas.ivPreview);
+            }
+            optimizeSelection();
+            isShapeStopped = true;
+            selection.marqBoundBeingDragged = null;
+        }
+
+        if (action.layer() == frame.getBackgroundLayer()) {
+            calculateBackgroundSizeOnView();
+            drawChessboardOntoView();
+        }
+        for (int i = 1; i <= project.onionSkins; ++i) {
+            if (project.selectedFrameIndex >= i)
+                project.frames.get(project.selectedFrameIndex - i).updateThumbnail();
+            if (project.selectedFrameIndex < project.frames.size() - i)
+                project.frames.get(project.selectedFrameIndex + i).updateThumbnail();
+        }
+        drawBitmapOntoView(true, true);
+        drawGridOntoView();
+        drawSelectionOntoView();
+        clearStatus();
     }
 
     @SuppressLint("NonConstantResourceId")
@@ -4964,9 +5018,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
             case R.id.i_deselect -> {
                 drawFloatingLayersIntoImage();
                 hasSelection = false;
-                if (activityMain.tools.btgTools.getCheckedButtonId() == R.id.b_mesh) {
-                    transformer.mesh = null;
-                }
+                if (transformer.mesh != null) transformer.mesh = null;
                 eraseBitmapAndInvalidateView(selectionBitmap, activityMain.canvas.ivSelection);
                 clearStatus();
             }
@@ -5280,9 +5332,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
             case R.id.i_select_all -> {
                 selectAll();
                 hasSelection = true;
-                if (activityMain.tools.btgTools.getCheckedButtonId() == R.id.b_mesh) {
-                    createTransformerMesh();
-                }
+                if (transformer.mesh != null) transformer.resetMesh();
                 drawSelectionOntoView();
                 clearStatus();
             }
@@ -5353,9 +5403,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                 if (position == 0) break;
 
                 // Move without shifting the elements to the end since the list is an ArrayList
-                for (int i = position; i > 0; --i) {
-                    projects.set(i, projects.get(i - 1));
-                }
+                for (int i = position; i > 0; --i) projects.set(i, projects.get(i - 1));
                 projects.set(0, project);
 
                 activityMain.tlProjectList.removeOnTabSelectedListener(onProjTabSelectedListener);
@@ -5417,55 +5465,6 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
             case R.id.i_ok -> drawTransformerIntoImage();
         }
         return true;
-    }
-
-    private void onExecuteHistoricalCommand(History.Action action) {
-        if (action.layer() == layer) {
-            if (!isa.isRecycled()) {
-                if (action.rect() != null) isa.draw(action.bm(), action.rect());
-                else if (action.bm().getWidth() == bitmap.getWidth() && action.bm().getHeight() == bitmap.getHeight())
-                    isa.erase(action.bm(), null);
-                else isa.set(action.bm());
-            }
-            if (!dpPreview.isRecycled()) {
-                if (action.rect() != null || action.bm().getWidth() == bitmap.getWidth() && action.bm().getHeight() == bitmap.getHeight())
-                    dpPreview.erase();
-                else dpPreview.setBitmap(action.bm().getWidth(), action.bm().getHeight());
-            }
-            bitmap = action.layer().bitmap;
-            canvas = action.layer().canvas;
-
-            miHasAlpha.setChecked(bitmap.hasAlpha());
-            recycleTransformer();
-            if (hasSelection && activityMain.tools.btgTools.getCheckedButtonId() == R.id.b_mesh) {
-                createTransformerMesh();
-            } else if (magEr.b != null && magEr.f != null) {
-                drawCrossOntoView(magEr.b.x, magEr.b.y, true);
-                drawCrossOntoView(magEr.f.x, magEr.f.y, false);
-            } else if (cloneStampSrc != null) {
-                drawCrossOntoView(cloneStampSrc.x, cloneStampSrc.y);
-            } else {
-                eraseBitmapAndInvalidateView(previewBitmap, activityMain.canvas.ivPreview);
-            }
-            optimizeSelection();
-            isShapeStopped = true;
-            selection.marqBoundBeingDragged = null;
-        }
-
-        if (action.layer() == frame.getBackgroundLayer()) {
-            calculateBackgroundSizeOnView();
-            drawChessboardOntoView();
-        }
-        for (int i = 1; i <= project.onionSkins; ++i) {
-            if (project.selectedFrameIndex >= i)
-                project.frames.get(project.selectedFrameIndex - i).updateThumbnail();
-            if (project.selectedFrameIndex < project.frames.size() - i)
-                project.frames.get(project.selectedFrameIndex + i).updateThumbnail();
-        }
-        drawBitmapOntoView(true, true);
-        drawGridOntoView();
-        drawSelectionOntoView();
-        clearStatus();
     }
 
     @StringRes
@@ -5785,6 +5784,8 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
     }
 
     private void selectFrame(Project project, int position) {
+        drawFloatingLayersIntoImage();
+
         frame = project.frames.get(position);
         project.selectedFrameIndex = position;
         layerList.rvLayerList.setAdapter(frame.layerAdapter);
@@ -5806,9 +5807,9 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
 
         if (hasSelection) {
             selection.r.offset(unselectedLayer.left - layer.left, unselectedLayer.top - layer.top);
+            optimizeSelection();
+            if (transformer.mesh != null) transformer.resetMesh();
         }
-        transformer.mesh = null;
-        optimizeSelection();
         if (!dpPreview.isRecycled()) dpPreview.erase();
         if (!isa.isRecycled()) isa.set(bitmap);
 
@@ -5906,20 +5907,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
     }
 
     private void setSelection(int fromX, int fromY, int toX, int toY) {
-        if (fromX < toX) {
-            selection.r.left = fromX;
-            selection.r.right = toX;
-        } else {
-            selection.r.left = toX - 1;
-            selection.r.right = fromX + 1;
-        }
-        if (fromY < toY) {
-            selection.r.top = fromY;
-            selection.r.bottom = toY;
-        } else {
-            selection.r.top = toY - 1;
-            selection.r.bottom = fromY + 1;
-        }
+        selection.set(fromX, fromY, toX, toY);
         drawSelectionOntoView();
     }
 
@@ -5956,7 +5944,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
     }
 
     private float toBitmapXExact(float x) {
-        return ((x - translationX) / scale) - layer.left;
+        return (x - translationX) / scale - layer.left;
     }
 
     /**
@@ -5971,7 +5959,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
     }
 
     private float toBitmapYExact(float y) {
-        return ((y - translationY) / scale) - layer.top;
+        return (y - translationY) / scale - layer.top;
     }
 
     private int toUnscaled(float scaled) {

@@ -69,7 +69,9 @@
     <string name="contrast">Contrast</string>
     <string name="conversions">Conversions</string>
     <string name="coordinates" translatable="false">(%d, %d)</string>
+    <string name="copy_argb">Copy ARGB</string>
     <string name="copy_noun">Copy</string>
+    <string name="copy_rgb">Copy RGB</string>
     <string name="copy_verb">Copy</string>
     <string name="crop">Crop</string>
     <string name="current_layer">Current Layer</string>
@@ -228,6 +230,8 @@
     <string name="palette">Palette</string>
     <string name="pass_layers_below">Pass Layers below</string>
     <string name="paste">Paste</string>
+    <string name="paste_argb">Paste ARGB</string>
+    <string name="paste_rgb">Paste RGB</string>
     <string name="patch">Patch</string>
     <string name="path">Path</string>
     <string name="pencil">Pencil</string>

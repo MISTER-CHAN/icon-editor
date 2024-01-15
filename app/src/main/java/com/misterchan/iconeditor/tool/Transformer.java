@@ -22,7 +22,7 @@ public class Transformer implements FloatingLayer {
         public Mesh(int width, int height) {
             this.width = width;
             this.height = height;
-            verts = new float[(width + 1) * (height + 1) * 2];
+            verts = new float[(width + 1) * (height + 1) << 1];
         }
     }
 
@@ -52,8 +52,8 @@ public class Transformer implements FloatingLayer {
         final float dx = (float) rect.width() / (float) width, dy = (float) rect.height() / (float) height;
         for (int r = 0; r <= height; ++r) {
             for (int c = 0; c <= width; ++c) {
-                mesh.verts[(r * (width + 1) + c) * 2] = c * dx;
-                mesh.verts[(r * (width + 1) + c) * 2 + 1] = r * dy;
+                mesh.verts[r * (width + 1) + c << 1] = c * dx;
+                mesh.verts[(r * (width + 1) + c << 1) + 1] = r * dy;
             }
         }
     }
@@ -108,6 +108,10 @@ public class Transformer implements FloatingLayer {
             canvas = new Canvas(bitmap);
         }
         canvas.drawBitmap(srcBm, 0.0f, 0.0f, BitmapUtils.PAINT_SRC);
+    }
+
+    public void resetMesh() {
+        createMesh(mesh.width, mesh.height);
     }
 
     public void rotate(float degrees, boolean filter, boolean antiAlias) {

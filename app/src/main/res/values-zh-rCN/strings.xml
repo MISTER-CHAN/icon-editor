@@ -57,7 +57,9 @@
     <string name="contiguous">连续</string>
     <string name="contrast">对比度</string>
     <string name="conversions">转换</string>
+    <string name="copy_argb">复制 ARGB</string>
     <string name="copy_noun">副本</string>
+    <string name="copy_rgb">复制 RGB</string>
     <string name="copy_verb">复制</string>
     <string name="crop">裁剪</string>
     <string name="current_layer">当前图层</string>
@@ -200,6 +202,8 @@
     <string name="palette">调色板</string>
     <string name="pass_layers_below">传递底下图层</string>
     <string name="paste">粘贴</string>
+    <string name="paste_argb">粘贴 ARGB</string>
+    <string name="paste_rgb">粘贴 RGB</string>
     <string name="patch">修补</string>
     <string name="path">路径</string>
     <string name="pencil">铅笔</string>
