@@ -143,7 +143,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 
-public class MainActivity extends AppCompatActivity implements SelectionTool.CoordinateConversions {
+public class MainActivity extends AppCompatActivity implements CoordinateConversions {
 
     private static final Looper MAIN_LOOPER = Looper.getMainLooper();
 
@@ -606,18 +606,17 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
 
         @Override
         public void onDestroyActionMode(ActionMode mode) {
-            if (!transformer.isRecycled()) {
-                final Rect bounds = new Rect(selection.r);
-                if (transformer.undoAction != null) {
-                    canvas.drawBitmap(transformer.undoAction.bm(), null, transformer.undoAction.rect(), PAINT_BITMAP);
-                    bounds.union(transformer.undoAction.rect());
-                }
-                recycleTransformer();
-                if (transformer.mesh != null) transformer.resetMesh();
-                optimizeSelection();
-                drawBitmapOntoView(bounds, true);
-                drawSelectionOntoView();
+            if (transformer.isRecycled()) return;
+            final Rect bounds = new Rect(selection.r);
+            if (transformer.undoAction != null) {
+                canvas.drawBitmap(transformer.undoAction.bm(), null, transformer.undoAction.rect(), PAINT_BITMAP);
+                bounds.union(transformer.undoAction.rect());
             }
+            recycleTransformer();
+            if (transformer.mesh != null) transformer.resetMesh();
+            optimizeSelection();
+            drawBitmapOntoView(bounds, true);
+            drawSelectionOntoView();
         }
     };
 
@@ -2434,19 +2433,19 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                     final float rx = toBitmapXExact(event.getX()) - selection.r.left, ry = toBitmapYExact(event.getY()) - selection.r.top;
                     lastVertIndex = Math.round(ry / selection.r.height() * transformer.mesh.height) * (transformer.mesh.width + 1)
                             + Math.round(rx / selection.r.width() * transformer.mesh.width);
-                    if (0 > lastVertIndex || (lastVertIndex << 1) + 2 > transformer.mesh.verts.length) {
+                    if (0 > lastVertIndex || lastVertIndex << 1 >= transformer.mesh.verts.length) {
                         lastVertIndex = -1;
                         break;
                     }
                     dx = rx - transformer.mesh.verts[lastVertIndex << 1];
-                    dy = ry - transformer.mesh.verts[(lastVertIndex << 1) + 1];
+                    dy = ry - transformer.mesh.verts[lastVertIndex << 1 | 1];
                 }
                 case MotionEvent.ACTION_MOVE -> {
                     if (transformer.isRecycled() || transformer.mesh == null || lastVertIndex < 0)
                         break;
                     final float rx = toBitmapXExact(event.getX()) - selection.r.left, ry = toBitmapYExact(event.getY()) - selection.r.top;
                     transformer.mesh.verts[lastVertIndex << 1] = rx - dx;
-                    transformer.mesh.verts[(lastVertIndex << 1) + 1] = ry - dy;
+                    transformer.mesh.verts[lastVertIndex << 1 | 1] = ry - dy;
                     drawSelectionOntoView();
                 }
                 case MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
@@ -2464,73 +2463,68 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
      */
     @SuppressLint("ClickableViewAccessibility")
     private final View.OnTouchListener onIVTouchWithPTListener = new OnIVTouchListener() {
-        private float[] src, dst, bmSrc, bmDst;
+        private float[] src, dst;
         private int pointCount = 0;
         private Matrix matrix;
 
         @Override
         public void onIVTouch(View v, MotionEvent event) {
-            if (!hasSelection) return;
+            if (!hasSelection || selection.r.isEmpty()) return;
             switch (event.getActionMasked()) {
                 case MotionEvent.ACTION_DOWN -> {
-                    if (selection.r.isEmpty()) {
-                        break;
-                    }
-                    if (transformer.isRecycled()) {
-                        createTransformer();
-                    }
-                    src = new float[8];
-                    dst = new float[8];
-                    bmSrc = new float[8];
-                    bmDst = new float[8];
+                    if (transformer.isRecycled()) createTransformer();
+                    src = new float[10];
+                    dst = new float[10];
                     pointCount = 1;
                     final float x = event.getX(), y = event.getY();
                     src[0] = x;
                     src[1] = y;
-                    bmSrc[0] = toBitmapX(x) - selection.r.left;
-                    bmSrc[1] = toBitmapY(y) - selection.r.top;
                     matrix = new Matrix();
                     clearStatus();
                 }
                 case MotionEvent.ACTION_POINTER_DOWN -> {
-                    if (transformer.isRecycled()) {
-                        break;
-                    }
+                    if (transformer.isRecycled()) break;
                     final int pointerCount = event.getPointerCount();
                     if (pointerCount > 4) break;
-                    pointCount = pointerCount;
+                    pointCount = Math.max(pointCount, pointerCount);
                     final int index = event.getActionIndex();
+                    for (int i = pointCount - 1; i > index; --i) setPointFrom(i, i - 1);
                     final float x = event.getX(index), y = event.getY(index);
                     src[index << 1] = x;
-                    src[(index << 1) + 1] = y;
-                    bmSrc[index << 1] = toBitmapX(x) - selection.r.left;
-                    bmSrc[(index << 1) + 1] = toBitmapY(y) - selection.r.top;
+                    src[index << 1 | 1] = y;
                 }
                 case MotionEvent.ACTION_MOVE -> {
                     if (transformer.isRecycled()) break;
-                    pointCount = Math.min(event.getPointerCount(), 4);
-                    for (int i = 0; i < pointCount; ++i) {
+                    for (int i = 0, pointerCount = Math.min(event.getPointerCount(), 4); i < pointerCount; ++i) {
                         final float x = event.getX(i), y = event.getY(i);
                         dst[i << 1] = x;
-                        dst[(i << 1) + 1] = y;
-                        bmDst[i << 1] = toBitmapX(x) - selection.r.left;
-                        bmDst[(i << 1) + 1] = toBitmapY(y) - selection.r.top;
+                        dst[i << 1 | 1] = y;
                     }
                     matrix.setPolyToPoly(src, 0, dst, 0, pointCount);
                     activityMain.canvas.ivSelection.setImageMatrix(matrix);
                     drawSelectionOntoView(false);
                 }
+                case MotionEvent.ACTION_POINTER_UP -> {
+                    if (transformer.isRecycled()) break;
+                    final int index = event.getActionIndex();
+                    setPointFrom(pointCount, index);
+                    for (int i = index; i < pointCount; ++i) setPointFrom(i, i + 1);
+                }
                 case MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                     if (transformer.isRecycled()) break;
                     matrix = null;
-                    src = null;
-                    dst = null;
-                    final Matrix bmMatrix = new Matrix();
-                    bmMatrix.setPolyToPoly(bmSrc, 0, bmDst, 0, pointCount);
-                    bmSrc = null;
-                    bmDst = null;
-                    pointCount = 0;
                     activityMain.canvas.ivSelection.setImageMatrix(null);
+                    final Matrix bmMatrix = new Matrix();
+                    final float[] bmSrc = new float[pointCount << 1], bmDst = new float[pointCount << 1];
+                    for (int i = 0; i < pointCount; ++i) {
+                        bmSrc[i << 1] = toBitmapX(src[i << 1]) - selection.r.left;
+                        bmSrc[i << 1 | 1] = toBitmapY(src[i << 1 | 1]) - selection.r.top;
+                        bmDst[i << 1] = toBitmapX(dst[i << 1]) - selection.r.left;
+                        bmDst[i << 1 | 1] = toBitmapY(dst[i << 1 | 1]) - selection.r.top;
+                    }
+                    src = dst = null;
+                    bmMatrix.setPolyToPoly(bmSrc, 0, bmDst, 0, pointCount);
+                    pointCount = 0;
                     final RectF rect = transformer.transform(bmMatrix, activityMain.optionsTransformer.cbFilter.isChecked(), antiAlias);
                     if (rect != null) {
                         final Rect r = new Rect(selection.r);
@@ -2546,6 +2540,13 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                     clearStatus();
                 }
             }
+        }
+
+        private void setPointFrom(int index, int fromIndex) {
+            src[index << 1] = src[fromIndex << 1];
+            src[index << 1 | 1] = src[fromIndex << 1 | 1];
+            dst[index << 1] = dst[fromIndex << 1];
+            dst[index << 1 | 1] = dst[fromIndex << 1 | 1];
         }
     };
 
@@ -2611,9 +2612,13 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
     @SuppressLint({"ClickableViewAccessibility"})
     private final View.OnTouchListener onIVTouchWithSTListener = new OnIVTouchListener() {
         private boolean hasDraggedBound = false;
+        private int width, height;
         private float aspectRatio;
         private float centerX, centerY;
-        private float dlpbLeft, dlpbTop, dlpbRight, dlpbBottom; // Distances from last point to bound
+        private float lastPivotX, lastPivotY;
+        private float scale;
+        private float translationX, translationY;
+        private double lastDiagonal;
 
         private boolean dragMarqueeBound(float viewX, float viewY) {
             final boolean hasDragged = selection.dragMarqueeBound(viewX, viewY, scale);
@@ -2685,64 +2690,35 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                         case MotionEvent.ACTION_MOVE -> {
                             final float x0 = event.getX(0), y0 = event.getY(0),
                                     x1 = event.getX(1), y1 = event.getY(1);
-                            float marqLOnView = toViewX(selection.r.left), marqTOnView = toViewY(selection.r.top),
-                                    marqROnView = toViewX(selection.r.right), marqBOnView = toViewY(selection.r.bottom);
-                            final float dpbLeft = Math.min(x0 - marqLOnView, x1 - marqLOnView),
-                                    dpbTop = Math.min(y0 - marqTOnView, y1 - marqTOnView),
-                                    dpbRight = Math.min(marqROnView - x0, marqROnView - x1),
-                                    dpbBottom = Math.min(marqBOnView - y0, marqBOnView - y1); // Distances from point to bound
-                            final float dpbDiffL = dlpbLeft - dpbLeft, dpbDiffT = dlpbTop - dpbTop,
-                                    dpbDiffR = dlpbRight - dpbRight, dpbDiffB = dlpbBottom - dpbBottom;
-                            if (activityMain.optionsTransformer.cbLar.isChecked()) {
-                                if (Math.abs(dpbDiffL) + Math.abs(dpbDiffR) >= Math.abs(dpbDiffT) + Math.abs(dpbDiffB)) {
-                                    selection.r.left -= toUnscaled(dpbDiffL);
-                                    selection.r.right += toUnscaled(dpbDiffR);
-                                    final float width = selection.r.width(), height = width / aspectRatio;
-                                    selection.r.top = (int) (centerY - height / 2.0f);
-                                    selection.r.bottom = (int) (centerY + height / 2.0f);
-                                    marqTOnView = toViewY(selection.r.top);
-                                    marqBOnView = toViewY(selection.r.bottom);
-                                    dlpbTop = Math.min(y0 - marqTOnView, y1 - marqTOnView);
-                                    dlpbBottom = Math.min(marqBOnView - y0, marqBOnView - y1);
-                                } else {
-                                    selection.r.top -= toUnscaled(dpbDiffT);
-                                    selection.r.bottom += toUnscaled(dpbDiffB);
-                                    final float height = selection.r.height(), width = height * aspectRatio;
-                                    selection.r.left = (int) (centerX - width / 2.0f);
-                                    selection.r.right = (int) (centerX + width / 2.0f);
-                                    marqLOnView = toViewX(selection.r.left);
-                                    marqROnView = toViewX(selection.r.right);
-                                    dlpbLeft = Math.min(x0 - marqLOnView, x1 - marqLOnView);
-                                    dlpbRight = Math.min(marqROnView - x0, marqROnView - x1);
-                                }
-                            } else {
-                                selection.r.left -= toUnscaled(dpbDiffL);
-                                selection.r.top -= toUnscaled(dpbDiffT);
-                                selection.r.right += toUnscaled(dpbDiffR);
-                                selection.r.bottom += toUnscaled(dpbDiffB);
-                            }
+                            final double diagonal = Math.hypot(x0 - x1, y0 - y1);
+                            final double diagonalRatio = diagonal / lastDiagonal;
+                            scale = (float) (scale * diagonalRatio);
+                            final float pivotX = (x0 + x1) / 2.0f, pivotY = (y0 + y1) / 2.0f;
+                            translationX = (float) (pivotX - (lastPivotX - translationX) * diagonalRatio);
+                            translationY = (float) (pivotY - (lastPivotY - translationY) * diagonalRatio);
+                            selection.r.left = toUnscaled(translationX);
+                            selection.r.top = toUnscaled(translationY);
+                            selection.r.right = selection.r.left + (int) (width * scale);
+                            selection.r.bottom = selection.r.top + (int) (height * scale);
                             drawSelectionOntoView();
                             activityMain.tvStatus.setText(getString(R.string.state_size,
                                     selection.r.width(), selection.r.height()));
+                            lastDiagonal = diagonal;
+                            lastPivotX = pivotX;
+                            lastPivotY = pivotY;
                         }
                         case MotionEvent.ACTION_POINTER_DOWN -> {
-                            selection.marqBoundBeingDragged = null;
                             final float x0 = event.getX(0), y0 = event.getY(0),
                                     x1 = event.getX(1), y1 = event.getY(1);
-                            final RectF viewSelection = new RectF(
-                                    toViewX(selection.r.left), toViewY(selection.r.top),
-                                    toViewX(selection.r.right), toViewY(selection.r.bottom));
-                            dlpbLeft = Math.min(x0 - viewSelection.left, x1 - viewSelection.left);
-                            dlpbTop = Math.min(y0 - viewSelection.top, y1 - viewSelection.top);
-                            dlpbRight = Math.min(viewSelection.right - x0, viewSelection.right - x1);
-                            dlpbBottom = Math.min(viewSelection.bottom - y0, viewSelection.bottom - y1);
-                            if (activityMain.optionsTransformer.cbLar.isChecked()) {
-                                aspectRatio = (float) selection.r.width() / (float) selection.r.height();
-                                centerX = selection.r.exactCenterX();
-                                centerY = selection.r.exactCenterY();
-                            }
-                            activityMain.tvStatus.setText(getString(R.string.state_size,
-                                    selection.r.width(), selection.r.height()));
+                            width = selection.r.width();
+                            height = selection.r.height();
+                            lastDiagonal = Math.hypot(x0 - x1, y0 - y1);
+                            scale = 1.0f;
+                            lastPivotX = (x0 + x1) / 2.0f;
+                            lastPivotY = (y0 + y1) / 2.0f;
+                            translationX = toScaled(selection.r.left);
+                            translationY = toScaled(selection.r.top);
+                            clearStatus();
                         }
                         case MotionEvent.ACTION_POINTER_UP -> {
                             stretch();
@@ -2883,16 +2859,16 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                             translationX = (float) (pivotX - (lastPivotX - translationX) * diagonalRatio);
                             translationY = (float) (pivotY - (lastPivotY - translationY) * diagonalRatio);
                             drawAfterTransformingView(true);
+                            lastDiagonal = diagonal;
                             lastPivotX = pivotX;
                             lastPivotY = pivotY;
-                            lastDiagonal = diagonal;
                         }
                         case MotionEvent.ACTION_POINTER_DOWN -> {
                             final float x0 = event.getX(0), y0 = event.getY(0),
                                     x1 = event.getX(1), y1 = event.getY(1);
+                            lastDiagonal = Math.hypot(x0 - x1, y0 - y1);
                             lastPivotX = (x0 + x1) / 2.0f;
                             lastPivotY = (y0 + y1) / 2.0f;
-                            lastDiagonal = Math.hypot(x0 - x1, y0 - y1);
                             clearStatus();
                         }
                         case MotionEvent.ACTION_POINTER_UP -> {
@@ -3661,8 +3637,25 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         final float top = Math.max(0.0f, translationY);
         final float right = Math.min(translationX + backgroundScaledW, viewWidth);
         final float bottom = Math.min(translationY + backgroundScaledH, viewHeight);
-
         chessboardCanvas.drawRect(left, top, right, bottom, chessboardPaint);
+
+        if (project.frames.size() > 1 && project.onionSkins > 0) onionSkins:{
+            final Rect vs = getVisibleSubsetOfBackground();
+            if (vs.isEmpty()) break onionSkins;
+            final RectF svs = getVisibleSubsetOfView(vs, translationX, translationY);
+            for (int i = 1; i <= project.onionSkins; ++i) {
+                onionSkinPaint.setAlpha(Math.round((float) Math.pow(2.0, -i) * 0xFF));
+                if (project.selectedFrameIndex >= i) {
+                    chessboardCanvas.drawBitmap(project.frames.get(project.selectedFrameIndex - i).getThumbnail(),
+                            vs, svs, onionSkinPaint);
+                }
+                if (project.selectedFrameIndex < project.frames.size() - i) {
+                    chessboardCanvas.drawBitmap(project.frames.get(project.selectedFrameIndex + i).getThumbnail(),
+                            vs, svs, onionSkinPaint);
+                }
+            }
+        }
+
         activityMain.canvas.ivChessboard.invalidate();
         drawRuler();
     }
@@ -3704,23 +3697,6 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
 
     private void drawGridOntoView() {
         eraseBitmap(gridBitmap);
-
-        if (project.frames.size() > 1 && project.onionSkins > 0) onionSkins:{
-            final Rect vs = getVisibleSubsetOfBackground();
-            if (vs.isEmpty()) break onionSkins;
-            final RectF svs = getVisibleSubsetOfView(vs, translationX, translationY);
-            for (int i = 1; i <= project.onionSkins; ++i) {
-                onionSkinPaint.setAlpha(Math.round((float) Math.pow(2.0, -i) * 0xFF));
-                if (project.selectedFrameIndex >= i) {
-                    gridCanvas.drawBitmap(project.frames.get(project.selectedFrameIndex - i).getThumbnail(),
-                            vs, svs, onionSkinPaint);
-                }
-                if (project.selectedFrameIndex < project.frames.size() - i) {
-                    gridCanvas.drawBitmap(project.frames.get(project.selectedFrameIndex + i).getThumbnail(),
-                            vs, svs, onionSkinPaint);
-                }
-            }
-        }
 
         {
             final float left = toViewX(0), top = toViewY(0);
@@ -3855,61 +3831,19 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
             final float left = Math.max(0.0f, toViewX(selection.r.left)), top = Math.max(0.0f, toViewY(selection.r.top)),
                     right = Math.min(viewWidth, toViewX(selection.r.right)), bottom = Math.min(viewHeight, toViewY(selection.r.bottom));
             selectionCanvas.drawRect(left, top, right, bottom, selector);
+
             if (showMargins) {
-                final float viewImLeft = Math.max(0.0f, translationX), viewImTop = Math.max(0.0f, translationY),
-                        viewImRight = Math.min(viewWidth, translationX + backgroundScaledW), viewImBottom = Math.min(viewHeight, translationY + backgroundScaledH);
-                final String margLeft = String.valueOf(layer.left + selection.r.left), margTop = String.valueOf(layer.top + selection.r.top),
-                        margRight = String.valueOf(layer.left + bitmap.getWidth() - selection.r.right), margBottom = String.valueOf(layer.top + bitmap.getHeight() - selection.r.bottom);
-                final float centerHorizontal = (left + right) / 2.0f, centerVertical = (top + bottom) / 2.0f;
-                if (Math.max(left, viewImLeft) > 0.0f) {
-                    selectionCanvas.drawLine(left, centerVertical, viewImLeft, centerVertical, marginPaint);
-                    selectionCanvas.drawText(margLeft, (viewImLeft + left) / 2.0f, centerVertical, marginPaint);
-                } else {
-                    marginPaint.setTextAlign(Paint.Align.LEFT);
-                    selectionCanvas.drawText(margLeft, 0.0f, centerVertical, marginPaint);
-                    marginPaint.setTextAlign(Paint.Align.CENTER);
-                }
-                if (Math.max(top, viewImTop) > 0.0f) {
-                    selectionCanvas.drawLine(centerHorizontal, top, centerHorizontal, viewImTop, marginPaint);
-                    selectionCanvas.drawText(margTop, centerHorizontal, (viewImTop + top) / 2.0f, marginPaint);
-                } else {
-                    selectionCanvas.drawText(margTop, centerHorizontal, -marginPaint.ascent(), marginPaint);
-                }
-                if (Math.min(right, viewImRight) < viewWidth) {
-                    selectionCanvas.drawLine(right, centerVertical, viewImRight, centerVertical, marginPaint);
-                    selectionCanvas.drawText(margRight, (viewImRight + right) / 2.0f, centerVertical, marginPaint);
-                } else {
-                    marginPaint.setTextAlign(Paint.Align.RIGHT);
-                    selectionCanvas.drawText(margRight, viewWidth, centerVertical, marginPaint);
-                    marginPaint.setTextAlign(Paint.Align.CENTER);
-                }
-                if (Math.min(bottom, viewImBottom) < viewHeight) {
-                    selectionCanvas.drawLine(centerHorizontal, bottom, centerHorizontal, viewImBottom, marginPaint);
-                    selectionCanvas.drawText(margBottom, centerHorizontal, (viewImBottom + bottom) / 2.0f, marginPaint);
-                } else {
-                    selectionCanvas.drawText(margBottom, centerHorizontal, viewHeight, marginPaint);
-                }
+                SelectionTool.drawMargins(selectionCanvas,
+                        left, top, right, bottom,
+                        Math.max(0.0f, translationX), Math.max(0.0f, translationY),
+                        Math.min(viewWidth, translationX + backgroundScaledW), Math.min(viewHeight, translationY + backgroundScaledH),
+                        viewWidth, viewHeight,
+                        String.valueOf(layer.left + selection.r.left), String.valueOf(layer.top + selection.r.top),
+                        String.valueOf(layer.left + bitmap.getWidth() - selection.r.right), String.valueOf(layer.top + bitmap.getHeight() - selection.r.bottom),
+                        marginPaint);
             }
-            if (transformer.mesh != null) {
-                final Transformer.Mesh mesh = transformer.mesh;
-                for (int i = 0, r = 0; r <= mesh.height; ++r) {
-                    for (int c = 0; c <= mesh.width; ++c, i += 2) {
-                        final float x = toViewX(selection.r.left + mesh.verts[i]), y = toViewY(selection.r.top + mesh.verts[i + 1]);
-                        if (c < mesh.width) {
-                            selectionCanvas.drawLine(x, y,
-                                    toViewX(selection.r.left + mesh.verts[r * (mesh.width + 1) + (c + 1) << 1]),
-                                    toViewY(selection.r.top + mesh.verts[(r * (mesh.width + 1) + (c + 1) << 1) + 1]),
-                                    selector);
-                        }
-                        if (r < mesh.height) {
-                            selectionCanvas.drawLine(x, y,
-                                    toViewX(selection.r.left + mesh.verts[(r + 1) * (mesh.width + 1) + c << 1]),
-                                    toViewY(selection.r.top + mesh.verts[((r + 1) * (mesh.width + 1) + c << 1) + 1]),
-                                    selector);
-                        }
-                    }
-                }
-            }
+
+            transformer.drawMesh(this, selectionCanvas, selector);
         }
         activityMain.canvas.ivSelection.invalidate();
     }
@@ -4429,6 +4363,8 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         if (action.layer() == frame.getBackgroundLayer()) {
             calculateBackgroundSizeOnView();
             drawChessboardOntoView();
+        } else if (project.onionSkins > 0) {
+            drawChessboardOntoView();
         }
         for (int i = 1; i <= project.onionSkins; ++i) {
             if (project.selectedFrameIndex >= i)
@@ -4488,7 +4424,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
                         .setTitle(R.string.onion_skins)
                         .setOnApplyListener(number -> {
                             project.onionSkins = Math.min(number, 8);
-                            drawGridOntoView();
+                            drawChessboardOntoView();
                         })
                         .show(project.onionSkins);
             }
@@ -5855,7 +5791,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         onionSkinPaint.setFilterBitmap(filterBitmap);
         if (!hasNotLoaded) {
             drawBitmapOntoView(true);
-            if (project.onionSkins > 0) drawGridOntoView();
+            if (project.onionSkins > 0) drawChessboardOntoView();
         }
     }
 
@@ -5985,7 +5921,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         return translationX + (x + layer.left) * scale;
     }
 
-    private float toViewX(float x) {
+    public float toViewX(float x) {
         return translationX + (x + layer.left) * scale;
     }
 
@@ -6000,7 +5936,7 @@ public class MainActivity extends AppCompatActivity implements SelectionTool.Coo
         return translationY + (y + layer.top) * scale;
     }
 
-    private float toViewY(float y) {
+    public float toViewY(float y) {
         return translationY + (y + layer.top) * scale;
     }
 

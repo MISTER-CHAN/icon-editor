@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:paddingHorizontal="16dp"
-    android:paddingTop="16dp">
+    android:paddingTop="8dp">
 
     <TextView
         android:id="@+id/tv_size"
@@ -13,7 +13,6 @@
         android:layout_marginHorizontal="8dp"
         android:text="@string/size"
         app:layout_constraintBaseline_toBaselineOf="@id/til_width"
-        app:layout_constraintEnd_toStartOf="@id/til_width"
         app:layout_constraintStart_toStartOf="parent" />
 
     <com.google.android.material.textfield.TextInputLayout
@@ -21,7 +20,7 @@
         style="@style/Widget.Material3.TextInputLayout.FilledBox"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="8dp"
+        android:layout_margin="8dp"
         app:layout_constraintEnd_toStartOf="@id/til_height"
         app:layout_constraintStart_toEndOf="@id/tv_size"
         app:layout_constraintTop_toTopOf="parent">
@@ -42,7 +41,7 @@
         style="@style/Widget.Material3.TextInputLayout.FilledBox"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="8dp"
+        android:layout_margin="8dp"
         app:layout_constraintBaseline_toBaselineOf="@id/til_width"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/til_width">

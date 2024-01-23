@@ -7,7 +7,6 @@ import androidx.appcompat.app.AlertDialog;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputEditText;
 import com.misterchan.iconeditor.R;
-import com.misterchan.iconeditor.ui.MainActivity;
 
 public class NewImageDialog {
 

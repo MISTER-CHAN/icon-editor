@@ -11,6 +11,7 @@ import android.graphics.RectF;
 
 import com.misterchan.iconeditor.FloatingLayer;
 import com.misterchan.iconeditor.History;
+import com.misterchan.iconeditor.ui.CoordinateConversions;
 import com.misterchan.iconeditor.util.BitmapUtils;
 
 public class Transformer implements FloatingLayer {
@@ -54,6 +55,28 @@ public class Transformer implements FloatingLayer {
             for (int c = 0; c <= width; ++c) {
                 mesh.verts[r * (width + 1) + c << 1] = c * dx;
                 mesh.verts[(r * (width + 1) + c << 1) + 1] = r * dy;
+            }
+        }
+    }
+
+    public void drawMesh(CoordinateConversions cc, Canvas canvas, Paint paint) {
+        if (mesh != null) {
+            for (int i = 0, r = 0; r <= mesh.height; ++r) {
+                for (int c = 0; c <= mesh.width; ++c, i += 2) {
+                    final float x = cc.toViewX(rect.left + mesh.verts[i]), y = cc.toViewY(rect.top + mesh.verts[i + 1]);
+                    if (c < mesh.width) {
+                        canvas.drawLine(x, y,
+                                cc.toViewX(rect.left + mesh.verts[r * (mesh.width + 1) + (c + 1) << 1]),
+                                cc.toViewY(rect.top + mesh.verts[r * (mesh.width + 1) + (c + 1) << 1 | 1]),
+                                paint);
+                    }
+                    if (r < mesh.height) {
+                        canvas.drawLine(x, y,
+                                cc.toViewX(rect.left + mesh.verts[(r + 1) * (mesh.width + 1) + c << 1]),
+                                cc.toViewY(rect.top + mesh.verts[(r + 1) * (mesh.width + 1) + c << 1 | 1]),
+                                paint);
+                    }
+                }
             }
         }
     }

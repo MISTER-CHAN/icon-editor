@@ -311,6 +311,7 @@
     <string name="threshold">阈值</string>
     <string name="timeline">时间线</string>
     <string name="tip_shape">尖端形状</string>
+    <string name="title">标题</string>
     <string name="to">至</string>
     <string name="tolerance">容差</string>
     <string name="tool_options">工具选项</string>
