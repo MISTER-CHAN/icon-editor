@@ -74,7 +74,6 @@ public class CurvesDialog extends FilterDialog {
 
     private final Paint curvePaint = new Paint() {
         {
-            setAntiAlias(true);
             setBlendMode(BlendMode.SRC);
             setStrokeCap(Paint.Cap.ROUND);
             setStrokeJoin(Paint.Join.ROUND);

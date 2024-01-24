@@ -238,7 +238,7 @@
     <string name="percent" translatable="false">%</string>
     <string name="performance">Performance</string>
     <string name="pixel">Pixel</string>
-    <string name="please_save_first">Please save first.</string>
+    <string name="please_save_to_storage_first">Please save to storage first.</string>
     <string name="please_switch_orientation_to_vertical_to_get_all_functions">Please switch the orientation to vertical to get all functions.</string>
     <string name="point">Point</string>
     <string name="poly">Poly</string>
@@ -260,7 +260,6 @@
     <string name="range">Range</string>
     <string name="rectangle">Rectangle</string>
     <string name="redo">Redo</string>
-    <string name="refer_to_clipboard">Refer to Clipboard</string>
     <string name="reference">Reference</string>
     <string name="rename">Rename</string>
     <string name="repeat">Repeat</string>
@@ -279,6 +278,7 @@
     <string name="saturation">Saturation</string>
     <string name="save">Save</string>
     <string name="save_as">Save as</string>
+    <string name="save_to_clipboard">Save to Clipboard</string>
     <string name="scale">Scale</string>
     <string name="scale_to_black">Scale to Black</string>
     <string name="scale_to_white">Scale to White</string>

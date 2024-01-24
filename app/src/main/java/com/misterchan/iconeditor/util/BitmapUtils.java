@@ -10,7 +10,6 @@ import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
-import android.widget.ImageView;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.DrawableRes;
@@ -55,10 +54,40 @@ public class BitmapUtils {
         }
     };
 
+    public static final Paint PAINT_DST_IN = new Paint() {
+        {
+            setAntiAlias(false);
+            setBlendMode(BlendMode.DST_IN);
+            setFilterBitmap(false);
+        }
+    };
+
+    public static final Paint PAINT_DST_OUT = new Paint() {
+        {
+            setAntiAlias(false);
+            setBlendMode(BlendMode.DST_OUT);
+            setFilterBitmap(false);
+        }
+    };
+
     public static final Paint PAINT_SRC = new Paint() {
         {
             setAntiAlias(false);
             setBlendMode(BlendMode.SRC);
+            setFilterBitmap(false);
+        }
+    };
+
+    public static final Paint PAINT_SRC_F = new Paint() {
+        {
+            setBlendMode(BlendMode.SRC);
+        }
+    };
+
+    public static final Paint PAINT_SRC_IN = new Paint() {
+        {
+            setAntiAlias(false);
+            setBlendMode(BlendMode.SRC_IN);
             setFilterBitmap(false);
         }
     };
@@ -69,6 +98,8 @@ public class BitmapUtils {
             setFilterBitmap(false);
         }
     };
+
+    public static final Paint PAINT_SRC_OVER_F = new Paint();
 
     private BitmapUtils() {
     }

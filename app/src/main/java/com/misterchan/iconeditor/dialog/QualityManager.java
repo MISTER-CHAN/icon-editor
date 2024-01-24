@@ -15,6 +15,7 @@ import androidx.constraintlayout.widget.Group;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.slider.Slider;
 import com.google.android.material.textfield.TextInputEditText;
+import com.misterchan.iconeditor.Project;
 import com.misterchan.iconeditor.R;
 import com.misterchan.iconeditor.listener.AfterTextChangedListener;
 import com.misterchan.iconeditor.listener.OnCBCheckedListener;
@@ -64,6 +65,34 @@ public class QualityManager {
         builder.setPositiveButton(R.string.ok, (dialog, which) -> listener.onApply(gifEncodingType, gifDither));
         gifEncodingType = defaultGifEncodingType;
         gifDither = defaultGifDither;
+    }
+
+    public static void setQuality(Context context, Project project, DirectorySelector.OnFileNameApplyCallback callback) {
+        switch (project.fileType) {
+            case PNG -> callback.onApply(project);
+            case GIF -> {
+                new QualityManager(context,
+                        project.gifEncodingType == null ? GifEncoder.EncodingType.ENCODING_TYPE_NORMAL_LOW_MEMORY : project.gifEncodingType,
+                        project.gifDither,
+                        (encodingType, dither) -> {
+                            project.gifEncodingType = encodingType;
+                            project.gifDither = dither;
+                            callback.onApply(project);
+                        })
+                        .show();
+            }
+            default -> {
+                new QualityManager(context,
+                        project.quality < 0 ? 100 : project.quality,
+                        project.compressFormat,
+                        (quality, format) -> {
+                            project.quality = quality;
+                            project.compressFormat = format;
+                            if (callback != null) callback.onApply(project);
+                        })
+                        .show();
+            }
+        }
     }
 
     public void show() {

@@ -124,8 +124,10 @@ import com.misterchan.iconeditor.listener.AfterTextChangedListener;
 import com.misterchan.iconeditor.listener.OnAdapterViewItemSelectedListener;
 import com.misterchan.iconeditor.listener.OnSliderChangeListener;
 import com.misterchan.iconeditor.tool.BrushTool;
+import com.misterchan.iconeditor.tool.CloneStamp;
 import com.misterchan.iconeditor.tool.Gradient;
 import com.misterchan.iconeditor.tool.MagicEraser;
+import com.misterchan.iconeditor.tool.MagicPaint;
 import com.misterchan.iconeditor.tool.Ruler;
 import com.misterchan.iconeditor.tool.SelectionTool;
 import com.misterchan.iconeditor.tool.Shape;
@@ -136,7 +138,6 @@ import com.misterchan.iconeditor.util.CanvasUtils;
 import com.misterchan.iconeditor.util.FileUtils;
 import com.misterchan.iconeditor.util.RunnableRunnable;
 import com.waynejo.androidndkgif.GifDecoder;
-import com.waynejo.androidndkgif.GifEncoder;
 
 import java.io.File;
 import java.util.Collection;
@@ -155,20 +156,6 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
         {
             setColor(Color.RED);
             setStrokeWidth(2.0f);
-        }
-    };
-
-    private static final Paint PAINT_CLEAR = BitmapUtils.PAINT_CLEAR;
-
-    private static final Paint PAINT_DST_IN = new Paint() {
-        {
-            setBlendMode(BlendMode.DST_IN);
-        }
-    };
-
-    private static final Paint PAINT_DST_OUT = new Paint() {
-        {
-            setBlendMode(BlendMode.DST_OUT);
         }
     };
 
@@ -198,20 +185,6 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
             setTextSize(32.0f);
         }
     };
-
-    private static final Paint PAINT_SRC = new Paint() {
-        {
-            setBlendMode(BlendMode.SRC);
-        }
-    };
-
-    private static final Paint PAINT_SRC_IN = new Paint() {
-        {
-            setBlendMode(BlendMode.SRC_IN);
-        }
-    };
-
-    private static final Paint PAINT_SRC_OVER = new Paint();
 
     private static final Paint PAINT_TEXT_LINE = new Paint() {
         {
@@ -274,7 +247,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
     private MenuItem miFrameList;
     private MenuItem miHasAlpha;
     private final ImageStateAccumulator isa = new ImageStateAccumulator();
-    private Point cloneStampSrc;
+    private final CloneStamp cloneStamp = new CloneStamp();
     private Project project;
     private final Reference ref = new Reference();
     private final Ruler ruler = new Ruler();
@@ -763,7 +736,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
     };
 
     private final View.OnClickListener onCloneStampSrcButtonClickListener = v -> {
-        cloneStampSrc = null;
+        cloneStamp.src = null;
         eraseBitmapAndInvalidateView(previewBitmap, activityMain.canvas.ivPreview);
     };
 
@@ -1511,7 +1484,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
                         final int lastBX = this.lastBX, lastBY = this.lastBY;
                         new Thread(() -> {
                             for (float r = lastRad, bx = lastBX, by = lastBY, s = 0.0f; s < stepCount && !isMultiTouch(); r += stepRad, bx += stepBX, by += stepBY, ++s) {
-                                canvas.drawBitmap(brush.bm(), null, new RectF(bx - r, by - r, bx + r, by + r), PAINT_SRC_OVER);
+                                canvas.drawBitmap(brush.bm(), null, new RectF(bx - r, by - r, bx + r, by + r), BitmapUtils.PAINT_SRC_OVER_F);
                             }
                             runOnUiThread(() -> drawBitmapOntoView(lastBX, lastBY, currBX, currBY, maxRad + blurRadius * 2.0f + 1.0f));
                         }).start();
@@ -1585,50 +1558,39 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
             final int bx = toBitmapX(x), by = toBitmapY(y);
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
-                    if (cloneStampSrc == null) break;
-                    dx = cloneStampSrc.x - bx;
-                    dy = cloneStampSrc.y - by;
+                    if (cloneStamp.src == null) break;
+                    dx = cloneStamp.src.x - bx;
+                    dy = cloneStamp.src.y - by;
                     lastBX = bx;
                     lastBY = by;
 
                 case MotionEvent.ACTION_MOVE: {
-                    if (cloneStampSrc == null) break;
-
+                    if (cloneStamp.src == null) break;
                     final int width = (int) (Math.abs(bx - lastBX) + strokeWidth + blurRadius * 4.0f),
                             height = (int) (Math.abs(by - lastBY) + strokeWidth + blurRadius * 4.0f);
-                    final Bitmap bm = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
                     final float rad = calcPaintStrokeRad();
                     final float left = Math.min(lastBX, bx) - rad, top = Math.min(lastBY, by) - rad;
-                    final int l = (int) (left + dx), t = (int) (top + dy);
-                    final Canvas cv = new Canvas(bm);
-                    cv.drawLine(lastBX - left, lastBY - top, bx - left, by - top, paint);
-                    cv.drawRect(0.0f, 0.0f, -l, height, PAINT_CLEAR);
-                    cv.drawRect(0.0f, 0.0f, width, -t, PAINT_CLEAR);
-                    cv.drawRect(bitmap.getWidth() - l, 0.0f, width, height, PAINT_CLEAR);
-                    cv.drawRect(0.0f, bitmap.getHeight() - t, width, height, PAINT_CLEAR);
-                    cv.drawBitmap(bitmap,
-                            new Rect(l, t, l + width, t + height),
-                            new RectF(0.0f, 0.0f, width, height),
-                            PAINT_SRC_IN);
-                    canvas.drawBitmap(bm, left, top, PAINT_SRC_OVER);
-                    bm.recycle();
+                    cloneStamp.paint(canvas, bitmap,
+                            left, top, width, height, dx, dy,
+                            lastBX - left, lastBY - top, bx - left, by - top,
+                            paint);
+
                     drawBitmapOntoView((int) left, (int) top, (int) (left + width), (int) (top + height));
                     isa.unionBounds((int) left, (int) top, (int) (left + width), (int) (top + height));
                     drawCrossOntoView(bx + dx, by + dy);
                     activityMain.tvStatus.setText(getString(R.string.coordinates, bx, by));
-
                     lastBX = bx;
                     lastBY = by;
                     break;
                 }
                 case MotionEvent.ACTION_CANCEL:
                 case MotionEvent.ACTION_UP:
-                    if (cloneStampSrc == null) {
-                        cloneStampSrc = new Point(bx, by);
+                    if (cloneStamp.src == null) {
+                        cloneStamp.src = new Point(bx, by);
                         drawCrossOntoView(bx, by);
                         activityMain.tvStatus.setText(getString(R.string.coordinates, bx, by));
                     } else {
-                        drawCrossOntoView(cloneStampSrc.x, cloneStampSrc.y);
+                        drawCrossOntoView(cloneStamp.src.x, cloneStamp.src.y);
                         saveStateToHistory();
                         clearStatus();
                     }
@@ -1877,22 +1839,13 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
                     final int backgroundColor =
                             activityMain.optionsMagicEraser.btgSides.getCheckedButtonId() == R.id.b_left ? colorLeft : colorRight;
                     final int foregroundColor = backgroundColor == colorLeft ? colorRight : colorLeft;
-
                     final int left = Math.min(lastBX, bx) - rad, top = Math.min(lastBY, by) - rad,
                             right = Math.max(lastBX, bx) + rad + 1, bottom = Math.max(lastBY, by) + rad + 1;
-                    final int width = right - left, height = bottom - top;
-                    final Bitmap bLine = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-                    final Canvas cLine = new Canvas(bLine);
-                    cLine.drawLine(lastBX - left, lastBY - top, bx - left, by - top, paint);
-                    canvas.drawBitmap(bLine, left, top, PAINT_DST_OUT);
-                    final Bitmap bm = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-                    new Canvas(bm).drawBitmap(ref.bm(),
-                            new Rect(left, top, right, bottom), new Rect(0, 0, width, height), PAINT_SRC);
-                    BitmapUtils.removeBackground(bm, foregroundColor, backgroundColor);
-                    cLine.drawBitmap(bm, 0.0f, 0.0f, PAINT_SRC_IN);
-                    bm.recycle();
-                    canvas.drawBitmap(bLine, left, top, PAINT_SRC_OVER);
-                    bLine.recycle();
+                    magEr.eraseImprecisely(canvas, ref.bm(),
+                            foregroundColor, backgroundColor,
+                            left, top, right, bottom,
+                            lastBX - left, lastBY - top, bx - left, by - top,
+                            paint);
 
                     drawBitmapOntoView(left, top, right, bottom);
                     isa.unionBounds(left, top, right, bottom);
@@ -1917,18 +1870,17 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
                     switch (event.getAction()) {
                         case MotionEvent.ACTION_DOWN -> {
                             final float x = event.getX(), y = event.getY();
-                            final Rect vs = getVisibleSubset();
+                            final Rect vs;
                             if (magEr.b == null || magEr.f == null
-                                    || (!vs.contains(magEr.b.x, magEr.b.y) && !vs.contains(magEr.f.x, magEr.f.y))) {
+                                    || !(vs = getVisibleSubset()).contains(magEr.b.x, magEr.b.y) && !vs.contains(magEr.f.x, magEr.f.y)) {
                                 final int bx = toBitmapX(x), by = toBitmapY(y);
                                 magEr.b = new Point(bx, by);
                                 magEr.f = new Point(bx, by);
                                 drawCrossOntoView(bx, by);
                             }
                         }
-                        case MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                            saveStateToHistory();
-                        }
+                        case MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL ->
+                                saveStateToHistory();
                     }
                 }
                 case 2 -> {
@@ -1940,38 +1892,17 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
                             magEr.f.set(toBitmapX(x1 + magEr.fd.x), toBitmapY(y1 + magEr.fd.y));
                             drawCrossOntoView(magEr.b.x, magEr.b.y, true);
                             drawCrossOntoView(magEr.f.x, magEr.f.y, false);
-
-                            if (!activityMain.optionsMagicEraser.cbAccEnabled.isChecked()) {
-                                break;
-                            }
+                            if (!activityMain.optionsMagicEraser.cbPrecEnabled.isChecked()) break;
 
                             final int rad = (int) (calcPaintStrokeRad());
-                            final int backgroundColor = ref.bm().getPixel(
-                                    satX(ref.bm(), magEr.b.x), satY(ref.bm(), magEr.b.y));
-                            final int foregroundColor = ref.bm().getPixel(
-                                    satX(ref.bm(), magEr.f.x), satY(ref.bm(), magEr.f.y));
-
-                            final int left = Math.min(magEr.b.x, magEr.f.x) - rad,
-                                    top = Math.min(magEr.b.y, magEr.f.y) - rad,
-                                    right = Math.max(magEr.b.x, magEr.f.x) + rad + 1,
-                                    bottom = Math.max(magEr.b.y, magEr.f.y) + rad + 1;
-                            final int width = right - left, height = bottom - top;
-                            final Bitmap bLine = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-                            final Canvas cLine = new Canvas(bLine);
-                            cLine.drawLine(magEr.b.x - left, magEr.b.y - top,
-                                    magEr.f.x - left, magEr.f.y - top,
+                            final int backgroundColor = ref.bm().getPixel(satX(ref.bm(), magEr.b.x), satY(ref.bm(), magEr.b.y));
+                            final int foregroundColor = ref.bm().getPixel(satX(ref.bm(), magEr.f.x), satY(ref.bm(), magEr.f.y));
+                            final int left = Math.min(magEr.b.x, magEr.f.x) - rad, top = Math.min(magEr.b.y, magEr.f.y) - rad,
+                                    right = Math.max(magEr.b.x, magEr.f.x) + rad + 1, bottom = Math.max(magEr.b.y, magEr.f.y) + rad + 1;
+                            magEr.erasePrecisely(canvas, ref.bm(),
+                                    foregroundColor, backgroundColor,
+                                    left, top, right, bottom,
                                     paint);
-                            canvas.drawBitmap(bLine, left, top, PAINT_DST_OUT);
-                            final Bitmap bm = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-                            new Canvas(bm).drawBitmap(ref.bm(),
-                                    new Rect(left, top, right, bottom),
-                                    new Rect(0, 0, width, height),
-                                    PAINT_SRC);
-                            BitmapUtils.removeBackground(bm, foregroundColor, backgroundColor);
-                            cLine.drawBitmap(bm, 0.0f, 0.0f, PAINT_SRC_IN);
-                            bm.recycle();
-                            canvas.drawBitmap(bLine, left, top, PAINT_SRC_OVER);
-                            bLine.recycle();
 
                             drawBitmapOntoView(left, top, right, bottom);
                             isa.unionBounds(left, top, right, bottom);
@@ -2008,33 +1939,13 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
                     final int bx = toBitmapX(x), by = toBitmapY(y);
 
                     final int rad = (int) (calcPaintStrokeRad());
-                    final int left = Math.min(lastBX, bx) - rad,
-                            top = Math.min(lastBY, by) - rad,
-                            right = Math.max(lastBX, bx) + rad + 1,
-                            bottom = Math.max(lastBY, by) + rad + 1;
-                    final int width = right - left, height = bottom - top;
-                    final int relativeX = bx - left, relativeY = by - top;
-                    final Bitmap bLine = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-                    final Canvas cLine = new Canvas(bLine);
-                    cLine.drawLine(lastBX - left, lastBY - top,
-                            relativeX, relativeY,
-                            paint);
-                    if (threshold < 0xFF) {
-                        final Bitmap bm = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-                        final Canvas cv = new Canvas(bm);
-                        cv.drawBitmap(bLine, 0.0f, 0.0f, PAINT_SRC);
-                        final Rect absolute = new Rect(left, top, right, bottom),
-                                relative = new Rect(0, 0, width, height);
-                        cv.drawBitmap(ref.bm(), absolute, relative, PAINT_SRC_IN);
-                        final Bitmap bThr = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_4444); // Threshold
-                        BitmapUtils.floodFill(bm, null, bThr, null,
-                                relativeX, relativeY, Color.BLACK, true, threshold);
-                        bm.recycle();
-                        cLine.drawBitmap(bThr, 0.0f, 0.0f, PAINT_DST_IN);
-                        bThr.recycle();
-                    }
-                    canvas.drawBitmap(bLine, left, top, magicPaint);
-                    bLine.recycle();
+                    final int left = Math.min(lastBX, bx) - rad, top = Math.min(lastBY, by) - rad,
+                            right = Math.max(lastBX, bx) + rad + 1, bottom = Math.max(lastBY, by) + rad + 1;
+                    MagicPaint.draw(canvas, ref.bm(),
+                            threshold,
+                            left, top, right, bottom,
+                            lastBX - left, lastBY - top, bx - left, by - top,
+                            magicPaint, paint);
 
                     drawBitmapOntoView(left, top, right, bottom);
                     isa.unionBounds(left, top, right, bottom);
@@ -2914,7 +2825,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
                     activityMain.optionsCloneStamp.tietBlurRadius.setText(String.valueOf(blurRadius));
                     activityMain.optionsCloneStamp.tietStrokeWidth.setText(String.valueOf(strokeWidth));
                 } else {
-                    cloneStampSrc = null;
+                    cloneStamp.src = null;
                 }
             }
             case R.id.b_eraser -> {
@@ -3089,7 +3000,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
 
     private final CompoundButton.OnCheckedChangeListener onMagicEraserStyleCBCheckedChangeListener = (buttonView, isChecked) -> {
         activityMain.optionsMagicEraser.btgSides.setVisibility(isChecked ? View.GONE : View.VISIBLE);
-        activityMain.optionsMagicEraser.cbAccEnabled.setVisibility(isChecked ? View.VISIBLE : View.GONE);
+        activityMain.optionsMagicEraser.cbPrecEnabled.setVisibility(isChecked ? View.VISIBLE : View.GONE);
         onIVTouchWithMagicEraserListener = isChecked
                 ? onIVTouchWithPreciseMagicEraserListener
                 : onIVTouchWithImpreciseMagicEraserListener;
@@ -3439,8 +3350,8 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
         else drawBitmapOntoView(true, false);
         if (isEditingText) {
             drawTextGuideOntoView();
-        } else if (cloneStampSrc != null) {
-            drawCrossOntoView(cloneStampSrc.x, cloneStampSrc.y);
+        } else if (cloneStamp.src != null) {
+            drawCrossOntoView(cloneStamp.src.x, cloneStamp.src.y);
         } else if (ruler.enabled) {
             drawRulerOntoView();
         } else if (magEr.b != null && magEr.f != null) {
@@ -3907,7 +3818,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
         } else {
             saveStepBackToHistory(selection.r);
         }
-        canvas.drawBitmap(transformer.getBitmap(), selection.r.left, selection.r.top, PAINT_SRC_OVER);
+        canvas.drawBitmap(transformer.getBitmap(), selection.r.left, selection.r.top, BitmapUtils.PAINT_SRC_OVER);
         recycleTransformer();
         drawBitmapOntoView(selection.r, true);
         optimizeSelection();
@@ -3949,6 +3860,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
             }
         }
         drawFloatingLayersIntoImage();
+        if (project.frames.isEmpty()) project.frames.add(this.project.getSelectedFrame());
         FileUtils.export(this, project, quality);
     }
 
@@ -3957,7 +3869,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
     }
 
     private void exportInQuality(Project project) {
-        setQuality(project, this::export);
+        QualityManager.setQuality(this, project, this::export);
     }
 
     private void fitOnScreen() {
@@ -4350,8 +4262,8 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
             } else if (magEr.b != null && magEr.f != null) {
                 drawCrossOntoView(magEr.b.x, magEr.b.y, true);
                 drawCrossOntoView(magEr.f.x, magEr.f.y, false);
-            } else if (cloneStampSrc != null) {
-                drawCrossOntoView(cloneStampSrc.x, cloneStampSrc.y);
+            } else if (cloneStamp.src != null) {
+                drawCrossOntoView(cloneStamp.src.x, cloneStamp.src.y);
             } else {
                 eraseBitmapAndInvalidateView(previewBitmap, activityMain.canvas.ivPreview);
             }
@@ -4454,7 +4366,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
                 if (hasSelection) {
                     final Canvas cv = new Canvas(l.bitmap);
                     l.bitmap.eraseColor(Color.BLACK);
-                    cv.drawRect(selection.r, PAINT_DST_OUT);
+                    cv.drawRect(selection.r, BitmapUtils.PAINT_DST_OUT);
                 }
                 addLayer(frame, l, frame.selectedLayerIndex, true);
             }
@@ -4559,9 +4471,9 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
                         bitmap.getConfig(), true, bitmap.getColorSpace());
                 final Canvas cv = new Canvas(bm);
                 if (hasSelection) {
-                    cv.drawBitmap(bitmap, selection.r, selection.r, PAINT_SRC);
+                    cv.drawBitmap(bitmap, selection.r, selection.r, BitmapUtils.PAINT_SRC);
                 } else {
-                    cv.drawBitmap(bitmap, 0.0f, 0.0f, PAINT_SRC);
+                    cv.drawBitmap(bitmap, 0.0f, 0.0f, BitmapUtils.PAINT_SRC);
                 }
                 addLayer(frame,
                         new Layer(layer, bm, getString(R.string.copy_noun)),
@@ -4988,7 +4900,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
                 } else {
                     saveStepBackToHistory(selection.r);
                     canvas.drawBitmap(transformer.getBitmap(), selection.r.left, selection.r.top,
-                            PAINT_SRC_OVER);
+                            BitmapUtils.PAINT_SRC_OVER);
                     saveStepForwardToHistory();
                 }
                 if (hasSelection) drawBitmapOntoView(selection.r, true);
@@ -5004,7 +4916,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
             }
             case R.id.i_file_close ->
                     closeProject(activityMain.tlProjectList.getSelectedTabPosition());
-            case R.id.i_file_export -> export(new Project());
+            case R.id.i_file_export -> export(null);
             case R.id.i_file_new -> {
                 new NewImageDialog(this)
                         .setOnFinishSettingListener(onNewImagePropertiesApplyListener)
@@ -5016,13 +4928,14 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
                 if (!clipboardManager.hasPrimaryClip()) break;
                 final ClipData clipData = clipboardManager.getPrimaryClip();
                 if (clipData == null || clipData.getItemCount() < 1) break;
-                @StringRes final int r = openFile(clipData.getItemAt(0).getUri());
-                if (r != 0) Snackbar.make(vContent, r, Snackbar.LENGTH_LONG).show();
+                openFile(clipData.getItemAt(0).getUri());
             }
-            case R.id.i_file_refer_to_clipboard -> {
+            case R.id.i_file_save, R.id.i_save -> save();
+            case R.id.i_file_save_as -> saveAs();
+            case R.id.i_file_save_to_clipboard -> {
                 final String filePath = project.filePath;
                 if (filePath == null) {
-                    Snackbar.make(vContent, R.string.please_save_first, Snackbar.LENGTH_LONG)
+                    Snackbar.make(vContent, R.string.please_save_to_storage_first, Snackbar.LENGTH_LONG)
                             .setAction(R.string.save, v -> save())
                             .show();
                     break;
@@ -5033,8 +4946,6 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
                                         getApplicationContext().getPackageName() + ".provider",
                                         new File(filePath))));
             }
-            case R.id.i_file_save, R.id.i_save -> save();
-            case R.id.i_file_save_as -> saveAs();
             case R.id.i_fill_with_ref -> {
                 if (ref.recycled()) {
                     Snackbar.make(vContent, R.string.no_reference, Snackbar.LENGTH_LONG).show();
@@ -5521,7 +5432,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
             } else {
                 cv.drawBitmap(newImage,
                         null, new RectF(0.0f, 0.0f, width, height),
-                        scaleType == ImageSizeManager.ScaleType.STRETCH_FILTER ? PAINT_SRC : PAINT_BITMAP);
+                        scaleType == ImageSizeManager.ScaleType.STRETCH_FILTER ? BitmapUtils.PAINT_SRC_F : PAINT_BITMAP);
             }
         }
         project.history.addUndoAction(layer, layer.bitmap, null);
@@ -5653,7 +5564,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
     }
 
     private void saveInQuality() {
-        setQuality(project, project -> save());
+        QualityManager.setQuality(this, project, project -> save());
     }
 
     private void saveStateToHistory() {
@@ -5750,7 +5661,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
         if (!isa.isRecycled()) isa.set(bitmap);
 
         if (activityMain.tools.btgTools.getCheckedButtonId() == R.id.b_clone_stamp) {
-            cloneStampSrc = null;
+            cloneStamp.src = null;
         }
         updateReference();
 
@@ -5808,34 +5719,6 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
         activityMain.vForegroundColor.setBackgroundColor(Color.toArgb(foregroundColor));
         activityMain.vBackgroundColor.setBackgroundColor(Color.toArgb(backgroundColor));
         onPaintColorChanged();
-    }
-
-    private void setQuality(Project project, DirectorySelector.OnFileNameApplyCallback callback) {
-        switch (project.fileType) {
-            case PNG -> callback.onApply(project);
-            case GIF -> {
-                new QualityManager(this,
-                        project.gifEncodingType == null ? GifEncoder.EncodingType.ENCODING_TYPE_NORMAL_LOW_MEMORY : project.gifEncodingType,
-                        project.gifDither,
-                        (encodingType, dither) -> {
-                            project.gifEncodingType = encodingType;
-                            project.gifDither = dither;
-                            callback.onApply(project);
-                        })
-                        .show();
-            }
-            default -> {
-                new QualityManager(this,
-                        project.quality < 0 ? 100 : project.quality,
-                        project.compressFormat,
-                        (quality, format) -> {
-                            project.quality = quality;
-                            project.compressFormat = format;
-                            if (callback != null) callback.onApply(project);
-                        })
-                        .show();
-            }
-        }
     }
 
     public void setRunnableRunner(boolean multithreaded) {

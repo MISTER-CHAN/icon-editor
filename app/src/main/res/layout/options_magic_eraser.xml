@@ -55,7 +55,7 @@
         </com.google.android.material.button.MaterialButtonToggleGroup>
 
         <CheckBox
-            android:id="@+id/cb_acc_enabled"
+            android:id="@+id/cb_prec_enabled"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/enabled"
