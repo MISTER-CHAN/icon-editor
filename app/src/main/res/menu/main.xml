@@ -124,9 +124,9 @@
                             android:title="@string/save_as"
                             app:iconTint="?attr/colorOnSurfaceVariant" />
                         <item
-                            android:id="@+id/i_file_save_to_clipboard"
+                            android:id="@+id/i_file_put_onto_clipboard"
                             android:icon="@drawable/ic_void"
-                            android:title="@string/save_to_clipboard" />
+                            android:title="@string/put_onto_clipboard" />
                         <item
                             android:id="@+id/i_file_export"
                             android:icon="@drawable/ic_void"

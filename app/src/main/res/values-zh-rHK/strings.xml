@@ -221,6 +221,7 @@
     <string name="preset_brush">預設筆刷</string>
     <string name="preview_visible_subset_only">僅預覽可見子集</string>
     <string name="properties">屬性</string>
+    <string name="put_onto_clipboard">放上去剪貼簿</string>
     <string name="quality">品質</string>
     <string name="quick_add_layer_mask">快速新增圖層遮罩</string>
     <string name="quick_create_clipping_mask">快速建立剪裁遮罩</string>
@@ -246,7 +247,6 @@
     <string name="saturation">飽和度</string>
     <string name="save">儲存</string>
     <string name="save_as">另存爲</string>
-    <string name="save_to_clipboard">儲存至剪貼簿</string>
     <string name="scale">縮放</string>
     <string name="scale_to_black">壓縮至黑色</string>
     <string name="scale_to_white">壓縮至白色</string>

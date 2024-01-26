@@ -250,6 +250,7 @@
     <string name="preset_brush">Preset Brush</string>
     <string name="preview_visible_subset_only">Preview Visible Subset Only</string>
     <string name="properties">Properties</string>
+    <string name="put_onto_clipboard">Put onto Clipboard</string>
     <string name="quality">Quality</string>
     <string name="quick_add_layer_mask">Quick Add a Layer Mask</string>
     <string name="quick_create_clipping_mask">Quick Create Clipping Mask</string>
@@ -278,7 +279,6 @@
     <string name="saturation">Saturation</string>
     <string name="save">Save</string>
     <string name="save_as">Save as</string>
-    <string name="save_to_clipboard">Save to Clipboard</string>
     <string name="scale">Scale</string>
     <string name="scale_to_black">Scale to Black</string>
     <string name="scale_to_white">Scale to White</string>

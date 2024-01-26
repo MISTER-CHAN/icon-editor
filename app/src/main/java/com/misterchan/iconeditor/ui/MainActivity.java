@@ -295,7 +295,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
         }
     };
 
-    private final Paint magicPaint = new Paint();
+    private Paint magicPaint = BitmapUtils.PAINT_SRC_OVER;
 
     private final Paint marginPaint = new Paint() {
         {
@@ -1827,7 +1827,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
                 case MotionEvent.ACTION_MOVE -> {
                     final int bx = toBitmapX(x), by = toBitmapY(y);
                     final int lastBX = toBitmapX(lastX), lastBY = toBitmapY(lastY);
-                    final int rad = (int) (calcPaintStrokeRad());
+                    final int rad = (int) calcPaintStrokeRad();
                     final float radF = toScaled(rad);
                     final double theta = Math.atan2(y - lastY, x - lastX);
                     final int colorLeft = ref.bm().getPixel(
@@ -1894,7 +1894,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
                             drawCrossOntoView(magEr.f.x, magEr.f.y, false);
                             if (!activityMain.optionsMagicEraser.cbPrecEnabled.isChecked()) break;
 
-                            final int rad = (int) (calcPaintStrokeRad());
+                            final int rad = (int) calcPaintStrokeRad();
                             final int backgroundColor = ref.bm().getPixel(satX(ref.bm(), magEr.b.x), satY(ref.bm(), magEr.b.y));
                             final int foregroundColor = ref.bm().getPixel(satX(ref.bm(), magEr.f.x), satY(ref.bm(), magEr.f.y));
                             final int left = Math.min(magEr.b.x, magEr.f.x) - rad, top = Math.min(magEr.b.y, magEr.f.y) - rad,
@@ -1938,7 +1938,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
                     final float x = event.getX(), y = event.getY();
                     final int bx = toBitmapX(x), by = toBitmapY(y);
 
-                    final int rad = (int) (calcPaintStrokeRad());
+                    final int rad = (int) calcPaintStrokeRad();
                     final int left = Math.min(lastBX, bx) - rad, top = Math.min(lastBY, by) - rad,
                             right = Math.max(lastBX, bx) + rad + 1, bottom = Math.max(lastBY, by) + rad + 1;
                     MagicPaint.draw(canvas, ref.bm(),
@@ -2058,24 +2058,25 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
         @Override
         public void onIVSingleTouch(View v, MotionEvent event) {
             if (!hasSelection) return;
-            final float radius = calcPaintStrokeRad();
-            if (selection.r.left + radius * 2.0f >= selection.r.right || selection.r.top + radius * 2.0f >= selection.r.bottom) {
-                return;
-            }
             switch (event.getAction()) {
-                case MotionEvent.ACTION_DOWN:
+                case MotionEvent.ACTION_DOWN: {
+                    final float radius = calcPaintStrokeRad();
+                    if (selection.r.left + radius * 2.0f >= selection.r.right || selection.r.top + radius * 2.0f >= selection.r.bottom) {
+                        return;
+                    }
                     createEditPreview(false, false);
-
+                }
                 case MotionEvent.ACTION_MOVE: {
                     final float x = event.getX(), y = event.getY();
                     final int bx = toBitmapX(x), by = toBitmapY(y);
-                    final int w = selection.r.width(), h = selection.r.height();
-                    final int wh = w >> 1, hh = h >> 1; // h - Half
                     editPreview.revert();
-                    final RectF rect = new RectF(selection.r);
-                    rect.inset(radius, radius);
-                    editPreview.getCanvas().drawBitmap(bitmap,
-                            new Rect(bx - wh, by - hh, bx + w - wh, by + h - hh), rect, paint);
+                    final int w = selection.r.width(), h = selection.r.height();
+                    final int left = bx - (w >> 1), top = by - (h >> 1);
+                    final Rect src = new Rect(left, top, left + w, top + h), dst = new Rect(selection.r);
+                    final int rad = (int) calcPaintStrokeRad() - 1;
+                    src.inset(rad, rad);
+                    dst.inset(rad, rad);
+                    editPreview.getCanvas().drawBitmap(bitmap, src, dst, paint);
                     drawBitmapOntoView(editPreview.getEntire(), selection.r);
                     activityMain.tvStatus.setText(getString(R.string.coordinates, bx, by));
                     break;
@@ -4111,7 +4112,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
         activityMain.optionsGradientLine.cbAntiAlias.setOnCheckedChangeListener(onAntiAliasCBCheckedChangeListener);
         activityMain.optionsMagicEraser.cbStyle.setOnCheckedChangeListener(onMagicEraserStyleCBCheckedChangeListener);
         activityMain.optionsMagicPaint.cbAntiAlias.setOnCheckedChangeListener(onAntiAliasCBCheckedChangeListener);
-        activityMain.optionsMagicPaint.cbClear.setOnCheckedChangeListener(((buttonView, isChecked) -> magicPaint.setBlendMode(isChecked ? BlendMode.DST_OUT : null)));
+        activityMain.optionsMagicPaint.cbClear.setOnCheckedChangeListener((buttonView, isChecked) -> magicPaint = isChecked ? BitmapUtils.PAINT_DST_OUT : BitmapUtils.PAINT_SRC_OVER);
         activityMain.optionsPatcher.cbAntiAlias.setOnCheckedChangeListener(onAntiAliasCBCheckedChangeListener);
         activityMain.optionsPath.cbAntiAlias.setOnCheckedChangeListener(onAntiAliasCBCheckedChangeListener);
         activityMain.optionsPath.cbFill.setOnCheckedChangeListener(onFillCBCheckedChangeListener);
@@ -4930,9 +4931,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
                 if (clipData == null || clipData.getItemCount() < 1) break;
                 openFile(clipData.getItemAt(0).getUri());
             }
-            case R.id.i_file_save, R.id.i_save -> save();
-            case R.id.i_file_save_as -> saveAs();
-            case R.id.i_file_save_to_clipboard -> {
+            case R.id.i_file_put_onto_clipboard -> {
                 final String filePath = project.filePath;
                 if (filePath == null) {
                     Snackbar.make(vContent, R.string.please_save_to_storage_first, Snackbar.LENGTH_LONG)
@@ -4946,6 +4945,8 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
                                         getApplicationContext().getPackageName() + ".provider",
                                         new File(filePath))));
             }
+            case R.id.i_file_save, R.id.i_save -> save();
+            case R.id.i_file_save_as -> saveAs();
             case R.id.i_fill_with_ref -> {
                 if (ref.recycled()) {
                     Snackbar.make(vContent, R.string.no_reference, Snackbar.LENGTH_LONG).show();
