@@ -2145,6 +2145,11 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
                 }
             }
         }
+
+        @Override
+        protected void undo() {
+            eraseBitmapAndInvalidateView(previewBitmap, activityMain.canvas.ivPreview);
+        }
     };
 
     @SuppressLint({"ClickableViewAccessibility"})

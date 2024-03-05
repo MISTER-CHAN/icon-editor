@@ -9,8 +9,9 @@ import androidx.annotation.ColorInt;
 
 import com.misterchan.iconeditor.util.BitmapUtils;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.List;
-import java.util.Stack;
 
 public class Layers {
     private Layers() {
@@ -36,7 +37,7 @@ public class Layers {
     }
 
     public static LayerTree computeLayerTree(List<Layer> layers) {
-        final Stack<LayerTree> stack = new Stack<>();
+        final Deque<LayerTree> stack = new ArrayDeque<>();
         LayerTree layerTree = new LayerTree();
         LayerTree.Node prev = layerTree.push(layers.get(layers.size() - 1), true);
         prev.layer.displayingOperators = (prev.layer.getLevel() > 0 ? 0x1 : 0x0) << 30
@@ -74,7 +75,8 @@ public class Layers {
                 } else {
                     // Re-compute layer tree
                     stack.clear();
-                    layerTree = stack.push(new LayerTree());
+                    layerTree = new LayerTree();
+                    stack.push(layerTree);
                     prev = layerTree.push(layer);
                 }
                 prevLayer.displayingOperators |= (layer.getLevel() > 0 ? -levelDiff : -levelDiff - 1) << 10;
