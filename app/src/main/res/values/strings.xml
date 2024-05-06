@@ -323,6 +323,7 @@
     <string name="state_lightness">Lightness: %+d</string>
     <string name="state_l_t_r_b">L: %d, T: %d, R: %d, B: %d</string>
     <string name="state_l_t_r_b_size">L: %d, T: %d, R: %d, B: %d, Size: %d × %d</string>
+    <string name="state_l_t_r_b_size_1">L: %d, T: %d, R: %d, B: %d, Size: 1 × 1</string>
     <string name="state_posterization">Posterization level: %s</string>
     <string name="state_radius">Radius: %.1f</string>
     <string name="state_rotate" translatable="false">%d°</string>

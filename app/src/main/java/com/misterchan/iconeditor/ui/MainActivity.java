@@ -1990,7 +1990,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
                                 stopY = startY + 1;
                             }
                             setSelection(startX, startY, stopX, stopY);
-                            activityMain.tvStatus.setText(getString(R.string.state_from_to_size_1,
+                            activityMain.tvStatus.setText(getString(R.string.state_l_t_r_b_size_1,
                                     startX, startY, startX, startY));
                         }
                     } else {
@@ -2012,29 +2012,21 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
                         hasDraggedBound |= selection.dragMarqueeBound(x, y, scale);
                         drawSelectionOntoView();
                     }
-                    activityMain.tvStatus.setText(getString(R.string.state_l_t_r_b_size,
-                            selection.r.left, selection.r.top, selection.r.right - 1, selection.r.bottom - 1,
-                            selection.r.width(), selection.r.height()));
+                    if (selection.marqBoundBeingDragged == null || hasDraggedBound) {
+                        activityMain.tvStatus.setText(getString(R.string.state_l_t_r_b_size,
+                                selection.r.left, selection.r.top, selection.r.right - 1, selection.r.bottom - 1,
+                                selection.r.width(), selection.r.height()));
+                    }
                 }
                 case MotionEvent.ACTION_CANCEL, MotionEvent.ACTION_UP -> {
                     optimizeSelection();
                     drawSelectionOntoView();
-                    if (selection.marqBoundBeingDragged != null) {
-                        if (hasDraggedBound) {
-                            selection.marqBoundBeingDragged = null;
-                            hasDraggedBound = false;
-                            activityMain.tvStatus.setText(hasSelection ?
-                                    getString(R.string.state_l_t_r_b_size,
-                                            selection.r.left, selection.r.top, selection.r.right - 1, selection.r.bottom - 1,
-                                            selection.r.width(), selection.r.height()) :
-                                    "");
-                        }
-                    } else {
-                        activityMain.tvStatus.setText(hasSelection ?
-                                getString(R.string.state_l_t_r_b_size,
-                                        selection.r.left, selection.r.top, selection.r.right - 1, selection.r.bottom - 1,
-                                        selection.r.width(), selection.r.height()) :
-                                "");
+                    if (selection.marqBoundBeingDragged != null && hasDraggedBound) {
+                        selection.marqBoundBeingDragged = null;
+                        hasDraggedBound = false;
+                        activityMain.tvStatus.setText(getString(R.string.state_l_t_r_b_size,
+                                selection.r.left, selection.r.top, selection.r.right - 1, selection.r.bottom - 1,
+                                selection.r.width(), selection.r.height()));
                     }
                 }
             }
@@ -2042,6 +2034,11 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
 
         @Override
         protected void onTouchEnd() {
+        }
+
+        private void setSelection(int fromX, int fromY, int toX, int toY) {
+            selection.set(fromX, fromY, toX, toY);
+            drawSelectionOntoView();
         }
 
         @Override
@@ -4215,7 +4212,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
         if (isLandscape) {
             final var tl = activityMain.tlProjectList;
             OneShotPreDrawListener.add(tl, () -> {
-                final int width = activityMain.getRoot().getMeasuredHeight(), height = activityMain.tlProjectList.getMeasuredHeight();
+                final int width = activityMain.getRoot().getMeasuredHeight(), height = tl.getMeasuredHeight();
                 final ViewGroup.LayoutParams lp = tl.getLayoutParams();
                 lp.width = width;
                 tl.setLayoutParams(lp);
@@ -4226,6 +4223,16 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
                 tl.setRotation(ltr ? 90.0f : -90.0f);
             });
             Toast.makeText(this, R.string.please_switch_orientation_to_vertical_to_get_all_functions, Toast.LENGTH_LONG).show();
+        }
+
+        {
+            final var tv = activityMain.tvStatus;
+            OneShotPreDrawListener.add(tv, () -> {
+                final int height = tv.getMeasuredHeight();
+                final ViewGroup.LayoutParams lp = tv.getLayoutParams();
+                lp.height = height;
+                tv.setLayoutParams(lp);
+            });
         }
     }
 
@@ -5729,11 +5736,6 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
 
     public void setRunnableRunner(boolean multithreaded) {
         runnableRunner = multithreaded ? runnableStartingRunner : runnableRunningRunner;
-    }
-
-    private void setSelection(int fromX, int fromY, int toX, int toY) {
-        selection.set(fromX, fromY, toX, toY);
-        drawSelectionOntoView();
     }
 
     private void showStateForEditPreview(CharSequence text) {

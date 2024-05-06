@@ -35,30 +35,30 @@ public class SelectionTool {
     /**
      * Check if the user is dragging a marquee bound.
      */
-    public Position checkDraggingMarqueeBound(float x, float y) {
+    public Position checkDraggingMarqueeBound(float viewX, float viewY) {
         marqBoundBeingDragged = null;
 
         // Marquee Bounds
         final float mbLeft = cooConv.toViewX(r.left), mbTop = cooConv.toViewY(r.top),
                 mbRight = cooConv.toViewX(r.right), mbBottom = cooConv.toViewY(r.bottom);
 
-        if (mbLeft - 50.0f <= x && x < mbLeft + 50.0f) {
-            if (mbTop + 50.0f <= y && y < mbBottom - 50.0f) {
+        if (mbLeft - 50.0f <= viewX && viewX < mbLeft + 50.0f) {
+            if (mbTop + 50.0f <= viewY && viewY < mbBottom - 50.0f) {
 
                 marqBoundBeingDragged = SelectionTool.Position.LEFT;
             }
-        } else if (mbTop - 50.0f <= y && y < mbTop + 50.0f) {
-            if (mbLeft + 50.0f <= x && x < mbRight - 50.0f) {
+        } else if (mbTop - 50.0f <= viewY && viewY < mbTop + 50.0f) {
+            if (mbLeft + 50.0f <= viewX && viewX < mbRight - 50.0f) {
 
                 marqBoundBeingDragged = SelectionTool.Position.TOP;
             }
-        } else if (mbRight - 50.0f <= x && x < mbRight + 50.0f) {
-            if (mbTop + 50.0f <= y && y < mbBottom - 50.0f) {
+        } else if (mbRight - 50.0f <= viewX && viewX < mbRight + 50.0f) {
+            if (mbTop + 50.0f <= viewY && viewY < mbBottom - 50.0f) {
 
                 marqBoundBeingDragged = SelectionTool.Position.RIGHT;
             }
-        } else if (mbBottom - 50.0f <= y && y < mbBottom + 50.0f) {
-            if (mbLeft + 50.0f <= x && x < mbRight - 50.0f) {
+        } else if (mbBottom - 50.0f <= viewY && viewY < mbBottom + 50.0f) {
+            if (mbLeft + 50.0f <= viewX && viewX < mbRight - 50.0f) {
 
                 marqBoundBeingDragged = SelectionTool.Position.BOTTOM;
             }

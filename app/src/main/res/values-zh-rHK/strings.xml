@@ -286,6 +286,7 @@
     <string name="state_length">長：%f</string>
     <string name="state_l_t_r_b">左：%d，上：%d，右：%d，下：%d</string>
     <string name="state_l_t_r_b_size">左：%d，上：%d，右：%d，下：%d，尺寸：%d × %d</string>
+    <string name="state_l_t_r_b_size_1">左：%d，上：%d，右：%d，下：%d，尺寸：1 × 1</string>
     <string name="state_posterization">海報化等級：%s</string>
     <string name="state_radius">半徑：%.1f</string>
     <string name="state_ruler">(%d, %d) – (%d, %d)，投影：(%d, %d)，長：%s</string>
