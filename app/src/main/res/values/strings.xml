@@ -297,6 +297,7 @@
     <string name="shadows">Shadows</string>
     <string name="shape">Shape</string>
     <string name="shift">Shift</string>
+    <string name="show_current_color">Show Current Color</string>
     <string name="show_timeline">Show Timeline</string>
     <string name="simple_fast">Simple Fast</string>
     <string name="size">Size</string>

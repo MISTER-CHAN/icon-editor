@@ -14,6 +14,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.LinearLayout;
+import android.widget.PopupMenu;
 
 import androidx.annotation.ColorLong;
 import androidx.annotation.StringRes;
@@ -173,7 +174,7 @@ public class ColorPickerDialog {
     private Slider sAlpha, sComp0, sComp1, sComp2, sComp3;
     private TextInputEditText tietAlpha, tietComp0, tietComp1, tietComp2, tietComp3;
     private TextInputLayout tilComp0, tilComp1, tilComp2, tilComp3;
-    private View vPreview;
+    private View vPreviewColor;
 
     private final TabLayout.OnTabSelectedListener onColorSpaceTLTabSelectedListener = new TabLayout.OnTabSelectedListener() {
         @Override
@@ -336,7 +337,7 @@ public class ColorPickerDialog {
         if (!(sAlpha.getValueFrom() <= f && f <= sAlpha.getValueTo())) return;
         sAlpha.setValue(f);
         colorPicker.setAlpha(f);
-        vPreview.setBackgroundColor(colorPicker.colorInt());
+        vPreviewColor.setBackgroundColor(colorPicker.colorInt());
     }
 
     private void onComponentChanged(int index, String s, Slider slider) {
@@ -355,7 +356,7 @@ public class ColorPickerDialog {
         }
         slider.setValue(f);
         colorPicker.setComponent(index, f);
-        vPreview.setBackgroundColor(colorPicker.colorInt());
+        vPreviewColor.setBackgroundColor(colorPicker.colorInt());
     }
 
     private void onColorRepChanged() {
@@ -377,6 +378,7 @@ public class ColorPickerDialog {
     public void show() {
         dialog.show();
 
+        int oldColorInt = Color.toArgb(oldColor);
         llExtraViews = dialog.findViewById(R.id.ll_extra_views);
         sAlpha = dialog.findViewById(R.id.s_alpha);
         sComp0 = dialog.findViewById(R.id.s_comp_0);
@@ -393,9 +395,28 @@ public class ColorPickerDialog {
         tietComp1 = (TextInputEditText) tilComp1.getEditText();
         tietComp2 = (TextInputEditText) tilComp2.getEditText();
         tietComp3 = (TextInputEditText) tilComp3.getEditText();
-        vPreview = dialog.findViewById(R.id.v_color);
+        View vCurrent = dialog.findViewById(R.id.item_color_current);
+        View vCurrentColor = vCurrent.findViewById(R.id.v_color);
+        vPreviewColor = dialog.findViewById(R.id.item_color).findViewById(R.id.v_color);
 
-        vPreview.setBackgroundColor(Color.toArgb(oldColor));
+        View.OnClickListener onPreviewClickListener = v -> {
+            final PopupMenu popupMenu = new PopupMenu(dialog.getContext(), v);
+            final Menu menu = popupMenu.getMenu();
+            popupMenu.getMenuInflater().inflate(R.menu.color_picker, menu);
+            popupMenu.setOnMenuItemClickListener(item -> {
+                boolean checked = !item.isChecked();
+                vCurrent.setVisibility(checked ? View.VISIBLE : View.GONE);
+                Settings.INST.pref().edit().putBoolean(Settings.KEY_SCC, checked).apply();
+                Settings.INST.update(Settings.KEY_SCC);
+                return true;
+            });
+            popupMenu.show();
+            menu.findItem(R.id.i_show_current).setChecked(Settings.INST.showCurrentColor());
+        };
+
+        vCurrent.setVisibility(Settings.INST.showCurrentColor() ? View.VISIBLE : View.GONE);
+        vCurrentColor.setBackgroundColor(oldColorInt);
+        vPreviewColor.setBackgroundColor(oldColorInt);
 
         onColorRepChanged();
         {
@@ -440,5 +461,8 @@ public class ColorPickerDialog {
                 onColorSpaceTLTabSelectedListener.onTabSelected(tlColorPickers.getTabAt(colorPickerPos));
             }
         }
+
+        vCurrentColor.setOnClickListener(onPreviewClickListener);
+        vPreviewColor.setOnClickListener(onPreviewClickListener);
     }
 }

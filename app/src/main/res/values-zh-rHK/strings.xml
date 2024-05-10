@@ -265,6 +265,7 @@
     <string name="shadows">陰影</string>
     <string name="shape">形狀</string>
     <string name="shift">偏移</string>
+    <string name="show_current_color">顯示當前顏色</string>
     <string name="show_timeline">顯示時間線</string>
     <string name="simple_fast">簡單快速</string>
     <string name="size">尺寸</string>

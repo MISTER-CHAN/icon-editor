@@ -27,12 +27,14 @@ public class Settings {
     private static final String KEY_MT = "mt"; // Multithreaded
     private static final String KEY_NLL = "nll"; // Level of New Layer
     private static final String KEY_PALETTE = "palette"; // Palette
+    public static final String KEY_SCC = "scc"; // Show Current Color
     public static final String KEY_THEME = "theme"; // Theme
 
     private boolean autoSetHasAlpha = false;
     private boolean colorRep = false;
-    private int historyMaxSize = 50;
     private boolean newLayerLevel = false;
+    private boolean showCurrentColor = false;
+    private int historyMaxSize = 50;
     private int colorIntCompRadix = 16;
     private int colorPicker = 0;
     private List<Long> palette;
@@ -79,6 +81,10 @@ public class Settings {
         return preferences;
     }
 
+    public boolean showCurrentColor() {
+        return showCurrentColor;
+    }
+
     private void loadPalette() {
         String str = preferences.getString(KEY_PALETTE,
                 "\uFF00\u0000\u0000\u0000" + "\uFFFF\uFFFF\u0000\u0000" +
@@ -122,6 +128,7 @@ public class Settings {
         update(KEY_MT);
         update(KEY_NLL);
         update(KEY_PALETTE);
+        update(KEY_SCC);
     }
 
     public void update(String key) {
@@ -153,6 +160,7 @@ public class Settings {
             case KEY_MT -> mainActivity.setRunnableRunner(preferences.getBoolean(KEY_MT, true));
             case KEY_NLL -> newLayerLevel = "s".equals(preferences.getString(KEY_NLL, "t"));
             case KEY_PALETTE -> loadPalette();
+            case KEY_SCC -> showCurrentColor = preferences.getBoolean(KEY_SCC, false);
         }
     }
 }

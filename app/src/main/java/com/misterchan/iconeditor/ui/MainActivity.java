@@ -630,9 +630,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
     private final DialogInterface.OnClickListener onLayerNameApplyListener = (dialog, which) -> {
         final TextInputEditText tietFileName = ((AlertDialog) dialog).findViewById(R.id.tiet_file_name);
         final String name = tietFileName.getText().toString();
-        if (name.length() == 0) {
-            return;
-        }
+        if (name.isEmpty()) return;
         layer.name = name;
         frame.layerAdapter.notifyItemChanged(frame.selectedLayerIndex, LayerAdapter.Payload.NAME);
     };
@@ -1041,6 +1039,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
                 ++project.selectedFrameIndex;
             }
         }
+        if (project.frames.size() > 1 && project.onionSkins > 0) drawChessboardOntoView();
 
         frameList.rvFrameList.post(() -> {
             project.frameAdapter.notifyItemRangeChanged(Math.min(fromPos, toPos), Math.abs(toPos - fromPos) + 1);
@@ -1059,6 +1058,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
         }
         frame.computeLayerTree();
 
+        calculateBackgroundSizeOnView();
         drawBitmapOntoView(true, true);
         drawChessboardOntoView();
         drawGridOntoView();
@@ -1150,7 +1150,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
             translationY = project.translationY;
             scale = project.scale;
 
-            if (hasSelection && frame.layers.size() > 0) {
+            if (hasSelection && !frame.layers.isEmpty()) {
                 final Bitmap unselectedBm = frame.getBackgroundLayer().bitmap;
                 final Bitmap selectedBm = project.getFirstFrame().getBackgroundLayer().bitmap;
                 if (selectedBm.getWidth() != unselectedBm.getWidth() || selectedBm.getHeight() != unselectedBm.getHeight()) {
@@ -1158,6 +1158,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
                 }
             }
 
+            drawRulers();
             selectFrame(project.selectedFrameIndex);
         }
 
@@ -2702,7 +2703,6 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
                         layer.left = toBitmapXAbs(x - dx);
                         layer.top = toBitmapYAbs(y - dy);
                         drawBitmapOntoView();
-                        drawChessboardOntoView();
                         drawGridOntoView();
                         activityMain.tvStatus.setText(getString(R.string.state_left_top,
                                 layer.left, layer.top));
@@ -2973,8 +2973,12 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
                         activityMain.canvas.flIv.setOnTouchListener(onIVTouchWithTransformerListener);
                         if (hasSelection) {
                             transformer.apply();
-                            if (checkedId == R.id.b_mesh) transformer.resetMesh();
-                            else transformer.mesh = null;
+                            if (checkedId == R.id.b_mesh) {
+                                if (transformer.mesh != null) transformer.resetMesh();
+                                else createTransformerMesh();
+                            } else {
+                                transformer.mesh = null;
+                            }
                             drawSelectionOntoView();
                         }
                     }
@@ -3001,6 +3005,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
         isZoomingEnabled = isChecked;
     };
 
+    @SuppressLint("ClickableViewAccessibility")
     private final CompoundButton.OnCheckedChangeListener onMagicEraserStyleCBCheckedChangeListener = (buttonView, isChecked) -> {
         activityMain.optionsMagicEraser.btgSides.setVisibility(isChecked ? View.GONE : View.VISIBLE);
         activityMain.optionsMagicEraser.cbPrecEnabled.setVisibility(isChecked ? View.VISIBLE : View.GONE);
@@ -3362,6 +3367,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
             drawCrossOntoView(magEr.f.x, magEr.f.y, false);
         }
         drawChessboardOntoView();
+        drawRulers();
         drawGridOntoView();
         drawSelectionOntoView();
     }
@@ -3571,7 +3577,6 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
         }
 
         activityMain.canvas.ivChessboard.invalidate();
-        drawRuler();
     }
 
     private void drawCrossOntoView(float x, float y) {
@@ -3687,7 +3692,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
         activityMain.canvas.ivGrid.invalidate();
     }
 
-    private void drawRuler() {
+    private void drawRulers() {
         eraseBitmap(rulerHBitmap);
         eraseBitmap(rulerVBitmap);
         final int multiplier = (int) Math.ceil(96.0 / scale);
