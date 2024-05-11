@@ -5,7 +5,9 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.ext.SdkExtensions;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 
@@ -57,7 +59,6 @@ public class SettingsActivity extends AppCompatActivity {
             setPreferencesFromResource(R.xml.root_preferences, rootKey);
             final Context context = getContext();
             String versionName = null;
-            final EditTextPreference etpHms = findPreference(Settings.KEY_HMS);
 
             try {
                 versionName = context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionName;
@@ -65,10 +66,14 @@ public class SettingsActivity extends AppCompatActivity {
             }
             findPreference(Settings.KEY_CFU).setSummary(versionName);
 
-            etpHms.setOnBindEditTextListener(editText -> {
+            ((EditTextPreference) findPreference(Settings.KEY_HMS)).setOnBindEditTextListener(editText -> {
                 editText.setInputType(EditorInfo.TYPE_CLASS_NUMBER | EditorInfo.TYPE_NUMBER_FLAG_DECIMAL);
                 editText.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_END);
             });
+
+            if (SdkExtensions.getExtensionVersion(Build.VERSION_CODES.R) < 2) {
+                findPreference(Settings.KEY_MP).setVisible(false);
+            }
         }
 
         @Override

@@ -19,6 +19,15 @@
             app:useSimpleSummaryProvider="true" />
 
         <ListPreference
+            app:defaultValue="m"
+            app:entries="@array/mp_entries"
+            app:entryValues="@array/mp_values"
+            app:key="mp"
+            app:singleLineTitle="false"
+            app:title="@string/media_picker"
+            app:useSimpleSummaryProvider="true" />
+
+        <ListPreference
             app:defaultValue="d"
             app:entries="@array/theme_entries"
             app:entryValues="@array/theme_values"

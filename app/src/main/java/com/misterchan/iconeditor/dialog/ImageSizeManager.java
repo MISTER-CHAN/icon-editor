@@ -2,6 +2,7 @@ package com.misterchan.iconeditor.dialog;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.view.View;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.RadioButton;
@@ -98,7 +99,7 @@ public class ImageSizeManager {
         cbFilter.setChecked(true);
         tietWidth.setText(String.valueOf(defaultWidth));
         tietHeight.setText(String.valueOf(defaultHeight));
-        rbStretch.setOnCheckedChangeListener((buttonView, isChecked) -> cbFilter.setEnabled(isChecked));
+        rbStretch.setOnCheckedChangeListener((buttonView, isChecked) -> cbFilter.setVisibility(isChecked ? View.VISIBLE : View.INVISIBLE));
         rbStretch.setChecked(true);
 
         ((CompoundButton) dialog.findViewById(R.id.cb_lar)).setOnCheckedChangeListener((buttonView, isChecked) -> {

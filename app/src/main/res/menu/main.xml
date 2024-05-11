@@ -319,6 +319,18 @@
                             android:title="@string/actual_pixels"
                             app:iconTint="?attr/colorOnSurfaceVariant" />
                     </group>
+                    <group
+                        android:id="@+id/g_shows"
+                        android:checkableBehavior="all">
+                        <item
+                            android:id="@+id/i_show_grid"
+                            android:icon="@drawable/ic_void"
+                            android:title="@string/show_grid" />
+                        <item
+                            android:id="@+id/i_show_rulers"
+                            android:icon="@drawable/ic_void"
+                            android:title="@string/show_rulers" />
+                    </group>
                     <group android:id="@+id/g_guide">
                         <item
                             android:id="@+id/i_guides_new"

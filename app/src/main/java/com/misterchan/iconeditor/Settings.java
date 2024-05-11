@@ -24,16 +24,22 @@ public class Settings {
     public static final String KEY_FL = "fl"; // Frame List
     public static final String KEY_HMS = "hms"; // Max Size of History
     public static final String KEY_LOC = "loc"; // Locale
+    public static final String KEY_MP = "mp"; // Media Picker
     private static final String KEY_MT = "mt"; // Multithreaded
     private static final String KEY_NLL = "nll"; // Level of New Layer
     private static final String KEY_PALETTE = "palette"; // Palette
     public static final String KEY_SCC = "scc"; // Show Current Color
+    public static final String KEY_SG = "sg"; // Show Grid
+    public static final String KEY_SR = "sr"; // Show Rulers
     public static final String KEY_THEME = "theme"; // Theme
 
     private boolean autoSetHasAlpha = false;
     private boolean colorRep = false;
+    private boolean mediaPicker = true;
     private boolean newLayerLevel = false;
     private boolean showCurrentColor = false;
+    private boolean showGrid = true;
+    private boolean showRulers = true;
     private int historyMaxSize = 50;
     private int colorIntCompRadix = 16;
     private int colorPicker = 0;
@@ -69,6 +75,10 @@ public class Settings {
         return historyMaxSize;
     }
 
+    public boolean mediaPicker() {
+        return mediaPicker;
+    }
+
     public boolean newLayerLevel() {
         return newLayerLevel;
     }
@@ -83,6 +93,14 @@ public class Settings {
 
     public boolean showCurrentColor() {
         return showCurrentColor;
+    }
+
+    public boolean showGrid() {
+        return showGrid;
+    }
+
+    public boolean showRulers() {
+        return showRulers;
     }
 
     private void loadPalette() {
@@ -125,10 +143,13 @@ public class Settings {
         update(KEY_CR);
         update(KEY_FB);
         update(KEY_HMS);
+        update(KEY_MP);
         update(KEY_MT);
         update(KEY_NLL);
         update(KEY_PALETTE);
         update(KEY_SCC);
+        update(KEY_SG);
+        update(KEY_SR);
     }
 
     public void update(String key) {
@@ -157,10 +178,13 @@ public class Settings {
                     historyMaxSize = 50;
                 }
             }
+            case KEY_MP -> mediaPicker = "m".equals(preferences.getString(KEY_MP, "m"));
             case KEY_MT -> mainActivity.setRunnableRunner(preferences.getBoolean(KEY_MT, true));
             case KEY_NLL -> newLayerLevel = "s".equals(preferences.getString(KEY_NLL, "t"));
             case KEY_PALETTE -> loadPalette();
             case KEY_SCC -> showCurrentColor = preferences.getBoolean(KEY_SCC, false);
+            case KEY_SG -> showGrid = preferences.getBoolean(KEY_SG, true);
+            case KEY_SR -> showRulers = preferences.getBoolean(KEY_SR, true);
         }
     }
 }

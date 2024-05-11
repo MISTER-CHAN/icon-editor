@@ -98,6 +98,7 @@
     <string name="fast">快速</string>
     <string name="file">檔案</string>
     <string name="file_name">檔案名</string>
+    <string name="file_picker">檔案拾取器</string>
     <string name="fill">塡充</string>
     <string name="fill_with_reference">以參照塡充</string>
     <string name="filter_layer">濾鏡圖層</string>
@@ -166,6 +167,7 @@
     <string name="mask">遮罩</string>
     <string name="mask_filter">遮罩濾鏡</string>
     <string name="max">最大</string>
+    <string name="media_picker">媒體拾取器</string>
     <string name="merge">合倂</string>
     <string name="merge_alpha">合倂 Alpha</string>
     <string name="merge_as">合倂爲</string>
@@ -208,6 +210,7 @@
     <string name="path">路徑</string>
     <string name="pencil">鉛筆</string>
     <string name="performance">效能</string>
+    <string name="photo_picker">相片拾取器</string>
     <string name="pixel">像素</string>
     <string name="please_save_to_storage_first">請先儲存至儲存。</string>
     <string name="please_switch_orientation_to_vertical_to_get_all_functions">請切換至縱向以獲取所有功能。</string>
@@ -237,6 +240,7 @@
     <string name="representation">表示</string>
     <string name="reset">重設</string>
     <string name="reset_this_curve">重設此曲線</string>
+    <string name="restart_app_to_take_effect">重啟應用以生效或取消變更。請確保所有檔案已被儲存。</string>
     <string name="reset_source">重設來源</string>
     <string name="rgb_outputs">RGB 輸出</string>
     <string name="right">右</string>
@@ -266,6 +270,8 @@
     <string name="shape">形狀</string>
     <string name="shift">偏移</string>
     <string name="show_current_color">顯示當前顏色</string>
+    <string name="show_grid">顯示網格</string>
+    <string name="show_rulers">顯示尺標</string>
     <string name="show_timeline">顯示時間線</string>
     <string name="simple_fast">簡單快速</string>
     <string name="size">尺寸</string>

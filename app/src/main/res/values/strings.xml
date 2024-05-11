@@ -111,6 +111,7 @@
     <string name="fast">Fast</string>
     <string name="file">File</string>
     <string name="file_name">File name</string>
+    <string name="file_picker">File Picker</string>
     <string name="fill">Fill</string>
     <string name="fill_with_reference">Fill with Reference</string>
     <string name="filter_layer">Filter Layer</string>
@@ -189,6 +190,7 @@
     <string name="mask">Mask</string>
     <string name="mask_filter">Mask Filter</string>
     <string name="max">Max</string>
+    <string name="media_picker">Media Picker</string>
     <string name="merge">Merge</string>
     <string name="merge_alpha">Merge Alpha</string>
     <string name="merge_as">Merge as</string>
@@ -237,6 +239,7 @@
     <string name="pencil">Pencil</string>
     <string name="percent" translatable="false">%</string>
     <string name="performance">Performance</string>
+    <string name="photo_picker">Photo Picker</string>
     <string name="pixel">Pixel</string>
     <string name="please_save_to_storage_first">Please save to storage first.</string>
     <string name="please_switch_orientation_to_vertical_to_get_all_functions">Please switch the orientation to vertical to get all functions.</string>
@@ -268,6 +271,7 @@
     <string name="reset">Reset</string>
     <string name="reset_source">Reset Source</string>
     <string name="reset_this_curve">Reset This Curve</string>
+    <string name="restart_app_to_take_effect">Restart the application to take effect or cancel the change. Please make sure that all files have been saved.</string>
     <string name="rgb" translatable="false">RGB</string>
     <string name="rgb_outputs">RGB Outputs</string>
     <string name="right">Right</string>
@@ -298,6 +302,8 @@
     <string name="shape">Shape</string>
     <string name="shift">Shift</string>
     <string name="show_current_color">Show Current Color</string>
+    <string name="show_grid">Show Grid</string>
+    <string name="show_rulers">Show Rulers</string>
     <string name="show_timeline">Show Timeline</string>
     <string name="simple_fast">Simple Fast</string>
     <string name="size">Size</string>
@@ -316,7 +322,7 @@
     <string name="state_eyedropper_precise" translatable="false">(%d, %d) A: %s, R: %s, G: %s, B: %s</string>
     <string name="state_from_to_size">From: (%d, %d), To: (%d, %d), Size: %d × %d"</string>
     <string name="state_from_to_size_1">From: (%d, %d), To: (%d, %d), Size: 1 × 1"</string>
-    <string name="state_hs" translatable="false">H: %+.0f°, S: %+.2f, %c: %+.2f</string>
+    <string name="state_hs" translatable="false">H: %+.0f°, S: %+.0f%%, %c: %+.0f%%</string>
     <string name="state_hue">Hue：%.0f°</string>
     <string name="state_invert">Invert: %.1f</string>
     <string name="state_left_top">Left: %d, Top: %d</string>

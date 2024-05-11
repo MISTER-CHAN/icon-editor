@@ -353,6 +353,9 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
         }
     };
 
+    private final ActivityResultLauncher<String> pickMultipleContents =
+            registerForActivityResult(new ActivityResultContracts.GetMultipleContents(), onImagesPickedCallback);
+
     private final ActivityResultLauncher<PickVisualMediaRequest> pickMultipleMedia = registerForActivityResult(
             new ActivityResultContracts.PickMultipleVisualMedia(
                     SdkExtensions.getExtensionVersion(Build.VERSION_CODES.R) >= 2 ? MediaStore.getPickImagesMaxLimit() : 100),
@@ -3621,7 +3624,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
             final float left = toViewX(0), top = toViewY(0);
             final float l = left >= 0.0f ? left : left % scale, t = top >= 0.0f ? top : top % scale,
                     r = Math.min(left + toScaled(bitmap.getWidth()), viewWidth), b = Math.min(top + toScaled(bitmap.getHeight()), viewHeight);
-            if (isScaledMuch()) {
+            if (Settings.INST.showGrid() && isScaledMuch()) {
                 for (float x = l; x <= r; x += scale)
                     gridCanvas.drawLine(x, t, x, b, PAINT_GRID);
                 for (float y = t; y <= b; y += scale)
@@ -3693,6 +3696,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
     }
 
     private void drawRulers() {
+        if (!Settings.INST.showRulers()) return;
         eraseBitmap(rulerHBitmap);
         eraseBitmap(rulerVBitmap);
         final int multiplier = (int) Math.ceil(96.0 / scale);
@@ -3998,12 +4002,14 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
         viewCanvas = new Canvas(viewBitmap);
         activityMain.canvas.iv.setImageBitmap(viewBitmap);
 
-        rulerHBitmap = Bitmap.createBitmap(viewWidth, activityMain.canvas.ivRulerH.getHeight(), Bitmap.Config.ARGB_4444);
-        rulerHCanvas = new Canvas(rulerHBitmap);
-        activityMain.canvas.ivRulerH.setImageBitmap(rulerHBitmap);
-        rulerVBitmap = Bitmap.createBitmap(activityMain.canvas.ivRulerV.getWidth(), viewHeight, Bitmap.Config.ARGB_4444);
-        rulerVCanvas = new Canvas(rulerVBitmap);
-        activityMain.canvas.ivRulerV.setImageBitmap(rulerVBitmap);
+        if (Settings.INST.showRulers()) {
+            rulerHBitmap = Bitmap.createBitmap(viewWidth, activityMain.canvas.ivRulerH.getHeight(), Bitmap.Config.ARGB_4444);
+            rulerHCanvas = new Canvas(rulerHBitmap);
+            activityMain.canvas.ivRulerH.setImageBitmap(rulerHBitmap);
+            rulerVBitmap = Bitmap.createBitmap(activityMain.canvas.ivRulerV.getWidth(), viewHeight, Bitmap.Config.ARGB_4444);
+            rulerVCanvas = new Canvas(rulerVBitmap);
+            activityMain.canvas.ivRulerV.setImageBitmap(rulerVBitmap);
+        }
 
         chessboardBitmap = Bitmap.createBitmap(viewWidth, viewHeight, Bitmap.Config.ARGB_4444);
         chessboardCanvas = new Canvas(chessboardBitmap);
@@ -4094,6 +4100,11 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
         final LayoutInflater layoutInflater = getLayoutInflater();
         activityMain = ActivityMainBinding.inflate(layoutInflater);
         setContentView(activityMain.getRoot());
+        if (!Settings.INST.showRulers()) {
+            activityMain.canvas.vRuler.setVisibility(View.GONE);
+            activityMain.canvas.ivRulerH.setVisibility(View.GONE);
+            activityMain.canvas.ivRulerV.setVisibility(View.GONE);
+        }
 
         frameList = FrameListBinding.bind(layoutInflater.inflate(R.layout.frame_list, null));
 
@@ -4248,6 +4259,8 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
         miFrameList = menu.findItem(R.id.i_frame_list);
         miHasAlpha = menu.findItem(R.id.i_image_has_alpha);
         Settings.INST.update(Settings.KEY_FL);
+        menu.findItem(R.id.i_show_grid).setChecked(Settings.INST.showGrid());
+        menu.findItem(R.id.i_show_rulers).setChecked(Settings.INST.showRulers());
         return true;
     }
 
@@ -4473,6 +4486,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
                         if (i < frame.selectedLayerIndex) --frame.selectedLayerIndex;
                     }
                 }
+                if (frame.getBackgroundLayer() == layer) calculateBackgroundSizeOnView();
                 if (!layer.visible) {
                     layerList.rvLayerList.post(frame.layerAdapter::notifyDataSetChanged);
                     closeLayer(frame.selectedLayerIndex);
@@ -5202,6 +5216,25 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
                 clearStatus();
             }
             case R.id.i_settings -> startActivity(new Intent(this, SettingsActivity.class));
+            case R.id.i_show_grid -> {
+                final boolean checked = !item.isChecked();
+                Settings.INST.pref().edit().putBoolean(Settings.KEY_SG, checked).apply();
+                Settings.INST.update(Settings.KEY_SG);
+                drawGridOntoView();
+                item.setChecked(checked);
+            }
+            case R.id.i_show_rulers -> {
+                final boolean checked = !item.isChecked();
+                new MaterialAlertDialogBuilder(this)
+                        .setTitle(R.string.show_rulers)
+                        .setMessage(R.string.restart_app_to_take_effect)
+                        .setPositiveButton(R.string.ok, (dialog, which) -> {
+                            Settings.INST.pref().edit().putBoolean(Settings.KEY_SR, checked).apply();
+                            finishAndRemoveTask();
+                        })
+                        .setNegativeButton(R.string.cancel, null)
+                        .show();
+            }
             case R.id.i_size -> new ImageSizeManager(this, bitmap, onImageSizeApplyListener).show();
             case R.id.i_transform -> {
                 drawFloatingLayersIntoImage();
@@ -5403,7 +5436,8 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
     }
 
     private void pickMedia() {
-        pickMultipleMedia.launch(pickVisualMediaRequest);
+        if (Settings.INST.mediaPicker()) pickMultipleMedia.launch(pickVisualMediaRequest);
+        else pickMultipleContents.launch("*/*");
     }
 
     private void recycleAllBitmaps() {
@@ -5751,10 +5785,10 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
     @SuppressLint("StringFormatMatches")
     private void showStateOfHs(@Size(4) float[] deltaHs) {
         if (editPreview != null && editPreview.committed()) return;
-        activityMain.tvStatus.setText(getString(R.string.state_hs, deltaHs[0], deltaHs[1], switch ((int) deltaHs[3]) {
+        activityMain.tvStatus.setText(getString(R.string.state_hs, deltaHs[0], deltaHs[1] * 100.0f, switch ((int) deltaHs[3]) {
             default -> 'V';
             case 1 -> 'L';
-        }, deltaHs[2]));
+        }, deltaHs[2] * 100.0f));
     }
 
     private void spotPoint(float x, float y, String text) {

@@ -27,22 +27,29 @@
             android:text="@string/hsl" />
     </com.google.android.material.tabs.TabLayout>
 
-    <androidx.constraintlayout.widget.Barrier
-        android:id="@+id/barrier"
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/til_hue"
+        style="@style/Widget.Material3.TextInputLayout.FilledBox.Dense"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:barrierDirection="end"
-        app:constraint_referenced_ids="tv_hue,tv_saturation,tv_comp_2" />
-
-    <TextView
-        android:id="@+id/tv_hue"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
-        android:text="@string/h"
-        app:layout_constraintBottom_toBottomOf="@id/s_hue"
+        android:layout_marginVertical="2dp"
+        app:layout_constraintEnd_toStartOf="@id/s_hue"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@id/s_hue" />
+        app:layout_constraintTop_toBottomOf="@id/tl_color_spaces"
+        app:suffixText="@string/degree">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/tiet_hue"
+            android:layout_width="64dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:backgroundTint="@android:color/transparent"
+            android:hint="@string/h"
+            android:inputType="numberSigned|numberDecimal"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:textAlignment="textEnd" />
+    </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.slider.Slider
         android:id="@+id/s_hue"
@@ -53,19 +60,34 @@
         android:value="0"
         android:valueFrom="-180"
         android:valueTo="180"
+        app:layout_constraintBottom_toBottomOf="@id/til_hue"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/barrier"
-        app:layout_constraintTop_toBottomOf="@id/tl_color_spaces" />
+        app:layout_constraintStart_toEndOf="@id/til_hue"
+        app:layout_constraintTop_toTopOf="@id/til_hue" />
 
-    <TextView
-        android:id="@+id/tv_saturation"
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/til_saturation"
+        style="@style/Widget.Material3.TextInputLayout.FilledBox.Dense"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginVertical="2dp"
         android:layout_marginStart="24dp"
-        android:text="@string/s"
-        app:layout_constraintBottom_toBottomOf="@id/s_saturation"
+        app:layout_constraintEnd_toStartOf="@id/s_saturation"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@id/s_saturation" />
+        app:layout_constraintTop_toBottomOf="@id/til_hue"
+        app:suffixText="@string/percent">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/tiet_saturation"
+            android:layout_width="64dp"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@android:color/transparent"
+            android:hint="@string/s"
+            android:inputType="numberSigned|numberDecimal"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:textAlignment="textEnd" />
+    </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.slider.Slider
         android:id="@+id/s_saturation"
@@ -76,19 +98,34 @@
         android:value="0"
         android:valueFrom="-1"
         android:valueTo="1"
+        app:layout_constraintBottom_toBottomOf="@id/til_saturation"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/barrier"
-        app:layout_constraintTop_toBottomOf="@id/s_hue" />
+        app:layout_constraintStart_toEndOf="@id/til_saturation"
+        app:layout_constraintTop_toTopOf="@id/til_saturation" />
 
-    <TextView
-        android:id="@+id/tv_comp_2"
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/til_comp_2"
+        style="@style/Widget.Material3.TextInputLayout.FilledBox.Dense"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginVertical="2dp"
         android:layout_marginStart="24dp"
-        android:text="@string/v"
-        app:layout_constraintBottom_toBottomOf="@id/s_comp_2"
+        app:layout_constraintEnd_toStartOf="@id/s_comp_2"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@id/s_comp_2" />
+        app:layout_constraintTop_toBottomOf="@id/til_saturation"
+        app:suffixText="@string/percent">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/tiet_comp_2"
+            android:layout_width="64dp"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@android:color/transparent"
+            android:hint="@string/l"
+            android:inputType="numberSigned|numberDecimal"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:textAlignment="textEnd" />
+    </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.slider.Slider
         android:id="@+id/s_comp_2"
@@ -99,7 +136,8 @@
         android:value="0"
         android:valueFrom="-1"
         android:valueTo="1"
+        app:layout_constraintBottom_toBottomOf="@id/til_comp_2"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/barrier"
-        app:layout_constraintTop_toBottomOf="@id/s_saturation" />
+        app:layout_constraintStart_toEndOf="@id/til_comp_2"
+        app:layout_constraintTop_toTopOf="@id/til_comp_2" />
 </androidx.constraintlayout.widget.ConstraintLayout>

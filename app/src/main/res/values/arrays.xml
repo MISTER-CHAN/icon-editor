@@ -92,6 +92,17 @@
         <item>zh_HK</item>
     </string-array>
 
+    <!-- Media Picker Preference -->
+    <string-array name="mp_entries">
+        <item>@string/photo_picker</item>
+        <item>@string/file_picker</item>
+    </string-array>
+
+    <string-array name="mp_values">
+        <item>m</item>
+        <item>c</item>
+    </string-array>
+
     <!-- Range -->
     <array name="range_00_ff_values">
         <item>0.0</item>

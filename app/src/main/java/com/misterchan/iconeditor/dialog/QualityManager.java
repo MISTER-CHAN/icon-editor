@@ -139,7 +139,6 @@ public class QualityManager {
             gQuality.setVisibility(View.VISIBLE);
             sQuality.setValue(quality);
             sQuality.addOnChangeListener((OnSliderValueChangeListener) (slider, value) -> {
-                quality = (int) value;
                 tietQuality.setText(String.valueOf(quality));
             });
             tietQuality.setText(String.valueOf(quality));
