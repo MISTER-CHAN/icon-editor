@@ -322,7 +322,7 @@
     <string name="state_eyedropper_precise" translatable="false">(%d, %d) A: %s, R: %s, G: %s, B: %s</string>
     <string name="state_from_to_size">From: (%d, %d), To: (%d, %d), Size: %d × %d"</string>
     <string name="state_from_to_size_1">From: (%d, %d), To: (%d, %d), Size: 1 × 1"</string>
-    <string name="state_hs" translatable="false">H: %+.0f°, S: %+.0f%%, %c: %+.0f%%</string>
+    <string name="state_hs" translatable="false">H: %+.0f°, S: %+.0f%%, %s: %+.0f%%</string>
     <string name="state_hue">Hue：%.0f°</string>
     <string name="state_invert">Invert: %.1f</string>
     <string name="state_left_top">Left: %d, Top: %d</string>

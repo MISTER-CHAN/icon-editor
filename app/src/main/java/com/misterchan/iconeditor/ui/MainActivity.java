@@ -356,15 +356,6 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
     private final ActivityResultLauncher<String> pickMultipleContents =
             registerForActivityResult(new ActivityResultContracts.GetMultipleContents(), onImagesPickedCallback);
 
-    private final ActivityResultLauncher<PickVisualMediaRequest> pickMultipleMedia = registerForActivityResult(
-            new ActivityResultContracts.PickMultipleVisualMedia(
-                    SdkExtensions.getExtensionVersion(Build.VERSION_CODES.R) >= 2 ? MediaStore.getPickImagesMaxLimit() : 100),
-            onImagesPickedCallback);
-
-    private final PickVisualMediaRequest pickVisualMediaRequest = new PickVisualMediaRequest.Builder()
-            .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE)
-            .build();
-
     private final ActivityResultLauncher<Intent> requestPermissionLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
                 if (Environment.isExternalStorageManager()) {
@@ -1201,7 +1192,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
                     project.guides.offerFirst(guide); // Add at the front for faster removal if necessary later
                 }
                 case MotionEvent.ACTION_MOVE -> {
-                    guide.position = toBitmapYAbs(event.getY() - rulerHHeight);
+                    guide.position = toBitmapYAbs(event.getY() - rulerHHeight + scale / 2.0f);
                     drawGridOntoView();
                     activityMain.tvStatus.setText(getString(R.string.position_, guide.position));
                 }
@@ -1232,7 +1223,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
                     project.guides.offerFirst(guide); // Add at the front for faster removal if necessary later
                 }
                 case MotionEvent.ACTION_MOVE -> {
-                    guide.position = toBitmapXAbs(event.getX() - rulerVWidth);
+                    guide.position = toBitmapXAbs(event.getX() - rulerVWidth + scale / 2.0f);
                     drawGridOntoView();
                     activityMain.tvStatus.setText(getString(R.string.position_, guide.position));
                 }
@@ -5225,15 +5216,8 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
             }
             case R.id.i_show_rulers -> {
                 final boolean checked = !item.isChecked();
-                new MaterialAlertDialogBuilder(this)
-                        .setTitle(R.string.show_rulers)
-                        .setMessage(R.string.restart_app_to_take_effect)
-                        .setPositiveButton(R.string.ok, (dialog, which) -> {
-                            Settings.INST.pref().edit().putBoolean(Settings.KEY_SR, checked).apply();
-                            finishAndRemoveTask();
-                        })
-                        .setNegativeButton(R.string.cancel, null)
-                        .show();
+                Settings.INST.pref().edit().putBoolean(Settings.KEY_SR, checked).apply();
+                recreate();
             }
             case R.id.i_size -> new ImageSizeManager(this, bitmap, onImageSizeApplyListener).show();
             case R.id.i_transform -> {
@@ -5436,7 +5420,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
     }
 
     private void pickMedia() {
-        if (Settings.INST.mediaPicker()) pickMultipleMedia.launch(pickVisualMediaRequest);
+        if (Settings.INST.mediaPicker()) pickMultipleContents.launch("image/*");
         else pickMultipleContents.launch("*/*");
     }
 
@@ -5785,10 +5769,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
     @SuppressLint("StringFormatMatches")
     private void showStateOfHs(@Size(4) float[] deltaHs) {
         if (editPreview != null && editPreview.committed()) return;
-        activityMain.tvStatus.setText(getString(R.string.state_hs, deltaHs[0], deltaHs[1] * 100.0f, switch ((int) deltaHs[3]) {
-            default -> 'V';
-            case 1 -> 'L';
-        }, deltaHs[2] * 100.0f));
+        activityMain.tvStatus.setText(getString(R.string.state_hs, deltaHs[0], deltaHs[1] * 100.0f, HsDialog.comp2Symbol((int) deltaHs[3]), deltaHs[2] * 100.0f));
     }
 
     private void spotPoint(float x, float y, String text) {

@@ -29,7 +29,7 @@ public class HsDialog extends FilterDialog {
     /**
      * <table>
      *     <tr><th>Index &nbsp;</th><td>0 &#x2013; 2</td><td>3</td></tr>
-     *     <tr><th>Value &nbsp;</th><td>Components &nbsp;</td><td>(0: HSV | 1: HSL)</td></tr>
+     *     <tr><th>Value &nbsp;</th><td>Components &nbsp;</td><td>Representation</td></tr>
      * </table>
      */
     @Size(4)
@@ -47,6 +47,10 @@ public class HsDialog extends FilterDialog {
         listener = onChangedListener;
     }
 
+    public static String comp2Symbol(int rep) {
+        return rep == 1 ? "L" : "V";
+    }
+
     private void onCompETTextChanged(int index, String s, Slider slider) {
         float f;
         try {
@@ -58,9 +62,9 @@ public class HsDialog extends FilterDialog {
             f = (f % 360.0f + 360.0f) % 360.0f;
             if (f > 180.0f) f -= 360.0f;
         } else {
-            if (-100.0f > f || f > 100.0f) return;
-            f /= 100.0f;
+            f = f < -100.0f ? -1.0f : f > 100.0f ? 1.0f : f / 100.0f;
         }
+        if (f == slider.getValue()) return;
         update(index, f, true);
         slider.setValue(f);
     }
@@ -95,8 +99,8 @@ public class HsDialog extends FilterDialog {
         final TextInputEditText tietHue = dialog.findViewById(R.id.tiet_hue);
         final TextInputEditText tietSaturation = dialog.findViewById(R.id.tiet_saturation);
         final TextInputEditText tietComp2 = (TextInputEditText) tilComp2.getEditText();
-        final TabLayout tlColorSpace = dialog.findViewById(R.id.tl_color_spaces);
-        final int cs = (int) deltaHs[3]; // Color space
+        final TabLayout tlRepresentation = dialog.findViewById(R.id.tl_representation);
+        final int rep = (int) deltaHs[3]; // Representation
 
         final AfterTextChangedListener onHueETTextChangedListener = s -> onCompETTextChanged(0, s, sHue);
         final AfterTextChangedListener onSatETTextChangedListener = s -> onCompETTextChanged(1, s, sSaturation);
@@ -123,22 +127,16 @@ public class HsDialog extends FilterDialog {
         tietHue.addTextChangedListener(onHueETTextChangedListener);
         tietSaturation.addTextChangedListener(onSatETTextChangedListener);
         tietComp2.addTextChangedListener(onComp2ETTextChangedListener);
-        tlColorSpace.getTabAt(cs).select();
+        tlRepresentation.getTabAt(rep).select();
 
-        tilComp2.setHint(switch (cs) {
-            default -> R.string.v;
-            case 1 -> R.string.l;
-        });
+        tilComp2.setHint(comp2Symbol(rep));
 
-        tlColorSpace.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+        tlRepresentation.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
                 final int position = tab.getPosition();
                 deltaHs[3] = position;
-                tilComp2.setHint(switch (position) {
-                    default -> R.string.v;
-                    case 1 -> R.string.l;
-                });
+                tilComp2.setHint(comp2Symbol(position));
                 listener.onChanged(deltaHs, true);
             }
 
