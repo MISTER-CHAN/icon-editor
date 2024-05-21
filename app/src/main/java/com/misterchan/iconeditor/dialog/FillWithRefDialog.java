@@ -26,7 +26,7 @@ public class FillWithRefDialog extends FilterDialog {
     }
 
     private Bitmap src, dst;
-    private OnChangeListener listener;
+    private final OnChangeListener listener;
     private Shader.TileMode tileMode = Shader.TileMode.REPEAT;
 
     @SuppressLint("NonConstantResourceId")

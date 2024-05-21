@@ -69,7 +69,7 @@ public class Frame {
         final List<Layer> refLayers = new ArrayList<>();
         for (int i = layers.size() - 1; i >= 0; --i) {
             final Layer layer = layers.get(i);
-            if (layer.reference && i != selectedLayerIndex) {
+            if (layer.reference) {
                 refLayers.add(0, layer);
             }
         }

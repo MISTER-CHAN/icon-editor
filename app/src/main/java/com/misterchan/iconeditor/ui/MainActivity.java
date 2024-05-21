@@ -2810,6 +2810,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
             case R.id.b_bucket_fill -> {
                 if (isChecked) {
                     onToolChanged(onIVTouchWithBucketListener, activityMain.svOptionsBucketFill);
+                    updateReference();
                     isa.set(bitmap);
                     threshold = 0x0;
                 }
@@ -4294,6 +4295,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
             selection.marqBoundBeingDragged = null;
         }
 
+        updateReference();
         if (action.layer() == frame.getBackgroundLayer()) {
             calculateBackgroundSizeOnView();
             drawChessboardOntoView();
@@ -5699,7 +5701,6 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
         if (activityMain.tools.btgTools.getCheckedButtonId() == R.id.b_clone_stamp) {
             cloneStamp.src = null;
         }
-        updateReference();
 
         if (activityMain.topAppBar != null) miHasAlpha.setChecked(bitmap.hasAlpha());
 
