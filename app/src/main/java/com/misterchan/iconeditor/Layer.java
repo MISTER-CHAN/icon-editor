@@ -81,6 +81,7 @@ public class Layer {
         top = layer.top;
         this.name = name;
         if (layer.colorMatrix != null) colorMatrix.set(layer.colorMatrix);
+        if (layer.colorRange.enabled) colorRange.set(layer.colorRange);
         if (layer.deltaHs != null) deltaHs = Arrays.copyOf(layer.deltaHs, 4);
         if (layer.lighting != null) lighting = Arrays.copyOf(layer.lighting, 8);
         if (layer.curves != null) {

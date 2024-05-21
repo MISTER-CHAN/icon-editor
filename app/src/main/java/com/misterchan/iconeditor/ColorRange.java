@@ -3,6 +3,8 @@ package com.misterchan.iconeditor;
 import androidx.annotation.FloatRange;
 import androidx.annotation.Size;
 
+import java.util.Arrays;
+
 public class ColorRange {
     public boolean enabled = false;
 
@@ -15,6 +17,15 @@ public class ColorRange {
     public ColorRange() {
         cuboid = new float[]{0.0f, 0.0f, 0.0f, 360.0f, 1.0f, 1.0f};
         transition = 0.0f;
+    }
+
+    public void set(ColorRange src) {
+        if (!enabled && !src.enabled) {
+            return;
+        }
+        enabled = src.enabled;
+        transition = src.transition;
+        cuboid = Arrays.copyOf(src.cuboid, 6);
     }
 
     public void update() {
