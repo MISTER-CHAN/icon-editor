@@ -56,47 +56,53 @@ public class HsvColorPicker extends ColorPicker {
     @ColorInt
     private int colorInt;
 
+    public HsvColorPicker(long color) {
+        this(color, null, null, null);
+    }
+
     @SuppressLint("ClickableViewAccessibility")
     public HsvColorPicker(long color, ColorPickerHsvBinding binding, OnHChangeListener hl, OnSVChangeListener svl) {
         prop = new Properties("H", "S", "V", true);
 
         this.binding = binding;
-        OneShotPreDrawListener.add(binding.ivHue, () -> {
-            hueImageW = binding.ivHue.getWidth();
-            hueImageH = binding.ivHue.getHeight();
-            hueBitmap = Bitmap.createBitmap(hueImageW, hueImageH, Bitmap.Config.ARGB_4444);
-            hueCanvas = new Canvas(hueBitmap);
-            binding.ivHue.setImageBitmap(hueBitmap);
-            final Shader hueShader = new LinearGradient(0.0f, 0.0f, hueImageW, 0.0f,
-                    new int[]{Color.RED, Color.YELLOW, Color.GREEN, Color.CYAN, Color.BLUE, Color.MAGENTA, Color.RED},
-                    null, Shader.TileMode.CLAMP);
-            huePaint.setShader(hueShader);
-            drawHue();
-        });
-        OneShotPreDrawListener.add(binding.ivSatVal, () -> {
-            satValImageW = binding.ivSatVal.getWidth();
-            satValImageH = binding.ivSatVal.getHeight();
-            satValBitmap = Bitmap.createBitmap(satValImageW, satValImageH, Bitmap.Config.ARGB_4444);
-            satValCanvas = new Canvas(satValBitmap);
-            binding.ivSatVal.setImageBitmap(satValBitmap);
-            valShader = new LinearGradient(0.0f, 0.0f, 0.0f, satValImageH, Color.WHITE, Color.BLACK, Shader.TileMode.CLAMP);
-            drawSatVal();
-        });
-        binding.ivHue.setOnTouchListener((v, event) -> {
-            int action = event.getAction();
-            if (action == MotionEvent.ACTION_MOVE || action == MotionEvent.ACTION_DOWN) {
-                hl.onChange(Math.min(Math.max(event.getX(), 0.0f), hueImageW) / hueImageW * 360.0f);
-            }
-            return true;
-        });
-        binding.ivSatVal.setOnTouchListener((v, event) -> {
-            int action = event.getAction();
-            if (action == MotionEvent.ACTION_MOVE || action == MotionEvent.ACTION_DOWN) {
-                svl.onChange(Math.min(Math.max(event.getX(), 0.0f), satValImageW) / satValImageW * 100.0f,
-                        (1.0f - Math.min(Math.max(event.getY(), 0.0f), satValImageH) / satValImageH) * 100.0f);
-            }
-            return true;
-        });
+        if (binding != null) {
+            OneShotPreDrawListener.add(binding.ivHue, () -> {
+                hueImageW = binding.ivHue.getWidth();
+                hueImageH = binding.ivHue.getHeight();
+                hueBitmap = Bitmap.createBitmap(hueImageW, hueImageH, Bitmap.Config.ARGB_4444);
+                hueCanvas = new Canvas(hueBitmap);
+                binding.ivHue.setImageBitmap(hueBitmap);
+                final Shader hueShader = new LinearGradient(0.0f, 0.0f, hueImageW, 0.0f,
+                        new int[]{Color.RED, Color.YELLOW, Color.GREEN, Color.CYAN, Color.BLUE, Color.MAGENTA, Color.RED},
+                        null, Shader.TileMode.CLAMP);
+                huePaint.setShader(hueShader);
+                drawHue();
+            });
+            OneShotPreDrawListener.add(binding.ivSatVal, () -> {
+                satValImageW = binding.ivSatVal.getWidth();
+                satValImageH = binding.ivSatVal.getHeight();
+                satValBitmap = Bitmap.createBitmap(satValImageW, satValImageH, Bitmap.Config.ARGB_4444);
+                satValCanvas = new Canvas(satValBitmap);
+                binding.ivSatVal.setImageBitmap(satValBitmap);
+                valShader = new LinearGradient(0.0f, 0.0f, 0.0f, satValImageH, Color.WHITE, Color.BLACK, Shader.TileMode.CLAMP);
+                drawSatVal();
+            });
+            binding.ivHue.setOnTouchListener((v, event) -> {
+                int action = event.getAction();
+                if (action == MotionEvent.ACTION_MOVE || action == MotionEvent.ACTION_DOWN) {
+                    hl.onChange(Math.min(Math.max(event.getX(), 0.0f), hueImageW) / hueImageW * 360.0f);
+                }
+                return true;
+            });
+            binding.ivSatVal.setOnTouchListener((v, event) -> {
+                int action = event.getAction();
+                if (action == MotionEvent.ACTION_MOVE || action == MotionEvent.ACTION_DOWN) {
+                    svl.onChange(Math.min(Math.max(event.getX(), 0.0f), satValImageW) / satValImageW * 100.0f,
+                            (1.0f - Math.min(Math.max(event.getY(), 0.0f), satValImageH) / satValImageH) * 100.0f);
+                }
+                return true;
+            });
+        }
 
         setColorFromRgb(color);
     }
@@ -113,8 +119,8 @@ public class HsvColorPicker extends ColorPicker {
 
     @Override
     public void dismiss() {
-        hueBitmap.recycle();
-        satValBitmap.recycle();
+        if (hueBitmap != null) hueBitmap.recycle();
+        if (satValBitmap != null) satValBitmap.recycle();
     }
 
     private void drawHue() {

@@ -244,6 +244,9 @@ public class ColorPickerDialog {
         long color = colorPicker != null ? colorPicker.color() : oldColor;
         colorPicker = switch (pos) {
             default -> {
+                if (context.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                    yield new RgbColorPicker(color);
+                }
                 ColorPickerRgbBinding binding = null;
                 if (changeViews) {
                     binding = ColorPickerRgbBinding.inflate(layoutInflater, llExtraViews, false);
@@ -259,6 +262,9 @@ public class ColorPickerDialog {
                 } : null);
             }
             case 1 -> {
+                if (context.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                    yield new HsvColorPicker(color);
+                }
                 var binding = ColorPickerHsvBinding.inflate(layoutInflater, llExtraViews, false);
                 llExtraViews.addView(binding.getRoot());
                 yield new HsvColorPicker(color, binding, h -> tietComp0.setText(String.valueOf(h)), (s, v) -> {

@@ -32,6 +32,10 @@ public class RgbColorPicker extends ColorPicker {
     @ColorLong
     private long color;
 
+    public RgbColorPicker(long color) {
+        this(color, null, null);
+    }
+
     public RgbColorPicker(long color, ColorPickerRgbBinding binding, OnColorPickerChangeListener cpl) {
         colorRep = Settings.INST.colorRep();
         ColorSpace colorSpace = Color.colorSpace(color);
@@ -55,25 +59,27 @@ public class RgbColorPicker extends ColorPicker {
                 radix == 10);
 
         this.binding = binding;
-        binding.gColorIntCompNumSys.setVisibility(colorRep ? View.GONE : View.VISIBLE);
-        binding.gColorSpace.setVisibility(colorRep ? View.VISIBLE : View.GONE);
-        if (colorRep) {
-            binding.tvColorSpace.setText(colorSpace.toString());
-        } else {
-            binding.sColorIntCompNumSys.setSelection(Settings.INST.colorIntCompRadix() <= 10 ? 1 : 0);
-        }
-        if (cpl != null) {
-            binding.sColorRep.setSelection(colorRep ? 1 : 0);
-            binding.sColorRep.setOnItemSelectedListener((OnItemSelectedListener) (parent, view, position, id) -> {
-                Settings.INST.pref().edit().putBoolean(Settings.KEY_CR, position == 1).apply();
-                Settings.INST.update(Settings.KEY_CR);
-                cpl.onChange();
-            });
-            binding.sColorIntCompNumSys.setOnItemSelectedListener((OnItemSelectedListener) (parent, view, position, id) -> {
-                Settings.INST.pref().edit().putInt(Settings.KEY_CIR, position == 1 ? 10 : 16).apply();
-                Settings.INST.update(Settings.KEY_CIR);
-                cpl.onChange();
-            });
+        if (binding != null) {
+            binding.gColorIntCompNumSys.setVisibility(colorRep ? View.GONE : View.VISIBLE);
+            binding.gColorSpace.setVisibility(colorRep ? View.VISIBLE : View.GONE);
+            if (colorRep) {
+                binding.tvColorSpace.setText(colorSpace.toString());
+            } else {
+                binding.sColorIntCompNumSys.setSelection(Settings.INST.colorIntCompRadix() <= 10 ? 1 : 0);
+            }
+            if (cpl != null) {
+                binding.sColorRep.setSelection(colorRep ? 1 : 0);
+                binding.sColorRep.setOnItemSelectedListener((OnItemSelectedListener) (parent, view, position, id) -> {
+                    Settings.INST.pref().edit().putBoolean(Settings.KEY_CR, position == 1).apply();
+                    Settings.INST.update(Settings.KEY_CR);
+                    cpl.onChange();
+                });
+                binding.sColorIntCompNumSys.setOnItemSelectedListener((OnItemSelectedListener) (parent, view, position, id) -> {
+                    Settings.INST.pref().edit().putInt(Settings.KEY_CIR, position == 1 ? 10 : 16).apply();
+                    Settings.INST.update(Settings.KEY_CIR);
+                    cpl.onChange();
+                });
+            }
         }
 
         this.color = color;
