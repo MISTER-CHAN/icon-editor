@@ -5521,6 +5521,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
             drawBitmapOntoView(true, true);
             drawGridOntoView();
         } else {
+            if (!hasSelection) selectAll();
             final Matrix matrix = new Matrix();
             matrix.setRotate(degrees, selection.r.exactCenterX(), selection.r.exactCenterY());
             matrix.postTranslate(selection.r.left, selection.r.top);
@@ -5530,7 +5531,6 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
             rf.roundOut(r);
             r.union(selection.r);
             if (transformer.isRecycled()) {
-                if (!hasSelection) selectAll();
                 saveStepBackToHistory(r);
                 final Bitmap bm = Bitmap.createBitmap(bitmap, selection.r.left, selection.r.top, selection.r.width(), selection.r.height());
                 canvas.drawRect(selection.r, eraser);
@@ -5631,6 +5631,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
     }
 
     private void scale(float sx, float sy) {
+        if (!hasSelection) selectAll();
         final Matrix matrix = new Matrix();
         matrix.setScale(sx, sy, selection.r.exactCenterX(), selection.r.exactCenterY());
         matrix.postTranslate(selection.r.left, selection.r.top);
@@ -5640,7 +5641,6 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
         rf.roundOut(r);
         r.union(selection.r);
         if (transformer.isRecycled()) {
-            if (!hasSelection) selectAll();
             saveStepBackToHistory(r);
             final Bitmap bm = Bitmap.createBitmap(bitmap, selection.r.left, selection.r.top, selection.r.width(), selection.r.height());
             canvas.drawRect(selection.r, eraser);
