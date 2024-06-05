@@ -26,7 +26,7 @@ public class Settings {
     public static final String KEY_LOC = "loc"; // Locale
     public static final String KEY_MP = "mp"; // Media Picker
     private static final String KEY_MT = "mt"; // Multithreaded
-    private static final String KEY_NLL = "nll"; // Level of New Layer
+    private static final String KEY_NIW = "niw", KEY_NIH = "nih"; // New Image Size
     private static final String KEY_PALETTE = "palette"; // Palette
     public static final String KEY_SCC = "scc"; // Show Current Color
     public static final String KEY_SG = "sg"; // Show Grid
@@ -36,13 +36,13 @@ public class Settings {
     private boolean autoSetHasAlpha = false;
     private boolean colorRep = false;
     private boolean mediaPicker = true;
-    private boolean newLayerLevel = false;
     private boolean showCurrentColor = false;
     private boolean showGrid = true;
     private boolean showRulers = true;
-    private int historyMaxSize = 50;
     private int colorIntCompRadix = 16;
     private int colorPicker = 0;
+    private int historyMaxSize = 50;
+    private int newImageWidth = 48, newImageHeight = 48;
     private List<Long> palette;
     public MainActivity mainActivity;
     private SharedPreferences preferences;
@@ -79,8 +79,12 @@ public class Settings {
         return mediaPicker;
     }
 
-    public boolean newLayerLevel() {
-        return newLayerLevel;
+    public int newImageWidth() {
+        return newImageWidth;
+    }
+
+    public int newImageHeight() {
+        return newImageHeight;
     }
 
     public List<Long> palette() {
@@ -135,6 +139,12 @@ public class Settings {
         preferences.edit().putString(KEY_PALETTE, builder.toString()).apply();
     }
 
+    public void setNewImageSize(int width, int height) {
+        preferences.edit().putInt(KEY_NIW, width).putInt(KEY_NIH, height).apply();
+        newImageWidth = width;
+        newImageHeight = height;
+    }
+
     public void update(SharedPreferences preferences) {
         this.preferences = preferences;
         update(KEY_ASHA);
@@ -145,7 +155,8 @@ public class Settings {
         update(KEY_HMS);
         update(KEY_MP);
         update(KEY_MT);
-        update(KEY_NLL);
+        update(KEY_NIW);
+        update(KEY_NIH);
         update(KEY_PALETTE);
         update(KEY_SCC);
         update(KEY_SG);
@@ -180,7 +191,8 @@ public class Settings {
             }
             case KEY_MP -> mediaPicker = "m".equals(preferences.getString(KEY_MP, "m"));
             case KEY_MT -> mainActivity.setRunnableRunner(preferences.getBoolean(KEY_MT, true));
-            case KEY_NLL -> newLayerLevel = "s".equals(preferences.getString(KEY_NLL, "t"));
+            case KEY_NIW -> newImageWidth = preferences.getInt(KEY_NIW, 48);
+            case KEY_NIH -> newImageHeight = preferences.getInt(KEY_NIH, 48);
             case KEY_PALETTE -> loadPalette();
             case KEY_SCC -> showCurrentColor = preferences.getBoolean(KEY_SCC, false);
             case KEY_SG -> showGrid = preferences.getBoolean(KEY_SG, true);

@@ -66,17 +66,6 @@
         <item>@string/sweep</item>
     </string-array>
 
-    <!-- Level of New Layer Preference -->
-    <string-array name="nll_entries">
-        <item>@string/top_level</item>
-        <item>@string/selected_layers</item>
-    </string-array>
-
-    <string-array name="nll_values">
-        <item>t</item>
-        <item>s</item>
-    </string-array>
-
     <!-- Locales Preference -->
     <string-array name="locales_entries">
         <item>@string/default_</item>

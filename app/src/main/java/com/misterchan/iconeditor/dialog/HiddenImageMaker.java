@@ -52,10 +52,10 @@ public class HiddenImageMaker {
         final int w = Math.max(width[0], width[1]), h = Math.max(height[0], height[1]), area = w * h;
         final int[] left = {0, 0}, top = {0, 0};
         {
-            final int iaw = width[0] >= width[1] ? 0 : 1, iiw = 1 - iaw, // iaw - Index of max width. i - Min.
-                    iah = height[0] >= width[1] ? 0 : 1, iih = 1 - iah; // h - Height.
-            left[iiw] = width[iaw] - width[iiw] >> 1;
-            top[iih] = height[iah] - height[iih] >> 1;
+            final int maxWI = width[0] >= width[1] ? 0 : 1, minWI = 1 - maxWI, // maxWI - Index of max width.
+                    maxHI = height[0] >= width[1] ? 0 : 1, minHI = 1 - maxHI;
+            left[minWI] = width[maxWI] - width[minWI] >> 1;
+            top[minHI] = height[maxHI] - height[minHI] >> 1;
         }
         final Bitmap[] bitmaps_ = {
                 Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888),

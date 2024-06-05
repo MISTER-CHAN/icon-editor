@@ -10,24 +10,6 @@
             app:title="@string/show_timeline" />
 
         <ListPreference
-            app:defaultValue="t"
-            app:entries="@array/nll_entries"
-            app:entryValues="@array/nll_values"
-            app:key="nll"
-            app:singleLineTitle="false"
-            app:title="@string/level_of_new_layer"
-            app:useSimpleSummaryProvider="true" />
-
-        <ListPreference
-            app:defaultValue="m"
-            app:entries="@array/mp_entries"
-            app:entryValues="@array/mp_values"
-            app:key="mp"
-            app:singleLineTitle="false"
-            app:title="@string/media_picker"
-            app:useSimpleSummaryProvider="true" />
-
-        <ListPreference
             app:defaultValue="d"
             app:entries="@array/theme_entries"
             app:entryValues="@array/theme_values"
@@ -49,7 +31,16 @@
 
     </PreferenceCategory>
 
-    <PreferenceCategory app:title="@string/performance">
+    <PreferenceCategory app:title="@string/advanced">
+
+        <ListPreference
+            app:defaultValue="m"
+            app:entries="@array/mp_entries"
+            app:entryValues="@array/mp_values"
+            app:key="mp"
+            app:singleLineTitle="false"
+            app:title="@string/media_picker"
+            app:useSimpleSummaryProvider="true" />
 
         <SwitchPreferenceCompat
             app:defaultValue="false"
@@ -57,6 +48,10 @@
             app:singleLineTitle="false"
             app:summary="@string/filter_displayed_image_after_zooming_out"
             app:title="@string/filter_image" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/performance">
 
         <SwitchPreferenceCompat
             app:defaultValue="false"

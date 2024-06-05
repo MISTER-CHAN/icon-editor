@@ -7,17 +7,9 @@
     android:paddingHorizontal="24dp"
     android:paddingTop="16dp">
 
-    <com.google.android.material.slider.Slider
-        android:id="@+id/s_size"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:stepSize="1"
-        android:valueFrom="1"
-        app:tickVisible="false" />
-
     <com.google.android.material.button.MaterialButtonToggleGroup
         android:id="@+id/btg_tile_modes"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:checkedButton="@id/b_repeat"
         app:selectionRequired="true"
@@ -28,6 +20,7 @@
             style="@style/Widget.IconEditor.Button.OutlinedButton.Dense"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:text="@string/repeat" />
 
         <Button
@@ -35,6 +28,7 @@
             style="@style/Widget.IconEditor.Button.OutlinedButton.Dense"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:text="@string/mirror" />
     </com.google.android.material.button.MaterialButtonToggleGroup>
 </LinearLayout>

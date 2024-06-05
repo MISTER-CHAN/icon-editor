@@ -6,6 +6,7 @@
     <string name="add_all">新增所有</string>
     <string name="add_all_colors_in_layer">新增當前圖層中所有顏色</string>
     <string name="add_them_all">全部新增</string>
+    <string name="advanced">進階</string>
     <string name="align">對齊</string>
     <string name="all_layers">全部圖層</string>
     <string name="anti_alias">抗鋸齒</string>
@@ -75,6 +76,7 @@
     <string name="delay">延遲</string>
     <string name="delete">刪除</string>
     <string name="delete_invisible">刪除不可見</string>
+    <string name="delete_last_guide">刪除末個參考線</string>
     <string name="deselect">不選取</string>
     <string name="dither">混色</string>
     <string name="done">已完成</string>
@@ -100,7 +102,7 @@
     <string name="file_name">檔案名</string>
     <string name="file_picker">檔案拾取器</string>
     <string name="fill">塡充</string>
-    <string name="fill_with_reference">以參照塡充</string>
+    <string name="fill_with_clip">以剪貼簿數據塡充</string>
     <string name="filter_layer">濾鏡圖層</string>
     <string name="filter_noun">濾鏡</string>
     <string name="filter_verb">過濾</string>
@@ -148,7 +150,6 @@
     <string name="left">左</string>
     <string name="level">級別</string>
     <string name="level_down">降級</string>
-    <string name="level_of_new_layer">新圖層級別</string>
     <string name="level_up">升級</string>
     <string name="levels">色階</string>
     <string name="lighting">照明</string>
@@ -185,6 +186,7 @@
     <string name="move_to_first">移到首位</string>
     <string name="new_">新建</string>
     <string name="new_guide">新參考線</string>
+    <string name="no_clip">當前無剪輯在剪貼簿上。</string>
     <string name="no_reference">無參照。</string>
     <string name="no_repeats">無重複</string>
     <string name="none">無</string>
@@ -259,7 +261,6 @@
     <string name="select">選取</string>
     <string name="select_all">全選</string>
     <string name="select_by_color_range">選取顏色範圍</string>
-    <string name="selected_layers">選中圖層級別</string>
     <string name="selection_too_large">選區過大。</string>
     <string name="send_to_back">置底</string>
     <string name="serif">白體</string>
@@ -324,7 +325,6 @@
     <string name="tolerance">容許度</string>
     <string name="tool_options">工具選項</string>
     <string name="top">頂</string>
-    <string name="top_level">頂級</string>
     <string name="transform">變換</string>
     <string name="transition">過渡</string>
     <string name="translate">平移</string>

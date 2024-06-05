@@ -28,13 +28,10 @@ import android.graphics.RectF;
 import android.graphics.Shader;
 import android.graphics.Typeface;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Looper;
 import android.os.MessageQueue;
-import android.os.ext.SdkExtensions;
-import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -52,7 +49,6 @@ import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.ColorLong;
 import androidx.annotation.IdRes;
@@ -105,14 +101,14 @@ import com.misterchan.iconeditor.dialog.ColorBalanceDialog;
 import com.misterchan.iconeditor.dialog.ColorMatrixManager;
 import com.misterchan.iconeditor.dialog.ColorPickerDialog;
 import com.misterchan.iconeditor.dialog.ColorRangeDialog;
-import com.misterchan.iconeditor.dialog.CurvesDialog;
+import com.misterchan.iconeditor.dialog.CurvesAdjuster;
 import com.misterchan.iconeditor.dialog.DirectorySelector;
 import com.misterchan.iconeditor.dialog.EditNumberDialog;
-import com.misterchan.iconeditor.dialog.FillWithRefDialog;
+import com.misterchan.iconeditor.dialog.FillWithClipDialog;
 import com.misterchan.iconeditor.dialog.GuideEditor;
 import com.misterchan.iconeditor.dialog.HiddenImageMaker;
 import com.misterchan.iconeditor.dialog.HsDialog;
-import com.misterchan.iconeditor.dialog.ImageSizeManager;
+import com.misterchan.iconeditor.dialog.ImageSizeModifier;
 import com.misterchan.iconeditor.dialog.LevelsDialog;
 import com.misterchan.iconeditor.dialog.LightingDialog;
 import com.misterchan.iconeditor.dialog.MatrixManager;
@@ -757,7 +753,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
                 colorRange.cuboid[0], colorRange.cuboid[3], colorRange.cuboid[1] * 100.0f, colorRange.cuboid[4] * 100.0f, colorRange.cuboid[2] * 100.0f, colorRange.cuboid[5] * 100.0f));
     };
 
-    private final CurvesDialog.OnCurvesChangedListener onFilterCurvesChangedListener = (curves, stopped) -> runOrStart(() -> {
+    private final CurvesAdjuster.OnCurvesChangedListener onFilterCurvesChangedListener = (curves, stopped) -> runOrStart(() -> {
         if (!editPreview.visible()) return;
         editPreview.edit((src, dst) -> BitmapUtils.applyCurves(src, dst, curves));
         drawEditPreviewOntoView();
@@ -778,12 +774,12 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
         runOnUiThread(this::clearStatus);
     }
 
-    private final FillWithRefDialog.OnChangeListener onFillWithRefTileModeChangeListener = (bitmap, tileMode, stopped) -> runOrStart(() -> {
-        paint.setShader(new BitmapShader(bitmap, tileMode, tileMode));
+    private final FillWithClipDialog.OnChangeListener onFillWithClipTileModeChangeListener = (tileMode) -> runOrStart(() -> {
+        paint.setShader(new BitmapShader(clipboard, tileMode, tileMode));
         editPreview.revert();
         editPreview.getCanvas().drawRect(editPreview.getRect(), paint);
         drawEditPreviewOntoView();
-    }, stopped);
+    });
 
     private final HiddenImageMaker.OnMakeListener onHiddenImageMakeListener = bitmap -> {
         final Bitmap bm = BitmapUtils.createBitmap(bitmap);
@@ -825,6 +821,12 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
         };
     };
 
+    private final View.OnClickListener onNewLayerButtonClickListener = v -> {
+        final Bitmap bg = frame.getBackgroundLayer().bitmap;
+        createLayer(bg.getWidth(), bg.getHeight(), bg.getConfig(), bg.getColorSpace(),
+                0, 0, 0, frame.selectedLayerIndex);
+    };
+
     private final LevelsDialog.OnLevelsChangedListener onFilterLevelsChangedListener = (inputShadows, inputHighlights, outputShadows, outputHighlights, stopped) -> {
         final float ratio = (outputHighlights - outputShadows) / (inputHighlights - inputShadows);
         runOrStart(() -> {
@@ -856,7 +858,10 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
         drawBitmapOntoView(editPreview.getEntire(), true);
     }, true);
 
-    private final NewImageDialog.OnApplyListener onNewImagePropertiesApplyListener = this::createImage;
+    private final NewImageDialog.OnApplyListener onNewImageSizeApplyListener = (width, height) -> {
+        createImage(width, height);
+        Settings.INST.setNewImageSize(width, height);
+    };
 
     private final NoiseGenerator.OnPropChangedListener onNoisePropChangedListener = (properties, stopped) -> {
         runOrStart(() -> {
@@ -1255,12 +1260,12 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
 
     private final CellGridManager.OnApplyListener onCellGridApplyListener = this::drawGridOntoView;
 
-    private final ImageSizeManager.OnApplyListener onImageSizeApplyListener = (width, height, transform) -> {
+    private final ImageSizeModifier.OnApplyListener onImageSizeApplyListener = (width, height, transform) -> {
         drawFloatingLayersIntoImage();
         if (layer == frame.getBackgroundLayer()) {
             for (final Frame f : project.frames) {
                 final Layer bl = f.getBackgroundLayer();
-                if (f.layers.size() > 1 && transform != ImageSizeManager.ScaleType.CROP) {
+                if (f.layers.size() > 1 && transform != ImageSizeModifier.ScaleType.CROP) {
                     final Matrix matrix = new Matrix();
                     matrix.setRectToRect(
                             new RectF(bl.left, bl.top, bl.left + bl.bitmap.getWidth(), bl.top + bl.bitmap.getHeight()),
@@ -4101,7 +4106,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
         frameList = FrameListBinding.bind(layoutInflater.inflate(R.layout.frame_list, null));
 
         layerList = LayerListBinding.bind(layoutInflater.inflate(R.layout.layer_list, null));
-        layerList.bNew.setOnClickListener(v -> onLayerOptionsItemSelected(null, R.id.i_layer_new));
+        layerList.bNew.setOnClickListener(onNewLayerButtonClickListener);
         layerList.bDuplicate.setOnClickListener(v -> onLayerOptionsItemSelected(null, R.id.i_layer_duplicate));
         layerList.bDelete.setOnClickListener(v -> onLayerOptionsItemSelected(null, R.id.i_layer_delete));
 
@@ -4554,7 +4559,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
                     layer.filter = Layer.Filter.CURVES;
                     drawBitmapOntoView(true);
                 }
-                new CurvesDialog(this)
+                new CurvesAdjuster(this)
                         .setSource(bitmap)
                         .setDefaultCurves(layer.curves)
                         .setOnCurvesChangedListener((curves, stopped) -> drawBitmapOntoView(stopped))
@@ -4759,15 +4764,8 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
                 addLayer(project, frame, bm, getString(R.string.layer), true);
             }
             case R.id.i_layer_new -> {
-                if (Settings.INST.newLayerLevel()) {
-                    createLayer(bitmap.getWidth(), bitmap.getHeight(),
-                            bitmap.getConfig(), bitmap.getColorSpace(),
-                            layer.getLevel(), layer.left, layer.top, frame.selectedLayerIndex);
-                } else {
-                    final Bitmap bg = frame.getBackgroundLayer().bitmap;
-                    createLayer(bg.getWidth(), bg.getHeight(), bg.getConfig(), bg.getColorSpace(),
-                            0, 0, 0, frame.selectedLayerIndex);
-                }
+                createLayer(bitmap.getWidth(), bitmap.getHeight(), bitmap.getConfig(), bitmap.getColorSpace(),
+                        layer.getLevel(), layer.left, layer.top, frame.selectedLayerIndex);
             }
             case R.id.i_layer_reference -> {
                 final boolean checked = !item.isChecked();
@@ -4837,13 +4835,13 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
                         final Bitmap bm = Bitmap.createBitmap(bl.bitmap, offsetX, offsetY, width, height);
                         for (int i = 0; i < frame.layers.size() - 1; ++i)
                             frame.layers.get(i).moveBy(-offsetX, -offsetY);
-                        resizeImage(bl, width, height, ImageSizeManager.ScaleType.CROP, bm);
+                        resizeImage(bl, width, height, ImageSizeModifier.ScaleType.CROP, bm);
                         bm.recycle();
                     }
                 } else {
                     layer.moveBy(offsetX, offsetY);
                     final Bitmap bm = Bitmap.createBitmap(layer.bitmap, offsetX, offsetY, width, height);
-                    resizeImage(layer, width, height, ImageSizeManager.ScaleType.CROP, bm);
+                    resizeImage(layer, width, height, ImageSizeModifier.ScaleType.CROP, bm);
                     bm.recycle();
                 }
                 drawBitmapOntoView(true, true);
@@ -4944,7 +4942,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
             case R.id.i_file_export -> export(null);
             case R.id.i_file_new -> {
                 new NewImageDialog(this)
-                        .setOnFinishSettingListener(onNewImagePropertiesApplyListener)
+                        .setOnFinishSettingListener(onNewImageSizeApplyListener)
                         .show();
             }
             case R.id.i_file_open -> pickMedia();
@@ -4971,17 +4969,18 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
             }
             case R.id.i_file_save, R.id.i_save -> save();
             case R.id.i_file_save_as -> saveAs();
-            case R.id.i_fill_with_ref -> {
-                if (ref.recycled()) {
-                    Snackbar.make(vContent, R.string.no_reference, Snackbar.LENGTH_LONG).show();
+            case R.id.i_fill_with_clip -> {
+                if (clipboard == null) {
+                    Snackbar.make(vContent, R.string.no_clip, Snackbar.LENGTH_LONG).show();
                     break;
                 }
                 drawFloatingLayersIntoImage();
                 createEditPreview(false, false);
-                new FillWithRefDialog(this, ref.bm(), onFillWithRefTileModeChangeListener)
+                new FillWithClipDialog(this, onFillWithClipTileModeChangeListener)
                         .setOnDismissListener(dialog -> paint.setShader(null))
                         .setOnActionListener(onEditPreviewPBClickListener, onEditPreviewCancelListener)
                         .show();
+                onFillWithClipTileModeChangeListener.onChange(Shader.TileMode.REPEAT);
                 clearStatus();
             }
             case R.id.i_filter_color_balance -> {
@@ -5014,7 +5013,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
             case R.id.i_filter_curves -> {
                 drawFloatingLayersIntoImage();
                 createEditPreview(true, true);
-                new CurvesDialog(this)
+                new CurvesAdjuster(this)
                         .setSource(editPreview.getOriginalPixels())
                         .setOnCurvesChangedListener(onFilterCurvesChangedListener)
                         .setOnActionListener(onEditPreviewPBClickListener, onEditPreviewCancelListener)
@@ -5125,6 +5124,11 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
                 drawGridOntoView();
                 clearStatus();
             }
+            case R.id.i_guides_delete_last -> {
+                project.guides.pollFirst();
+                drawGridOntoView();
+                clearStatus();
+            }
             case R.id.i_guides_new -> {
                 final Guide guide = new Guide();
                 project.guides.offerFirst(guide); // Add at the front for faster removal if necessary later
@@ -5221,7 +5225,8 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
                 Settings.INST.pref().edit().putBoolean(Settings.KEY_SR, checked).apply();
                 recreate();
             }
-            case R.id.i_size -> new ImageSizeManager(this, bitmap, onImageSizeApplyListener).show();
+            case R.id.i_size ->
+                    new ImageSizeModifier(this, bitmap, onImageSizeApplyListener).show();
             case R.id.i_transform -> {
                 drawFloatingLayersIntoImage();
                 createEditPreview(true);
@@ -5459,18 +5464,18 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
     }
 
     private void resizeImage(Layer layer, int width, int height,
-                             ImageSizeManager.ScaleType scaleType, @Nullable Bitmap newImage) {
+                             ImageSizeModifier.ScaleType scaleType, @Nullable Bitmap newImage) {
         final Bitmap bm = Bitmap.createBitmap(width, height,
                 layer.bitmap.getConfig(), layer.bitmap.hasAlpha(), layer.bitmap.getColorSpace());
         final Canvas cv = new Canvas(bm);
         if (scaleType != null) {
             if (newImage == null) newImage = layer.bitmap;
-            if (scaleType == ImageSizeManager.ScaleType.CROP) {
+            if (scaleType == ImageSizeModifier.ScaleType.CROP) {
                 cv.drawBitmap(newImage, 0.0f, 0.0f, PAINT_BITMAP);
             } else {
                 cv.drawBitmap(newImage,
                         null, new RectF(0.0f, 0.0f, width, height),
-                        scaleType == ImageSizeManager.ScaleType.STRETCH_FILTER ? BitmapUtils.PAINT_SRC_F : PAINT_BITMAP);
+                        scaleType == ImageSizeModifier.ScaleType.STRETCH_FILTER ? BitmapUtils.PAINT_SRC_F : PAINT_BITMAP);
             }
         }
         project.history.addUndoAction(layer, layer.bitmap, null);
@@ -5574,9 +5579,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
     @SuppressLint("StringFormatMatches")
     private void save() {
         if (project.filePath == null) {
-            if (!checkOrRequestPermission()) {
-                return;
-            }
+            if (!checkOrRequestPermission()) return;
             saveAs();
             return;
         }

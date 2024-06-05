@@ -14,7 +14,7 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.misterchan.iconeditor.listener.AfterTextChangedListener;
 import com.misterchan.iconeditor.R;
 
-public class ImageSizeManager {
+public class ImageSizeModifier {
 
     public enum ScaleType {
         STRETCH, STRETCH_FILTER, CROP
@@ -35,7 +35,7 @@ public class ImageSizeManager {
 
     private final AfterTextChangedListener onSizeYTextChangedListener = this::onHeightTextChanged;
 
-    public ImageSizeManager(Context context, Bitmap bitmap, OnApplyListener listener) {
+    public ImageSizeModifier(Context context, Bitmap bitmap, OnApplyListener listener) {
         defaultWidth = bitmap.getWidth();
         defaultHeight = bitmap.getHeight();
         ratio = (double) defaultWidth / (double) defaultHeight;

@@ -8,6 +8,8 @@ import android.graphics.Paint;
 import androidx.annotation.IntRange;
 import androidx.annotation.Size;
 
+import com.misterchan.iconeditor.dialog.CurvesAdjuster;
+
 import java.util.Arrays;
 
 public class Layer {
@@ -35,6 +37,7 @@ public class Layer {
     public Filter filter;
     private int level = 0;
     public int left = 0, top = 0;
+    public int[][] curves;
     public String name;
 
     @Size(4)
@@ -53,9 +56,6 @@ public class Layer {
      * </table>
      */
     public int displayingOperators;
-
-    @Size(5)
-    public int[][] curves;
 
     public final Paint paint;
 
@@ -84,10 +84,7 @@ public class Layer {
         if (layer.colorRange.enabled) colorRange.set(layer.colorRange);
         if (layer.deltaHs != null) deltaHs = Arrays.copyOf(layer.deltaHs, 4);
         if (layer.lighting != null) lighting = Arrays.copyOf(layer.lighting, 8);
-        if (layer.curves != null) {
-            curves = new int[5][];
-            for (int i = 0; i <= 4; ++i) curves[i] = Arrays.copyOf(layer.curves[i], 0x100);
-        }
+        if (layer.curves != null) curves = CurvesAdjuster.copyOf(layer.curves);
         paint = new Paint(layer.paint);
     }
 
@@ -100,10 +97,7 @@ public class Layer {
     }
 
     public void initCurves() {
-        curves = new int[5][0x100];
-        for (int i = 0; i <= 4; ++i)
-            for (int j = 0x0; j < 0x100; ++j)
-                curves[i][j] = j;
+        curves = CurvesAdjuster.newCurves();
     }
 
     public void initDeltaHs() {

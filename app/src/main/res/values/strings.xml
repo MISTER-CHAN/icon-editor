@@ -8,6 +8,7 @@
     <string name="add_all_colors_in_layer">Add all of the colors in current layer</string>
     <string name="add_symbol" translatable="false">+</string>
     <string name="add_them_all">Add them all</string>
+    <string name="advanced">Advanced</string>
     <string name="align">Align</string>
     <string name="all_layers">All Layers</string>
     <string name="alpha" translatable="false">Alpha</string>
@@ -88,6 +89,7 @@
     <string name="delay">Delay</string>
     <string name="delete">Delete</string>
     <string name="delete_invisible">Delete Invisible</string>
+    <string name="delete_last_guide">Delete Last Guide</string>
     <string name="deselect">Deselect</string>
     <string name="dither">Dither</string>
     <string name="done">Done</string>
@@ -113,7 +115,7 @@
     <string name="file_name">File name</string>
     <string name="file_picker">File Picker</string>
     <string name="fill">Fill</string>
-    <string name="fill_with_reference">Fill with Reference</string>
+    <string name="fill_with_clip">Fill with Clip</string>
     <string name="filter_layer">Filter Layer</string>
     <string name="filter_noun">Filter</string>
     <string name="filter_verb">Filter</string>
@@ -170,7 +172,6 @@
     <string name="left">Left</string>
     <string name="level">Level</string>
     <string name="level_down">Level down</string>
-    <string name="level_of_new_layer">Level of New Layer</string>
     <string name="level_up">Level up</string>
     <string name="levels">Levels</string>
     <string name="lighting">Lighting</string>
@@ -211,6 +212,7 @@
     <string name="new_">New</string>
     <string name="new_guide">New Guide</string>
     <string name="ninety_degrees" translatable="false">90°</string>
+    <string name="no_clip">There is currently no clip on the clipboard.</string>
     <string name="no_reference">No reference.</string>
     <string name="no_repeats">No Repeats</string>
     <string name="none">None</string>
@@ -291,7 +293,6 @@
     <string name="select">Select</string>
     <string name="select_all">Select All</string>
     <string name="select_by_color_range">Select by Color Range</string>
-    <string name="selected_layers">Selected Layer\'s</string>
     <string name="selection_too_large">The selection is too large.</string>
     <string name="send_to_back">Send to Back</string>
     <string name="serif">Serif</string>
@@ -362,7 +363,6 @@
     <string name="tolerance">Tolerance</string>
     <string name="tool_options">Tool Options</string>
     <string name="top">Top</string>
-    <string name="top_level">Top</string>
     <string name="transform">Transform</string>
     <string name="transition">Transition</string>
     <string name="translate">Translate</string>

@@ -7,6 +7,7 @@ import androidx.appcompat.app.AlertDialog;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputEditText;
 import com.misterchan.iconeditor.R;
+import com.misterchan.iconeditor.Settings;
 
 public class NewImageDialog {
 
@@ -46,5 +47,8 @@ public class NewImageDialog {
 
         tietWidth = dialog.findViewById(R.id.tiet_width);
         tietHeight = dialog.findViewById(R.id.tiet_height);
+
+        tietWidth.setText(String.valueOf(Settings.INST.newImageWidth()));
+        tietHeight.setText(String.valueOf(Settings.INST.newImageHeight()));
     }
 }

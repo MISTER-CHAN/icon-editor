@@ -203,9 +203,9 @@
                             android:icon="@drawable/ic_void"
                             android:title="@string/generate_noise" />
                         <item
-                            android:id="@+id/i_fill_with_ref"
+                            android:id="@+id/i_fill_with_clip"
                             android:icon="@drawable/ic_void"
-                            android:title="@string/fill_with_reference" />
+                            android:title="@string/fill_with_clip" />
                     </group>
                     <group android:id="@+id/g_image_info">
                         <item
@@ -336,6 +336,10 @@
                             android:id="@+id/i_guides_new"
                             android:icon="@drawable/ic_void"
                             android:title="@string/new_guide" />
+                        <item
+                            android:id="@+id/i_guides_delete_last"
+                            android:icon="@drawable/ic_void"
+                            android:title="@string/delete_last_guide" />
                         <item
                             android:id="@+id/i_guides_clear"
                             android:icon="@drawable/ic_void"

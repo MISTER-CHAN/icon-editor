@@ -19,6 +19,7 @@ import android.widget.ImageView;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.IntRange;
+import androidx.annotation.NonNull;
 import androidx.annotation.Size;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.view.OneShotPreDrawListener;
@@ -28,10 +29,18 @@ import com.misterchan.iconeditor.R;
 import com.misterchan.iconeditor.Settings;
 import com.misterchan.iconeditor.util.BitmapUtils;
 
-public class CurvesDialog extends FilterDialog {
+import java.util.Arrays;
+
+public class CurvesAdjuster extends FilterDialog {
+    @Size(0x100)
+    private static final int[] DEFAULT_CURVE = new int[0x100];
+
+    static {
+        reset(DEFAULT_CURVE);
+    }
 
     public interface OnCurvesChangedListener {
-        void onChanged(@Size(5) int[][] curves, boolean stopped);
+        void onChanged(int[][] curves, boolean stopped);
     }
 
     private final Activity activity;
@@ -66,7 +75,6 @@ public class CurvesDialog extends FilterDialog {
      *     <tr><th>Curve &nbsp;</th><td>R &nbsp; &nbsp;</td><td>G &nbsp; &nbsp;</td><td>B &nbsp; &nbsp;</td><td>A &nbsp; &nbsp;</td><td>RGB Outputs</td></tr>
      * </table>
      */
-    @Size(5)
     private int[][] curves;
 
     @Size(0x100)
@@ -88,7 +96,7 @@ public class CurvesDialog extends FilterDialog {
         }
     }
 
-    public CurvesDialog(Activity activity) {
+    public CurvesAdjuster(Activity activity) {
         super(activity);
         builder.setTitle(R.string.curves).setView(R.layout.curves);
 
@@ -211,6 +219,18 @@ public class CurvesDialog extends FilterDialog {
         ivHistogram.setImageBitmap(histBitmaps[selectedCompIndex]);
     }
 
+    public static int[][] copyOf(@NonNull int[][] original) {
+        final int[][] copy = new int[5][];
+        for (int i = 0; i <= 4; ++i) {
+            copy[i] = original[i] != DEFAULT_CURVE ? Arrays.copyOf(original[i], 0x100) : DEFAULT_CURVE;
+        }
+        return copy;
+    }
+
+    public static int[][] newCurves() {
+        return new int[][]{DEFAULT_CURVE, DEFAULT_CURVE, DEFAULT_CURVE, DEFAULT_CURVE, DEFAULT_CURVE};
+    }
+
     @Override
     void onFilterCommit() {
         listener.onChanged(curves, true);
@@ -220,7 +240,7 @@ public class CurvesDialog extends FilterDialog {
         reset(c);
     }
 
-    private void reset(@Size(0x100) int[] curve) {
+    private static void reset(@Size(0x100) int[] curve) {
         for (int i = 0x0; i < 0x100; ++i) {
             curve[i] = i;
         }
@@ -233,6 +253,10 @@ public class CurvesDialog extends FilterDialog {
 
     private void selectComp(int index) {
         selectedCompIndex = index;
+        if (curves[index] == DEFAULT_CURVE) {
+            curves[index] = new int[0x100];
+            reset(curves[index]);
+        }
         c = curves[index];
         for (int i = 0x00; i <= 0xFF; ++i) {
             if (i > 0x00) pts[i * 4 - 1] = 255.0f - c[i];
@@ -243,17 +267,17 @@ public class CurvesDialog extends FilterDialog {
         drawGraphics();
     }
 
-    public CurvesDialog setDefaultCurves(@Size(5) int[][] curves) {
+    public CurvesAdjuster setDefaultCurves(int[][] curves) {
         this.curves = curves;
         return this;
     }
 
-    public CurvesDialog setOnCurvesChangedListener(OnCurvesChangedListener listener) {
+    public CurvesAdjuster setOnCurvesChangedListener(OnCurvesChangedListener listener) {
         this.listener = listener;
         return this;
     }
 
-    public CurvesDialog setSource(Bitmap bitmap) {
+    public CurvesAdjuster setSource(Bitmap bitmap) {
         final int w = bitmap.getWidth(), h = bitmap.getHeight();
         final int[] pixels = new int[w * h];
         bitmap.getPixels(pixels, 0, w, 0, 0, w, h);
@@ -261,7 +285,7 @@ public class CurvesDialog extends FilterDialog {
         return this;
     }
 
-    public CurvesDialog setSource(@ColorInt int[] pixels) {
+    public CurvesAdjuster setSource(@ColorInt int[] pixels) {
         srcPixels = pixels;
         return this;
     }
@@ -340,10 +364,7 @@ public class CurvesDialog extends FilterDialog {
         ivHistogram.setImageAlpha(0x40);
 
         if (curves == null) {
-            curves = new int[][]{new int[0x100], new int[0x100], new int[0x100], new int[0x100], new int[0x100]};
-            for (int[] curve : curves) {
-                reset(curve);
-            }
+            curves = newCurves();
         }
 
         tlComps.selectTab(null);

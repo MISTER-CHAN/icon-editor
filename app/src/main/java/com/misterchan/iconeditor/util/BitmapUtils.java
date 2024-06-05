@@ -160,7 +160,7 @@ public class BitmapUtils {
         }
     }
 
-    public static void applyCurves(final Bitmap bitmap, final Rect rect, @Size(5) final int[][] curves) {
+    public static void applyCurves(final Bitmap bitmap, final Rect rect, final int[][] curves) {
         final int w = rect.width(), h = rect.height();
         final int[] pixels = new int[w * h];
         bitmap.getPixels(pixels, 0, w, rect.left, rect.top, w, h);
@@ -168,7 +168,7 @@ public class BitmapUtils {
         bitmap.setPixels(pixels, 0, w, rect.left, rect.top, w, h);
     }
 
-    public static void applyCurves(@ColorInt final int[] src, @ColorInt final int[] dst, @Size(5) final int[][] curves) {
+    public static void applyCurves(@ColorInt final int[] src, @ColorInt final int[] dst, final int[][] curves) {
         for (int i = 0; i < src.length; ++i) {
             final int pixel = src[i];
             final int a = Color.alpha(pixel),
@@ -624,17 +624,17 @@ public class BitmapUtils {
             ColorUtils.colorToHSV(src[i], hsv);
             float a_ = 0.0f;
             final float ao3 = Color.alpha(src[i]) / 255.0f / 3.0f; // Alpha over 3
-            float hi = 0.0f, ha = 0.0f; // Hue min and max
+            float hMin = 0.0f, hMax = 0.0f; // Hue min and max
             if (cr.transition > 0.0f) {
-                hi = cr.cuboid[0] - cr.transition * 360.0f;
-                ha = cr.cuboid[3] + cr.transition * 360.0f;
-                if (hi > ha) {
-                    if (hsv[0] < ha) hi -= 360.0f;
-                    if (hsv[0] > hi) ha += 360.0f;
+                hMin = cr.cuboid[0] - cr.transition * 360.0f;
+                hMax = cr.cuboid[3] + cr.transition * 360.0f;
+                if (hMin > hMax) {
+                    if (hsv[0] < hMax) hMin -= 360.0f;
+                    if (hsv[0] > hMin) hMax += 360.0f;
                 }
             }
             a_ += cr.transition > 0.0f
-                    ? Math.min(Math.min(hsv[0] - hi, ha - hsv[0]) / (cr.transition * 360.0f), 1.0f) * ao3
+                    ? Math.min(Math.min(hsv[0] - hMin, hMax - hsv[0]) / (cr.transition * 360.0f), 1.0f) * ao3
                     : (cr.cuboid[0] <= cr.cuboid[3] ? cr.cuboid[0] <= hsv[0] && hsv[0] <= cr.cuboid[3] : cr.cuboid[0] <= hsv[0] || hsv[0] <= cr.cuboid[3]) ? ao3 : ao3 * -2;
             a_ += cr.transition > 0.0f
                     ? Math.min(Math.min(hsv[1] - (cr.cuboid[1] - cr.transition), (cr.cuboid[4] + cr.transition) - hsv[1]) / cr.transition, 1.0f) * ao3
