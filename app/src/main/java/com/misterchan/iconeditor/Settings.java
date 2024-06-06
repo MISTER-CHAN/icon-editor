@@ -109,10 +109,10 @@ public class Settings {
 
     private void loadPalette() {
         String str = preferences.getString(KEY_PALETTE,
-                "\uFF00\u0000\u0000\u0000" + "\uFFFF\uFFFF\u0000\u0000" +
-                        "\uFFFF\u0000\u0000\u0000" + "\uFFFF\uFF00\u0000\u0000" +
-                        "\uFF00\uFF00\u0000\u0000" + "\uFF00\uFFFF\u0000\u0000" +
-                        "\uFF00\u00FF\u0000\u0000" + "\uFFFF\u00FF\u0000\u0000");
+                "\u00FF\u0000\u0000\u0000\u0000\u0000\u0000\u0000" + "\u00FF\u00FF\u00FF\u00FF\u0000\u0000\u0000\u0000" +
+                        "\u00FF\u00FF\u0000\u0000\u0000\u0000\u0000\u0000" + "\u00FF\u00FF\u00FF\u0000\u0000\u0000\u0000\u0000" +
+                        "\u00FF\u0000\u00FF\u0000\u0000\u0000\u0000\u0000" + "\u00FF\u0000\u00FF\u00FF\u0000\u0000\u0000\u0000" +
+                        "\u00FF\u0000\u0000\u00FF\u0000\u0000\u0000\u0000" + "\u00FF\u00FF\u0000\u00FF\u0000\u0000\u0000\u0000");
 
         List<Long> palette = new ArrayList<>() {
             @Override
@@ -122,19 +122,24 @@ public class Settings {
             }
         };
 
-        for (int i = 0; i < str.length(); i += 4) {
-            palette.add((long) str.charAt(i) << 0x30 | (long) str.charAt(i + 1) << 0x20 | (long) str.charAt(i + 2) << 0x10 | (long) str.charAt(i + 3));
+        for (int i = 0; i < str.length(); i += 8) {
+            palette.add((long) str.charAt(i) << 0x38 | (long) str.charAt(i + 1) << 0x30 | (long) str.charAt(i + 2) << 0x28 | (long) str.charAt(i + 3) << 0x20
+                    | (long) str.charAt(i + 4) << 0x18 | (long) str.charAt(i + 5) << 0x10 | (long) str.charAt(i + 6) << 0x8 | (long) str.charAt(i + 7));
         }
 
         this.palette = palette;
     }
 
+    /**
+     * Each color is stored with 8 characters instead of 4 because &#x5C;uD800 through &#x5C;uDFFF are invalid.
+     */
     public void savePalette(List<Long> palette) {
         this.palette = palette;
 
         StringBuilder builder = new StringBuilder();
         for (long color : palette) {
-            builder.append((char) (color >>> 0x30)).append((char) (color >>> 0x20)).append((char) (color >>> 0x10)).append((char) color);
+            builder.append((char) (color >>> 0x38)).append((char) (color >>> 0x30 & 0xFF)).append((char) (color >>> 0x28 & 0xFF)).append((char) (color >>> 0x20 & 0xFF))
+                    .append((char) (color >>> 0x18 & 0xFF)).append((char) (color >>> 0x10 & 0xFF)).append((char) (color >>> 0x8 & 0xFF)).append((char) (color & 0xFF));
         }
         preferences.edit().putString(KEY_PALETTE, builder.toString()).apply();
     }

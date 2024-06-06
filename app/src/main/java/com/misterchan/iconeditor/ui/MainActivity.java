@@ -5529,19 +5529,22 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
             if (!hasSelection) selectAll();
             final Matrix matrix = new Matrix();
             matrix.setRotate(degrees, selection.r.exactCenterX(), selection.r.exactCenterY());
-            matrix.postTranslate(selection.r.left, selection.r.top);
             final RectF rf = new RectF(selection.r);
             matrix.mapRect(rf);
             final Rect r = new Rect();
             rf.roundOut(r);
+            Rect s = new Rect(r);
             r.union(selection.r);
             if (transformer.isRecycled()) {
                 saveStepBackToHistory(r);
                 final Bitmap bm = Bitmap.createBitmap(bitmap, selection.r.left, selection.r.top, selection.r.width(), selection.r.height());
+                matrix.preTranslate(selection.r.left, selection.r.top);
                 canvas.drawRect(selection.r, eraser);
                 canvas.drawBitmap(bm, matrix, PAINT_BITMAP_OVER);
                 bm.recycle();
                 saveStepForwardToHistory();
+                selection.r.set(s);
+                drawSelectionOntoView();
             } else {
                 final int w = transformer.getWidth(), h = transformer.getHeight();
                 transformer.rotate(degrees, false, false);
@@ -5637,7 +5640,6 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
         if (!hasSelection) selectAll();
         final Matrix matrix = new Matrix();
         matrix.setScale(sx, sy, selection.r.exactCenterX(), selection.r.exactCenterY());
-        matrix.postTranslate(selection.r.left, selection.r.top);
         final RectF rf = new RectF(selection.r);
         matrix.mapRect(rf);
         final Rect r = new Rect();
@@ -5646,6 +5648,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
         if (transformer.isRecycled()) {
             saveStepBackToHistory(r);
             final Bitmap bm = Bitmap.createBitmap(bitmap, selection.r.left, selection.r.top, selection.r.width(), selection.r.height());
+            matrix.preTranslate(selection.r.left, selection.r.top);
             canvas.drawRect(selection.r, eraser);
             canvas.drawBitmap(bm, matrix, PAINT_BITMAP_OVER);
             bm.recycle();
