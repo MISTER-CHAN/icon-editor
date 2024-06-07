@@ -5533,7 +5533,6 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
             matrix.mapRect(rf);
             final Rect r = new Rect();
             rf.roundOut(r);
-            Rect s = new Rect(r);
             r.union(selection.r);
             if (transformer.isRecycled()) {
                 saveStepBackToHistory(r);
@@ -5543,8 +5542,6 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
                 canvas.drawBitmap(bm, matrix, PAINT_BITMAP_OVER);
                 bm.recycle();
                 saveStepForwardToHistory();
-                selection.r.set(s);
-                drawSelectionOntoView();
             } else {
                 final int w = transformer.getWidth(), h = transformer.getHeight();
                 transformer.rotate(degrees, false, false);
