@@ -40,6 +40,31 @@ public class CellGridManager {
                 .setView(R.layout.cell_grid);
     }
 
+    private void onPositiveButtonClick(DialogInterface dialog, int which) {
+        final int sizeX, sizeY, spacingX, spacingY, offsetX, offsetY;
+
+        try {
+            sizeX = Integer.parseInt(tietSizeX.getText().toString());
+            sizeY = Integer.parseInt(tietSizeY.getText().toString());
+            spacingX = Integer.parseInt(tietSpacingX.getText().toString());
+            spacingY = Integer.parseInt(tietSpacingY.getText().toString());
+            offsetX = Integer.parseInt(tietOffsetX.getText().toString());
+            offsetY = Integer.parseInt(tietOffsetY.getText().toString());
+        } catch (NumberFormatException e) {
+            return;
+        }
+
+        cellGrid.enabled = cbEnabled.isChecked();
+        cellGrid.sizeX = sizeX;
+        cellGrid.sizeY = sizeY;
+        cellGrid.spacingX = spacingX;
+        cellGrid.spacingY = spacingY;
+        cellGrid.offsetX = offsetX;
+        cellGrid.offsetY = offsetY;
+
+        onUpdateListener.onApply();
+    }
+
     public void show() {
         final AlertDialog dialog = builder.show();
 
@@ -58,30 +83,5 @@ public class CellGridManager {
         tietSpacingY.setText(String.valueOf(cellGrid.spacingY));
         tietOffsetX.setText(String.valueOf(cellGrid.offsetX));
         tietOffsetY.setText(String.valueOf(cellGrid.offsetY));
-    }
-
-    private void onPositiveButtonClick(DialogInterface dialog, int which) {
-        final int sizeX, sizeY, spacingX, spacingY, offsetX, offsetY;
-
-        try {
-            sizeX = Integer.parseUnsignedInt(tietSizeX.getText().toString());
-            sizeY = Integer.parseUnsignedInt(tietSizeY.getText().toString());
-            spacingX = Integer.parseUnsignedInt(tietSpacingX.getText().toString());
-            spacingY = Integer.parseUnsignedInt(tietSpacingY.getText().toString());
-            offsetX = Integer.parseInt(tietOffsetX.getText().toString());
-            offsetY = Integer.parseInt(tietOffsetY.getText().toString());
-        } catch (NumberFormatException e) {
-            return;
-        }
-
-        cellGrid.enabled = cbEnabled.isChecked();
-        cellGrid.sizeX = sizeX;
-        cellGrid.sizeY = sizeY;
-        cellGrid.spacingX = spacingX;
-        cellGrid.spacingY = spacingY;
-        cellGrid.offsetX = offsetX;
-        cellGrid.offsetY = offsetY;
-
-        onUpdateListener.onApply();
     }
 }

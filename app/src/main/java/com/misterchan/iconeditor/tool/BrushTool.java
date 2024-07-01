@@ -8,9 +8,17 @@ import android.graphics.Rect;
 
 import androidx.annotation.NonNull;
 
+import com.misterchan.iconeditor.util.BitmapUtils;
+
 public class BrushTool {
     public enum TipShape {
-        PRESET_BRUSH, REF
+        PRESET_BRUSH, CLIP;
+
+        private static final TipShape[] values = values();
+
+        public static TipShape valueAt(int ordinal) {
+            return values[ordinal];
+        }
     }
 
     private static final Paint PAINT = new Paint() {
@@ -38,9 +46,10 @@ public class BrushTool {
         tipShape = TipShape.PRESET_BRUSH;
     }
 
-    public void setToRef(Bitmap src, long color) {
+    public void setToClip(Bitmap src, long color) {
+        if (src == null) return;
         set(src, color);
-        tipShape = TipShape.REF;
+        tipShape = TipShape.CLIP;
     }
 
     public void set(long color) {
@@ -48,8 +57,10 @@ public class BrushTool {
     }
 
     private void set(@NonNull Bitmap src, long color) {
-        if (tipShape == TipShape.REF && this.src != null) this.src.recycle();
-        this.src = src;
+        if (src != this.src) {
+            if (this.src != null) this.src.recycle();
+            this.src = BitmapUtils.createBitmap(src);
+        }
         final Bitmap dst = Bitmap.createBitmap(src.getWidth(), src.getHeight(), Bitmap.Config.ARGB_8888);
         dst.eraseColor(color);
         new Canvas(dst).drawBitmap(src, 0.0f, 0.0f, PAINT);

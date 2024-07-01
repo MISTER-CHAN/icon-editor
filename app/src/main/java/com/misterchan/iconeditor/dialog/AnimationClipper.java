@@ -32,7 +32,7 @@ public class AnimationClipper {
 
     public AnimationClipper(Context context, Project project, OnConfirmListener listener) {
         builder = new MaterialAlertDialogBuilder(context)
-                .setIcon(R.drawable.ic_content_cut).setTitle(R.string.clip)
+                .setIcon(R.drawable.ic_content_cut).setTitle(R.string.clip_verb)
                 .setView(R.layout.animation_clipper)
                 .setPositiveButton(R.string.ok, (dialog, which) ->
                         listener.onConfirm(from, to))

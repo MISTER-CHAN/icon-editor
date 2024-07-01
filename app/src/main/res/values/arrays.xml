@@ -16,7 +16,7 @@
     <!-- Brush Tip Shapes -->
     <string-array name="brush_tip_shapes">
         <item>@string/preset_brush</item>
-        <item>@string/reference</item>
+        <item>@string/clip_noun</item>
     </string-array>
 
     <!-- Boolean Values -->

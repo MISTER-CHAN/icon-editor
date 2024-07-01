@@ -714,10 +714,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
         final int checkedItem = brush.tipShape.ordinal();
         new MaterialAlertDialogBuilder(this).setTitle(R.string.tip_shape)
                 .setSingleChoiceItems(R.array.brush_tip_shapes, checkedItem, (dialog, which) -> {
-                    updateBrush(switch (which) {
-                        default -> BrushTool.TipShape.PRESET_BRUSH;
-                        case 1 -> BrushTool.TipShape.REF;
-                    });
+                    updateBrush(BrushTool.TipShape.valueAt(which));
                 })
                 .setPositiveButton(R.string.ok, null)
                 .show();
@@ -2951,8 +2948,8 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
             }
             case R.id.b_translation, R.id.b_scale, R.id.b_rotation, R.id.b_poly, R.id.b_mesh -> {
                 final boolean isTransformerButtonChecked = switch (activityMain.tools.btgTools.getCheckedButtonId()) {
-                    case R.id.b_translation, R.id.b_scale, R.id.b_rotation, R.id.b_poly, R.id.b_mesh ->
-                            true;
+                    case R.id.b_translation, R.id.b_scale, R.id.b_rotation, R.id.b_poly,
+                         R.id.b_mesh -> true;
                     default -> false;
                 };
                 if (isChecked) {
@@ -3180,7 +3177,6 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
     @SuppressLint("NonConstantResourceId")
     private boolean checkRefNecessity() {
         return switch (activityMain.tools.btgTools.getCheckedButtonId()) {
-            case R.id.b_brush -> brush.tipShape == BrushTool.TipShape.REF;
             case R.id.b_magic_eraser, R.id.b_magic_paint -> true;
             default -> false;
         };
@@ -3627,56 +3623,15 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
                 for (float y = t; y <= b; y += scale)
                     gridCanvas.drawLine(l, y, r, y, PAINT_GRID);
             }
-            gridCanvas.drawLine(l, t, l - 100.0f, t, PAINT_IMAGE_BOUND);
-            gridCanvas.drawLine(r, t, r + 100.0f, t, PAINT_IMAGE_BOUND);
-            gridCanvas.drawLine(r, t - 100.0f, r, t, PAINT_IMAGE_BOUND);
-            gridCanvas.drawLine(r, b, r, b + 100.0f, PAINT_IMAGE_BOUND);
-            gridCanvas.drawLine(r + 100.0f, b, r, b, PAINT_IMAGE_BOUND);
-            gridCanvas.drawLine(l, b, l - 100.0f, b, PAINT_IMAGE_BOUND);
-            gridCanvas.drawLine(l, b + 100.0f, l, b, PAINT_IMAGE_BOUND);
-            gridCanvas.drawLine(l, t, l, t - 100.0f, PAINT_IMAGE_BOUND);
+            CanvasUtils.drawRightAngles(gridCanvas, l, t, r, b, PAINT_IMAGE_BOUND);
         }
 
         final CellGrid cellGrid = project.cellGrid;
         if (cellGrid.enabled) {
             final Bitmap background = frame.getBackgroundLayer().bitmap;
+            final float l = translationX >= 0.0f ? translationX : translationX % scale, t = translationY >= 0.0f ? translationY : translationY % scale;
             final float r = Math.min(translationX + toScaled(background.getWidth()), viewWidth), b = Math.min(translationY + toScaled(background.getHeight()), viewHeight);
-            if (cellGrid.sizeX > 1) {
-                final float t = translationY >= 0.0f ? translationY : translationY % scale;
-                final float scaledSizeX = toScaled(cellGrid.sizeX), scaledSpacingX = toScaled(cellGrid.spacingX);
-                float x = (translationX >= 0.0f ? translationX : translationX % (scaledSizeX + scaledSpacingX))
-                        + toScaled(cellGrid.offsetX % (cellGrid.sizeX + cellGrid.spacingX));
-                if (x < translationX) x += scaledSizeX + scaledSpacingX;
-                if (cellGrid.spacingX <= 0) {
-                    do gridCanvas.drawLine(x, t, x, b, PAINT_CELL_GRID);
-                    while ((x += scaledSizeX) <= r);
-                } else {
-                    do {
-                        gridCanvas.drawLine(x, t, x, b, PAINT_CELL_GRID);
-                        if ((x += scaledSizeX) > r) break;
-                        gridCanvas.drawLine(x, t, x, b, PAINT_CELL_GRID);
-                        if ((x += scaledSpacingX) > r) break;
-                    } while (true);
-                }
-            }
-            if (cellGrid.sizeY > 1) {
-                final float l = translationX >= 0.0f ? translationX : translationX % scale;
-                final float scaledSizeY = toScaled(cellGrid.sizeY), scaledSpacingY = toScaled(cellGrid.spacingY);
-                float y = (translationY >= 0.0f ? translationY : translationY % (scaledSizeY + scaledSpacingY))
-                        + toScaled(cellGrid.offsetY % (cellGrid.sizeY + cellGrid.spacingY));
-                if (y < translationY) y += scaledSizeY + scaledSpacingY;
-                if (cellGrid.spacingY <= 0) {
-                    do gridCanvas.drawLine(l, y, r, y, PAINT_CELL_GRID);
-                    while ((y += scaledSizeY) <= b);
-                } else {
-                    do {
-                        gridCanvas.drawLine(l, y, r, y, PAINT_CELL_GRID);
-                        if ((y += scaledSizeY) > b) break;
-                        gridCanvas.drawLine(l, y, r, y, PAINT_CELL_GRID);
-                        if ((y += scaledSpacingY) > b) break;
-                    } while (true);
-                }
-            }
+            cellGrid.draw(gridCanvas, l, t, r, b, translationX, translationY, scale, PAINT_CELL_GRID);
         }
 
         for (final Guide guide : project.guides) {
@@ -3904,12 +3859,9 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
     }
 
     private FloatingLayer getCurrentFloatingLayer() {
-        if (!transformer.isRecycled()) {
-            return transformer;
-        } else if (!dpPreview.isRecycled()) {
-            return dpPreview;
-        }
-        return null;
+        return !transformer.isRecycled() ? transformer
+                : !dpPreview.isRecycled() ? dpPreview
+                : null;
     }
 
     private Rect getVisibleSubset() {
@@ -4413,18 +4365,21 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
                         layer.paint.getAlpha()));
             }
             case R.id.i_layer_blend_mode_clear,
-                    R.id.i_layer_blend_mode_src, R.id.i_layer_blend_mode_dst,
-                    R.id.i_layer_blend_mode_src_over, R.id.i_layer_blend_mode_dst_over,
-                    R.id.i_layer_blend_mode_src_in, R.id.i_layer_blend_mode_dst_in,
-                    R.id.i_layer_blend_mode_src_out, R.id.i_layer_blend_mode_dst_out,
-                    R.id.i_layer_blend_mode_src_atop, R.id.i_layer_blend_mode_dst_atop,
-                    R.id.i_layer_blend_mode_xor, R.id.i_layer_blend_mode_plus,
-                    R.id.i_layer_blend_mode_modulate, R.id.i_layer_blend_mode_screen, R.id.i_layer_blend_mode_overlay,
-                    R.id.i_layer_blend_mode_darken, R.id.i_layer_blend_mode_lighten,
-                    R.id.i_layer_blend_mode_color_dodge, R.id.i_layer_blend_mode_color_burn,
-                    R.id.i_layer_blend_mode_hard_light, R.id.i_layer_blend_mode_soft_light,
-                    R.id.i_layer_blend_mode_difference, R.id.i_layer_blend_mode_exclusion, R.id.i_layer_blend_mode_multiply,
-                    R.id.i_layer_blend_mode_hue, R.id.i_layer_blend_mode_saturation, R.id.i_layer_blend_mode_color, R.id.i_layer_blend_mode_luminosity -> {
+                 R.id.i_layer_blend_mode_src, R.id.i_layer_blend_mode_dst,
+                 R.id.i_layer_blend_mode_src_over, R.id.i_layer_blend_mode_dst_over,
+                 R.id.i_layer_blend_mode_src_in, R.id.i_layer_blend_mode_dst_in,
+                 R.id.i_layer_blend_mode_src_out, R.id.i_layer_blend_mode_dst_out,
+                 R.id.i_layer_blend_mode_src_atop, R.id.i_layer_blend_mode_dst_atop,
+                 R.id.i_layer_blend_mode_xor, R.id.i_layer_blend_mode_plus,
+                 R.id.i_layer_blend_mode_modulate, R.id.i_layer_blend_mode_screen,
+                 R.id.i_layer_blend_mode_overlay,
+                 R.id.i_layer_blend_mode_darken, R.id.i_layer_blend_mode_lighten,
+                 R.id.i_layer_blend_mode_color_dodge, R.id.i_layer_blend_mode_color_burn,
+                 R.id.i_layer_blend_mode_hard_light, R.id.i_layer_blend_mode_soft_light,
+                 R.id.i_layer_blend_mode_difference, R.id.i_layer_blend_mode_exclusion,
+                 R.id.i_layer_blend_mode_multiply,
+                 R.id.i_layer_blend_mode_hue, R.id.i_layer_blend_mode_saturation,
+                 R.id.i_layer_blend_mode_color, R.id.i_layer_blend_mode_luminosity -> {
                 layer.paint.setBlendMode(switch (itemId) {
                     case R.id.i_layer_blend_mode_clear -> BlendMode.CLEAR;
                     case R.id.i_layer_blend_mode_src -> BlendMode.SRC;
@@ -5862,12 +5817,8 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
     private void updateBrush(BrushTool.TipShape tipShape) {
         if (tipShape == null) tipShape = brush.tipShape;
         switch (tipShape) {
+            case CLIP -> brush.setToClip(clipboard, paint.getColorLong());
             case PRESET_BRUSH -> brush.setToBrush(paint.getColorLong());
-            case REF -> {
-                updateReference(true);
-                if (brush.tipShape == BrushTool.TipShape.PRESET_BRUSH)
-                    brush.setToRef(ref.bm(), paint.getColorLong());
-            }
         }
     }
 
@@ -5878,8 +5829,5 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
     private void updateReference(boolean nonNull) {
         final Bitmap rb = frame.mergeReferenceLayers();
         ref.set(rb != null ? rb : nonNull || checkRefNecessity() ? BitmapUtils.createBitmap(bitmap) : null);
-        if (activityMain.tools.btgTools.getCheckedButtonId() == R.id.b_brush && brush.tipShape == BrushTool.TipShape.REF) {
-            brush.setToRef(ref.bm(), paint.getColorLong());
-        }
     }
 }

@@ -31,6 +31,6 @@
             android:id="@+id/i_frame_clip"
             android:icon="@drawable/ic_content_cut"
             android:iconTint="?attr/colorOnSurfaceVariant"
-            android:title="@string/clip" />
+            android:title="@string/clip_verb" />
     </group>
 </menu>

@@ -40,7 +40,8 @@
     <string name="clear">清除</string>
     <string name="clear_destination">清除目标</string>
     <string name="clear_guides">清除参考线</string>
-    <string name="clip">剪辑</string>
+    <string name="clip_noun">剪贴簿数据</string>
+    <string name="clip_verb">剪辑</string>
     <string name="clipped">剪贴</string>
     <string name="cloner">克隆笔</string>
     <string name="close">关闭</string>
