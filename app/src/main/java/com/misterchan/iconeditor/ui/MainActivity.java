@@ -3287,7 +3287,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
     }
 
     private void createTransformer() {
-        final Bitmap bm = BitmapUtils.createBitmap(bitmap, selection.r.left, selection.r.top, selection.r.width(), selection.r.height());
+        final Bitmap bm = BitmapUtils.createBitmap(bitmap, selection.r);
         createTransformer(bm);
         final Rect r = computeSelectionBoundsDrawnBy(eraser);
         r.intersect(0, 0, bitmap.getWidth(), bitmap.getHeight());
@@ -4770,9 +4770,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
             case R.id.i_copy -> {
                 if (transformer.isRecycled()) {
                     if (clipboard != null) clipboard.recycle();
-                    clipboard = hasSelection
-                            ? BitmapUtils.createBitmap(bitmap, selection.r.left, selection.r.top, selection.r.width(), selection.r.height())
-                            : BitmapUtils.createBitmap(bitmap);
+                    clipboard = BitmapUtils.createBitmap(bitmap, hasSelection ? selection.r : null);
                 } else {
                     clipboard = BitmapUtils.createBitmap(transformer.getBitmap());
                 }
@@ -4806,8 +4804,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
                 if (transformer.isRecycled()) {
                     if (clipboard != null) clipboard.recycle();
                     if (hasSelection) {
-                        clipboard = BitmapUtils.createBitmap(bitmap,
-                                selection.r.left, selection.r.top, selection.r.width(), selection.r.height());
+                        clipboard = BitmapUtils.createBitmap(bitmap, selection.r);
                         saveStepBackToHistory(bounds);
                         canvas.drawRect(selection.r, eraser);
                     } else {
@@ -4869,9 +4866,11 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
             case R.id.i_duplicate -> {
                 if (transformer.isRecycled()) {
                     drawFloatingLayersIntoImage();
-                    final Bitmap bm = hasSelection
-                            ? BitmapUtils.createBitmap(bitmap, selection.r.left, selection.r.top, selection.r.width(), selection.r.height())
-                            : BitmapUtils.createBitmap(bitmap);
+                    if (!hasSelection) {
+                        selectAll();
+                        hasSelection = true;
+                    }
+                    final Bitmap bm = BitmapUtils.createBitmap(bitmap, selection.r);
                     createTransformer(bm);
                     ToolSelector.selectTransformer(activityMain.tools);
                     drawSelectionOntoView();
