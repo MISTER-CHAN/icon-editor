@@ -19,7 +19,7 @@ import com.misterchan.iconeditor.listener.OnCircularRSChangeListener;
 
 import java.util.List;
 
-public class AnimationClipper {
+public class AnimationTrimmer {
 
     public interface OnConfirmListener {
         void onConfirm(int from, int to);
@@ -30,7 +30,7 @@ public class AnimationClipper {
     private int from, to;
     private final List<Frame> frames;
 
-    public AnimationClipper(Context context, Project project, OnConfirmListener listener) {
+    public AnimationTrimmer(Context context, Project project, OnConfirmListener listener) {
         builder = new MaterialAlertDialogBuilder(context)
                 .setIcon(R.drawable.ic_content_cut).setTitle(R.string.clip_verb)
                 .setView(R.layout.animation_clipper)
@@ -41,7 +41,7 @@ public class AnimationClipper {
         frames = project.frames;
     }
 
-    public AnimationClipper show() {
+    public AnimationTrimmer show() {
         if (frames.size() < 2) {
             return this;
         }

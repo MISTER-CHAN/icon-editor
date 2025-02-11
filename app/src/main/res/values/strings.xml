@@ -367,6 +367,7 @@
     <string name="transform">Transform</string>
     <string name="transition">Transition</string>
     <string name="translate">Translate</string>
+    <string name="trim">Trim</string>
     <string name="tutorial_merge_as_hidden">Tutorial</string>
     <string name="two_seventy_degrees" translatable="false">270°</string>
     <string name="type_">Type:</string>

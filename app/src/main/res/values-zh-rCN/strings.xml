@@ -329,6 +329,7 @@
     <string name="transform">变换</string>
     <string name="transition">过渡</string>
     <string name="translate">平移</string>
+    <string name="trim">修剪</string>
     <string name="tutorial_merge_as_hidden">Tutorial</string>
     <string name="type_">类型：</string>
     <string name="typeface">字型</string>

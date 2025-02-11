@@ -24,7 +24,7 @@ public class NoiseGenerator extends FilterDialog {
     private static final int SB_MAX = 100;
 
     public enum DrawingPrimitive {
-        PIXEL, POINT, REF
+        PIXEL, POINT, CLIP
     }
 
     public interface OnPropChangedListener {
@@ -92,7 +92,7 @@ public class NoiseGenerator extends FilterDialog {
             properties.drawingPrimitive = switch (checkedId) {
                 case R.id.b_pixel -> DrawingPrimitive.PIXEL;
                 case R.id.b_point -> DrawingPrimitive.POINT;
-                case R.id.b_ref -> DrawingPrimitive.REF;
+                case R.id.b_clip -> DrawingPrimitive.CLIP;
                 default -> null;
             };
             update(true);

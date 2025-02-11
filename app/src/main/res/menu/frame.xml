@@ -28,9 +28,9 @@
             android:icon="@drawable/ic_void"
             android:title="@string/onion_skins" />
         <item
-            android:id="@+id/i_frame_clip"
+            android:id="@+id/i_frame_trim"
             android:icon="@drawable/ic_content_cut"
             android:iconTint="?attr/colorOnSurfaceVariant"
-            android:title="@string/clip_verb" />
+            android:title="@string/trim" />
     </group>
 </menu>

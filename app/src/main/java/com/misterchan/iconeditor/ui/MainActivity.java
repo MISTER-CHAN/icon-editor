@@ -94,7 +94,7 @@ import com.misterchan.iconeditor.Settings;
 import com.misterchan.iconeditor.databinding.ActivityMainBinding;
 import com.misterchan.iconeditor.databinding.FrameListBinding;
 import com.misterchan.iconeditor.databinding.LayerListBinding;
-import com.misterchan.iconeditor.dialog.AnimationClipper;
+import com.misterchan.iconeditor.dialog.AnimationTrimmer;
 import com.misterchan.iconeditor.dialog.BitmapConfigModifier;
 import com.misterchan.iconeditor.dialog.CellGridManager;
 import com.misterchan.iconeditor.dialog.ColorBalanceDialog;
@@ -887,10 +887,10 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
                     BitmapUtils.generateNoise(editPreview.getCanvas(), editPreview.getRect(), paint,
                             properties.noisiness(), properties.seed(), properties.noRepeats());
                 }
-                case REF -> {
+                case CLIP -> {
                     editPreview.revert();
-                    BitmapUtils.generateNoise(editPreview.getCanvas(), editPreview.getRect(),
-                            !ref.recycled() ? ref.bm() : editPreview.getOriginal(), paint,
+                    if (clipboard == null) break;
+                    BitmapUtils.generateNoise(editPreview.getCanvas(), editPreview.getRect(), clipboard, paint,
                             properties.noisiness(), properties.seed(), properties.noRepeats());
                 }
             }
@@ -1053,6 +1053,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
             }
         }
         frame.computeLayerTree();
+        if (frame.getSelectedLayer().reference || checkRefNecessity()) updateReference();
 
         calculateBackgroundSizeOnView();
         drawBitmapOntoView(true, true);
@@ -1089,7 +1090,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
         popupMenu.setOnMenuItemClickListener(this::onFrameOptionsItemSelected);
         popupMenu.show();
 
-        menu.findItem(R.id.i_frame_clip).setEnabled(project.frames.size() > 1);
+        menu.findItem(R.id.i_frame_trim).setEnabled(project.frames.size() > 1);
     };
 
     @SuppressLint("NonConstantResourceId")
@@ -1243,7 +1244,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
         }
     };
 
-    private final AnimationClipper.OnConfirmListener onClipConfirmListener = (from, to) -> {
+    private final AnimationTrimmer.OnConfirmListener onTrimmingConfirmListener = (from, to) -> {
         for (int i = project.frames.size() - 1; i >= 0; --i) {
             if (!(from <= i && i <= to || from > to && (from <= i || i <= to))) {
                 deleteFrame(i);
@@ -2812,7 +2813,6 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
             case R.id.b_bucket_fill -> {
                 if (isChecked) {
                     onToolChanged(onIVTouchWithBucketListener, activityMain.svOptionsBucketFill);
-                    updateReference();
                     isa.set(bitmap);
                     threshold = 0x0;
                 }
@@ -3205,6 +3205,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
 
     private void closeLayer(int position) {
         if (frame.layers.size() > 1) {
+            final Layer layer = frame.layers.get(position);
             deleteLayer(position);
             frame.computeLayerTree();
             final int posToSelect = Math.min(frame.selectedLayerIndex, frame.layers.size() - 1);
@@ -3216,6 +3217,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
                     frame.layerAdapter.notifyItemRangeChanged(0, position, LayerAdapter.Payload.LEVEL);
             });
             project.history.optimize();
+            if (layer.reference || checkRefNecessity()) updateReference();
         } else {
             closeFrame(project.selectedFrameIndex);
         }
@@ -3251,12 +3253,12 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
         return computeRectBoundsDrawn(selection.r, paint);
     }
 
-    private void createFrame() {
+    private void createFrame(int position) {
         final Frame firstFrame = project.getFirstFrame();
         final Bitmap ffblb = firstFrame.getBackgroundLayer().bitmap;
         final Bitmap bm = Bitmap.createBitmap(ffblb.getWidth(), ffblb.getHeight(),
                 ffblb.getConfig(), ffblb.hasAlpha(), ffblb.getColorSpace());
-        addFrame(project, bm, project.frames.size(), firstFrame.delay, true);
+        addFrame(project, bm, position, firstFrame.delay, true);
     }
 
     private void createImage(int width, int height) {
@@ -3352,16 +3354,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
     private void drawAfterTransformingView(boolean doNotMerge) {
         if (doNotMerge) drawBitmapLastOntoView(false);
         else drawBitmapOntoView(true, false);
-        if (isEditingText) {
-            drawTextGuideOntoView();
-        } else if (cloneStamp.src != null) {
-            drawCrossOntoView(cloneStamp.src.x, cloneStamp.src.y);
-        } else if (ruler.enabled) {
-            drawRulerOntoView();
-        } else if (magEr.b != null && magEr.f != null) {
-            drawCrossOntoView(magEr.b.x, magEr.b.y, true);
-            drawCrossOntoView(magEr.f.x, magEr.f.y, false);
-        }
+        drawPreviewOntoView();
         drawChessboardOntoView();
         drawRulers();
         drawGridOntoView();
@@ -3685,6 +3678,19 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
         final float left = toViewX(x), top = toViewY(y), right = left + scale, bottom = top + scale;
         previewCanvas.drawRect(left, top, right, bottom, fillPaint);
         activityMain.canvas.ivPreview.invalidate();
+    }
+
+    private void drawPreviewOntoView() {
+        if (isEditingText) {
+            drawTextGuideOntoView();
+        } else if (cloneStamp.src != null) {
+            drawCrossOntoView(cloneStamp.src.x, cloneStamp.src.y);
+        } else if (ruler.enabled) {
+            drawRulerOntoView();
+        } else if (magEr.b != null && magEr.f != null) {
+            drawCrossOntoView(magEr.b.x, magEr.b.y, true);
+            drawCrossOntoView(magEr.f.x, magEr.f.y, false);
+        }
     }
 
     private void drawRulerOntoView() {
@@ -4252,7 +4258,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
             selection.marqBoundBeingDragged = null;
         }
 
-        updateReference();
+        if (action.layer().reference || checkRefNecessity()) updateReference();
         if (action.layer() == frame.getBackgroundLayer()) {
             calculateBackgroundSizeOnView();
             drawChessboardOntoView();
@@ -4276,9 +4282,6 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
         switch (item.getItemId()) {
             default -> {
                 return false;
-            }
-            case R.id.i_frame_clip -> {
-                new AnimationClipper(this, project, onClipConfirmListener).show();
             }
             case R.id.i_frame_delay -> {
                 new EditNumberDialog(this)
@@ -4311,7 +4314,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
                 });
                 selectFrame(pos);
             }
-            case R.id.i_frame_new -> createFrame();
+            case R.id.i_frame_new -> createFrame(project.selectedFrameIndex + 1);
             case R.id.i_frame_onion_skins -> {
                 new EditNumberDialog(this)
                         .setTitle(R.string.onion_skins)
@@ -4320,6 +4323,9 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
                             drawChessboardOntoView();
                         })
                         .show(project.onionSkins);
+            }
+            case R.id.i_frame_trim -> {
+                new AnimationTrimmer(this, project, onTrimmingConfirmListener).show();
             }
         }
         return true;
@@ -4697,12 +4703,13 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
                 if (posBelow >= frame.layers.size()) break;
 
                 drawFloatingLayersIntoImage();
-                final Layer layerBelow = frame.layers.get(posBelow);
+                final Layer layer = this.layer, layerBelow = frame.layers.get(posBelow);
                 project.history.addUndoAction(layerBelow, layerBelow.bitmap, null);
                 Layers.mergeLayers(layer, layerBelow);
                 deleteLayer(pos);
                 frame.computeLayerTree();
                 selectLayer(pos);
+                if (layer.reference || checkRefNecessity()) updateReference();
                 layerList.rvLayerList.post(() -> {
                     frame.layerAdapter.notifyItemRemoved(pos);
                     frame.layerAdapter.notifyItemRangeChanged(pos, frame.layers.size() - pos);
@@ -5231,6 +5238,12 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
         }
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (bsdFrameList != null) bsdFrameList.cancel();
+    }
+
     @SuppressLint("NonConstantResourceId")
     private boolean onProjTabOptionsItemSelected(MenuItem item) {
         final int position = activityMain.tlProjectList.getSelectedTabPosition();
@@ -5634,6 +5647,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
 
         calculateBackgroundSizeOnView();
         selectLayer(frame.selectedLayerIndex);
+        updateReference();
         frame.layerAdapter.notifyDataSetChanged();
     }
 
@@ -5662,6 +5676,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
         if (activityMain.topAppBar != null) miHasAlpha.setChecked(bitmap.hasAlpha());
 
         drawBitmapOntoView(true, true);
+        drawPreviewOntoView();
         drawChessboardOntoView();
         drawGridOntoView();
         drawSelectionOntoView();
@@ -5741,11 +5756,11 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
      * @return The x coordinate on bitmap.
      */
     public int toBitmapX(float x) {
-        return (int) ((x - translationX) / scale) - layer.left;
+        return (int) ((x - translationX) / scale) - layer.left + (x >= translationX ? 0 : -1);
     }
 
     private int toBitmapXAbs(float x) {
-        return (int) ((x - translationX) / scale);
+        return (int) ((x - translationX) / scale) + (x >= translationX ? 0 : -1);
     }
 
     private float toBitmapXExact(float x) {
@@ -5756,11 +5771,11 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
      * @return The y coordinate on bitmap.
      */
     public int toBitmapY(float y) {
-        return (int) ((y - translationY) / scale) - layer.top;
+        return (int) ((y - translationY) / scale) - layer.top + (y >= translationY ? 0 : -1);
     }
 
     private int toBitmapYAbs(float y) {
-        return (int) ((y - translationY) / scale);
+        return (int) ((y - translationY) / scale) + (y >= translationY ? 0 : -1);
     }
 
     private float toBitmapYExact(float y) {
@@ -5768,7 +5783,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
     }
 
     private int toUnscaled(float scaled) {
-        return (int) (scaled / scale);
+        return (int) (scaled / scale) + (scaled >= 0.0f ? 0 : -1);
     }
 
     private float toUnscaledExact(float scaled) {
@@ -5816,8 +5831,8 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
     private void updateBrush(BrushTool.TipShape tipShape) {
         if (tipShape == null) tipShape = brush.tipShape;
         switch (tipShape) {
-            case CLIP -> brush.setToClip(clipboard, paint.getColorLong());
             case PRESET_BRUSH -> brush.setToBrush(paint.getColorLong());
+            case CLIP -> brush.setToClip(clipboard, paint.getColorLong());
         }
     }
 

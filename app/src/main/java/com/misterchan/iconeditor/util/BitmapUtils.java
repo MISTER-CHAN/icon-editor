@@ -227,6 +227,9 @@ public class BitmapUtils {
                 outBounds.union(i % w, i / w, i % w + 1, i / w + 1);
             }
         }
+        if (outBounds != null) {
+            outBounds.offset(dstRect.left, dstRect.top);
+        }
         dst.setPixels(pixels, 0, w, dstRect.left, dstRect.top, w, h);
     }
 
@@ -451,15 +454,15 @@ public class BitmapUtils {
         final int w = bitmap.getWidth(), h = bitmap.getHeight();
         final Random random = seed == null ? new Random() : new Random(seed);
         if (noRepeats) {
-            for (float y = rect.top - w; y < rect.bottom; ++y) {
-                for (float x = rect.left - h; x < rect.right; ++x) {
+            for (float y = rect.top - w; y < rect.bottom; y += h) {
+                for (float x = rect.left - h; x < rect.right; x += w) {
                     if (random.nextFloat() < noisiness) {
                         canvas.drawBitmap(bitmap, x, y, paint);
                     }
                 }
             }
         } else {
-            final int amount = (int) (rect.width() * rect.height() * noisiness);
+            final int amount = (int) (noisiness * rect.width() * rect.height() / w / h);
             for (int i = 0; i < amount; ++i) {
                 canvas.drawBitmap(bitmap,
                         (rect.width() + w) * random.nextFloat() - w + rect.left,

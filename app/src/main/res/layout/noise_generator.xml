@@ -37,11 +37,11 @@
             android:text="@string/point" />
 
         <Button
-            android:id="@+id/b_ref"
+            android:id="@+id/b_clip"
             style="@style/Widget.IconEditor.Button.OutlinedButton.Dense"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/reference" />
+            android:text="@string/clip_noun" />
     </com.google.android.material.button.MaterialButtonToggleGroup>
 
     <CheckBox

@@ -35,13 +35,15 @@ public class Layer {
     public ColorMatrix colorMatrix;
     public final ColorRange colorRange = new ColorRange();
     public Filter filter;
-    private int level = 0;
     public int left = 0, top = 0;
     public int[][] curves;
     public String name;
 
     @Size(4)
     public float[] deltaHs;
+
+    @IntRange(from = 0x0, to = 0x400)
+    private int level = 0;
 
     @Size(8)
     public float[] lighting;
@@ -134,7 +136,7 @@ public class Layer {
         lighting[1] = lighting[3] = lighting[5] = lighting[7] = 0.0f;
     }
 
-    public void setLevel(@IntRange(from = 0) int level) {
+    public void setLevel(@IntRange(from = 0x0, to = 0x400) int level) {
         if (level < 0) {
             return;
         }
