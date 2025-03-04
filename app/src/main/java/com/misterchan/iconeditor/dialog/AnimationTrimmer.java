@@ -32,8 +32,8 @@ public class AnimationTrimmer {
 
     public AnimationTrimmer(Context context, Project project, OnConfirmListener listener) {
         builder = new MaterialAlertDialogBuilder(context)
-                .setIcon(R.drawable.ic_content_cut).setTitle(R.string.clip_verb)
-                .setView(R.layout.animation_clipper)
+                .setIcon(R.drawable.ic_content_cut).setTitle(R.string.trim)
+                .setView(R.layout.animation_trimmer)
                 .setPositiveButton(R.string.ok, (dialog, which) ->
                         listener.onConfirm(from, to))
                 .setNegativeButton(R.string.cancel, null);

@@ -1053,7 +1053,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
             }
         }
         frame.computeLayerTree();
-        if (frame.getSelectedLayer().reference || checkRefNecessity()) updateReference();
+        updateReferenceIf(frame.getSelectedLayer().reference);
 
         calculateBackgroundSizeOnView();
         drawBitmapOntoView(true, true);
@@ -1696,7 +1696,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
                         isShapeStopped = false;
                         dpPreview.getCanvas().drawPoint(bx + 0.5f, by + 0.5f, paint);
                         drawBitmapOntoView(bx, by, bx + 1, by + 1);
-                        if (gradient.colors == Gradient.Colors.PALETTE) {
+                        if (gradient.colors == Gradient.Colors.PALETTE && !palette.isEmpty()) {
                             lastCopiedPalette = new long[palette.size()];
                             for (int i = 0; i < palette.size(); ++i) {
                                 lastCopiedPalette[i] = palette.get(i);
@@ -2813,6 +2813,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
             case R.id.b_bucket_fill -> {
                 if (isChecked) {
                     onToolChanged(onIVTouchWithBucketListener, activityMain.svOptionsBucketFill);
+                    updateReference();
                     isa.set(bitmap);
                     threshold = 0x0;
                 }
@@ -3217,7 +3218,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
                     frame.layerAdapter.notifyItemRangeChanged(0, position, LayerAdapter.Payload.LEVEL);
             });
             project.history.optimize();
-            if (layer.reference || checkRefNecessity()) updateReference();
+            updateReferenceIf(layer.reference);
         } else {
             closeFrame(project.selectedFrameIndex);
         }
@@ -3263,7 +3264,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
 
     private void createImage(int width, int height) {
         final Bitmap bm = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-        addProject(bm, projects.size());
+        addProject(bm, activityMain.tlProjectList.getSelectedTabPosition() + 1);
     }
 
     private void createLayer(int width, int height,
@@ -4258,7 +4259,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
             selection.marqBoundBeingDragged = null;
         }
 
-        if (action.layer().reference || checkRefNecessity()) updateReference();
+        updateReferenceIf(action.layer().reference);
         if (action.layer() == frame.getBackgroundLayer()) {
             calculateBackgroundSizeOnView();
             drawChessboardOntoView();
@@ -4709,7 +4710,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
                 deleteLayer(pos);
                 frame.computeLayerTree();
                 selectLayer(pos);
-                if (layer.reference || checkRefNecessity()) updateReference();
+                updateReferenceIf(layer.reference);
                 layerList.rvLayerList.post(() -> {
                     frame.layerAdapter.notifyItemRemoved(pos);
                     frame.layerAdapter.notifyItemRangeChanged(pos, frame.layers.size() - pos);
@@ -5843,5 +5844,10 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
     private void updateReference(boolean nonNull) {
         final Bitmap rb = frame.mergeReferenceLayers();
         ref.set(rb != null ? rb : nonNull || checkRefNecessity() ? BitmapUtils.createBitmap(bitmap) : null);
+    }
+
+    private void updateReferenceIf(boolean condition) {
+        if (condition) updateReference(false);
+        else if (checkRefNecessity()) updateReference(true);
     }
 }

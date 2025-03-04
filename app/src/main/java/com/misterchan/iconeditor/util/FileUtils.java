@@ -171,8 +171,8 @@ public class FileUtils {
     }
 
     public static void save(Activity activity, Project project, int quality) {
-        final File file = new File(project.filePath);
         if (project.compressFormat != null) {
+            final File file = new File(project.filePath);
             final Bitmap merged = Layers.mergeLayers(project.getSelectedFrame().layerTree);
             try (final FileOutputStream fos = new FileOutputStream(file)) {
                 merged.compress(project.compressFormat, quality, fos);
@@ -187,7 +187,7 @@ public class FileUtils {
             } finally {
                 merged.recycle();
             }
-            MediaScannerConnection.scanFile(activity, new String[]{file.toString()}, null, null);
+            MediaScannerConnection.scanFile(activity, new String[]{project.filePath}, null, null);
 
         } else if (project.fileType == Project.FileType.GIF) {
             final GifEncoder gifEncoder = new GifEncoder();
@@ -224,7 +224,7 @@ public class FileUtils {
                     activity.runOnUiThread(() -> pi.setProgressCompat(progress, true));
                 }
                 gifEncoder.close();
-                MediaScannerConnection.scanFile(activity, new String[]{file.toString()}, null, null);
+                MediaScannerConnection.scanFile(activity, new String[]{project.filePath}, null, null);
                 activity.runOnUiThread(() -> {
                     dialog.dismiss();
                     if (invalidFrames.isEmpty()) {
