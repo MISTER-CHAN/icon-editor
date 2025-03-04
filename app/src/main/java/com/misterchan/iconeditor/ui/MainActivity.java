@@ -1696,7 +1696,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
                         isShapeStopped = false;
                         dpPreview.getCanvas().drawPoint(bx + 0.5f, by + 0.5f, paint);
                         drawBitmapOntoView(bx, by, bx + 1, by + 1);
-                        if (gradient.colors == Gradient.Colors.PALETTE && !palette.isEmpty()) {
+                        if (gradient.colors == Gradient.Colors.PALETTE) {
                             lastCopiedPalette = new long[palette.size()];
                             for (int i = 0; i < palette.size(); ++i) {
                                 lastCopiedPalette[i] = palette.get(i);
@@ -1709,10 +1709,11 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
                     }
                 case MotionEvent.ACTION_MOVE: {
                     if (bx == shapeStartX && by == shapeStartY) break;
-                    paint.setShader(gradient.createShader(shapeStartX, shapeStartY, bx, by, switch (gradient.colors) {
+                    final long[] colors = switch (gradient.colors) {
                         case PAINTS -> new long[]{paint.getColorLong(), eraser.getColorLong()};
                         case PALETTE -> lastCopiedPalette;
-                    }));
+                    };
+                    paint.setShader(gradient.createShader(shapeStartX, shapeStartY, bx, by, colors));
                     dpPreview.erase();
                     dpPreview.getCanvas().drawPaint(paint);
                     drawBitmapOntoView();

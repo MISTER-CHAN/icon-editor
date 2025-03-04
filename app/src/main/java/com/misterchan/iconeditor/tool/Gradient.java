@@ -20,13 +20,18 @@ public class Gradient {
     public Type type = Type.LINEAR;
 
     public Shader createShader(float x0, float y0, float x1, float y1, @ColorLong long... colors) {
-        return switch (type) {
-            case LINEAR -> new LinearGradient(x0, y0, x1, y1, colors, null, Shader.TileMode.CLAMP);
+        try {
+            return switch (type) {
+                case LINEAR ->
+                        new LinearGradient(x0, y0, x1, y1, colors, null, Shader.TileMode.CLAMP);
 
-            case RADIAL -> new RadialGradient(x0, y0,
-                    (float) Math.hypot(Math.abs(x0 - x1), Math.abs(y0 - y1)), colors, null, Shader.TileMode.CLAMP);
+                case RADIAL -> new RadialGradient(x0, y0,
+                        (float) Math.hypot(Math.abs(x0 - x1), Math.abs(y0 - y1)), colors, null, Shader.TileMode.CLAMP);
 
-            case SWEEP -> new SweepGradient(x0, y0, colors, null);
-        };
+                case SWEEP -> new SweepGradient(x0, y0, colors, null);
+            };
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
     }
 }
