@@ -1053,7 +1053,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
             }
         }
         frame.computeLayerTree();
-        updateReferenceIf(frame.getSelectedLayer().reference);
+        updateReference(frame.getSelectedLayer());
 
         calculateBackgroundSizeOnView();
         drawBitmapOntoView(true, true);
@@ -3219,7 +3219,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
                     frame.layerAdapter.notifyItemRangeChanged(0, position, LayerAdapter.Payload.LEVEL);
             });
             project.history.optimize();
-            updateReferenceIf(layer.reference);
+            updateReference(layer);
         } else {
             closeFrame(project.selectedFrameIndex);
         }
@@ -4260,7 +4260,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
             selection.marqBoundBeingDragged = null;
         }
 
-        updateReferenceIf(action.layer().reference);
+        updateReference(action.layer());
         if (action.layer() == frame.getBackgroundLayer()) {
             calculateBackgroundSizeOnView();
             drawChessboardOntoView();
@@ -4711,7 +4711,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
                 deleteLayer(pos);
                 frame.computeLayerTree();
                 selectLayer(pos);
-                updateReferenceIf(layer.reference);
+                updateReference(layer);
                 layerList.rvLayerList.post(() -> {
                     frame.layerAdapter.notifyItemRemoved(pos);
                     frame.layerAdapter.notifyItemRangeChanged(pos, frame.layers.size() - pos);
@@ -5847,8 +5847,8 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
         ref.set(rb != null ? rb : nonNull || checkRefNecessity() ? BitmapUtils.createBitmap(bitmap) : null);
     }
 
-    private void updateReferenceIf(boolean condition) {
-        if (condition) updateReference(false);
+    private void updateReference(Layer layer) {
+        if (layer.reference) updateReference(false);
         else if (checkRefNecessity()) updateReference(true);
     }
 }
