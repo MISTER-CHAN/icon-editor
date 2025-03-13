@@ -40,7 +40,7 @@
     <string name="clear">淸除</string>
     <string name="clear_destination">淸除目標</string>
     <string name="clear_guides">淸除參考線</string>
-    <string name="clip_noun">剪貼簿數據</string>
+    <string name="clip_noun">剪貼數據</string>
     <string name="clip_verb">剪輯</string>
     <string name="clipped">剪裁</string>
     <string name="cloner">克隆筆</string>
@@ -184,7 +184,7 @@
     <string name="more">更多</string>
     <string name="more_color_pickers">更多拾色器</string>
     <string name="move_layer">移動圖層</string>
-    <string name="move_to_first">移到首位</string>
+    <string name="move_to_first">移至首位</string>
     <string name="new_">新建</string>
     <string name="new_guide">新參考線</string>
     <string name="no_clip">當前無剪輯在剪貼簿上。</string>

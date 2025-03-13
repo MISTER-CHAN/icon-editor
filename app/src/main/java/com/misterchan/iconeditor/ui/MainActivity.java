@@ -5062,6 +5062,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
             case R.id.i_flip_horizontally -> scale(-1.0f, 1.0f);
             case R.id.i_flip_vertically -> scale(1.0f, -1.0f);
             case R.id.i_frame_list -> {
+                item.setEnabled(false);
                 project.frames.forEach(Frame::createThumbnail);
                 project.frameAdapter.notifyDataSetChanged();
 
@@ -5071,6 +5072,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
                 bsdFrameList.setOnDismissListener(dialog -> {
                     ((ViewGroup) frameList.getRoot().getParent()).removeAllViews();
                     bsdFrameList = null;
+                    item.setEnabled(true);
                 });
                 bsdFrameList.show();
             }
@@ -5130,6 +5132,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
                         .show();
             }
             case R.id.i_layer_list -> {
+                item.setEnabled(false);
                 frame.layerAdapter.notifyDataSetChanged();
 
                 ssdLayerList = new SideSheetDialog(this);
@@ -5138,6 +5141,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
                 ssdLayerList.setOnDismissListener(dialog -> {
                     ((ViewGroup) layerList.getRoot().getParent()).removeAllViews();
                     ssdLayerList = null;
+                    item.setEnabled(true);
                 });
                 ssdLayerList.show();
             }
