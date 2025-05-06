@@ -39,6 +39,7 @@ import android.view.MotionEvent;
 import android.view.VelocityTracker;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.CompoundButton;
@@ -64,7 +65,9 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.MenuCompat;
 import androidx.core.view.OneShotPreDrawListener;
 import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.preference.PreferenceManager;
@@ -4054,7 +4057,8 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
         Settings.INST.mainActivity = this;
         Settings.INST.update(preferences);
 
-        final boolean isLandscape = getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
+        final Configuration config = getResources().getConfiguration();
+        final boolean isLandscape = config.orientation == Configuration.ORIENTATION_LANDSCAPE;
 
         // Content view
         final LayoutInflater layoutInflater = getLayoutInflater();
@@ -4212,10 +4216,16 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
         }
 
         ViewCompat.setOnApplyWindowInsetsListener(activityMain.getRoot(), (v, windowInsets) -> {
-            Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout());
+            final Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout());
             v.setPadding(insets.left, insets.top, insets.right, insets.bottom);
             return WindowInsetsCompat.CONSUMED;
         });
+        {
+            final WindowInsetsControllerCompat wic = WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
+            final boolean isNightModeInactive = !config.isNightModeActive();
+            wic.setAppearanceLightStatusBars(isNightModeInactive);
+            wic.setAppearanceLightNavigationBars(isNightModeInactive);
+        }
     }
 
     @Override
