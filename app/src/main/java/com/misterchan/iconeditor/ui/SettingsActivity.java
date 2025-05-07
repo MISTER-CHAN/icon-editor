@@ -9,11 +9,17 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.ext.SdkExtensions;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.preference.EditTextPreference;
 import androidx.preference.ListPreference;
 import androidx.preference.Preference;
@@ -23,6 +29,8 @@ import androidx.preference.PreferenceManager;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.misterchan.iconeditor.R;
 import com.misterchan.iconeditor.Settings;
+
+import java.util.Set;
 
 public class SettingsActivity extends AppCompatActivity {
 
@@ -40,11 +48,22 @@ public class SettingsActivity extends AppCompatActivity {
                     .replace(R.id.settings, new SettingsFragment())
                     .commit();
         }
-        ActionBar actionBar = getSupportActionBar();
+        final ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
         preferences.registerOnSharedPreferenceChangeListener((sharedPreferences, key) -> Settings.INST.update(key));
+        Settings.applyDisplayCutouts(this);
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.settings), (v, windowInsets) -> {
+            final Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
+            final ViewGroup.MarginLayoutParams mlp = (ViewGroup.MarginLayoutParams) v.getLayoutParams();
+            mlp.leftMargin = insets.left;
+            mlp.topMargin = insets.top;
+            mlp.rightMargin = insets.right;
+            mlp.bottomMargin = insets.bottom;
+            v.setLayoutParams(mlp);
+            return WindowInsetsCompat.CONSUMED;
+        });
     }
 
     @Override

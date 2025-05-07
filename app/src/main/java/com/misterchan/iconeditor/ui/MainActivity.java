@@ -4057,8 +4057,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
         Settings.INST.mainActivity = this;
         Settings.INST.update(preferences);
 
-        final Configuration config = getResources().getConfiguration();
-        final boolean isLandscape = config.orientation == Configuration.ORIENTATION_LANDSCAPE;
+        final boolean isLandscape = getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
 
         // Content view
         final LayoutInflater layoutInflater = getLayoutInflater();
@@ -4215,17 +4214,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
             });
         }
 
-        ViewCompat.setOnApplyWindowInsetsListener(activityMain.getRoot(), (v, windowInsets) -> {
-            final Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout());
-            v.setPadding(insets.left, insets.top, insets.right, insets.bottom);
-            return WindowInsetsCompat.CONSUMED;
-        });
-        {
-            final WindowInsetsControllerCompat wic = WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
-            final boolean isNightModeInactive = !config.isNightModeActive();
-            wic.setAppearanceLightStatusBars(isNightModeInactive);
-            wic.setAppearanceLightNavigationBars(isNightModeInactive);
-        }
+        Settings.applyDisplayCutouts(this);
     }
 
     @Override

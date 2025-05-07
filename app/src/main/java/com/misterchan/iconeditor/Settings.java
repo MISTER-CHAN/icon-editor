@@ -1,8 +1,14 @@
 package com.misterchan.iconeditor;
 
+import android.app.Activity;
 import android.content.SharedPreferences;
 
 import androidx.annotation.Nullable;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 
 import com.misterchan.iconeditor.ui.MainActivity;
 
@@ -105,6 +111,18 @@ public class Settings {
 
     public boolean showRulers() {
         return showRulers;
+    }
+
+    public static void applyDisplayCutouts(Activity activity) {
+        ViewCompat.setOnApplyWindowInsetsListener(activity.getWindow().getDecorView(), (v, windowInsets) -> {
+            final Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.ime() | WindowInsetsCompat.Type.displayCutout());
+            v.setPadding(insets.left, insets.top, insets.right, insets.bottom);
+            return WindowInsetsCompat.CONSUMED;
+        });
+        final WindowInsetsControllerCompat wic = WindowCompat.getInsetsController(activity.getWindow(), activity.getWindow().getDecorView());
+        final boolean isNightModeInactive = !activity.getResources().getConfiguration().isNightModeActive();
+        wic.setAppearanceLightStatusBars(isNightModeInactive);
+        wic.setAppearanceLightNavigationBars(isNightModeInactive);
     }
 
     private void loadPalette() {
