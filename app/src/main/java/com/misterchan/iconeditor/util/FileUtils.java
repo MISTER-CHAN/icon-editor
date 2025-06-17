@@ -82,10 +82,16 @@ public class FileUtils {
                     }
                     case "com.android.providers.downloads.documents" -> {
                         final String docId = DocumentsContract.getDocumentId(uri);
-                        final Uri contentUri = ContentUris.withAppendedId(URI_PUBLIC_DOWNLOADS, Long.parseLong(docId));
-                        final String cv = getMediaDataColumnValue(contentResolver, contentUri, null, null);
-                        if (cv != null) {
-                            return cv;
+                        final int colonIndex = docId.indexOf(':');
+                        if (colonIndex > -1) {
+                            return getMediaDataColumnValue(contentResolver, MediaStore.Downloads.EXTERNAL_CONTENT_URI,
+                                    MediaStore.Images.Media._ID + "=?", new String[]{docId.substring(colonIndex + 1)});
+                        } else {
+                            final Uri contentUri = ContentUris.withAppendedId(URI_PUBLIC_DOWNLOADS, Long.parseLong(docId));
+                            final String cv = getMediaDataColumnValue(contentResolver, contentUri, null, null);
+                            if (cv != null) {
+                                return cv;
+                            }
                         }
                     }
                     case "com.android.providers.media.documents" -> {

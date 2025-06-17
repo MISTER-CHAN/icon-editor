@@ -360,9 +360,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateConvers
 
     private final ActivityResultLauncher<Intent> requestPermissionLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-                if (Environment.isExternalStorageManager()) {
-                    save();
-                }
+                if (Environment.isExternalStorageManager()) save();
             });
 
     private final AfterTextChangedListener onBlurRadiusETTextChangedListener = s -> {
